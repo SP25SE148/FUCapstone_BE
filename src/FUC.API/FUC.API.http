@@ -1,0 +1,6 @@
+@FUC.API_HostAddress = http://localhost:5261
+
+GET {{FUC.API_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
