@@ -35,6 +35,7 @@ public sealed class ValidationHandlingFilter(IServiceProvider serviceProvider) :
             {
                 context.Result = new BadRequestObjectResult(HandleValidationException(errors));
                 return;
+                
             }
         }
 
