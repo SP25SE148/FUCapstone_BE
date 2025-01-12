@@ -8,6 +8,6 @@ public sealed class ValidationResult<TValue> : OperationResult<TValue>, IValidat
 
     public Error[] Errors { get; }
 
-    public static ValidationResult<TValue> WithErrors(Error[] errors) => new(errors);
+    public static ValidationResult<TValue> WithErrors(params Error[] errors) => new(errors);
 }
 

@@ -43,12 +43,19 @@ public class WeatherForecastController : ApiController
         .ToArray();
     }
 
+    [HttpPost("test")]
+    public IActionResult Test([FromBody] User user) {
+        _logger.LogInformation("Test validation");
+
+        return Ok(user);
+    }
+
     [HttpGet("images/{key}")]
-    public async Task<IActionResult> GetImage()
+    public async Task<IActionResult> GetImage(string key)
     {
         try
         {
-            var response = await _s3Service.GetFromS3(s3Settings.Bucket, "images/22bc2fb5-4e8f-4aef-aa87-db9dce5d8216");
+            var response = await _s3Service.GetFromS3(s3Settings.Bucket, $"images/{key}");
 
             return response is not null ? File(response.ResponseStream, response.Headers.ContentType, response.Metadata["file-name"]) : BadRequest("Not found");
         }

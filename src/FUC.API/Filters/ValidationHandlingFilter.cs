@@ -22,18 +22,9 @@ public sealed class ValidationHandlingFilter(IServiceProvider serviceProvider) :
             var subject = context.ActionArguments[parameter.Name];
             var result = await validator.ValidateAsync(new ValidationContext<object>(subject!), context.HttpContext.RequestAborted);
 
-            Error[] errors = result.Errors
-                .Where(e => e is not null)
-                .Select(failure => new Error(
-                    failure.PropertyName,
-                    failure.ErrorMessage
-                ))
-                .Distinct()
-                .ToArray();
-
-            if (errors.Length > 0)
+            if (!result.IsValid)
             {
-                context.Result = new BadRequestObjectResult(HandleValidationException(errors));
+                context.Result = new BadRequestObjectResult(HandleValidationException(result.ToDictionary()));
                 return;
                 
             }
@@ -42,18 +33,14 @@ public sealed class ValidationHandlingFilter(IServiceProvider serviceProvider) :
         await next();
     }
 
-    private static ValidationProblemDetails HandleValidationException(Error[] errors)
+    private static ValidationProblemDetails HandleValidationException(IDictionary<string, string[]> errors)
     {
         var problemDetails = new ValidationProblemDetails
         {
             Title = IValidationResult.ValidationError.Code,
             Type = Constants.BadRequestType,
             Status = StatusCodes.Status400BadRequest,
-            Errors = errors.GroupBy(e => e.Code)
-                .ToDictionary(
-                    group => group.Key,
-                    group => group.Select(e => e.Message).ToArray()
-                ) ?? throw new InvalidOperationException(),
+            Errors = errors,
             Extensions = new Dictionary<string, object?>
             {
                 {
