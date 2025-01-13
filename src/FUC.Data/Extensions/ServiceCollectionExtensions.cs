@@ -1,4 +1,6 @@
-﻿using FUC.Data.Repositories;
+﻿using FUC.Data.Data;
+using FUC.Data.Repositories;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -8,8 +10,11 @@ public static class ServiceCollectionExtensions
 {
     public static IServiceCollection AddDataAccessServices(this IServiceCollection services, IConfiguration configuration)
     {
-        // TODO: Add DBContext
-        var connection = configuration["ConnectionString:DefaultConnection"];
+        // Add DBContext
+        services.AddDbContext<FucDbContext>(options =>
+        {
+            options.UseNpgsql(configuration.GetConnectionString("DefaultConnection"));
+        });
 
         services.AddScoped(typeof(IUnitOfWork<>), typeof(UnitOfWork<>));
         services.AddScoped(typeof(IRepository<>), typeof(Repository<>));

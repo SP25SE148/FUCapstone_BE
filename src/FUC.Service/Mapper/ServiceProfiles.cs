@@ -2,9 +2,9 @@
 
 namespace FUC.Service.Mapper;
 
-public class ServiceProfile : Profile
+public class ServiceProfiles : Profile
 {
-    public ServiceProfile()
+    public ServiceProfiles()
     {
         // TODO: Add mapper
     }
