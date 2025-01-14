@@ -1,11 +1,11 @@
 ﻿using System.Net;
+using Amazon.S3;
 using Amazon.S3.Model;
 using Amazon.S3.Transfer;
-using Amazon.S3;
 using FUC.Service.Abstractions;
 using Microsoft.Extensions.Logging;
 
-namespace FUC.Service.Services;
+namespace FUC.Service.Infrastructure;
 public class S3Service(
     IAmazonS3 S3Client,
     ILogger<S3Service> logger,
