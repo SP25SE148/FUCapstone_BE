@@ -2,6 +2,7 @@
 using Microsoft.EntityFrameworkCore.Storage;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
+using FUC.Data.Abstractions;
 
 namespace FUC.Data;
 
@@ -14,7 +15,7 @@ public sealed class UnitOfWork<TContext>(TContext context, IServiceProvider serv
     private readonly IServiceProvider _serviceProvider = serviceProvider ?? throw new ArgumentNullException(nameof(serviceProvider));
     private IDbContextTransaction? _currentTransaction;
 
-    public IRepository<TEntity> GetRepository<TEntity>() where TEntity : class
+    public IRepository<TEntity> GetRepository<TEntity>() where TEntity : Entity
     {
         return _serviceProvider.GetRequiredService<IRepository<TEntity>>();
     }

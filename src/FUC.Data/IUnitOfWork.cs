@@ -1,11 +1,12 @@
-﻿using FUC.Data.Repositories;
+﻿using FUC.Data.Abstractions;
+using FUC.Data.Repositories;
 using Microsoft.EntityFrameworkCore;
 
 namespace FUC.Data;
 
 public interface IUnitOfWork<out TContext> where TContext : DbContext, IDisposable
 {
-    IRepository<TEntity> GetRepository<TEntity>() where TEntity : class;
+    IRepository<TEntity> GetRepository<TEntity>() where TEntity : Entity;
 
     Task SaveChangesAsync(CancellationToken cancellationToken = default);
 

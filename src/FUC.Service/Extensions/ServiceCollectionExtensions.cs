@@ -6,7 +6,7 @@ using FluentValidation;
 using FUC.Service.Abstractions;
 using FUC.Service.Extensions.Options;
 using FUC.Service.Mapper;
-using FUC.Service.Services;
+using FUC.Service.Infrastructure;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;

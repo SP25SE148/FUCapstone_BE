@@ -2,11 +2,13 @@
 using Microsoft.EntityFrameworkCore.Query;
 using Microsoft.EntityFrameworkCore;
 using System.Linq.Expressions;
+using FUC.Data.Abstractions.Entities;
+using FUC.Data.Abstractions;
 
 namespace FUC.Data.Repositories;
 
 public class Repository<TEntity>(DbContext dbContext) : IRepository<TEntity>
-    where TEntity : class
+    where TEntity : Entity
 {
     public async Task<TEntity?> GetAsync(Expression<Func<TEntity, bool>> predicate,
         bool isEnabledTracking = false,

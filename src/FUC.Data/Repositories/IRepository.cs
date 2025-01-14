@@ -1,10 +1,12 @@
 ﻿using FUC.Common.Shared;
+using FUC.Data.Abstractions;
+using FUC.Data.Abstractions.Entities;
 using Microsoft.EntityFrameworkCore.Query;
 using System.Linq.Expressions;
 
 namespace FUC.Data.Repositories;
 
-public interface IRepository<TEntity> where TEntity : class
+public interface IRepository<TEntity> where TEntity : Entity
 {
     #region GetAsync
 
