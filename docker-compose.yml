@@ -7,3 +7,9 @@ services:
       - 5432:5432
     volumes:
       - /var/lib/postgres/data
+
+  redis:
+    image: redis:latest
+    restart: always
+    ports:
+      - '6379:6379'
