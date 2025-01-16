@@ -24,8 +24,4 @@
     <ProjectReference Include="..\FUC.Common\FUC.Common.csproj" />
   </ItemGroup>
 
-  <ItemGroup>
-    <Folder Include="Configurations\" />
-  </ItemGroup>
-
 </Project>
