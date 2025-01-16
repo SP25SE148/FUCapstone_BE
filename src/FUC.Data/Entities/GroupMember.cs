@@ -1,7 +1,8 @@
 ﻿using FUC.Data.Abstractions;
 using FUC.Data.Enums;
 
-namespace FUC.Data.Data;
+namespace FUC.Data.Entities;
+
 
 public sealed class GroupMember : Entity
 {

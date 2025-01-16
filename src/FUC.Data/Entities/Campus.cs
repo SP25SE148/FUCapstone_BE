@@ -1,9 +1,9 @@
 ﻿using FUC.Data.Abstractions;
 using FUC.Data.Abstractions.Entities;
 
-namespace FUC.Data.Data;
+namespace FUC.Data.Entities;
 
-public sealed class Campus : Entity, ISoftDelete
+public sealed class Campus : SoftDeleteEntity
 {
     public Guid Id { get; set; }
     public string Name { get; set; } = string.Empty;
@@ -14,6 +14,5 @@ public sealed class Campus : Entity, ISoftDelete
 
     public  ICollection<Group> Groups { get; set; } = new List<Group>();
     public  ICollection<Student> Students { get; set; } = new List<Student>();
-    public bool IsDeleted { get; set; }
-    public DateTime? DeletedAt { get; set; }
+   
 }

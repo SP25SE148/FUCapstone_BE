@@ -1,9 +1,10 @@
 ﻿using FUC.Data.Abstractions;
 using FUC.Data.Abstractions.Entities;
 
-namespace FUC.Data.Data;
+namespace FUC.Data.Entities;
 
-public sealed class Capstone : Entity, ISoftDelete
+
+public sealed class Capstone : SoftDeleteEntity 
 {
     public Guid Id { get; set; }
     public Guid MajorId { get; set; }
@@ -12,10 +13,11 @@ public sealed class Capstone : Entity, ISoftDelete
     public int MinMember { get; set; }
     public int MaxMember { get; set; }
     public int ReviewCount { get; set; }
-    public bool IsDeleted { get; set; }
-    public DateTime? DeletedAt { get; set; }
+   
     
     public Major Major { get; set; } = null!;
     public ICollection<Group> Groups { get; set; } = new List<Group>();
+    public ICollection<Student> Students { get; set; } = new List<Student>();
+    
     
 }

@@ -1,6 +1,7 @@
 ﻿using FUC.Data.Abstractions;
 
-namespace FUC.Data.Data;
+namespace FUC.Data.Entities;
+
 
 public sealed class Group : AuditableEntity
 {
