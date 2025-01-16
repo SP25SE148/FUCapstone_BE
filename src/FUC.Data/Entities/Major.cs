@@ -15,5 +15,6 @@ public sealed class Major : SoftDeleteEntity
     public MajorGroup MajorGroup { get; set; } = null!;
     public ICollection<Capstone> Capstones { get; set; } = new List<Capstone>();
     public ICollection<Student> Students { get; set; } = new List<Student>();
+    public ICollection<Group> Groups { get; set; } = new List<Group>();
 
 }
