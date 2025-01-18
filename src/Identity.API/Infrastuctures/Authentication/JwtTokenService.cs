@@ -23,7 +23,7 @@ public class JwtTokenService : IJwtTokenService
 
         var tokenOptions = new JwtSecurityToken(
             issuer: jwtOption.Issuer,
-            audience: jwtOption.Audience,
+            audience: jwtOption.Audience,   
             claims: claims,
             expires: DateTime.Now.AddMinutes(jwtOption.ExpireMin),
             signingCredentials: signinCredentials
@@ -50,10 +50,11 @@ public class JwtTokenService : IJwtTokenService
         var tokenValidationParameters = new TokenValidationParameters
         {
             ValidateAudience = false, //you might want to validate the audience and issuer depending on your use case
-            ValidateIssuer = false,
+            ValidateIssuer = true,
             ValidateLifetime = false, //here we are saying that we don't care about the token's expiration date
             ValidateIssuerSigningKey = true,
             IssuerSigningKey = new SymmetricSecurityKey(Key),
+            ValidIssuer = jwtOption.Issuer,
             ClockSkew = TimeSpan.Zero
         };
 

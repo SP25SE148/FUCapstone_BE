@@ -1,7 +1,8 @@
-﻿using System.IdentityModel.Tokens.Jwt;
+﻿using System.Security.Claims;
 using Identity.API.Interfaces;
 using Identity.API.Payloads.Responses;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.IdentityModel.JsonWebTokens;
 
 namespace Identity.API.Attributes;
 
@@ -16,11 +17,11 @@ public class CustomJwtBearerEvents : JwtBearerEvents
 
     public override async Task TokenValidated(TokenValidatedContext context)
     {
-        if (context.SecurityToken is JwtSecurityToken accessToken)
+        if (context.SecurityToken is JsonWebToken accessToken)
         {
-            var requestToken = accessToken.RawData.ToString();
+            var requestToken = accessToken.EncodedToken.ToString();
 
-            var emailKey = accessToken.Claims.FirstOrDefault(p => p.Type == JwtRegisteredClaimNames.Email)?.Value;
+            var emailKey = accessToken.Claims.FirstOrDefault(p => p.Type == ClaimTypes.Email)?.Value;
             var authenticated = await _cacheService.GetAsync<Authenticated>(emailKey);
 
             if (authenticated is null || authenticated.AccessToken != requestToken)

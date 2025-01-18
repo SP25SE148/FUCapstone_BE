@@ -10,6 +10,7 @@ using FUC.Service.Infrastructure;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
+using FUC.Common.Abstractions;
 
 namespace FUC.Service.Extensions;
 
@@ -20,9 +21,6 @@ public static class ServiceCollectionExtensions
         services.AddAutoMapper(typeof(ServiceProfiles));
 
         services.AddValidatorsFromAssembly(AssemblyReference.Assembly);
-
-        // TODO: Add Services
-        var test = configuration["ConnectionString:DefaultConnection"];
 
         // DI S3 services
         services.Configure<S3Settings>(configuration.GetSection(nameof(S3Settings)));
@@ -39,6 +37,8 @@ public static class ServiceCollectionExtensions
         });
         services.AddScoped<ITransferUtility, TransferUtility>();
         services.AddScoped<IS3Service, S3Service>();
+
+        services.AddScoped<ICurrentUser, CurrentUser>();
 
         return services;
     }

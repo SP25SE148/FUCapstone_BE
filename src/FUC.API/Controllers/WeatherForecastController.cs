@@ -7,6 +7,8 @@ using Microsoft.AspNetCore.Mvc;
 using FUC.Service.Abstractions;
 using FUC.Service.Extensions.Options;
 using Microsoft.Extensions.Options;
+using Microsoft.AspNetCore.Authorization;
+using FUC.Common.Abstractions;
 
 namespace FUC.API.Controllers;
 
@@ -22,17 +24,26 @@ public class WeatherForecastController : ApiController
     private readonly ILogger<WeatherForecastController> _logger;
     private readonly IS3Service _s3Service;
     private readonly S3Settings s3Settings;
+    private readonly ICurrentUser _currentUser;
 
-    public WeatherForecastController(ILogger<WeatherForecastController> logger, IS3Service s3Service, IOptions<S3Settings> options)
+    public WeatherForecastController(ILogger<WeatherForecastController> logger, 
+        IS3Service s3Service, 
+        IOptions<S3Settings> options,
+        ICurrentUser currentUser)
     {
         _logger = logger;
         _s3Service = s3Service;
         s3Settings = options.Value; 
+        _currentUser = currentUser;
     }
 
     [HttpGet(Name = "GetWeatherForecast")]
+    [Authorize]
     public IEnumerable<WeatherForecast> Get()
     {
+        _logger.LogInformation(_currentUser.Id);
+        _logger.LogInformation(_currentUser.Name);
+        _logger.LogInformation(_currentUser.Email);
         _logger.LogInformation("Get weather");
         return Enumerable.Range(1, 5).Select(index => new WeatherForecast
         {

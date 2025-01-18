@@ -1,6 +1,7 @@
 using Identity.API;
 using Identity.API.Extensions;
 using Identity.API.Middlewares;
+using Microsoft.OpenApi.Models;
 using Serilog;
 
 Log.Logger = new LoggerConfiguration()
@@ -22,7 +23,35 @@ try
     builder.Services.AddControllers();
     // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
     builder.Services.AddEndpointsApiExplorer();
-    builder.Services.AddSwaggerGen();
+    //builder.Services.AddSwaggerGen();
+
+    builder.Services.AddSwaggerGen(c =>
+    {
+        c.ResolveConflictingActions(apiDescriptions => apiDescriptions.First());
+        c.IgnoreObsoleteActions();
+        c.IgnoreObsoleteProperties();
+        c.CustomSchemaIds(type => type.FullName);
+        // Add JWT Bearer Authentication to Swagger
+        c.SwaggerDoc("v1", new OpenApiInfo { Title = "My API", Version = "v1" });
+        c.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
+        {
+            In = ParameterLocation.Header,
+            Description = "Please enter JWT with Bearer into field",
+            Name = "Authorization",
+            Type = SecuritySchemeType.Http,
+            Scheme = "bearer"
+        });
+        c.AddSecurityRequirement(new OpenApiSecurityRequirement
+    {
+        { new OpenApiSecurityScheme{
+            Reference = new OpenApiReference
+            {
+                Type = ReferenceType.SecurityScheme,
+                Id = "Bearer"
+            }
+        }, new string[] {} }
+    });
+    });
 
     builder.Host.UseSerilog((ctx, lc) => lc
         .Enrich.FromLogContext()

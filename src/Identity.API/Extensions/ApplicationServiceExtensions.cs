@@ -46,15 +46,6 @@ public static class ApplicationServiceExtensions
             JwtOption jwtOption = new JwtOption();
             configuration.GetSection(nameof(JwtOption)).Bind(jwtOption);
 
-            /**
-             * Storing the JWT in the AuthenticationProperties allows you to retrieve it from elsewhere within your application.
-             * public async Task<IActionResult> SomeAction()
-                {
-                    // using Microsoft.AspNetCore.Authentication;
-                    var accessToken = await HttpContext.GetTokenAsync("access_token");
-                    // ...
-                }
-             */
             o.SaveToken = true; // Save token into AuthenticationProperties
 
             var Key = Encoding.UTF8.GetBytes(jwtOption.SecretKey);
@@ -70,7 +61,7 @@ public static class ApplicationServiceExtensions
                 ClockSkew = TimeSpan.Zero
             };
 
-            o.Events = new JwtBearerEvents
+            o.Events = new JwtBearerEvents  
             {
                 OnAuthenticationFailed = context =>
                 {

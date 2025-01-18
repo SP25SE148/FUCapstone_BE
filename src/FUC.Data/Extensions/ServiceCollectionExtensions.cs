@@ -1,4 +1,5 @@
 ﻿using FUC.Data.Data;
+using FUC.Data.Interceptors;
 using FUC.Data.Repositories;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
@@ -10,10 +11,14 @@ public static class ServiceCollectionExtensions
 {
     public static IServiceCollection AddDataAccessServices(this IServiceCollection services, IConfiguration configuration)
     {
+        services.AddScoped<AuditableEntityInterceptor>();
+
         // Add DBContext
-        services.AddDbContext<FucDbContext>(options =>
+        services.AddDbContext<FucDbContext>((provider, options) =>
         {
-            options.UseNpgsql(configuration.GetConnectionString("DefaultConnection"));
+            var auditInterceptor = provider.GetService<AuditableEntityInterceptor>();
+            options.UseNpgsql(configuration.GetConnectionString("DefaultConnection"))
+                .AddInterceptors(auditInterceptor);
         });
 
         services.AddScoped(typeof(IUnitOfWork<>), typeof(UnitOfWork<>));
