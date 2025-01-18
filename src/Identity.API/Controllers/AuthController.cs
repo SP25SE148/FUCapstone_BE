@@ -7,25 +7,26 @@ using Identity.API.Payloads.Responses;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.IdentityModel.Tokens;
 
 namespace Identity.API.Controllers;
 [Route("api/[controller]")]
 [ApiController]
-public class AuthController(UserManager<ApplicationUser> userManager, 
-    IJwtTokenService jwtTokenService, 
-    ICacheService cacheService, 
+public class AuthController(UserManager<ApplicationUser> userManager,
+    IJwtTokenService jwtTokenService,
+    ICacheService cacheService,
     ILogger<AuthController> logger) : ControllerBase
 {
 
     [HttpPost("login")] //Post: api/auth/login
-    public async Task<ActionResult<Authenticated>> Login([FromBody]LoginRequest request)
+    public async Task<ActionResult<Authenticated>> Login([FromBody] LoginRequest request, CancellationToken cancellationToken)
     {
         var user = await userManager.Users
-            .SingleOrDefaultAsync(x => x.Email == request.Email);
+            .SingleOrDefaultAsync(x => x.Email == request.Email, cancellationToken);
 
         if (user is null)
         {
-            logger.LogInformation($"User with Email:{request.Email} does not exist");
+            logger.LogError($"User with Email:{request.Email} does not exist");
             return Unauthorized("User does not exist");
         }
 
@@ -36,8 +37,8 @@ public class AuthController(UserManager<ApplicationUser> userManager,
 
         var userClaims = new List<Claim>
         {
-            new Claim(JwtRegisteredClaimNames.Sub, user.Id),
-            new Claim(JwtRegisteredClaimNames.Email, request.Email),
+            new Claim(ClaimTypes.NameIdentifier, user.Id),
+            new Claim(ClaimTypes.Email, request.Email),
             new Claim(JwtRegisteredClaimNames.Name, user.UserName!),
         };
 
@@ -52,7 +53,8 @@ public class AuthController(UserManager<ApplicationUser> userManager,
             RefreshTokenExpiryTime = DateTime.Now.AddDays(5)
         };
 
-        await cacheService.SetAsync(request.Email, authenticationResponse);
+        // Add the token into whitelist
+        await cacheService.SetAsync(request.Email, authenticationResponse, cancellationToken);
 
         return Ok(authenticationResponse);
     }
@@ -62,40 +64,42 @@ public class AuthController(UserManager<ApplicationUser> userManager,
     {
         var principal = jwtTokenService.GetPrincipalFromExpiredToken(request.AccessToken);
 
-        var emailKey = principal.FindFirstValue(JwtRegisteredClaimNames.Email);
-
+        var emailKey = principal.FindFirstValue(ClaimTypes.Email) ?? throw new SecurityTokenException("Invalid Token");
+      
         var authenticated = await cacheService.GetAsync<Authenticated>(emailKey, cancellationToken);
 
-        if (authenticated == null || authenticated.RefreshToken != request.RefreshToken || authenticated.RefreshTokenExpiryTime <= DateTime.Now) 
+        if (authenticated == null || authenticated.RefreshToken != request.RefreshToken || authenticated.RefreshTokenExpiryTime <= DateTime.Now)
         {
-            return BadRequest("Request token invalid!");
+            throw new SecurityTokenException("Invalid Token");
         }
 
         var newAuthenticated = new Authenticated
         {
-            AccessToken = jwtTokenService.GenerateAccessToken(principal.Claims),
+            AccessToken = jwtTokenService.GenerateAccessToken(principal.Claims
+                .Where(x => x.Type != JwtRegisteredClaimNames.Aud)
+                .ToList()),
             RefreshToken = jwtTokenService.GenerateRefreshToken(),
             RefreshTokenExpiryTime = DateTime.Now.AddDays(5)
         };
 
-        await cacheService.SetAsync(emailKey, newAuthenticated);
+        await cacheService.SetAsync(emailKey, newAuthenticated, cancellationToken);
 
         return Ok(newAuthenticated);
     }
 
     [HttpPost("token/revoke")]
-    public async Task<ActionResult<Authenticated>> RevokeToken([FromBody] string acceccToken, CancellationToken cancellationToken)
+    public async Task<ActionResult<Authenticated>> RevokeToken([FromBody] RevokeTokenRequest request, CancellationToken cancellationToken)
     {
-        var principal = jwtTokenService.GetPrincipalFromExpiredToken(acceccToken);
+        var principal = jwtTokenService.GetPrincipalFromExpiredToken(request.AccessToken);
 
-        var emailKey = principal.FindFirstValue(JwtRegisteredClaimNames.Email);
+        var emailKey = principal.FindFirstValue(ClaimTypes.Email) ?? throw new SecurityTokenException("Invalid Token");
 
-        var authenticated = await cacheService.GetAsync<Authenticated>(emailKey);
-            
-        if(authenticated is null)
+        var authenticated = await cacheService.GetAsync<Authenticated>(emailKey, cancellationToken);
+
+        if (authenticated is null)
         {
             logger.LogError("Can not get value from Redis");
-            throw new Exception("Can not get value from Redis");
+            throw new SecurityTokenException("Can not get value from Redis");
         }
 
         await cacheService.RemoveAsync(emailKey, cancellationToken);
