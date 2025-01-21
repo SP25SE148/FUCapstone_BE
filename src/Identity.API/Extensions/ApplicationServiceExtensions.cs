@@ -5,7 +5,9 @@ using Identity.API.Extensions.Options;
 using Identity.API.Infrastuctures.Authentication;
 using Identity.API.Infrastuctures.Cache;
 using Identity.API.Interfaces;
+using Identity.API.Mapper;
 using Identity.API.Models;
+using MassTransit;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
@@ -23,6 +25,18 @@ public static class ApplicationServiceExtensions
             options.UseNpgsql(configuration.GetConnectionString("DefaultConnection"));
         });
 
+        services.AddAutoMapper(typeof(ServiceProfiles));
+
+        services.AddMassTransit(x => {
+
+            x.SetKebabCaseEndpointNameFormatter();
+
+            x.UsingRabbitMq((context, cfg) =>
+            {
+                cfg.ConfigureEndpoints(context);
+            });
+        });
+
         services.AddCors();
 
         return services;
@@ -30,7 +44,13 @@ public static class ApplicationServiceExtensions
 
     public static void AddIdentityServices(this IServiceCollection services, IConfiguration configuration)
     {
-        services.AddIdentityCore<ApplicationUser>()
+        services.AddIdentityCore<ApplicationUser>(options =>
+            {
+                options.User.AllowedUserNameCharacters =
+                    "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789-._@+ áàảãạâấầẩẫậăắằẳẵặéèẻẽẹêếềểễệíìỉĩịóòỏõọôốồổỗộơớờởỡợúùủũụưứừửữựýỳỷỹỵđ";
+
+                options.User.RequireUniqueEmail = true;
+            })
             .AddRoles<IdentityRole>()
             .AddRoleManager<RoleManager<IdentityRole>>()
             .AddEntityFrameworkStores<ApplicationDbContext>()
@@ -61,7 +81,7 @@ public static class ApplicationServiceExtensions
                 ClockSkew = TimeSpan.Zero
             };
 
-            o.Events = new JwtBearerEvents  
+            o.Events = new JwtBearerEvents
             {
                 OnAuthenticationFailed = context =>
                 {

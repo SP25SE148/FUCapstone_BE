@@ -10,12 +10,11 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 
 namespace Identity.API.Controllers;
-[Route("api/[controller]")]
-[ApiController]
+
 public class AuthController(UserManager<ApplicationUser> userManager,
     IJwtTokenService jwtTokenService,
     ICacheService cacheService,
-    ILogger<AuthController> logger) : ControllerBase
+    ILogger<AuthController> logger) : ApiController
 {
 
     [HttpPost("login")] //Post: api/auth/login
@@ -26,7 +25,7 @@ public class AuthController(UserManager<ApplicationUser> userManager,
 
         if (user is null)
         {
-            logger.LogError($"User with Email:{request.Email} does not exist");
+            logger.LogError("User with Email:{Email} does not exist", request.Email);
             return Unauthorized("User does not exist");
         }
 
@@ -38,6 +37,7 @@ public class AuthController(UserManager<ApplicationUser> userManager,
         var userClaims = new List<Claim>
         {
             new Claim(ClaimTypes.NameIdentifier, user.Id),
+            new Claim(ClaimTypes.GivenName, user.UserCode),
             new Claim(ClaimTypes.Email, request.Email),
             new Claim(JwtRegisteredClaimNames.Name, user.UserName!),
         };

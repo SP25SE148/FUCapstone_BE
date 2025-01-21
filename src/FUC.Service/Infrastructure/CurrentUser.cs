@@ -10,4 +10,6 @@ public class CurrentUser(IHttpContextAccessor httpContextAccessor) : ICurrentUse
     public string Name => httpContextAccessor.HttpContext.User.FindFirst("name")!.Value;
 
     public string Email => httpContextAccessor.HttpContext.User.FindFirst(ClaimTypes.Email)!.Value;
+
+    public string UserCode => httpContextAccessor.HttpContext.User.FindFirst(ClaimTypes.GivenName)!.Value;
 }
