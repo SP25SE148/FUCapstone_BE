@@ -34,82 +34,18 @@ public class SeedData
             await roleMgr.CreateAsync(role);
         }
 
-        // Add student1
-        var student1 = await userMgr.FindByEmailAsync("thangttse172374@fpt.edu.vn");
-        if (student1 == null)
-        {
-            student1 = new ApplicationUser
-            {
-                UserName = "thangttse172374",
-                Email = "thangttse172374@fpt.edu.vn",
-                EmailConfirmed = true,
-            };
-            var result = await userMgr.CreateAsync(student1, "Pass123@");
-            if (!result.Succeeded)
-            {
-                throw new Exception(result.Errors.First().Description);
-            }
-
-            result = await userMgr.AddToRoleAsync(student1, "Student");
-
-            if (!result.Succeeded)
-            {
-                throw new Exception(result.Errors.First().Description);
-            }
-
-            if (!result.Succeeded)
-            {
-                throw new Exception(result.Errors.First().Description);
-            }
-            Log.Debug("student1 created");
-        }
-        else
-        {
-            Log.Debug("student1 already exists");
-        }
-
-        // Add student2
-        var student2 = await userMgr.FindByEmailAsync("huyttse172375@fpt.edu.vn");
-        if (student2 == null)
-        {
-            student2 = new ApplicationUser
-            {
-                UserName = "huyttse172375",
-                Email = "huyttse172375@fpt.edu.vn",
-                EmailConfirmed = true,
-            };
-            var result = await userMgr.CreateAsync(student2, "Pass123@");
-            if (!result.Succeeded)
-            {
-                throw new Exception(result.Errors.First().Description);
-            }
-
-            result = await userMgr.AddToRoleAsync(student2, "Student");
-
-            if (!result.Succeeded)
-            {
-                throw new Exception(result.Errors.First().Description);
-            }
-
-            if (!result.Succeeded)
-            {
-                throw new Exception(result.Errors.First().Description);
-            }
-            Log.Debug("student2 created");
-        }
-        else
-        {
-            Log.Debug("student2 already exists");
-        }
-
         // Add manager
         var manager = await userMgr.FindByEmailAsync("manager1@fpt.edu.vn");
         if (manager == null)
         {
             manager = new ApplicationUser
             {
+                UserCode = "manager1",
                 UserName = "manager1",
                 Email = "manager1@fpt.edu.vn",
+                CampusId = "HCM",
+                CapstoneId = "SEP490",
+                MajorId = "SE",
                 EmailConfirmed = true
             };
             var result = await userMgr.CreateAsync(manager, "Pass123$");
@@ -126,16 +62,81 @@ public class SeedData
                 throw new Exception(result.Errors.First().Description);
             }
 
-            if (!result.Succeeded)
-            {
-                throw new Exception(result.Errors.First().Description);
-            }
-
             Log.Debug("manager created");
         }
         else
         {
             Log.Debug("manager already exists");
+        }
+
+        // Add manager
+        var manager2 = await userMgr.FindByEmailAsync("manager2@fpt.edu.vn");
+        if (manager2 == null)
+        {
+            manager2 = new ApplicationUser
+            {
+                UserCode = "manager2",
+                UserName = "manager2",
+                Email = "manager2@fpt.edu.vn",
+                CampusId = "HCM",
+                CapstoneId = "SEP490",
+                MajorId = "SE",
+                EmailConfirmed = true
+            };
+            var result = await userMgr.CreateAsync(manager2, "Pass123$");
+
+            if (!result.Succeeded)
+            {
+                throw new Exception(result.Errors.First().Description);
+            }
+
+            result = await userMgr.AddToRoleAsync(manager2, "Manager");
+
+            if (!result.Succeeded)
+            {
+                throw new Exception(result.Errors.First().Description);
+            }
+
+            Log.Debug("manager2 created");
+        }
+        else
+        {
+            Log.Debug("manager2 already exists");
+        }
+
+        // Add manager
+        var manager3 = await userMgr.FindByEmailAsync("manager3@fpt.edu.vn");
+        if (manager3 == null)
+        {
+            manager3 = new ApplicationUser
+            {
+                UserCode = "manager3",
+                UserName = "manager3",
+                Email = "manager3@fpt.edu.vn",
+                CampusId = "HCM",
+                CapstoneId = "SEP490",
+                MajorId = "SE",
+                EmailConfirmed = true
+            };
+            var result = await userMgr.CreateAsync(manager3, "Pass123$");
+
+            if (!result.Succeeded)
+            {
+                throw new Exception(result.Errors.First().Description);
+            }
+
+            result = await userMgr.AddToRoleAsync(manager3, "Manager");
+
+            if (!result.Succeeded)
+            {
+                throw new Exception(result.Errors.First().Description);
+            }
+
+            Log.Debug("manager3 created");
+        }
+        else
+        {
+            Log.Debug("manager3 already exists");
         }
     }
 }

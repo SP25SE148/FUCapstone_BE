@@ -4,7 +4,11 @@ namespace Identity.API.Models;
 
 public class ApplicationUser : IdentityUser
 {
-    public int MajorId { get; set; }
+    public string UserCode { get; set; }
 
-    public int CampusId { get; set; }
+    public string MajorId { get; set; }
+
+    public string CampusId { get; set; }
+
+    public string CapstoneId { get; set; }
 }

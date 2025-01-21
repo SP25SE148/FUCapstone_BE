@@ -3,8 +3,7 @@ using FUC.Common.Constants;
 using FUC.Common.Shared;
 using Microsoft.AspNetCore.Mvc;
 
-namespace FUC.API.Abstractions;
-
+namespace Identity.API.Controllers;
 [Route("api/[controller]")]
 [ApiController]
 public class ApiController : ControllerBase

@@ -44,6 +44,7 @@ public class WeatherForecastController : ApiController
         _logger.LogInformation(_currentUser.Id);
         _logger.LogInformation(_currentUser.Name);
         _logger.LogInformation(_currentUser.Email);
+        _logger.LogInformation(_currentUser.UserCode);
         _logger.LogInformation("Get weather");
         return Enumerable.Range(1, 5).Select(index => new WeatherForecast
         {
