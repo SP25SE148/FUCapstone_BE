@@ -3,6 +3,7 @@ using FUC.Data.Extensions;
 using Serilog;
 using FUC.API.Middlewares;
 using FUC.API.Extensions;
+using FUC.API.SeedData;
 
 Log.Logger = new LoggerConfiguration()
     .WriteTo.Console()
@@ -52,7 +53,7 @@ try
     app.MapControllers();
 
     app.UseSerilogRequestLogging();
-
+    await AppDbInitializer.SeedData(app);
     await app.RunAsync();
 
 }

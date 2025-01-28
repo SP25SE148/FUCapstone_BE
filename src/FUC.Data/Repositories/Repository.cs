@@ -4,6 +4,7 @@ using Microsoft.EntityFrameworkCore;
 using System.Linq.Expressions;
 using FUC.Data.Abstractions.Entities;
 using FUC.Data.Abstractions;
+using FUC.Data.Data;
 
 namespace FUC.Data.Repositories;
 
