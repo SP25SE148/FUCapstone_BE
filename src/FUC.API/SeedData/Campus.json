@@ -1,0 +1,16 @@
+﻿[
+  {
+    "Name": "Main Campus",
+    "Code": "MC001",
+    "Address": "123 Main Street",
+    "Phone": "1234567890",
+    "Email": "main@campus.edu"
+  },
+  {
+    "Name": "City Campus",
+    "Code": "CC002",
+    "Address": "456 City Avenue",
+    "Phone": "0987654321",
+    "Email": "city@campus.edu"
+  }
+]

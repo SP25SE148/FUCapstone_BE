@@ -10,6 +10,7 @@ using FUC.Service.Extensions.Options;
 using FUC.Service.Infrastructure;
 using FUC.Service.Mapper;
 using MassTransit;
+using FUC.Service.Services;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
@@ -23,6 +24,9 @@ public static class ServiceCollectionExtensions
         services.AddAutoMapper(typeof(ServiceProfiles));
 
         services.AddValidatorsFromAssembly(AssemblyReference.Assembly);
+
+        // TODO: Add Services
+        var test = configuration["ConnectionString:DefaultConnection"];
 
         // DI S3 services
         services.Configure<S3Settings>(configuration.GetSection(nameof(S3Settings)));
@@ -42,7 +46,13 @@ public static class ServiceCollectionExtensions
         services.AddScoped<IS3Service, S3Service>();
 
         services.AddScoped<ICurrentUser, CurrentUser>();
-
+        
+        // DI Service
+        services.AddScoped<ICampusService, CampusService>();
+        services.AddScoped<ICapstoneService,CapstoneService>();
+        services.AddScoped<IMajorService,MajorService>();
+        services.AddScoped<IMajorGroupService,MajorGroupService>();
+        
         // DI RabbitMQ
         services.AddMassTransit(x =>
         {

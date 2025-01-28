@@ -3,6 +3,7 @@ using Microsoft.EntityFrameworkCore.Storage;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using FUC.Data.Abstractions;
+using Microsoft.EntityFrameworkCore.Infrastructure;
 
 namespace FUC.Data;
 

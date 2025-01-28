@@ -17,4 +17,9 @@
     <ProjectReference Include="..\FUC.Service\FUC.Service.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <None Include="SeedData\Campus.json" />
+    <None Include="SeedData\MajorGroup.json" />
+  </ItemGroup>
+
 </Project>

@@ -14,7 +14,7 @@ public static class ServiceCollectionExtensions
         services.AddScoped<AuditableEntityInterceptor>();
 
         // Add DBContext
-        services.AddDbContext<FucDbContext>((provider, options) =>
+        services.AddDbContext<DbContext,FucDbContext>((provider, options) =>
         {
             var auditInterceptor = provider.GetService<AuditableEntityInterceptor>();
             options.UseNpgsql(configuration.GetConnectionString("DefaultConnection"))
@@ -23,7 +23,7 @@ public static class ServiceCollectionExtensions
 
         services.AddScoped(typeof(IUnitOfWork<>), typeof(UnitOfWork<>));
         services.AddScoped(typeof(IRepository<>), typeof(Repository<>));
-
+        
         return services;
     }
 }
