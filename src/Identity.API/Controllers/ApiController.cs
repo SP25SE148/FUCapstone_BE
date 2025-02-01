@@ -4,7 +4,7 @@ using FUC.Common.Shared;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Identity.API.Controllers;
-[Route("api/[controller]")]
+[Route("api/identity/[controller]")]
 [ApiController]
 public class ApiController : ControllerBase
 {

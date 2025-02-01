@@ -1,5 +1,6 @@
 ﻿using System.Text;
 using FUC.API.Filters;
+using FUC.Common.Options;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
@@ -50,26 +51,32 @@ public static class ServiceCollectionExtensions
         return services;
     }
 
-    public static IServiceCollection AddJwtAuthentication(this IServiceCollection services)
+    public static IServiceCollection AddJwtAuthentication(this IServiceCollection services, IConfiguration configuration)
     {
         services.AddAuthentication(options =>
         {
             options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
             options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
             options.DefaultScheme = JwtBearerDefaults.AuthenticationScheme;
-        }).AddJwtBearer(o =>
+        })
+        .AddJwtBearer(o =>
         {
-            o.Authority = "https://localhost:5001";
+            //o.Authority = "https://localhost:5001";
 
-            var Key = Encoding.UTF8.GetBytes("oEZqUKRrKDKP7A9OtrB5GfPGJ92vLDlK");
+            JwtOption jwtOption = new JwtOption();
+            configuration.GetSection(nameof(JwtOption)).Bind(jwtOption);
+
+            o.SaveToken = true; // Save token into AuthenticationProperties
+
+            var Key = Encoding.UTF8.GetBytes(jwtOption.SecretKey);
             o.TokenValidationParameters = new TokenValidationParameters
             {
-                ValidateIssuer = true, // on production make it true
+                ValidateIssuer = false, // on production make it true
                 ValidateAudience = false, // on production make it true
                 ValidateLifetime = true,
                 ValidateIssuerSigningKey = true,
-                ValidIssuer = "http://localhost:5000",
-                ValidAudience = "http://localhost:5000",
+                //ValidIssuer = jwtOption.Issuer,
+                //ValidAudience = jwtOption.Audience,
                 IssuerSigningKey = new SymmetricSecurityKey(Key),
                 ClockSkew = TimeSpan.Zero
             };

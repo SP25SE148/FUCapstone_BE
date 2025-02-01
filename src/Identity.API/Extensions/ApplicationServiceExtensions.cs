@@ -1,5 +1,4 @@
 ﻿using System.Text;
-using Identity.API.Attributes;
 using Identity.API.Data;
 using Identity.API.Extensions.Options;
 using Identity.API.Infrastuctures.Authentication;
@@ -93,11 +92,11 @@ public static class ApplicationServiceExtensions
                 }
             };
 
-            o.EventsType = typeof(CustomJwtBearerEvents);
+            //o.EventsType = typeof(CustomJwtBearerEvents);
         });
 
         services.AddAuthorization();
-        services.AddScoped<CustomJwtBearerEvents>();
+        //services.AddScoped<CustomJwtBearerEvents>();
     }
 
     public static void AddServicesInfrastructure(this IServiceCollection services)
@@ -106,9 +105,6 @@ public static class ApplicationServiceExtensions
 
     public static void AddRedisInfrastructure(this IServiceCollection services, IConfiguration configuration)
     {
-        // khi sử dụng Cace - ta sử dụng IDistributedCache _distributedCache trong class CacheService
-        // IDistributedCache nó hay ở chỗ nếu ta không cấu hình gì hết thì mặc định nó sẽ là MemoryCache
-        //Nhưng ở đây mình đã cấu hình thằng Redis với AddStackExchangeRedisCache() thì nó sẽ trở thành DistributeCache with Redis
         services.AddStackExchangeRedisCache(redisOptions =>
         {
             var connectionString = configuration.GetConnectionString("Redis");

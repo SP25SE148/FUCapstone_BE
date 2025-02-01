@@ -1,7 +1,6 @@
 using Amazon.S3.Model;
 using Amazon.S3;
 using FUC.API.Abstractions;
-using FUC.Common.Shared;
 using FUC.Service.DTOs;
 using Microsoft.AspNetCore.Mvc;
 using FUC.Service.Abstractions;
@@ -12,8 +11,6 @@ using FUC.Common.Abstractions;
 
 namespace FUC.API.Controllers;
 
-[ApiController]
-[Route("[controller]")]
 public class WeatherForecastController : ApiController
 {
     private static readonly string[] Summaries = new[]
@@ -38,7 +35,7 @@ public class WeatherForecastController : ApiController
     }
 
     [HttpGet(Name = "GetWeatherForecast")]
-    [Authorize]
+    [Authorize(Roles = "Student")]
     public IEnumerable<WeatherForecast> Get()
     {
         _logger.LogInformation(_currentUser.Id);

@@ -1,5 +1,4 @@
-﻿namespace Identity.API.Payloads.Responses;
-
+﻿namespace FUC.Common.Payloads;
 public class Authenticated
 {
     public string? AccessToken { get; set; }
