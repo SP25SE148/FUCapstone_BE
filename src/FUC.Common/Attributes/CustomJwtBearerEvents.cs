@@ -1,11 +1,10 @@
-﻿using System.Security.Claims;
+﻿using FUC.Common.Abstractions;
 using FUC.Common.Payloads;
-using Identity.API.Interfaces;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.JsonWebTokens;
+using System.Security.Claims;
 
-namespace Identity.API.Attributes;
-
+namespace FUC.Common.Attributes;
 public class CustomJwtBearerEvents : JwtBearerEvents
 {
     private readonly ICacheService _cacheService;

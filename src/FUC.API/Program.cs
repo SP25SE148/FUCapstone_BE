@@ -21,7 +21,7 @@ try
 
     // Add services to the container.
     builder.Services.AddServices();
-    builder.Services.AddJwtAuthentication();
+    builder.Services.AddJwtAuthentication(builder.Configuration);
 
     // Add DI for FUC.Data
     builder.Services.AddDataAccessServices(builder.Configuration);

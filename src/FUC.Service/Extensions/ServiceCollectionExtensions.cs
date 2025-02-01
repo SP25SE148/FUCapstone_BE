@@ -58,6 +58,7 @@ public static class ServiceCollectionExtensions
         {
             x.AddConsumers(Assembly.GetExecutingAssembly());
 
+            //x.SetEndpointNameFormatter(new KebabCaseEndpointNameFormatter("fuc", false));
             x.SetKebabCaseEndpointNameFormatter();
 
             x.UsingRabbitMq((context, cfg) =>

@@ -1,9 +1,9 @@
 ﻿using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
+using FUC.Common.Payloads;
 using Identity.API.Interfaces;
 using Identity.API.Models;
 using Identity.API.Payloads.Requests;
-using Identity.API.Payloads.Responses;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;

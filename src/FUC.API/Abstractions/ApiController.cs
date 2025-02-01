@@ -5,7 +5,7 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace FUC.API.Abstractions;
 
-[Route("api/[controller]")]
+[Route("api/fuc/[controller]")]
 [ApiController]
 public class ApiController : ControllerBase
 {
