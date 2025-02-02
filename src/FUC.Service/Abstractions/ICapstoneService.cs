@@ -6,11 +6,11 @@ namespace FUC.Service.Abstractions;
 
 public interface ICapstoneService
 {
-    Task<OperationResult<Guid>> CreateCapstoneAsync(CreateCapstoneRequest request);
+    Task<OperationResult<string>> CreateCapstoneAsync(CreateCapstoneRequest request);
     Task<OperationResult<CapstoneResponse>> UpdateCapstoneAsync(UpdateCapstoneRequest request);
     Task<OperationResult<IEnumerable<CapstoneResponse>>> GetAllCapstonesAsync();
     
     Task<OperationResult<IEnumerable<CapstoneResponse>>> GetAllActiveCapstonesAsync();
-    Task<OperationResult<CapstoneResponse>> GetCapstoneByIdAsync(Guid capstoneId);
-    Task<OperationResult> DeleteCapstoneAsync(Guid capstoneId);
+    Task<OperationResult<CapstoneResponse>> GetCapstoneByIdAsync(string capstoneId);
+    Task<OperationResult> DeleteCapstoneAsync(string capstoneId);
 }

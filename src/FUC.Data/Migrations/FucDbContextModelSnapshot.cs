@@ -3,20 +3,17 @@ using System;
 using FUC.Data.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
-using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
 #nullable disable
 
-namespace FUC.Data.Data.Migrations
+namespace FUC.Data.Migrations
 {
     [DbContext(typeof(FucDbContext))]
-    [Migration("20250123153920_InitDb")]
-    partial class InitDb
+    partial class FucDbContextModelSnapshot : ModelSnapshot
     {
-        /// <inheritdoc />
-        protected override void BuildTargetModel(ModelBuilder modelBuilder)
+        protected override void BuildModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -27,17 +24,19 @@ namespace FUC.Data.Data.Migrations
 
             modelBuilder.Entity("FUC.Data.Entities.Campus", b =>
                 {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid");
+                    b.Property<string>("Id")
+                        .HasColumnType("text");
 
                     b.Property<string>("Address")
                         .IsRequired()
                         .HasColumnType("text");
 
-                    b.Property<string>("Code")
+                    b.Property<string>("CreatedBy")
                         .IsRequired()
                         .HasColumnType("text");
+
+                    b.Property<DateTime>("CreatedDate")
+                        .HasColumnType("timestamp with time zone");
 
                     b.Property<DateTime?>("DeletedAt")
                         .HasColumnType("timestamp with time zone");
@@ -57,6 +56,12 @@ namespace FUC.Data.Data.Migrations
                         .IsRequired()
                         .HasColumnType("text");
 
+                    b.Property<string>("UpdatedBy")
+                        .HasColumnType("text");
+
+                    b.Property<DateTime?>("UpdatedDate")
+                        .HasColumnType("timestamp with time zone");
+
                     b.HasKey("Id");
 
                     b.ToTable("Campus", (string)null);
@@ -64,13 +69,15 @@ namespace FUC.Data.Data.Migrations
 
             modelBuilder.Entity("FUC.Data.Entities.Capstone", b =>
                 {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid");
+                    b.Property<string>("Id")
+                        .HasColumnType("text");
 
-                    b.Property<string>("Code")
+                    b.Property<string>("CreatedBy")
                         .IsRequired()
                         .HasColumnType("text");
+
+                    b.Property<DateTime>("CreatedDate")
+                        .HasColumnType("timestamp with time zone");
 
                     b.Property<DateTime?>("DeletedAt")
                         .HasColumnType("timestamp with time zone");
@@ -78,8 +85,9 @@ namespace FUC.Data.Data.Migrations
                     b.Property<bool>("IsDeleted")
                         .HasColumnType("boolean");
 
-                    b.Property<Guid>("MajorId")
-                        .HasColumnType("uuid");
+                    b.Property<string>("MajorId")
+                        .IsRequired()
+                        .HasColumnType("text");
 
                     b.Property<int>("MaxMember")
                         .HasColumnType("integer");
@@ -94,6 +102,12 @@ namespace FUC.Data.Data.Migrations
                     b.Property<int>("ReviewCount")
                         .HasColumnType("integer");
 
+                    b.Property<string>("UpdatedBy")
+                        .HasColumnType("text");
+
+                    b.Property<DateTime?>("UpdatedDate")
+                        .HasColumnType("timestamp with time zone");
+
                     b.HasKey("Id");
 
                     b.HasIndex("MajorId");
@@ -107,11 +121,13 @@ namespace FUC.Data.Data.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uuid");
 
-                    b.Property<Guid>("CampusId")
-                        .HasColumnType("uuid");
+                    b.Property<string>("CampusId")
+                        .IsRequired()
+                        .HasColumnType("text");
 
-                    b.Property<Guid>("CapstoneId")
-                        .HasColumnType("uuid");
+                    b.Property<string>("CapstoneId")
+                        .IsRequired()
+                        .HasColumnType("text");
 
                     b.Property<string>("CreatedBy")
                         .IsRequired()
@@ -120,15 +136,23 @@ namespace FUC.Data.Data.Migrations
                     b.Property<DateTime>("CreatedDate")
                         .HasColumnType("timestamp with time zone");
 
+                    b.Property<DateTime?>("DeletedAt")
+                        .HasColumnType("timestamp with time zone");
+
                     b.Property<string>("GroupCode")
                         .IsRequired()
                         .HasColumnType("text");
 
-                    b.Property<Guid>("MajorId")
-                        .HasColumnType("uuid");
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("boolean");
 
-                    b.Property<Guid>("SemesterId")
-                        .HasColumnType("uuid");
+                    b.Property<string>("MajorId")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("SemesterId")
+                        .IsRequired()
+                        .HasColumnType("text");
 
                     b.Property<string>("Status")
                         .IsRequired()
@@ -191,13 +215,15 @@ namespace FUC.Data.Data.Migrations
 
             modelBuilder.Entity("FUC.Data.Entities.Major", b =>
                 {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid");
+                    b.Property<string>("Id")
+                        .HasColumnType("text");
 
-                    b.Property<string>("Code")
+                    b.Property<string>("CreatedBy")
                         .IsRequired()
                         .HasColumnType("text");
+
+                    b.Property<DateTime>("CreatedDate")
+                        .HasColumnType("timestamp with time zone");
 
                     b.Property<DateTime?>("DeletedAt")
                         .HasColumnType("timestamp with time zone");
@@ -208,12 +234,19 @@ namespace FUC.Data.Data.Migrations
                     b.Property<bool>("IsDeleted")
                         .HasColumnType("boolean");
 
-                    b.Property<Guid>("MajorGroupId")
-                        .HasColumnType("uuid");
+                    b.Property<string>("MajorGroupId")
+                        .IsRequired()
+                        .HasColumnType("text");
 
                     b.Property<string>("Name")
                         .IsRequired()
                         .HasColumnType("text");
+
+                    b.Property<string>("UpdatedBy")
+                        .HasColumnType("text");
+
+                    b.Property<DateTime?>("UpdatedDate")
+                        .HasColumnType("timestamp with time zone");
 
                     b.HasKey("Id");
 
@@ -224,13 +257,15 @@ namespace FUC.Data.Data.Migrations
 
             modelBuilder.Entity("FUC.Data.Entities.MajorGroup", b =>
                 {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid");
+                    b.Property<string>("Id")
+                        .HasColumnType("text");
 
-                    b.Property<string>("Code")
+                    b.Property<string>("CreatedBy")
                         .IsRequired()
                         .HasColumnType("text");
+
+                    b.Property<DateTime>("CreatedDate")
+                        .HasColumnType("timestamp with time zone");
 
                     b.Property<DateTime?>("DeletedAt")
                         .HasColumnType("timestamp with time zone");
@@ -245,6 +280,12 @@ namespace FUC.Data.Data.Migrations
                         .IsRequired()
                         .HasColumnType("text");
 
+                    b.Property<string>("UpdatedBy")
+                        .HasColumnType("text");
+
+                    b.Property<DateTime?>("UpdatedDate")
+                        .HasColumnType("timestamp with time zone");
+
                     b.HasKey("Id");
 
                     b.ToTable("MajorGroup", (string)null);
@@ -252,14 +293,15 @@ namespace FUC.Data.Data.Migrations
 
             modelBuilder.Entity("FUC.Data.Entities.Semester", b =>
                 {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid");
+                    b.Property<string>("Id")
+                        .HasColumnType("text");
 
-                    b.Property<string>("Code")
+                    b.Property<string>("CreatedBy")
                         .IsRequired()
-                        .HasMaxLength(10)
-                        .HasColumnType("character varying(10)");
+                        .HasColumnType("text");
+
+                    b.Property<DateTime>("CreatedDate")
+                        .HasColumnType("timestamp with time zone");
 
                     b.Property<DateTime?>("DeletedAt")
                         .HasColumnType("timestamp with time zone");
@@ -278,6 +320,12 @@ namespace FUC.Data.Data.Migrations
                     b.Property<DateTime>("StartDate")
                         .HasColumnType("timestamp with time zone");
 
+                    b.Property<string>("UpdatedBy")
+                        .HasColumnType("text");
+
+                    b.Property<DateTime?>("UpdatedDate")
+                        .HasColumnType("timestamp with time zone");
+
                     b.HasKey("Id");
 
                     b.ToTable("Semester", (string)null);
@@ -288,11 +336,13 @@ namespace FUC.Data.Data.Migrations
                     b.Property<string>("Id")
                         .HasColumnType("text");
 
-                    b.Property<Guid>("CampusId")
-                        .HasColumnType("uuid");
+                    b.Property<string>("CampusId")
+                        .IsRequired()
+                        .HasColumnType("text");
 
-                    b.Property<Guid>("CapstoneId")
-                        .HasColumnType("uuid");
+                    b.Property<string>("CapstoneId")
+                        .IsRequired()
+                        .HasColumnType("text");
 
                     b.Property<string>("CreatedBy")
                         .IsRequired()
@@ -314,8 +364,9 @@ namespace FUC.Data.Data.Migrations
                     b.Property<bool>("IsEligible")
                         .HasColumnType("boolean");
 
-                    b.Property<Guid>("MajorId")
-                        .HasColumnType("uuid");
+                    b.Property<string>("MajorId")
+                        .IsRequired()
+                        .HasColumnType("text");
 
                     b.Property<string>("Status")
                         .IsRequired()

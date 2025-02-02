@@ -15,20 +15,21 @@ public sealed class CapstoneService(IUnitOfWork<FucDbContext> uow, IMapper mappe
     private readonly IRepository<Capstone> _capstoneRepository = uow.GetRepository<Capstone>() ?? throw new ArgumentNullException(nameof(uow));
     private readonly IMapper _mapper = mapper ?? throw new ArgumentNullException(nameof(mapper));
 
-    public async Task<OperationResult<Guid>> CreateCapstoneAsync(CreateCapstoneRequest request)
+    public async Task<OperationResult<string>> CreateCapstoneAsync(CreateCapstoneRequest request)
     {
         // Check if Capstone code exists
         Capstone? existingCapstone = await _capstoneRepository.GetAsync(c =>
-            c.Code.ToLower().Trim() == request.Code.ToLower().Trim(), cancellationToken: default);
+            c.Id.Equals(request.Id),
+            cancellationToken: default);
+        
         if (existingCapstone is not null)
-            return OperationResult.Failure<Guid>(new Error("Error.DuplicateValue", "The capstone code is duplicate!"));
+            return OperationResult.Failure<string>(new Error("Error.DuplicateValue", "The capstone id is duplicate!"));
 
         // Create new Capstone
         var capstone = new Capstone
         {
-            Id = Guid.NewGuid(),
+            Id = request.Id,
             MajorId = request.MajorId,
-            Code = request.Code,
             Name = request.Name,
             MinMember = request.MinMember,
             MaxMember = request.MaxMember
@@ -43,12 +44,12 @@ public sealed class CapstoneService(IUnitOfWork<FucDbContext> uow, IMapper mappe
     {
         // Check if Capstone exists
         Capstone? capstone = await _capstoneRepository.GetAsync(
-            predicate: c => c.Id == request.Id, cancellationToken: default);
+            predicate: c => c.Id.Equals(request.Id),
+            cancellationToken: default);
         if (capstone is null) return OperationResult.Failure<CapstoneResponse>(Error.NullValue);
 
         // Update Capstone fields
         capstone.MajorId = request.MajorId;
-        capstone.Code = request.Code;
         capstone.Name = request.Name;
         capstone.MinMember = request.MinMember;
         capstone.MaxMember = request.MaxMember;
@@ -75,16 +76,17 @@ public sealed class CapstoneService(IUnitOfWork<FucDbContext> uow, IMapper mappe
             : OperationResult.Failure<IEnumerable<CapstoneResponse>>(Error.NullValue);
     }
 
-    public async Task<OperationResult<CapstoneResponse>> GetCapstoneByIdAsync(Guid capstoneId)
+    public async Task<OperationResult<CapstoneResponse>> GetCapstoneByIdAsync(string capstoneId)
     {
         Capstone? capstone = await _capstoneRepository.GetAsync(
-            predicate: c => c.Id.Equals(capstoneId), cancellationToken: default);
+            predicate: c => c.Id.Equals(capstoneId)
+            , cancellationToken: default);
         return capstone is not null
             ? OperationResult.Success(_mapper.Map<CapstoneResponse>(capstone))
             : OperationResult.Failure<CapstoneResponse>(Error.NullValue);
     }
 
-    public async Task<OperationResult> DeleteCapstoneAsync(Guid capstoneId)
+    public async Task<OperationResult> DeleteCapstoneAsync(string capstoneId)
     {
         Capstone? capstone = await _capstoneRepository.GetAsync(
             predicate: c => c.Id.Equals(capstoneId), cancellationToken: default);

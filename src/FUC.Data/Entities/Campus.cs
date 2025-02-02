@@ -3,11 +3,10 @@ using FUC.Data.Abstractions.Entities;
 
 namespace FUC.Data.Entities;
 
-public sealed class Campus : SoftDeleteEntity
+public sealed class Campus : AuditableSoftDeleteEntity
 {
-    public Guid Id { get; set; }
+    public string Id { get; set; } // campus code
     public string Name { get; set; } = string.Empty;
-    public string Code { get; set; } = string.Empty;
     public string Address { get; set; } = string.Empty;
     public string Phone { get; set; } = string.Empty;
     public string Email { get; set; } = string.Empty;

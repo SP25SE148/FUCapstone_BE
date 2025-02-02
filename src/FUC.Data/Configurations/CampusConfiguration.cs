@@ -12,7 +12,6 @@ public sealed class CampusConfiguration : IEntityTypeConfiguration<Campus>
         builder.ToTable(TableNames.Campus);
         builder.HasKey(s => s.Id);
         builder.Property(s => s.Name).IsRequired();
-        builder.Property(s => s.Code).IsRequired();
         builder.Property(s => s.Address).IsRequired();
         builder.Property(s => s.Phone).IsRequired();
         builder.Property(s => s.Email).IsRequired();

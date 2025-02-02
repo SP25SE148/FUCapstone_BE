@@ -11,7 +11,6 @@ public sealed class MajorGroupConfiguration : IEntityTypeConfiguration<MajorGrou
     {
         builder.ToTable(TableNames.MajorGroup);
         builder.HasKey(mg => mg.Id);
-        builder.Property(mg => mg.Code).IsRequired();
         builder.Property(mg => mg.Name).IsRequired();
     }
 }

@@ -1,8 +1,8 @@
 ﻿namespace FUC.Service.DTOs.MajorGroupDTO;
 
-public sealed record MajorGroupResponse( Guid Id,
+public sealed record MajorGroupResponse( 
+    string Id,
     string Name,
-    string Code,
     string? Description,
     bool IsDeleted,
     DateTime? DeletedAt);

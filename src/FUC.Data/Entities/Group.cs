@@ -4,16 +4,16 @@ using FUC.Data.Enums;
 namespace FUC.Data.Entities;
 
 
-public sealed class Group : AuditableEntity
+public sealed class Group : AuditableSoftDeleteEntity
 {
     public Guid Id { get; set; }
-    public Guid SemesterId { get; set; }
-    public Guid MajorId { get; set; }
-    public Guid CampusId { get; set; }
+    public string SemesterId { get; set; }
+    public string MajorId { get; set; }
+    public string CampusId { get; set; }
     
     public Guid? TopicId { get; set; }
     
-    public Guid CapstoneId { get; set; }
+    public string CapstoneId { get; set; }
     
     public string? TopicCode { get; set; }
     public string GroupCode { get; set; } = string.Empty;

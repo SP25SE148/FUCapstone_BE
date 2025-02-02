@@ -4,12 +4,11 @@ using FUC.Data.Abstractions.Entities;
 namespace FUC.Data.Entities;
 
 
-public sealed class Major : SoftDeleteEntity
+public sealed class Major : AuditableSoftDeleteEntity
 {
-    public Guid Id { get; set; }
-    public Guid MajorGroupId { get; set; }
+    public string Id { get; set; } // Major code
+    public string MajorGroupId { get; set; }
     public string Name { get; set; } = string.Empty;
-    public string Code { get; set; } = string.Empty;
     public string? Description { get; set; }
 
     public MajorGroup MajorGroup { get; set; } = null!;

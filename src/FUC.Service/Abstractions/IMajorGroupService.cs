@@ -5,10 +5,10 @@ namespace FUC.Service.Abstractions;
 
 public interface IMajorGroupService
 {
-    Task<OperationResult<Guid>> CreateMajorGroupAsync(CreateMajorGroupRequest request);
+    Task<OperationResult<string>> CreateMajorGroupAsync(CreateMajorGroupRequest request);
     Task<OperationResult<MajorGroupResponse>> UpdateMajorGroupAsync(UpdateMajorGroupRequest request);
     Task<OperationResult<IEnumerable<MajorGroupResponse>>> GetAllMajorGroupsAsync();
     Task<OperationResult<IEnumerable<MajorGroupResponse>>> GetAllActiveMajorGroupsAsync();
-    Task<OperationResult<MajorGroupResponse>> GetMajorGroupByIdAsync(Guid majorGroupId);
-    Task<OperationResult> DeleteMajorGroupAsync(Guid majorGroupId);    
+    Task<OperationResult<MajorGroupResponse>> GetMajorGroupByIdAsync(string majorGroupId);
+    Task<OperationResult> DeleteMajorGroupAsync(string majorGroupId);    
 }

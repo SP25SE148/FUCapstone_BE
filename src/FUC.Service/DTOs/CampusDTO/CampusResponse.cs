@@ -1,7 +1,7 @@
 ﻿namespace FUC.Service.DTOs.CampusDTO;
 
 public sealed record CampusResponse(
-    Guid Id,
+    string Id,
     string Name,
     string Code,
     string Address,

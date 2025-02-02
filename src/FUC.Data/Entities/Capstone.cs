@@ -4,11 +4,10 @@ using FUC.Data.Abstractions.Entities;
 namespace FUC.Data.Entities;
 
 
-public sealed class Capstone : SoftDeleteEntity 
+public sealed class Capstone : AuditableSoftDeleteEntity 
 {
-    public Guid Id { get; set; }
-    public Guid MajorId { get; set; }
-    public string Code { get; set; } = string.Empty;
+    public string Id { get; set; } // capstone code 
+    public string MajorId { get; set; }
     public string Name { get; set; } = string.Empty;
     public int MinMember { get; set; }
     public int MaxMember { get; set; }

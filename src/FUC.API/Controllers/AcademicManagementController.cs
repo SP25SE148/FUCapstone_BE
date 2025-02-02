@@ -1,16 +1,11 @@
-﻿using System.Net;
-using FUC.API.Abstractions;
+﻿using FUC.API.Abstractions;
 using FUC.Common.Shared;
-using FUC.Data.Entities;
 using FUC.Service.Abstractions;
-using FUC.Service.DTOs;
 using FUC.Service.DTOs.CampusDTO;
 using FUC.Service.DTOs.CapstoneDTO;
 using FUC.Service.DTOs.MajorDTO;
 using FUC.Service.DTOs.MajorGroupDTO;
-using FUC.Service.Services;
 using Microsoft.AspNetCore.Mvc;
-using Task = DocumentFormat.OpenXml.Office2021.DocumentTasks.Task;
 
 namespace FUC.API.Controllers;
 
@@ -42,19 +37,19 @@ public sealed class AcademicManagementController(
     [HttpPost("campus")]
     public async Task<IActionResult> CreateCampusAsync(CreateCampusRequest request)
     {
-        OperationResult<Guid> result = await campusService.CreateCampusAsync(request);
+        OperationResult<string> result = await campusService.CreateCampusAsync(request);
         return !result.IsFailure ? Ok(result) : HandleFailure(result);
     }
 
     [HttpGet("campus/{id}")]
-    public async Task<IActionResult> GetCampusByIdAsync(Guid id)
+    public async Task<IActionResult> GetCampusByIdAsync(string id)
     {
         OperationResult<CampusResponse> result = await campusService.GetCampusByIdAsync(id);
         return !result.IsFailure ? Ok(result) : HandleFailure(result);
     }
 
     [HttpDelete("campus/{id}")]
-    public async Task<IActionResult> DeleteCampusAsync(Guid id)
+    public async Task<IActionResult> DeleteCampusAsync(string id)
     {
         OperationResult result = await campusService.DeleteCampusAsync(id);
         return !result.IsFailure ? NoContent() : HandleFailure(result);
@@ -87,7 +82,7 @@ public sealed class AcademicManagementController(
     }
 
     [HttpGet("major/{id}")]
-    public async Task<IActionResult> GetMajorByIdAsync(Guid id)
+    public async Task<IActionResult> GetMajorByIdAsync(string id)
     {
         OperationResult<MajorResponse> result = await majorService.GetMajorByIdAsync(id);
         return !result.IsFailure ? Ok(result) : HandleFailure(result);
@@ -96,7 +91,7 @@ public sealed class AcademicManagementController(
     [HttpPost("major")]
     public async Task<IActionResult> CreateMajorAsync(CreateMajorRequest request)
     {
-        OperationResult<Guid> result = await majorService.CreateMajorAsync(request);
+        OperationResult<string> result = await majorService.CreateMajorAsync(request);
         return !result.IsFailure ? Ok(result) : HandleFailure(result);
     }
 
@@ -108,7 +103,7 @@ public sealed class AcademicManagementController(
     }
 
     [HttpDelete("major/{id}")]
-    public async Task<IActionResult> DeleteMajorAsync(Guid id)
+    public async Task<IActionResult> DeleteMajorAsync(string id)
     {
         OperationResult result = await majorService.DeleteMajorAsync(id);
         return !result.IsFailure ? NoContent() : HandleFailure(result);
@@ -134,7 +129,7 @@ public sealed class AcademicManagementController(
             : HandleFailure(result);
     }
     [HttpGet("majorgroup/{id}")]
-    public async Task<IActionResult> GetMajorGroupByIdAsync(Guid id)
+    public async Task<IActionResult> GetMajorGroupByIdAsync(string id)
     {
         OperationResult<MajorGroupResponse> result = await majorGroupService.GetMajorGroupByIdAsync(id);
         return !result.IsFailure ? Ok(result) : HandleFailure(result);
@@ -143,7 +138,7 @@ public sealed class AcademicManagementController(
     [HttpPost("majorgroup")]
     public async Task<IActionResult> CreateMajorGroupAsync(CreateMajorGroupRequest request)
     {
-        OperationResult<Guid> result = await majorGroupService.CreateMajorGroupAsync(request);
+        OperationResult<string> result = await majorGroupService.CreateMajorGroupAsync(request);
         return !result.IsFailure ? Ok(result) : HandleFailure(result);
     }
 
@@ -155,7 +150,7 @@ public sealed class AcademicManagementController(
     }
 
     [HttpDelete("majorgroup/{id}")]
-    public async Task<IActionResult> DeleteMajorGroupAsync(Guid id)
+    public async Task<IActionResult> DeleteMajorGroupAsync(string id)
     {
         OperationResult result = await majorGroupService.DeleteMajorGroupAsync(id);
         return !result.IsFailure ? NoContent() : HandleFailure(result);
@@ -180,7 +175,7 @@ public sealed class AcademicManagementController(
             : HandleFailure(result);
     }
     [HttpGet("capstone/{id}")]
-    public async Task<IActionResult> GetCapstoneByIdAsync(Guid id)
+    public async Task<IActionResult> GetCapstoneByIdAsync(string id)
     {
         OperationResult<CapstoneResponse> result = await capstoneService.GetCapstoneByIdAsync(id);
         return !result.IsFailure ? Ok(result) : HandleFailure(result);
@@ -189,7 +184,7 @@ public sealed class AcademicManagementController(
     [HttpPost("capstone")]
     public async Task<IActionResult> CreateCapstoneAsync(CreateCapstoneRequest request)
     {
-        OperationResult<Guid> result = await capstoneService.CreateCapstoneAsync(request);
+        OperationResult<string> result = await capstoneService.CreateCapstoneAsync(request);
         return !result.IsFailure ? Ok(result) : HandleFailure(result);
     }
 
@@ -201,7 +196,7 @@ public sealed class AcademicManagementController(
     }
 
     [HttpDelete("capstone/{id}")]
-    public async Task<IActionResult> DeleteCapstoneAsync(Guid id)
+    public async Task<IActionResult> DeleteCapstoneAsync(string id)
     {
         OperationResult result = await capstoneService.DeleteCapstoneAsync(id);
         return !result.IsFailure ? NoContent() : HandleFailure(result);
