@@ -17,21 +17,20 @@ public sealed class CampusService(IUnitOfWork<FucDbContext> uow, IMapper mapper)
     private readonly IUnitOfWork<FucDbContext> _uow = uow ?? throw new  ArgumentNullException(nameof(uow));
     private readonly IRepository<Campus> _campusRepository = uow.GetRepository<Campus>() ??  throw new ArgumentNullException(nameof(uow));
     private readonly IMapper _mapper = mapper ?? throw new ArgumentNullException(nameof(mapper));
-    public async Task<OperationResult<Guid>> CreateCampusAsync(CreateCampusRequest request)
+    public async Task<OperationResult<string>> CreateCampusAsync(CreateCampusRequest request)
     {
         // check if campus code was exist
         Campus? result = await _campusRepository.GetAsync(c =>
-                c.Code.ToLower().Trim() == request.Code.ToLower().Trim(),
+                c.Id.ToLower().Trim() == request.Id.ToLower().Trim(),
             cancellationToken: default);
         if (result is not null)
-            return OperationResult.Failure<Guid>(new Error("Error.DuplicateValue", "The campus code is duplicate!!"));
+            return OperationResult.Failure<string>(new Error("Error.DuplicateValue", "The campus id is duplicate!!"));
         // create new campus
         var campus = new Campus()
         {
-            Id = Guid.NewGuid(),
+            Id = request.Id,
             Name = request.Name,
             Address = request.Address,
-            Code = request.Code,
             Email = request.Email,
             Phone = request.Phone
         };
@@ -45,7 +44,7 @@ public sealed class CampusService(IUnitOfWork<FucDbContext> uow, IMapper mapper)
     {
         // check if campus was not exist
         Campus? campus = await _campusRepository.GetAsync(
-            predicate: c => c.Id == request.Id,
+            predicate: c => c.Id.Equals(request.Id),
             cancellationToken: default);
         if (campus is null) return OperationResult.Failure<CampusResponse>(Error.NullValue);
 
@@ -76,15 +75,15 @@ public sealed class CampusService(IUnitOfWork<FucDbContext> uow, IMapper mapper)
             : OperationResult.Failure<IEnumerable<CampusResponse>>(Error.NullValue);
     }
 
-    public async Task<OperationResult<CampusResponse>> GetCampusByIdAsync(Guid campusId)
+    public async Task<OperationResult<CampusResponse>> GetCampusByIdAsync(string campusId)
     {
         Campus? campus = await _campusRepository.GetAsync(
             predicate: c => c.Id.Equals(campusId),
             cancellationToken: default);
         return _mapper.Map<CampusResponse>(campus) ?? OperationResult.Failure<CampusResponse>(Error.NullValue);
     }
-
-    public async Task<OperationResult> DeleteCampusAsync(Guid campusId)
+    
+    public async Task<OperationResult> DeleteCampusAsync(string campusId)
     {
         Campus? campus = await _campusRepository.GetAsync(
             predicate: c => c.Id.Equals(campusId),

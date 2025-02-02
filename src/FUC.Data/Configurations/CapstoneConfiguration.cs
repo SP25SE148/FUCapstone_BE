@@ -13,7 +13,6 @@ public sealed class CapstoneConfiguration : IEntityTypeConfiguration<Capstone>
         builder.HasKey(c => c.Id);
 
         builder.Property(c => c.Name).IsRequired();
-        builder.Property(c => c.Code).IsRequired();
         builder.Property(c => c.MaxMember).IsRequired();
         builder.Property(c => c.MinMember).IsRequired();
         builder.Property(c => c.ReviewCount).IsRequired();

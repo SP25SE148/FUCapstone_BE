@@ -1,8 +1,8 @@
 ﻿namespace FUC.Service.DTOs.CapstoneDTO;
 
 public sealed record CreateCapstoneRequest(
-    Guid MajorId,
-    string Code,
+    string Id,
+    string MajorId,
     string Name,
     int MinMember,
     int MaxMember,

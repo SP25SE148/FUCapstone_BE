@@ -13,38 +13,36 @@ public sealed class MajorGroupService(IUnitOfWork<FucDbContext> uow, IMapper map
     private readonly IRepository<MajorGroup> _majorGroupRepository = uow.GetRepository<MajorGroup>() ?? throw new ArgumentNullException(nameof(uow));
     private readonly IMapper _mapper = mapper ?? throw new ArgumentNullException(nameof(mapper));
 
-    public async Task<OperationResult<Guid>> CreateMajorGroupAsync(CreateMajorGroupRequest request)
+    public async Task<OperationResult<string>> CreateMajorGroupAsync(CreateMajorGroupRequest request)
     {
         MajorGroup? existingMajorGroup = await _majorGroupRepository.GetAsync(
-            mg => mg.Code.ToLower() == request.Code.ToLower(),
+            mg => mg.Id.Equals(request.Id),
             cancellationToken: default);
         if (existingMajorGroup is not null)
-            return OperationResult.Failure<Guid>(new Error("Error.DuplicateValue", "The MajorGroup code already exists."));
+            return OperationResult.Failure<string>(new Error("Error.DuplicateValue", "The MajorGroup Id already exists."));
         
         var newMajorGroup = new MajorGroup
         {
-            Id = Guid.NewGuid(),
+            Id = request.Id,
             Name = request.Name,
-            Code = request.Code,
             Description = request.Description
         };
 
         _majorGroupRepository.Insert(newMajorGroup);
         await uow.SaveChangesAsync();
 
-        return OperationResult.Success(newMajorGroup.Id);
+        return newMajorGroup.Id;
     }
 
     public async Task<OperationResult<MajorGroupResponse>> UpdateMajorGroupAsync(UpdateMajorGroupRequest request)
     {
         MajorGroup? majorGroup = await _majorGroupRepository.GetAsync(
-            mg => mg.Id == request.Id,
+            mg => mg.Id.Equals(request.Id),
             cancellationToken: default);
         if (majorGroup is null) return OperationResult.Failure<MajorGroupResponse>(Error.NullValue);
 
         // Update major group fields
         majorGroup.Name = request.Name;
-        majorGroup.Code = request.Code;
         majorGroup.Description = request.Description;
 
         _majorGroupRepository.Update(majorGroup);
@@ -71,20 +69,20 @@ public sealed class MajorGroupService(IUnitOfWork<FucDbContext> uow, IMapper map
 
     }
 
-    public async Task<OperationResult<MajorGroupResponse>> GetMajorGroupByIdAsync(Guid majorGroupId)
+    public async Task<OperationResult<MajorGroupResponse>> GetMajorGroupByIdAsync(string majorGroupId)
     {
         MajorGroup? majorGroup = await _majorGroupRepository.GetAsync(
-            mg => mg.Id == majorGroupId,
+            mg => mg.Id.Equals(majorGroupId),
             cancellationToken: default);
         return majorGroup is not null
             ? OperationResult.Success(_mapper.Map<MajorGroupResponse>(majorGroup))
             : OperationResult.Failure<MajorGroupResponse>(Error.NullValue);
     }
 
-    public async Task<OperationResult> DeleteMajorGroupAsync(Guid majorGroupId)
+    public async Task<OperationResult> DeleteMajorGroupAsync(string majorGroupId)
     {
         MajorGroup? majorGroup = await _majorGroupRepository.GetAsync(
-            mg => mg.Id == majorGroupId,
+            mg => mg.Id.Equals(majorGroupId),
             cancellationToken: default);
         if (majorGroup is null) return OperationResult.Failure(Error.NullValue);
 

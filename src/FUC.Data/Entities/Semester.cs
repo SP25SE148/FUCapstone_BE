@@ -5,11 +5,10 @@ using FUC.Data.Abstractions.Entities;
 namespace FUC.Data.Entities;
 
 
-public sealed class Semester : SoftDeleteEntity
+public sealed class Semester : AuditableSoftDeleteEntity
 {
-    public Guid Id { get; set; }
+    public string Id { get; set; } // semester code
     public string Name { get; set; } = string.Empty;
-    public string Code { get; set; } = string.Empty;
     public DateTime StartDate { get; set; }
     public DateTime EndDate { get; set; }
 

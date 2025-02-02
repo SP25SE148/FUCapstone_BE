@@ -1,23 +1,23 @@
 ﻿[
   {
+    "Id": "ENG",
     "Name": "Engineering",
-    "Code": "ENG",
     "Description": "Engineering-related majors.",
     "Majors": [
       {
+        "Id": "CS101",
         "Name": "Computer Science",
-        "Code": "CS101",
         "Description": "Learn about algorithms and software.",
         "Capstones": [
           {
-            "Code": "CPT001",
+            "Id": "CPT001",
             "Name": "AI Project",
             "MinMember": 3,
             "MaxMember": 5,
             "ReviewCount": 2
           },
           {
-            "Code": "CPT002",
+            "Id": "CPT002",
             "Name": "Web Development Project",
             "MinMember": 4,
             "MaxMember": 6,
@@ -26,19 +26,19 @@
         ]
       },
       {
+        "Id": "EE101",
         "Name": "Electrical Engineering",
-        "Code": "EE101",
         "Description": "Learn about circuits and power systems.",
         "Capstones": [
           {
-            "Code": "CPT003",
+            "Id": "CPT003",
             "Name": "Smart Grid Design",
             "MinMember": 5,
             "MaxMember": 8,
             "ReviewCount": 2
           },
           {
-            "Code": "CPT004",
+            "Id": "CPT004",
             "Name": "IoT-Based Automation",
             "MinMember": 3,
             "MaxMember": 6,
@@ -49,24 +49,24 @@
     ]
   },
   {
+    "Id": "BUS",
     "Name": "Business",
-    "Code": "BUS",
     "Description": "Business-related majors.",
     "Majors": [
       {
+        "Id": "MKT102",
         "Name": "Marketing",
-        "Code": "MKT102",
         "Description": "Learn about marketing strategies.",
         "Capstones": [
           {
-            "Code": "CPT005",
+            "Id": "CPT005",
             "Name": "Advertising Campaign",
             "MinMember": 4,
             "MaxMember": 6,
             "ReviewCount": 3
           },
           {
-            "Code": "CPT006",
+            "Id": "CPT006",
             "Name": "Brand Management Strategy",
             "MinMember": 2,
             "MaxMember": 5,
@@ -76,18 +76,18 @@
       },
       {
         "Name": "Finance",
-        "Code": "FIN103",
+        "Id": "FIN103",
         "Description": "Learn about financial markets and analysis.",
         "Capstones": [
           {
-            "Code": "CPT007",
+            "Id": "CPT007",
             "Name": "Investment Portfolio Analysis",
             "MinMember": 3,
             "MaxMember": 5,
             "ReviewCount": 2
           },
           {
-            "Code": "CPT008",
+            "Id": "CPT008",
             "Name": "Corporate Finance Strategy",
             "MinMember": 4,
             "MaxMember": 6,

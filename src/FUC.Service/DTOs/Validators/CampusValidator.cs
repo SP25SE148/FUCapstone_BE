@@ -13,9 +13,6 @@ public sealed class CampusValidator : AbstractValidator<Campus>
         RuleFor(c => c.Address)
             .NotEmpty()
             .WithMessage("Campus address must not be empty!!");
-        RuleFor(c => c.Code)
-            .NotEmpty()
-            .WithMessage("Campus code must not be empty!!");
         RuleFor(c => c.Phone)
             .NotEmpty()
             .WithMessage("Campus phone must not be empty!!");
