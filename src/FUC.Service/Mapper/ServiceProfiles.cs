@@ -12,26 +12,16 @@ public class ServiceProfiles : Profile
     public ServiceProfiles()
     {
         // Campus mapping
-        CreateMap<Campus, CampusResponse>()
-            .ForMember(src => src.IsDeleted, opt => opt.MapFrom(src => src.IsDeleted))
-            .ForMember(src => src.DeletedAt, opt => opt.MapFrom(src => src.DeletedAt));
+        CreateMap<Campus, CampusResponse>();
+           
      
         
         // Capstone mapping
-        CreateMap<Capstone,CapstoneResponse>()
-            .ForMember(src => src.IsDeleted, opt => opt.MapFrom(src => src.IsDeleted))
-            .ForMember(src => src.DeletedAt, opt => opt.MapFrom(src => src.DeletedAt));
-
+        CreateMap<Capstone, CapstoneResponse>();
         
         // Major Group mapping
-        CreateMap<MajorGroup, MajorGroupResponse>()
-            .ForMember(src => src.IsDeleted, opt => opt.MapFrom(src => src.IsDeleted))
-            .ForMember(src => src.DeletedAt, opt => opt.MapFrom(src => src.DeletedAt));
-
+        CreateMap<MajorGroup, MajorGroupResponse>();
         // Major mapping
-        CreateMap<Major, MajorResponse>()
-            .ForMember(src => src.IsDeleted, opt => opt.MapFrom(src => src.IsDeleted))
-            .ForMember(src => src.DeletedAt, opt => opt.MapFrom(src => src.DeletedAt));
-        
+        CreateMap<Major, MajorResponse>();
     }
 }
