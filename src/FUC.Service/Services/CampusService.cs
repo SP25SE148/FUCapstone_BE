@@ -1,6 +1,7 @@
 ﻿using System.Linq.Expressions;
 using System.Runtime.InteropServices.JavaScript;
 using AutoMapper;
+using DocumentFormat.OpenXml.Office2010.Excel;
 using FUC.Common.Shared;
 using FUC.Data;
 using FUC.Data.Data;
@@ -21,7 +22,7 @@ public sealed class CampusService(IUnitOfWork<FucDbContext> uow, IMapper mapper)
     {
         // check if campus code was exist
         Campus? result = await _campusRepository.GetAsync(c =>
-                c.Id.ToLower().Trim() == request.Id.ToLower().Trim(),
+                c.Id.Equals(request.Id),
             cancellationToken: default);
         if (result is not null)
             return OperationResult.Failure<string>(new Error("Error.DuplicateValue", "The campus id is duplicate!!"));
@@ -71,7 +72,7 @@ public sealed class CampusService(IUnitOfWork<FucDbContext> uow, IMapper mapper)
     {
         IList<Campus> campusList = await _campusRepository.FindAsync(c => c.IsDeleted == false);
         return campusList.Count > 0
-            ? OperationResult.Success(_mapper.Map<IEnumerable<CampusResponse>>(campusList))
+            ? OperationResult.Success(_mapper.Map<IEnumerable<CampusResponse>>(campusList.ToList()))
             : OperationResult.Failure<IEnumerable<CampusResponse>>(Error.NullValue);
     }
 
