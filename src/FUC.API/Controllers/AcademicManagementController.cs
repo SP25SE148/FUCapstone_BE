@@ -6,7 +6,6 @@ using FUC.Service.DTOs.CapstoneDTO;
 using FUC.Service.DTOs.MajorDTO;
 using FUC.Service.DTOs.MajorGroupDTO;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
 
 namespace FUC.API.Controllers;
