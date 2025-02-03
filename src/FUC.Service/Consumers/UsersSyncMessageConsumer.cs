@@ -1,5 +1,6 @@
 ﻿using FUC.Common.Contracts;
 using FUC.Data.Data;
+using FUC.Data.Entities;
 using MassTransit;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
@@ -26,6 +27,10 @@ public class UsersSyncMessageConsumer : IConsumer<UsersSyncMessage>
         {
             case "Student":
                 // TODO: Bulk insert Student
+                var students = users.Select(x => new Student
+                {
+                    
+                }).ToList();
                 break;
 
             case "Supervisor":
