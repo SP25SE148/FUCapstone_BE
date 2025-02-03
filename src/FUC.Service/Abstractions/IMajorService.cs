@@ -9,7 +9,7 @@ public interface IMajorService
     Task<OperationResult<MajorResponse>> UpdateMajorAsync(UpdateMajorRequest request);
     Task<OperationResult<IEnumerable<MajorResponse>>> GetAllMajorsAsync();
     Task<OperationResult<IEnumerable<MajorResponse>>> GetAllActiveMajorsAsync();
-    Task<OperationResult<IEnumerable<MajorResponse>>> GetMajorsByGroupIdAsync(string majorGroupId);
+    Task<OperationResult<IEnumerable<MajorResponse>>> GetMajorsByMajorGroupIdAsync(string majorGroupId);
     Task<OperationResult<MajorResponse>> GetMajorByIdAsync(string majorId);
     Task<OperationResult> DeleteMajorAsync(string majorId);
 }

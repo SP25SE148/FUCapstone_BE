@@ -71,7 +71,7 @@ public sealed class MajorService(IUnitOfWork<FucDbContext> uow, IMapper mapper) 
                 : OperationResult.Failure<IEnumerable<MajorResponse>>(Error.NullValue);
         }
 
-        public async Task<OperationResult<IEnumerable<MajorResponse>>> GetMajorsByGroupIdAsync(string majorGroupId)
+        public async Task<OperationResult<IEnumerable<MajorResponse>>> GetMajorsByMajorGroupIdAsync(string majorGroupId)
         {
             IList<Major> majors = await _majorRepository.FindAsync(
                 m => m.MajorGroupId.Equals( majorGroupId),
