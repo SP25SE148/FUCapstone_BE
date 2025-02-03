@@ -104,39 +104,39 @@ public class SeedData
             Log.Debug("manager2 already exists");
         }
 
-        // Add manager
-        var manager3 = await userMgr.FindByEmailAsync("manager3@fpt.edu.vn");
-        if (manager3 == null)
+        // Add superadmin
+        var superAdmin = await userMgr.FindByEmailAsync("superadmin@fpt.edu.vn");
+        if (superAdmin == null)
         {
-            manager3 = new ApplicationUser
+            superAdmin = new ApplicationUser
             {
-                UserCode = "manager3",
-                UserName = "manager3",
-                Email = "manager3@fpt.edu.vn",
-                CampusId = "HCM",
-                CapstoneId = "SEP490",
-                MajorId = "SE",
+                UserCode = "superadmin",
+                UserName = "superadmin",
+                Email = "superadmin@fpt.edu.vn",
+                CampusId = "All",
+                CapstoneId = "All",
+                MajorId = "All",
                 EmailConfirmed = true
             };
-            var result = await userMgr.CreateAsync(manager3, "Pass123$");
+            var result = await userMgr.CreateAsync(superAdmin, "Pass123$");
 
             if (!result.Succeeded)
             {
                 throw new Exception(result.Errors.First().Description);
             }
 
-            result = await userMgr.AddToRoleAsync(manager3, "Manager");
+            result = await userMgr.AddToRoleAsync(superAdmin, "SuperAdmin");
 
             if (!result.Succeeded)
             {
                 throw new Exception(result.Errors.First().Description);
             }
 
-            Log.Debug("manager3 created");
+            Log.Debug("superAdmin created");
         }
         else
         {
-            Log.Debug("manager3 already exists");
+            Log.Debug("superAdmin already exists");
         }
     }
 }

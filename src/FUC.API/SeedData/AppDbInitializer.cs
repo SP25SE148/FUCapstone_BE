@@ -1,4 +1,5 @@
-﻿using System.Text.Json;
+﻿using System.Security.Claims;
+using System.Text.Json;
 using FUC.Data.Data;
 using FUC.Data.Entities;
 using Microsoft.AspNetCore.Builder;
@@ -15,14 +16,31 @@ public class AppDbInitializer
         var majorGroupData = await File.ReadAllTextAsync("SeedData/MajorGroup.json");
         var campusData = await File.ReadAllTextAsync("SeedData/Campus.json");
         var options = new JsonSerializerOptions { PropertyNameCaseInsensitive = true };
-        
+
         var majorGroups = JsonSerializer.Deserialize<List<MajorGroup>>(majorGroupData, options);
         var campuses = JsonSerializer.Deserialize<List<Campus>>(campusData, options);
-        
+
         using (var serviceScope = applicationBuilder.ApplicationServices.CreateScope())
         {
             var services = serviceScope.ServiceProvider;
             var context = services.GetService<DbContext>();
+
+            var httpContextAccessor = applicationBuilder.ApplicationServices.GetRequiredService<IHttpContextAccessor>();
+
+            // Manually create a fake HttpContext with a test user
+            var claims = new List<Claim>
+            {
+                new Claim(ClaimTypes.NameIdentifier, "super-admin-id"),
+                new Claim("name", "superadmin"),
+                new Claim(ClaimTypes.Email, "superadmin@fpt.edu.vn"),
+                new Claim(ClaimTypes.GivenName, "superadmin")
+            };
+
+            var identity = new ClaimsIdentity(claims, "AdminAuth");
+            var user = new ClaimsPrincipal(identity);
+
+            // Set the fake user in IHttpContextAccessor
+            httpContextAccessor.HttpContext = new DefaultHttpContext { User = user };
 
             // Ensure database is created
             context.Database.EnsureCreated();
@@ -49,9 +67,9 @@ public class AppDbInitializer
             {
                 context.Set<Campus>().AddRange(campuses);
             }
-            
+
             await context.SaveChangesAsync();
-            
+
         }
     }
 }
