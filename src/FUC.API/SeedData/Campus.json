@@ -1,16 +1,16 @@
 ﻿[
   {
-    "Id": "MC001",
-    "Name": "Main Campus",
+    "Id": "HCM",
+    "Name": "Ho Chi Minh Campus",
     "Address": "123 Main Street",
     "Phone": "1234567890",
-    "Email": "main@campus.edu"
+    "Email": "hcm@campus.edu"
   },
   {
-    "Id": "CC002",
-    "Name": "City Campus",
+    "Id": "HN",
+    "Name": "Ha Noi Campus",
     "Address": "456 City Avenue",
     "Phone": "0987654321",
-    "Email": "city@campus.edu"
+    "Email": "hanoi@campus.edu"
   }
 ]

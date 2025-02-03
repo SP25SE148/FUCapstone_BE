@@ -6,9 +6,9 @@ var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddMassTransit(x => 
 {
-    //x.AddConsumers(Assembly.GetExecutingAssembly());
+    x.AddConsumers(Assembly.GetExecutingAssembly());
 
-    //x.SetEndpointNameFormatter(new KebabCaseEndpointNameFormatter("noti", false));
+    x.SetEndpointNameFormatter(new KebabCaseEndpointNameFormatter("noti", false));
     x.SetKebabCaseEndpointNameFormatter();
 
     x.UsingRabbitMq((context, cfg) =>

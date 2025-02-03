@@ -5,8 +5,8 @@
     "Description": "Engineering-related majors.",
     "Majors": [
       {
-        "Id": "CS101",
-        "Name": "Computer Science",
+        "Id": "SE",
+        "Name": "Software Engineering",
         "Description": "Learn about algorithms and software.",
         "Capstones": [
           {
@@ -17,7 +17,7 @@
             "ReviewCount": 2
           },
           {
-            "Id": "CPT002",
+            "Id": "SEP490",
             "Name": "Web Development Project",
             "MinMember": 4,
             "MaxMember": 5,
