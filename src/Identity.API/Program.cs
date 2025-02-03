@@ -71,7 +71,7 @@ try
         .AllowAnyHeader()
         .AllowAnyMethod()
         .AllowCredentials() // to support a SignalR
-        .WithOrigins());
+        .WithOrigins("http://localhost:3000"));
 
     // Configure the HTTP request pipeline.
     if (app.Environment.IsDevelopment())

@@ -41,7 +41,7 @@ public sealed class StudentConfiguration : IEntityTypeConfiguration<Student>
         
         builder.HasOne(s => s.Capstone)
             .WithMany(m => m.Students)
-            .HasForeignKey(s => s.CampusId)
+            .HasForeignKey(s => s.CapstoneId)
             .OnDelete(DeleteBehavior.Restrict);
         
         builder.HasOne(s => s.GroupMember)

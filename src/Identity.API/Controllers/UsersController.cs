@@ -1,9 +1,11 @@
-﻿using AutoMapper;
+﻿using System.Security.Claims;
+using AutoMapper;
 using ClosedXML.Excel;
 using FUC.Common.Contracts;
 using FUC.Common.Shared;
 using Identity.API.Models;
 using MassTransit;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Serilog;
@@ -18,20 +20,24 @@ public class UsersController(ILogger<UsersController> logger,
     private const int BatchSize = 2;
 
     [HttpPost("import/students")]
+    [Authorize(Roles = "Manager,Admin,SuperAdmin")]
     public async Task<IActionResult> ImportStudents(IFormFile file)
     {
-        var result = await ImporProcessingtUsers("Student", file);
+        var email = User.FindFirst(ClaimTypes.Email)!.Value;
+        var result = await ImporProcessingtUsers("Student", file, email);
         return result.IsSuccess ? Ok() : HandleFailure(result);
     }
 
     [HttpPost("import/supervisors")]
+    [Authorize(Roles = "Manager,Admin,SuperAdmin")]
     public async Task<IActionResult> ImportSupervisors(IFormFile file)
     {
-        var result = await ImporProcessingtUsers("Supervisor", file);
+        var result = await ImporProcessingtUsers("Supervisor", file, 
+            User.FindFirst(ClaimTypes.Email)!.Value);
         return result.IsSuccess ? Ok() : HandleFailure(result);
     }
 
-    private async Task<OperationResult> ImporProcessingtUsers(string userType, IFormFile file)
+    private async Task<OperationResult> ImporProcessingtUsers(string userType, IFormFile file, string emailImporter)
     {
         logger.LogInformation("Start processing Users file");
         if (!IsValidFile(userType, file))
@@ -47,12 +53,12 @@ public class UsersController(ILogger<UsersController> logger,
             {
                 IXLWorksheet workSheet = wb.Worksheet(1);
 
-                return await ProcessRows(workSheet, userType);
+                return await ProcessRows(workSheet, userType, emailImporter);
             }
         }
     }
 
-    private async Task<OperationResult> ProcessRows(IXLWorksheet workSheet, string userType)
+    private async Task<OperationResult> ProcessRows(IXLWorksheet workSheet, string userType, string emailImporter)
     {
         var attempTime = 1;
         var numberOfUsersInBatchSize = 0;
@@ -72,7 +78,7 @@ public class UsersController(ILogger<UsersController> logger,
             if (!row.Cell(2).TryGetValue<string>(out var usercode)
                 || string.IsNullOrEmpty(usercode))
             {
-                await SyncUsersToFUCService(users, userType, numberOfUsersInBatchSize, attempTime);
+                await SyncUsersToFUCService(users, userType, emailImporter, numberOfUsersInBatchSize, attempTime);
                 break;
             }
 
@@ -98,7 +104,7 @@ public class UsersController(ILogger<UsersController> logger,
                 continue;
             }
 
-            await SyncUsersToFUCService(users, userType, numberOfUsersInBatchSize, attempTime++);
+            await SyncUsersToFUCService(users, userType, emailImporter, numberOfUsersInBatchSize, attempTime++);
             users.Clear();
             numberOfUsersInBatchSize = 0;
         }
@@ -113,18 +119,19 @@ public class UsersController(ILogger<UsersController> logger,
             file.FileName.Contains(userType, StringComparison.OrdinalIgnoreCase);
     }
 
-    private async Task SyncUsersToFUCService(List<UserSync> users, string userType,int numberOfUsersSync, int attempTime)
+    private async Task SyncUsersToFUCService(List<UserSync> users, string userType, string emailImporter, int numberOfUsersSync, int attemptTime)
     {
         if (numberOfUsersSync > 0)
         {
-            logger.LogInformation("{SyncCount} synced in attemp: {Time}", numberOfUsersSync, attempTime);
+            logger.LogInformation("{SyncCount} synced in attemp: {Time}", numberOfUsersSync, attemptTime);
 
             // Sync user into FUC service
             await publishEndpoint.Publish(new UsersSyncMessage
             {
-                AttempTime = attempTime,
+                AttempTime = attemptTime,
                 UserType = userType,
-                UsersSync = users
+                UsersSync = users,
+                CreatedBy = emailImporter
             });
         }
     }
