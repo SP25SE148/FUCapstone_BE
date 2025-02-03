@@ -10,7 +10,6 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace FUC.API.Controllers;
 
-[Authorize(Roles = "SuperAdmin")]
 public sealed class AcademicManagementController(
     ICampusService _campusService,
     IMajorService _majorService,
@@ -35,7 +34,7 @@ public sealed class AcademicManagementController(
             : HandleFailure(result);
     }
     
-    
+    [Authorize(Roles = "SuperAdmin")]
     [HttpPost("campus")]
     public async Task<IActionResult> CreateCampusAsync(CreateCampusRequest request)
     {
@@ -49,7 +48,8 @@ public sealed class AcademicManagementController(
         OperationResult<CampusResponse> result = await _campusService.GetCampusByIdAsync(id);
         return !result.IsFailure ? Ok(result.Value) : HandleFailure(result);
     }
-
+    
+    [Authorize(Roles = "SuperAdmin")]
     [HttpDelete("campus/{id}")]
     public async Task<IActionResult> DeleteCampusAsync(string id)
     {
@@ -57,6 +57,7 @@ public sealed class AcademicManagementController(
         return !result.IsFailure ? NoContent() : HandleFailure(result);
     }
 
+    [Authorize(Roles = "SuperAdmin")]
     [HttpPut("campus")]
     public async Task<IActionResult> UpdateCampusAsync([FromBody] UpdateCampusRequest request)
     {
@@ -98,7 +99,8 @@ public sealed class AcademicManagementController(
         OperationResult<MajorResponse> result = await _majorService.GetMajorByIdAsync(id);
         return !result.IsFailure ? Ok(result.Value) : HandleFailure(result);
     }
-
+    
+    [Authorize(Roles = "SuperAdmin")]
     [HttpPost("major")]
     public async Task<IActionResult> CreateMajorAsync(CreateMajorRequest request)
     {
@@ -106,6 +108,7 @@ public sealed class AcademicManagementController(
         return !result.IsFailure ? Ok(result.Value) : HandleFailure(result);
     }
 
+    [Authorize(Roles = "SuperAdmin")]
     [HttpPut("major")]
     public async Task<IActionResult> UpdateMajorAsync([FromBody] UpdateMajorRequest request)
     {
@@ -113,6 +116,7 @@ public sealed class AcademicManagementController(
         return !result.IsFailure ? NoContent() : HandleFailure(result);
     }
 
+    [Authorize(Roles = "SuperAdmin")]
     [HttpDelete("major/{id}")]
     public async Task<IActionResult> DeleteMajorAsync(string id)
     {
@@ -146,6 +150,7 @@ public sealed class AcademicManagementController(
         return !result.IsFailure ? Ok(result.Value) : HandleFailure(result);
     }
 
+    [Authorize(Roles = "SuperAdmin")]
     [HttpPost("majorgroup")]
     public async Task<IActionResult> CreateMajorGroupAsync(CreateMajorGroupRequest request)
     {
@@ -153,6 +158,7 @@ public sealed class AcademicManagementController(
         return !result.IsFailure ? Ok(result.Value) : HandleFailure(result);
     }
 
+    [Authorize(Roles = "SuperAdmin")]
     [HttpPut("majorgroup")]
     public async Task<IActionResult> UpdateMajorGroupAsync([FromBody] UpdateMajorGroupRequest request)
     {
@@ -160,6 +166,7 @@ public sealed class AcademicManagementController(
         return !result.IsFailure ? NoContent() : HandleFailure(result);
     }
 
+    [Authorize(Roles = "SuperAdmin")]
     [HttpDelete("majorgroup/{id}")]
     public async Task<IActionResult> DeleteMajorGroupAsync(string id)
     {
@@ -202,6 +209,7 @@ public sealed class AcademicManagementController(
         return !result.IsFailure ? Ok(result) : HandleFailure(result);
     }
 
+    [Authorize(Roles = "SuperAdmin")]
     [HttpPost("capstone")]
     public async Task<IActionResult> CreateCapstoneAsync(CreateCapstoneRequest request)
     {
@@ -209,6 +217,7 @@ public sealed class AcademicManagementController(
         return !result.IsFailure ? Ok(result) : HandleFailure(result);
     }
 
+    [Authorize(Roles = "SuperAdmin")]
     [HttpPut("capstone")]
     public async Task<IActionResult> UpdateCapstoneAsync([FromBody] UpdateCapstoneRequest request)
     {
@@ -216,6 +225,7 @@ public sealed class AcademicManagementController(
         return !result.IsFailure ? NoContent() : HandleFailure(result);
     }
 
+    [Authorize(Roles = "SuperAdmin")]
     [HttpDelete("capstone/{id}")]
     public async Task<IActionResult> DeleteCapstoneAsync(string id)
     {
