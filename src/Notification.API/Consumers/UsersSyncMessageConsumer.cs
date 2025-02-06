@@ -16,7 +16,7 @@ public class UsersSyncMessageConsumer : IConsumer<UsersSyncMessage>
     }
 
     public async Task Consume(ConsumeContext<UsersSyncMessage> context)
-    {
+    {   
         _logger.LogInformation("--> users sync consume in Notification service");
 
         var userEmails = context.Message.UsersSync.Select(x => x.Email).ToArray();
