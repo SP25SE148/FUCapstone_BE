@@ -1,25 +1,29 @@
-using System.Reflection;
-using MassTransit;
+using Notification.API.Extensions;
 using Notification.API.Hubs;
+using Notification.API.Middlewares;
+using Notification.API.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
-builder.Services.AddMassTransit(x => 
-{
-    x.AddConsumers(Assembly.GetExecutingAssembly());
+builder.Services.AddApplicationServices(builder.Configuration);
 
-    x.SetEndpointNameFormatter(new KebabCaseEndpointNameFormatter("noti", false));
-    x.SetKebabCaseEndpointNameFormatter();
-
-    x.UsingRabbitMq((context, cfg) =>
-    {
-        cfg.ConfigureEndpoints(context);
-    });
-});
+builder.Services.AddJwtAuthentication(builder.Configuration);
 
 builder.Services.AddSignalR();
 
 var app = builder.Build();
+
+app.UseMiddleware<ExceptionHandlingMiddleware>();
+
+app.UseAuthentication();
+app.UseAuthorization();
+
+app.MapGet("/test-mail", async (IEmailService emailService) =>
+{
+    await emailService.SendMailAsync("Test", "Hello", "kienltse173477@fpt.edu.vn");
+
+    return Results.Ok();
+});
 
 app.MapHub<NotificationHub>("/notifications");
 

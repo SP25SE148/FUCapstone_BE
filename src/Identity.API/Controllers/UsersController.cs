@@ -17,7 +17,7 @@ public class UsersController(ILogger<UsersController> logger,
     IPublishEndpoint publishEndpoint,
     IMapper mapper) : ApiController
 {
-    private const int BatchSize = 2;
+    private const int BatchSize = 100;
 
     [HttpPost("import/students")]
     [Authorize(Roles = "Manager,Admin,SuperAdmin")]
