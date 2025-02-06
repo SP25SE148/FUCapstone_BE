@@ -7,7 +7,10 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="EASendMail" Version="7.9.2.6" />
+    <PackageReference Include="MailKit" Version="4.8.0" />
     <PackageReference Include="MassTransit.RabbitMQ" Version="8.3.4" />
+    <PackageReference Include="MimeKit" Version="4.8.0" />
   </ItemGroup>
 
   <ItemGroup>

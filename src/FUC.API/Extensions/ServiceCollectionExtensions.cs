@@ -46,6 +46,8 @@ public static class ServiceCollectionExtensions
             }
         );
 
+        services.AddCors();
+
         services.AddHttpContextAccessor();
 
         return services;
