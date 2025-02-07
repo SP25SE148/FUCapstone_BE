@@ -1,9 +1,11 @@
 ﻿using System.Security.Claims;
 using AutoMapper;
 using ClosedXML.Excel;
+using DocumentFormat.OpenXml.VariantTypes;
 using FUC.Common.Contracts;
 using FUC.Common.Shared;
 using Identity.API.Models;
+using Identity.API.Payloads.Requests;
 using MassTransit;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
@@ -19,6 +21,94 @@ public class UsersController(ILogger<UsersController> logger,
 {
     private const int BatchSize = 100;
 
+    [HttpPost("admins")]
+    [Authorize(Roles = "SuperAdmin")]
+    public async Task<IActionResult> CreateAdmin([FromBody] ManagerDto user)
+    {
+        await CreateApplicationUser(new ApplicationUser
+        {
+            UserCode = user.Email.Split("@")[0],
+            FullName = user.UserName,
+            Email = user.Email,
+            UserName = user.Email,
+            CampusId = user.CampusId,
+            CapstoneId = "All",
+            MajorId = "All",
+            EmailConfirmed = true
+        }, "Admin");
+
+        return Ok();
+    }
+
+    [HttpPost("managers")]
+    [Authorize(Roles = "SuperAdmin,Admin")]
+    public async Task<IActionResult> CreateManager([FromBody] ManagerDto user)
+    {
+        await CreateApplicationUser(new ApplicationUser
+        {
+            UserCode = user.Email.Split("@")[0],
+            FullName = user.UserName,
+            Email = user.Email,
+            UserName = user.Email,
+            CampusId = user.CampusId,
+            CapstoneId = "All",
+            MajorId = "All",
+            EmailConfirmed = true,
+        }, "Manager");
+
+        return Ok();
+    }
+
+    [HttpPost("supervisors")]
+    [Authorize(Roles = "SuperAdmin,Admin,Manager")]
+    public async Task<IActionResult> CreateSupervisors([FromBody] SupervisorDto user)
+    {
+        var email = User.FindFirst(ClaimTypes.Email)!.Value;
+
+        var supervisor = new ApplicationUser
+        {
+            UserCode = user.Email.Split("@")[0],
+            FullName = user.UserName,
+            Email = user.Email,
+            UserName = user.Email,
+            CampusId = user.CampusId,
+            CapstoneId = "All",
+            MajorId = user.MajorId,
+            EmailConfirmed = true
+        };
+
+        await CreateApplicationUser(supervisor, "Supervisor");
+
+        await SyncUsersToFUCService(new List<UserSync>{ mapper.Map<UserSync>(supervisor) }, "Supervisor", email, 1, 1);
+
+        return Ok();
+    }
+
+    [HttpPost("students")]
+    [Authorize(Roles = "SuperAdmin,Admin,Manager")]
+    public async Task<IActionResult> CreateStudent([FromBody] StudentDto user)
+    {
+        var email = User.FindFirst(ClaimTypes.Email)!.Value;
+
+        var student = new ApplicationUser
+        {
+            UserCode = user.StudentCode,
+            FullName = user.UserName,
+            Email = user.Email,
+            UserName = user.Email,
+            CampusId = user.CampusId,
+            CapstoneId = user.CapstoneId,
+            MajorId = user.MajorId,
+            EmailConfirmed = true
+        };
+
+        await CreateApplicationUser(student, "Student");
+
+        await SyncUsersToFUCService(new List<UserSync> { mapper.Map<UserSync>(student) }, "Student", email, 1, 1);
+
+        return Ok();
+    }
+
     [HttpPost("import/students")]
     [Authorize(Roles = "Manager,Admin,SuperAdmin")]
     public async Task<IActionResult> ImportStudents(IFormFile file)
@@ -32,7 +122,7 @@ public class UsersController(ILogger<UsersController> logger,
     [Authorize(Roles = "Manager,Admin,SuperAdmin")]
     public async Task<IActionResult> ImportSupervisors(IFormFile file)
     {
-        var result = await ImporProcessingtUsers("Supervisor", file, 
+        var result = await ImporProcessingtUsers("Supervisor", file,
             User.FindFirst(ClaimTypes.Email)!.Value);
         return result.IsSuccess ? Ok() : HandleFailure(result);
     }
@@ -85,7 +175,8 @@ public class UsersController(ILogger<UsersController> logger,
             var user = new ApplicationUser
             {
                 UserCode = usercode,
-                UserName = row.Cell(3).GetValue<string>(),
+                FullName = row.Cell(3).GetValue<string>(),
+                UserName = row.Cell(4).GetValue<string>(),
                 Email = row.Cell(4).GetValue<string>(),
                 MajorId = row.Cell(5).GetValue<string>(),
                 CapstoneId = row.Cell(6).GetValue<string>(),
@@ -114,8 +205,8 @@ public class UsersController(ILogger<UsersController> logger,
 
     private static bool IsValidFile(string userType, IFormFile file)
     {
-        return file != null && file.Length > 0 && 
-            file.FileName.EndsWith(".xlsx", StringComparison.OrdinalIgnoreCase) && 
+        return file != null && file.Length > 0 &&
+            file.FileName.EndsWith(".xlsx", StringComparison.OrdinalIgnoreCase) &&
             file.FileName.Contains(userType, StringComparison.OrdinalIgnoreCase);
     }
 
@@ -140,7 +231,7 @@ public class UsersController(ILogger<UsersController> logger,
     {
         Log.Information("{User} - {role} created", user.UserCode, role);
 
-        var result = await userManager.CreateAsync(user, "Pass123@");
+        var result = await userManager.CreateAsync(user, role == "Student" ? "Pass123@" : "Pass123$");
         if (!result.Succeeded)
         {
             throw new Exception(result.Errors.First().Description);

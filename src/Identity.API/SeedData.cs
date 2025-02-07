@@ -41,7 +41,8 @@ public class SeedData
             manager = new ApplicationUser
             {
                 UserCode = "manager1",
-                UserName = "manager1",
+                FullName = "manager1",
+                UserName = "manager1@fpt.edu.vn",
                 Email = "manager1@fpt.edu.vn",
                 CampusId = "HCM",
                 CapstoneId = "SEP490",
@@ -76,7 +77,8 @@ public class SeedData
             manager2 = new ApplicationUser
             {
                 UserCode = "manager2",
-                UserName = "manager2",
+                FullName = "manager2",
+                UserName = "manager2@fpt.edu.vn",
                 Email = "manager2@fpt.edu.vn",
                 CampusId = "HCM",
                 CapstoneId = "SEP490",
@@ -111,7 +113,8 @@ public class SeedData
             superAdmin = new ApplicationUser
             {
                 UserCode = "superadmin",
-                UserName = "superadmin",
+                FullName = "superadmin",
+                UserName = "superadmin@fpt.edu.vn",
                 Email = "superadmin@fpt.edu.vn",
                 CampusId = "All",
                 CapstoneId = "All",
