@@ -1,7 +1,5 @@
-using Amazon.S3.Model;
 using Amazon.S3;
 using FUC.API.Abstractions;
-using FUC.Service.DTOs;
 using Microsoft.AspNetCore.Mvc;
 using FUC.Service.Abstractions;
 using FUC.Service.Extensions.Options;
