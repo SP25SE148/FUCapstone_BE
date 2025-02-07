@@ -9,6 +9,7 @@ public class ServiceProfiles : Profile
     public ServiceProfiles()
     {
         CreateMap<ApplicationUser, UserSync>()
-            .ForMember(dest => dest.UserId, opt => opt.MapFrom(src => src.Id));
+            .ForMember(dest => dest.UserId, opt => opt.MapFrom(src => src.Id))
+            .ForMember(dest => dest.UserName, opt => opt.MapFrom(src => src.FullName));
     }
 }
