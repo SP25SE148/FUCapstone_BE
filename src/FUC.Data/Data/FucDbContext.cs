@@ -27,10 +27,10 @@ public class FucDbContext : DbContext
 
     public DbSet<Supervisor> Supervisors { get; set; }
 
-    /*protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
+    protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
     {
         optionsBuilder.UseNpgsql("Server=localhost:5432; User Id=postgres;Password=postgrespw;Database=fuc");
-    }*/
+    }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {

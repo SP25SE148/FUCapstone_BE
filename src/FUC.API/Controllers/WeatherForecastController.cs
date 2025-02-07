@@ -8,6 +8,7 @@ using FUC.Service.Extensions.Options;
 using Microsoft.Extensions.Options;
 using Microsoft.AspNetCore.Authorization;
 using FUC.Common.Abstractions;
+using MassTransit;
 
 namespace FUC.API.Controllers;
 
@@ -22,16 +23,19 @@ public class WeatherForecastController : ApiController
     private readonly IS3Service _s3Service;
     private readonly S3Settings s3Settings;
     private readonly ICurrentUser _currentUser;
+    private readonly IBus _bus;
 
     public WeatherForecastController(ILogger<WeatherForecastController> logger, 
         IS3Service s3Service, 
         IOptions<S3Settings> options,
-        ICurrentUser currentUser)
+        ICurrentUser currentUser,
+        IBus bus)
     {
         _logger = logger;
         _s3Service = s3Service;
         s3Settings = options.Value; 
         _currentUser = currentUser;
+        _bus = bus;
     }
 
     [HttpGet(Name = "GetWeatherForecast")]
@@ -53,10 +57,10 @@ public class WeatherForecastController : ApiController
     }
 
     [HttpPost("test")]
-    public IActionResult Test([FromBody] User user) {
+    public IActionResult Test() {
         _logger.LogInformation("Test validation");
 
-        return Ok(user);
+        return Ok();
     }
 
     [HttpGet("images/{key}")]

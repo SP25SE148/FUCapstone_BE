@@ -110,7 +110,7 @@ public class UsersController(ILogger<UsersController> logger,
     }
 
     [HttpPost("import/students")]
-    [Authorize(Roles = $"{UserRoles.SuperAdmin},{UserRoles.Admin}")]
+    [Authorize(Roles = $"{UserRoles.SuperAdmin},{UserRoles.Admin},{UserRoles.Manager}")]
     public async Task<IActionResult> ImportStudents(IFormFile file)
     {
         var email = User.FindFirst(ClaimTypes.Email)!.Value;
@@ -119,7 +119,7 @@ public class UsersController(ILogger<UsersController> logger,
     }
 
     [HttpPost("import/supervisors")]
-    [Authorize(Roles = $"{UserRoles.SuperAdmin},{UserRoles.Admin}")]
+    [Authorize(Roles = $"{UserRoles.SuperAdmin},{UserRoles.Admin},{UserRoles.Manager}")]
     public async Task<IActionResult> ImportSupervisors(IFormFile file)
     {
         var result = await ImporProcessingtUsers(UserRoles.Supervisor, file,
