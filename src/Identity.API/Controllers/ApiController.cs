@@ -29,7 +29,7 @@ public class ApiController : ControllerBase
         new()
         {
             Title = error.Code,
-            Type = Constants.BadRequestType,
+            Type = ProblemDetailTypes.BadRequestType,
             Detail = error.Message,
             Status = StatusCodes.Status400BadRequest,
             Extensions = {

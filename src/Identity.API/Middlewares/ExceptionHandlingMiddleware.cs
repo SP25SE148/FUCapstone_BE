@@ -29,7 +29,7 @@ public class ExceptionHandlingMiddleware
             {
                 Status = StatusCodes.Status500InternalServerError,
                 Title = "Server Error",
-                Type = Constants.InternalExceptionType,
+                Type = ProblemDetailTypes.InternalExceptionType,
                 Detail = ex.Message // Remove it when deploy
             }; // no more information for 500 error => security problems
 

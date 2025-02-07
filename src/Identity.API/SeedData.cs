@@ -1,4 +1,5 @@
-﻿using Identity.API.Data;
+﻿using FUC.Common.Constants;
+using Identity.API.Data;
 using Identity.API.Models;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
@@ -19,11 +20,11 @@ public class SeedData
 
         var roles = new List<IdentityRole>
         {
-            new IdentityRole { Name = "Student" },
-            new IdentityRole { Name = "Supervisor" },
-            new IdentityRole { Name = "SuperAdmin" },
-            new IdentityRole { Name = "Manager" },
-            new IdentityRole { Name = "Admin" },
+            new IdentityRole { Name = UserRoles.Student },
+            new IdentityRole { Name = UserRoles.Supervisor },
+            new IdentityRole { Name = UserRoles.SuperAdmin },
+            new IdentityRole { Name = UserRoles.Manager },
+            new IdentityRole { Name = UserRoles.Admin },
         };
 
         if (roleMgr.Roles.Any() && userMgr.Users.Any())
@@ -56,7 +57,7 @@ public class SeedData
                 throw new Exception(result.Errors.First().Description);
             }
 
-            result = await userMgr.AddToRoleAsync(manager, "Manager");
+            result = await userMgr.AddToRoleAsync(manager, UserRoles.Manager);
 
             if (!result.Succeeded)
             {
@@ -92,7 +93,7 @@ public class SeedData
                 throw new Exception(result.Errors.First().Description);
             }
 
-            result = await userMgr.AddToRoleAsync(manager2, "Manager");
+            result = await userMgr.AddToRoleAsync(manager2, UserRoles.Manager);
 
             if (!result.Succeeded)
             {
@@ -128,7 +129,7 @@ public class SeedData
                 throw new Exception(result.Errors.First().Description);
             }
 
-            result = await userMgr.AddToRoleAsync(superAdmin, "SuperAdmin");
+            result = await userMgr.AddToRoleAsync(superAdmin, UserRoles.SuperAdmin);
 
             if (!result.Succeeded)
             {
