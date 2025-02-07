@@ -1,7 +1,7 @@
 ﻿using System.Security.Claims;
 using AutoMapper;
 using ClosedXML.Excel;
-using DocumentFormat.OpenXml.VariantTypes;
+using FUC.Common.Constants;
 using FUC.Common.Contracts;
 using FUC.Common.Shared;
 using Identity.API.Models;
@@ -22,7 +22,7 @@ public class UsersController(ILogger<UsersController> logger,
     private const int BatchSize = 100;
 
     [HttpPost("admins")]
-    [Authorize(Roles = "SuperAdmin")]
+    [Authorize(Roles = $"{UserRoles.SuperAdmin}")]
     public async Task<IActionResult> CreateAdmin([FromBody] ManagerDto user)
     {
         await CreateApplicationUser(new ApplicationUser
@@ -35,13 +35,13 @@ public class UsersController(ILogger<UsersController> logger,
             CapstoneId = "All",
             MajorId = "All",
             EmailConfirmed = true
-        }, "Admin");
+        }, UserRoles.Admin);
 
         return Ok();
     }
 
     [HttpPost("managers")]
-    [Authorize(Roles = "SuperAdmin,Admin")]
+    [Authorize(Roles = $"{UserRoles.SuperAdmin},{UserRoles.Admin}")]
     public async Task<IActionResult> CreateManager([FromBody] ManagerDto user)
     {
         await CreateApplicationUser(new ApplicationUser
@@ -54,17 +54,15 @@ public class UsersController(ILogger<UsersController> logger,
             CapstoneId = "All",
             MajorId = "All",
             EmailConfirmed = true,
-        }, "Manager");
+        }, UserRoles.Manager);
 
         return Ok();
     }
 
     [HttpPost("supervisors")]
-    [Authorize(Roles = "SuperAdmin,Admin,Manager")]
+    [Authorize(Roles = $"{UserRoles.SuperAdmin},{UserRoles.Admin},{UserRoles.Manager}")]
     public async Task<IActionResult> CreateSupervisors([FromBody] SupervisorDto user)
     {
-        var email = User.FindFirst(ClaimTypes.Email)!.Value;
-
         var supervisor = new ApplicationUser
         {
             UserCode = user.Email.Split("@")[0],
@@ -77,19 +75,19 @@ public class UsersController(ILogger<UsersController> logger,
             EmailConfirmed = true
         };
 
-        await CreateApplicationUser(supervisor, "Supervisor");
+        await CreateApplicationUser(supervisor, UserRoles.Supervisor);
 
-        await SyncUsersToFUCService(new List<UserSync>{ mapper.Map<UserSync>(supervisor) }, "Supervisor", email, 1, 1);
+        await SyncUsersToFUCService(new List<UserSync>{ mapper.Map<UserSync>(supervisor) }, 
+            UserRoles.Supervisor, 
+            User.FindFirst(ClaimTypes.Email)!.Value, 1, 1);
 
         return Ok();
     }
 
     [HttpPost("students")]
-    [Authorize(Roles = "SuperAdmin,Admin,Manager")]
+    [Authorize(Roles = $"{UserRoles.SuperAdmin},{UserRoles.Admin},{UserRoles.Manager}")]
     public async Task<IActionResult> CreateStudent([FromBody] StudentDto user)
     {
-        var email = User.FindFirst(ClaimTypes.Email)!.Value;
-
         var student = new ApplicationUser
         {
             UserCode = user.StudentCode,
@@ -102,27 +100,29 @@ public class UsersController(ILogger<UsersController> logger,
             EmailConfirmed = true
         };
 
-        await CreateApplicationUser(student, "Student");
+        await CreateApplicationUser(student, UserRoles.Student);
 
-        await SyncUsersToFUCService(new List<UserSync> { mapper.Map<UserSync>(student) }, "Student", email, 1, 1);
+        await SyncUsersToFUCService(new List<UserSync> { mapper.Map<UserSync>(student) }, 
+            UserRoles.Student, 
+            User.FindFirst(ClaimTypes.Email)!.Value, 1, 1);
 
         return Ok();
     }
 
     [HttpPost("import/students")]
-    [Authorize(Roles = "Manager,Admin,SuperAdmin")]
+    [Authorize(Roles = $"{UserRoles.SuperAdmin},{UserRoles.Admin}")]
     public async Task<IActionResult> ImportStudents(IFormFile file)
     {
         var email = User.FindFirst(ClaimTypes.Email)!.Value;
-        var result = await ImporProcessingtUsers("Student", file, email);
+        var result = await ImporProcessingtUsers(UserRoles.Student, file, email);
         return result.IsSuccess ? Ok() : HandleFailure(result);
     }
 
     [HttpPost("import/supervisors")]
-    [Authorize(Roles = "Manager,Admin,SuperAdmin")]
+    [Authorize(Roles = $"{UserRoles.SuperAdmin},{UserRoles.Admin}")]
     public async Task<IActionResult> ImportSupervisors(IFormFile file)
     {
-        var result = await ImporProcessingtUsers("Supervisor", file,
+        var result = await ImporProcessingtUsers(UserRoles.Supervisor, file,
             User.FindFirst(ClaimTypes.Email)!.Value);
         return result.IsSuccess ? Ok() : HandleFailure(result);
     }

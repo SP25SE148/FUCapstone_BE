@@ -175,7 +175,7 @@ public class S3Service(
         }
         catch (Exception e)
         {
-            logger.LogError($"An error occurred: {e.Message}");
+            logger.LogError("An error occurred: {Message}", e.Message);
 
             throw;
         }
@@ -230,7 +230,7 @@ public class S3Service(
         }
         catch (Exception ex)
         {
-            logger.LogError(ex, "Failed to move files from {s3SourceKey} to {destinationFolder}", s3SourceKey, destinationFolder);
+            logger.LogError(ex, "Failed to move files from {S3SourceKey} to {DestinationFolder}", s3SourceKey, destinationFolder);
         }
 
         return false;
@@ -259,7 +259,7 @@ public class S3Service(
         }
         catch (Exception e)
         {
-            logger.LogError(e, "Cannot get metadata for {key} from {bucketName}", key, bucketName);
+            logger.LogError(e, "Cannot get metadata for {Key} from {BucketName}", key, bucketName);
 
             throw;
         }

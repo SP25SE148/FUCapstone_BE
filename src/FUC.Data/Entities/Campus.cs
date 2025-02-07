@@ -13,5 +13,6 @@ public sealed class Campus : AuditableSoftDeleteEntity
 
     public  ICollection<Group> Groups { get; set; } = new List<Group>();
     public  ICollection<Student> Students { get; set; } = new List<Student>();
+    public  ICollection<Supervisor> Supervisors { get; set; } = new List<Supervisor>();
    
 }

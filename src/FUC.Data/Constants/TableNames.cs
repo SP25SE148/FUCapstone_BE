@@ -10,4 +10,5 @@ internal static class TableNames {
     internal const string MajorGroup = nameof(MajorGroup);
     internal const string Semester = nameof(Semester);
     internal const string Student = nameof(Student);
+    internal const string Supervisor = nameof(Supervisor);
 }

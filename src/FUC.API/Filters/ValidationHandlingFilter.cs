@@ -38,7 +38,7 @@ public sealed class ValidationHandlingFilter(IServiceProvider serviceProvider) :
         var problemDetails = new ValidationProblemDetails
         {
             Title = IValidationResult.ValidationError.Code,
-            Type = Constants.BadRequestType,
+            Type = ProblemDetailTypes.BadRequestType,
             Status = StatusCodes.Status400BadRequest,
             Errors = errors,
             Extensions = new Dictionary<string, object?>

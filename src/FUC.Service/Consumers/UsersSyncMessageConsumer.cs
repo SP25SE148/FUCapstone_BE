@@ -1,4 +1,5 @@
 ﻿using EFCore.BulkExtensions;
+using FUC.Common.Constants;
 using FUC.Common.Contracts;
 using FUC.Data.Data;
 using FUC.Data.Entities;
@@ -28,10 +29,11 @@ public class UsersSyncMessageConsumer : IConsumer<UsersSyncMessage>
 
         switch (context.Message.UserType)
         {
-            case "Student":
+            case UserRoles.Student:
                 var students = users.Select(x => new Student
                 {
                     Id = x.UserCode,
+                    FullName = x.UserName,
                     MajorId = x.MajorId,
                     CapstoneId = x.CapstoneId,
                     CampusId = x.CampusId,
@@ -46,8 +48,21 @@ public class UsersSyncMessageConsumer : IConsumer<UsersSyncMessage>
                 _logger.LogInformation("Sync attempt {Times}", context.Message.AttempTime);
                 break;
 
-            case "Supervisor":
-                // TODO: Bulk insert Supervisor
+            case UserRoles.Supervisor:
+                var supervisors = users.Select(x => new Supervisor
+                {
+                    Id = x.UserCode,
+                    FullName = x.UserName,
+                    MajorId = x.MajorId,
+                    CampusId = x.CampusId,
+                    Email = x.Email,
+                    CreatedBy = context.Message.CreatedBy,
+                    CreatedDate = DateTime.SpecifyKind(DateTime.Now, DateTimeKind.Utc)
+                }).ToList();
+
+                await _dbContext.BulkInsertAsync(supervisors);
+
+                _logger.LogInformation("Sync attempt {Times}", context.Message.AttempTime);
                 break;
         }
     }

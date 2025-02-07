@@ -5,12 +5,9 @@ namespace FUC.Data.Data;
 
 public class FucDbContext : DbContext
 {
-    public FucDbContext()
-    { }
+    public FucDbContext() { }
 
-    public FucDbContext(DbContextOptions<FucDbContext> options) : base(options)
-    {
-    }
+    public FucDbContext(DbContextOptions<FucDbContext> options) : base(options) { }
 
     public DbSet<Campus> Campuses { get; set; }
 
@@ -28,10 +25,12 @@ public class FucDbContext : DbContext
 
     public DbSet<Student> Students { get; set; }
 
-    protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
+    public DbSet<Supervisor> Supervisors { get; set; }
+
+    /*protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
     {
         optionsBuilder.UseNpgsql("Server=localhost:5432; User Id=postgres;Password=postgrespw;Database=fuc");
-    }
+    }*/
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
