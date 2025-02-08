@@ -6,12 +6,12 @@ namespace FUC.Data.Entities;
 
 public sealed class Student : AuditableSoftDeleteEntity
 {
-    public string Id { get; set; } = string.Empty;
+    public string Id { get; set; }
     public string FullName { get; set; }
     public string MajorId { get; set; }
     public string CapstoneId { get; set; }
     public string CampusId { get; set; }
-    public string Email { get; set; } = string.Empty;
+    public string Email { get; set; }
     public bool IsEligible { get; set; }
     public StudentStatus Status { get; set; }
 

@@ -15,11 +15,12 @@ public class AppDbInitializer
         // Read and deserialize combined JSON file
         var majorGroupData = await File.ReadAllTextAsync("SeedData/MajorGroup.json");
         var campusData = await File.ReadAllTextAsync("SeedData/Campus.json");
+        var semesterData = await File.ReadAllTextAsync("SeedData/Semester.json");
         var options = new JsonSerializerOptions { PropertyNameCaseInsensitive = true };
 
         var majorGroups = JsonSerializer.Deserialize<List<MajorGroup>>(majorGroupData, options);
         var campuses = JsonSerializer.Deserialize<List<Campus>>(campusData, options);
-
+        var semesters = JsonSerializer.Deserialize<List<Semester>>(semesterData, options);
         using (var serviceScope = applicationBuilder.ApplicationServices.CreateScope())
         {
             var services = serviceScope.ServiceProvider;
@@ -66,6 +67,23 @@ public class AppDbInitializer
             if (!context.Set<Campus>().Any() && campuses is not null)
             {
                 context.Set<Campus>().AddRange(campuses);
+            }
+            
+            if (!context.Set<Semester>().Any() && semesters is not null)
+            {
+                foreach (var semester in semesters)
+                {
+                    if (semester.StartDate.Kind == DateTimeKind.Unspecified)
+                    {
+                        semester.StartDate = DateTime.SpecifyKind(semester.StartDate, DateTimeKind.Utc);
+                    }
+                    
+                    if (semester.EndDate.Kind == DateTimeKind.Unspecified)
+                    {
+                        semester.EndDate = DateTime.SpecifyKind(semester.EndDate, DateTimeKind.Utc);
+                    }
+                    context.Set<Semester>().Add(semester);
+                }
             }
 
             await context.SaveChangesAsync();

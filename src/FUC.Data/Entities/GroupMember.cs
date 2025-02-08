@@ -9,7 +9,7 @@ public sealed class GroupMember : Entity
     public Guid Id { get; set; }
     public Guid GroupId { get; set; }
     public string StudentId { get; set; } = string.Empty;
-    
+
     public bool IsLeader { get; set; }
     public GroupMemberStatus Status { get; set; }
 

@@ -1,3 +1,8 @@
 ﻿namespace FUC.Data.Enums;
 
-public enum StudentStatus {  }
+public enum StudentStatus
+{
+    Passed,
+    NotPassed,
+    InProgress
+}
