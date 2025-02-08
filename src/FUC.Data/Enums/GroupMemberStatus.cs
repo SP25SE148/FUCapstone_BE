@@ -1,3 +1,8 @@
 ﻿namespace FUC.Data.Enums;
 
-public enum GroupMemberStatus {  }
+public enum GroupMemberStatus
+{
+    UnderReview,
+    Accepted,
+    Rejected
+}

@@ -3,6 +3,7 @@ using FUC.Common.Constants;
 using FUC.Common.Contracts;
 using FUC.Data.Data;
 using FUC.Data.Entities;
+using FUC.Data.Enums;
 using MassTransit;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
@@ -39,6 +40,7 @@ public class UsersSyncMessageConsumer : IConsumer<UsersSyncMessage>
                     CampusId = x.CampusId,
                     Email = x.Email,
                     IsEligible = true,
+                    Status = StudentStatus.InProgress,
                     CreatedBy = context.Message.CreatedBy,
                     CreatedDate = DateTime.SpecifyKind(DateTime.Now, DateTimeKind.Utc)
                 }).ToList();
