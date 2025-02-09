@@ -21,6 +21,7 @@ public sealed class Group : AuditableSoftDeleteEntity
     
     public Major Major { get; set; } = null!;
     public Semester Semester { get; set; } = null!;
+    
     public Campus Campus { get; set; } = null!;
     public Capstone Capstone { get; set; } = null!;
     public ICollection<GroupMember> GroupMembers { get; set; } = new List<GroupMember>();

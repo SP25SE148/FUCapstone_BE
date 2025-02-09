@@ -9,6 +9,7 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace FUC.API.Controllers;
 
+[Authorize]
 public class GroupController(IGroupService groupService) : ApiController
 {
     [Authorize(Roles = nameof(UserRoles.Student))]
@@ -16,6 +17,15 @@ public class GroupController(IGroupService groupService) : ApiController
     public async Task<IActionResult> CreateGroupAsync(CreateGroupRequest request)
     {
         OperationResult<Guid> result = await groupService.CreateGroupAsync(request,User.FindFirst(ClaimTypes.GivenName)!.Value);
+        return !result.IsFailure
+            ? Ok(result.Value)
+            : HandleFailure(result);
+    }
+
+    [HttpGet]
+    public async Task<IActionResult> GetGroups()
+    {
+        OperationResult<IEnumerable<GroupResponse>> result = await groupService.GetAllGroupAsync();
         return !result.IsFailure
             ? Ok(result.Value)
             : HandleFailure(result);
