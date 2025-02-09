@@ -12,6 +12,7 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace FUC.API.Controllers;
 
+[Authorize]
 public sealed class AcademicManagementController(
     ICampusService campusService,
     IMajorService majorService,

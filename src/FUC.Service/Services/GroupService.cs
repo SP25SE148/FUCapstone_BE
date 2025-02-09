@@ -108,4 +108,41 @@ public class GroupService(IUnitOfWork<FucDbContext> uow, IMapper mapper, IPublis
         await _uow.CommitAsync();
         return newGroup.Id;
     }
+
+    public async Task<OperationResult<IEnumerable<GroupResponse>>> GetAllGroupAsync()
+    {
+        List<Group> groups = await _groupRepository.GetAllAsync(
+            g => 
+                g.Include(g => g.GroupMembers)
+                .ThenInclude(gm => gm.Student)
+                .Include(g => g.Major)
+                .Include(g => g.Semester)
+                .Include(g => g.Capstone)
+                .Include(g => g.Campus));
+
+         return groups.Count > 0
+            ? OperationResult.Success(_mapper.Map<IEnumerable<GroupResponse>>(groups))
+            : OperationResult.Failure<IEnumerable<GroupResponse>>(Error.NullValue);
+
+    }
+
+    public Task<OperationResult<IEnumerable<GroupResponse>>> GetAllGroupBySemesterIdAsync(string semesterId)
+    {
+        throw new NotImplementedException();
+    }
+
+    public Task<OperationResult<IEnumerable<GroupResponse>>> GetAllGroupByMajorIdAsync(string majorId)
+    {
+        throw new NotImplementedException();
+    }
+
+    public Task<OperationResult<IEnumerable<GroupResponse>>> GetAllGroupByCapstoneIdAsync(string capstoneId)
+    {
+        throw new NotImplementedException();
+    }
+
+    public Task<OperationResult<IEnumerable<GroupResponse>>> GetGroupByIdAsync(Guid id)
+    {
+        throw new NotImplementedException();
+    }
 }
