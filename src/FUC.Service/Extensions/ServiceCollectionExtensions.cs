@@ -52,7 +52,7 @@ public static class ServiceCollectionExtensions
         services.AddScoped<ICapstoneService,CapstoneService>();
         services.AddScoped<IMajorService,MajorService>();
         services.AddScoped<IMajorGroupService,MajorGroupService>();
-        services.AddScoped<IGroupService, GroupService>();
+        //services.AddScoped<IGroupService, GroupService>();
         services.AddScoped<ISemesterService, SemesterService>();
         // DI RabbitMQ
         services.AddMassTransit(x =>
