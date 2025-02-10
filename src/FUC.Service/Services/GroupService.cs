@@ -1,4 +1,5 @@
 ﻿using AutoMapper;
+using Azure;
 using DocumentFormat.OpenXml.Office2010.ExcelAc;
 using FUC.Common.Shared;
 using FUC.Data;
@@ -10,6 +11,9 @@ using FUC.Service.Abstractions;
 using FUC.Service.DTOs.GroupDTO;
 using MassTransit;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Query;
+using Microsoft.VisualBasic;
+using NetTopologySuite.Geometries;
 
 namespace FUC.Service.Services;
 
@@ -112,13 +116,7 @@ public class GroupService(IUnitOfWork<FucDbContext> uow, IMapper mapper, IPublis
     public async Task<OperationResult<IEnumerable<GroupResponse>>> GetAllGroupAsync()
     {
         List<Group> groups = await _groupRepository.GetAllAsync(
-            g => 
-                g.Include(g => g.GroupMembers)
-                .ThenInclude(gm => gm.Student)
-                .Include(g => g.Major)
-                .Include(g => g.Semester)
-                .Include(g => g.Capstone)
-                .Include(g => g.Campus));
+            CreateIncludeForGroupResponse());
 
          return groups.Count > 0
             ? OperationResult.Success(_mapper.Map<IEnumerable<GroupResponse>>(groups))
@@ -126,23 +124,70 @@ public class GroupService(IUnitOfWork<FucDbContext> uow, IMapper mapper, IPublis
 
     }
 
-    public Task<OperationResult<IEnumerable<GroupResponse>>> GetAllGroupBySemesterIdAsync(string semesterId)
+    public async Task<OperationResult<IEnumerable<GroupResponse>>> GetAllGroupBySemesterIdAsync(string semesterId)
     {
-        throw new NotImplementedException();
+        IList<Group> groups = await _groupRepository.FindAsync(
+            g => g.SemesterId == semesterId,
+            CreateIncludeForGroupResponse());
+
+        return groups.Count > 0
+            ? OperationResult.Success(_mapper.Map<IEnumerable<GroupResponse>>(groups.ToList()))
+            : OperationResult.Failure<IEnumerable<GroupResponse>>(Error.NullValue);
     }
 
-    public Task<OperationResult<IEnumerable<GroupResponse>>> GetAllGroupByMajorIdAsync(string majorId)
+    public async Task<OperationResult<IEnumerable<GroupResponse>>> GetAllGroupByMajorIdAsync(string majorId)
     {
-        throw new NotImplementedException();
+        IList<Group> groups = await _groupRepository.FindAsync(
+            g => g.MajorId == majorId,
+            CreateIncludeForGroupResponse());
+
+        return groups.Count > 0
+            ? OperationResult.Success(_mapper.Map<IEnumerable<GroupResponse>>(groups.ToList()))
+            : OperationResult.Failure<IEnumerable<GroupResponse>>(Error.NullValue);
     }
 
-    public Task<OperationResult<IEnumerable<GroupResponse>>> GetAllGroupByCapstoneIdAsync(string capstoneId)
+    public async Task<OperationResult<IEnumerable<GroupResponse>>> GetAllGroupByCapstoneIdAsync(string capstoneId)
     {
-        throw new NotImplementedException();
+        IList<Group> groups = await _groupRepository.FindAsync(
+            g => g.CapstoneId == capstoneId,
+            CreateIncludeForGroupResponse());
+
+        return groups.Count > 0
+            ? OperationResult.Success(_mapper.Map<IEnumerable<GroupResponse>>(groups.ToList()))
+            : OperationResult.Failure<IEnumerable<GroupResponse>>(Error.NullValue);
     }
 
-    public Task<OperationResult<IEnumerable<GroupResponse>>> GetGroupByIdAsync(Guid id)
+    public async Task<OperationResult<IEnumerable<GroupResponse>>> GetAllGroupByCampusIdAsync(string campusId)
     {
-        throw new NotImplementedException();
+        IList<Group> groups = await _groupRepository.FindAsync(
+            g => g.CampusId == campusId,
+            CreateIncludeForGroupResponse());
+
+        return groups.Count > 0
+            ? OperationResult.Success(_mapper.Map<IEnumerable<GroupResponse>>(groups.ToList()))
+            : OperationResult.Failure<IEnumerable<GroupResponse>>(Error.NullValue);
     }
+
+    public async Task<OperationResult<GroupResponse>> GetGroupByIdAsync(Guid id)
+    {
+        Group? group = await _groupRepository.GetAsync(g => g.Id == id,
+            false,
+            CreateIncludeForGroupResponse(),
+            cancellationToken: default);
+        return group is null
+            ? OperationResult.Failure<GroupResponse>(Error.NullValue)
+            : OperationResult.Success(_mapper.Map<GroupResponse>(group));
+    }
+    
+    private static Func<IQueryable<Group>, IIncludableQueryable<Group, object>> CreateIncludeForGroupResponse()
+    {
+        return g => 
+            g.Include(g => g.GroupMembers)
+                .ThenInclude(gm => gm.Student)
+                .Include(g => g.Major)
+                .Include(g => g.Semester)
+                .Include(g => g.Capstone)
+                .Include(g => g.Campus);
+    }
+    
 }
