@@ -10,9 +10,8 @@ public interface IGroupService
     Task<OperationResult<IEnumerable<GroupResponse>>> GetAllGroupBySemesterIdAsync(string semesterId);
     Task<OperationResult<IEnumerable<GroupResponse>>> GetAllGroupByMajorIdAsync(string majorId);
     Task<OperationResult<IEnumerable<GroupResponse>>> GetAllGroupByCapstoneIdAsync(string capstoneId);
-    Task<OperationResult<IEnumerable<GroupResponse>>> GetGroupByIdAsync(Guid id);
-    
-    
+    Task<OperationResult<IEnumerable<GroupResponse>>> GetAllGroupByCampusIdAsync(string campusId);
+    Task<OperationResult<GroupResponse>> GetGroupByIdAsync(Guid id);
     
     
     
