@@ -70,5 +70,5 @@ catch (Exception ex) when (
 finally
 {
     Log.Information("Shut down complete");
-    Log.CloseAndFlush();
+    await Log.CloseAndFlushAsync();
 }

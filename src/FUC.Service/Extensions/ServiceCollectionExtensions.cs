@@ -59,11 +59,16 @@ public static class ServiceCollectionExtensions
         {
             x.AddConsumers(Assembly.GetExecutingAssembly());
 
-            //x.SetEndpointNameFormatter(new KebabCaseEndpointNameFormatter("fuc", false));
-            x.SetKebabCaseEndpointNameFormatter();
+            x.SetEndpointNameFormatter(new KebabCaseEndpointNameFormatter("fuc", false));
+            //x.SetKebabCaseEndpointNameFormatter();
 
             x.UsingRabbitMq((context, cfg) =>
             {
+                cfg.Host(configuration["RabbitMq:Host"], "/", host => {
+                    host.Username(configuration.GetValue("RabbitMq:Username", "guest"));
+                    host.Password(configuration.GetValue("RabbitMq:Password", "guest"));
+                });
+
                 cfg.ConfigureEndpoints(context);
             });
         });
