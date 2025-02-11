@@ -3,7 +3,9 @@ using AutoMapper;
 using ClosedXML.Excel;
 using FUC.Common.Constants;
 using FUC.Common.Contracts;
+using FUC.Common.IntegrationEventLog.Services;
 using FUC.Common.Shared;
+using Identity.API.Data;
 using Identity.API.Models;
 using Identity.API.Payloads.Requests;
 using MassTransit;
@@ -16,7 +18,9 @@ namespace Identity.API.Controllers;
 
 public class UsersController(ILogger<UsersController> logger,
     UserManager<ApplicationUser> userManager,
+    ApplicationDbContext dbContext,
     IPublishEndpoint publishEndpoint,
+    IIntegrationEventService _eventService,
     IMapper mapper) : ApiController
 {
     private const int BatchSize = 100;
@@ -105,6 +109,40 @@ public class UsersController(ILogger<UsersController> logger,
         await SyncUsersToFUCService(new List<UserSync> { mapper.Map<UserSync>(student) }, 
             UserRoles.Student, 
             User.FindFirst(ClaimTypes.Email)!.Value, 1, 1);
+
+        return Ok();
+    }
+
+    [HttpPost("test/bus")]
+    public async Task<IActionResult> TestBus()
+    {
+        logger.LogInformation("Test publish message into queue with EventService");
+
+        await using var transaction = await dbContext.BeginTransactionAsync();
+
+        var user = new ApplicationUser
+        {
+            UserCode = "SE173411",
+            FullName = "Test",
+            UserName = "test@fpt.edu.vn",
+            Email = "test@fpt.edu.vn",
+            MajorId = "SE",
+            CapstoneId = "SEP490",
+            CampusId = "HCM",
+            EmailConfirmed = true,
+        };
+
+        await CreateApplicationUser(user, UserRoles.Student);
+
+        _eventService.SaveEventAsync(new UsersSyncMessage
+        {
+            AttempTime = 1,
+            UserType = "Test",
+            UsersSync = new List<UserSync> { mapper.Map<UserSync>(user) },
+            CreatedBy = "test"
+        });
+
+        await dbContext.CommitTransactionAsync(transaction);
 
         return Ok();
     }

@@ -7,6 +7,7 @@ using Microsoft.Extensions.Options;
 using Microsoft.AspNetCore.Authorization;
 using FUC.Common.Abstractions;
 using MassTransit;
+using FUC.Common.Contracts;
 
 namespace FUC.API.Controllers;
 
@@ -22,18 +23,21 @@ public class WeatherForecastController : ApiController
     private readonly S3Settings s3Settings;
     private readonly ICurrentUser _currentUser;
     private readonly IBus _bus;
+    private readonly IPublishEndpoint _publishEndpoint;
 
     public WeatherForecastController(ILogger<WeatherForecastController> logger, 
         IS3Service s3Service, 
         IOptions<S3Settings> options,
         ICurrentUser currentUser,
-        IBus bus)
+        IBus bus,
+        IPublishEndpoint publishEndpoint)
     {
         _logger = logger;
         _s3Service = s3Service;
         s3Settings = options.Value; 
         _currentUser = currentUser;
         _bus = bus;
+        _publishEndpoint = publishEndpoint; 
     }
 
     [HttpGet(Name = "GetWeatherForecast")]
@@ -54,9 +58,38 @@ public class WeatherForecastController : ApiController
         .ToArray();
     }
 
-    [HttpPost("test")]
-    public IActionResult Test() {
-        _logger.LogInformation("Test validation");
+    [HttpPost("test/bus")]
+    public async Task<IActionResult> TestBus() 
+    {
+        _logger.LogInformation("Test publish message into queue");
+
+        var endpoint = await _bus.GetSendEndpoint(new Uri("rabbitmq://localhost/fuc-users-sync-message"));
+
+        await endpoint.Send(new UsersSyncMessage
+        {
+            AttempTime = 1,
+            CreatedBy = "abc",
+            UsersSync = [],
+            UserType = "abc"
+        });
+
+        return Ok();
+    }
+
+    [HttpPost("test/pub")]
+    public async Task<IActionResult> TestPub()
+    {
+        _logger.LogInformation("Test publish message into queue");
+
+        var endpoint = await _bus.GetSendEndpoint(new Uri("rabbitmq://localhost/fuc-users-sync-message"));
+
+        await endpoint.Send(new UsersSyncMessage
+        {
+            AttempTime = 1,
+            CreatedBy = "abc",
+            UsersSync = [],
+            UserType = "abc"
+        });
 
         return Ok();
     }
