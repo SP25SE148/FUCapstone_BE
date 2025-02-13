@@ -23,17 +23,17 @@ public static class ApplicationServiceExtensions
     public static IServiceCollection AddApplicationServices(this IServiceCollection services,
     IConfiguration configuration)
     {
-        services.AddScoped<IntegrationEventsInterceptor>();
+        // services.AddScoped<IntegrationEventsInterceptor>();
 
         services.AddDbContext<ApplicationDbContext>((provider, options) =>
         {
-            var integrationEventInterceptor = provider.GetService<IntegrationEventsInterceptor>();
-            options.UseNpgsql(configuration.GetConnectionString("DefaultConnection"))
-                .AddInterceptors(integrationEventInterceptor);
+            // var integrationEventInterceptor = provider.GetService<IntegrationEventsInterceptor>();
+            options.UseNpgsql(configuration.GetConnectionString("DefaultConnection"));
+                // .AddInterceptors(integrationEventInterceptor);
         });
-
-        services.AddTransient<IIntegrationEventLogService, IntegrationEventLogService<ApplicationDbContext>>();
-        services.AddTransient<IIntegrationEventService, IdentityIntegrationEventService>();
+        //
+        // services.AddTransient<IIntegrationEventLogService, IntegrationEventLogService<ApplicationDbContext>>();
+        // services.AddTransient<IIntegrationEventService, IdentityIntegrationEventService>();
 
         services.AddAutoMapper(typeof(ServiceProfiles));
 

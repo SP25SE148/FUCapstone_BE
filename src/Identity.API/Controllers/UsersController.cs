@@ -8,6 +8,7 @@ using FUC.Common.Shared;
 using Identity.API.Data;
 using Identity.API.Models;
 using Identity.API.Payloads.Requests;
+using Identity.API.Payloads.Responses;
 using MassTransit;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
@@ -20,7 +21,7 @@ public class UsersController(ILogger<UsersController> logger,
     UserManager<ApplicationUser> userManager,
     ApplicationDbContext dbContext,
     IPublishEndpoint publishEndpoint,
-    IIntegrationEventService _eventService,
+    // IIntegrationEventService _eventService,
     IMapper mapper) : ApiController
 {
     private const int BatchSize = 100;
@@ -113,39 +114,39 @@ public class UsersController(ILogger<UsersController> logger,
         return Ok();
     }
 
-    [HttpPost("test/bus")]
-    public async Task<IActionResult> TestBus()
-    {
-        logger.LogInformation("Test publish message into queue with EventService");
-
-        await using var transaction = await dbContext.BeginTransactionAsync();
-
-        var user = new ApplicationUser
-        {
-            UserCode = "SE173411",
-            FullName = "Test",
-            UserName = "test@fpt.edu.vn",
-            Email = "test@fpt.edu.vn",
-            MajorId = "SE",
-            CapstoneId = "SEP490",
-            CampusId = "HCM",
-            EmailConfirmed = true,
-        };
-
-        await CreateApplicationUser(user, UserRoles.Student);
-
-        _eventService.SaveEventAsync(new UsersSyncMessage
-        {
-            AttempTime = 1,
-            UserType = "Test",
-            UsersSync = new List<UserSync> { mapper.Map<UserSync>(user) },
-            CreatedBy = "test"
-        });
-
-        await dbContext.CommitTransactionAsync(transaction);
-
-        return Ok();
-    }
+    // [HttpPost("test/bus")]
+    // public async Task<IActionResult> TestBus()
+    // {
+    //     logger.LogInformation("Test publish message into queue with EventService");
+    //
+    //     await using var transaction = await dbContext.BeginTransactionAsync();
+    //
+    //     var user = new ApplicationUser
+    //     {
+    //         UserCode = "SE173411",
+    //         FullName = "Test",
+    //         UserName = "test@fpt.edu.vn",
+    //         Email = "test@fpt.edu.vn",
+    //         MajorId = "SE",
+    //         CapstoneId = "SEP490",
+    //         CampusId = "HCM",
+    //         EmailConfirmed = true,
+    //     };
+    //
+    //     await CreateApplicationUser(user, UserRoles.Student);
+    //
+    //     _eventService.SaveEventAsync(new UsersSyncMessage
+    //     {
+    //         AttempTime = 1,
+    //         UserType = "Test",
+    //         UsersSync = new List<UserSync> { mapper.Map<UserSync>(user) },
+    //         CreatedBy = "test"
+    //     });
+    //
+    //     await dbContext.CommitTransactionAsync(transaction);
+    //
+    //     return Ok();
+    // }
 
     [HttpPost("import/students")]
     [Authorize(Roles = $"{UserRoles.SuperAdmin},{UserRoles.Admin},{UserRoles.Manager}")]
@@ -165,6 +166,25 @@ public class UsersController(ILogger<UsersController> logger,
         return result.IsSuccess ? Ok() : HandleFailure(result);
     }
 
+    [HttpGet("get-all-admin")]
+    [Authorize(Roles = $"{UserRoles.SuperAdmin}")]
+    public async Task<IActionResult> GetAllAdminAsync()
+    {
+        var result = await GetUserInRoleAsync(UserRoles.Admin);
+        return result.IsSuccess
+            ? Ok(result)
+            : HandleFailure(result);
+    }
+
+    [HttpGet("get-all-manager")]
+    [Authorize(Roles = $"{UserRoles.SuperAdmin},{UserRoles.Admin}")]
+    public async Task<IActionResult> GetAllManagerAsync()
+    {
+        var result = await GetUserInRoleAsync(UserRoles.Manager);
+        return result.IsSuccess
+            ? Ok(result)
+            : HandleFailure(result);
+    }
     private async Task<OperationResult> ImporProcessingtUsers(string userType, IFormFile file, string emailImporter)
     {
         logger.LogInformation("Start processing Users file");
@@ -254,6 +274,8 @@ public class UsersController(ILogger<UsersController> logger,
         {
             logger.LogInformation("{SyncCount} synced in attemp: {Time}", numberOfUsersSync, attemptTime);
 
+            var user = await         userManager.GetUsersInRoleAsync("Admin");
+
             // Sync user into FUC service
             await publishEndpoint.Publish(new UsersSyncMessage
             {
@@ -281,5 +303,13 @@ public class UsersController(ILogger<UsersController> logger,
         {
             throw new Exception(result.Errors.First().Description);
         }
+    }
+
+    private async Task<OperationResult<IEnumerable<UserResponseDTO>>> GetUserInRoleAsync(string role)
+    {
+        var result = await userManager.GetUsersInRoleAsync(role);
+        return result.ToList().Count > 0
+            ? OperationResult.Success(mapper.Map<IEnumerable<UserResponseDTO>>(result.ToList()))
+            : OperationResult.Failure<IEnumerable<UserResponseDTO>>(Error.NullValue);
     }
 }
