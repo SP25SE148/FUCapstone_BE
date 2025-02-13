@@ -30,4 +30,9 @@
     <ProjectReference Include="..\FUC.Common\FUC.Common.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="Payloads\Responses\" />
+    <Folder Include="Services\" />
+  </ItemGroup>
+
 </Project>

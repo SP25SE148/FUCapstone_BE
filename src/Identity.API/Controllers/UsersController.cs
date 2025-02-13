@@ -21,7 +21,7 @@ public class UsersController(ILogger<UsersController> logger,
     UserManager<ApplicationUser> userManager,
     ApplicationDbContext dbContext,
     IPublishEndpoint publishEndpoint,
-    // IIntegrationEventService _eventService,
+    IIntegrationEventLogService _eventService,
     IMapper mapper) : ApiController
 {
     private const int BatchSize = 100;
@@ -114,39 +114,39 @@ public class UsersController(ILogger<UsersController> logger,
         return Ok();
     }
 
-    // [HttpPost("test/bus")]
-    // public async Task<IActionResult> TestBus()
-    // {
-    //     logger.LogInformation("Test publish message into queue with EventService");
-    //
-    //     await using var transaction = await dbContext.BeginTransactionAsync();
-    //
-    //     var user = new ApplicationUser
-    //     {
-    //         UserCode = "SE173411",
-    //         FullName = "Test",
-    //         UserName = "test@fpt.edu.vn",
-    //         Email = "test@fpt.edu.vn",
-    //         MajorId = "SE",
-    //         CapstoneId = "SEP490",
-    //         CampusId = "HCM",
-    //         EmailConfirmed = true,
-    //     };
-    //
-    //     await CreateApplicationUser(user, UserRoles.Student);
-    //
-    //     _eventService.SaveEventAsync(new UsersSyncMessage
-    //     {
-    //         AttempTime = 1,
-    //         UserType = "Test",
-    //         UsersSync = new List<UserSync> { mapper.Map<UserSync>(user) },
-    //         CreatedBy = "test"
-    //     });
-    //
-    //     await dbContext.CommitTransactionAsync(transaction);
-    //
-    //     return Ok();
-    // }
+    [HttpPost("test/bus/{i}")]
+    public async Task<IActionResult> TestBus(int i)
+    {
+        logger.LogInformation("Test publish message into queue with EventService");
+
+        await dbContext.BeginTransactionAsync();
+
+        var user = new ApplicationUser
+        {
+            UserCode = $"Test{i}",
+            FullName = $"Test{i}",
+            UserName = $"test{i}@fpt.edu.vn",
+            Email = $"test{i}@fpt.edu.vn",
+            MajorId = "SE",
+            CapstoneId = "SEP490",
+            CampusId = "HCM",
+            EmailConfirmed = true,
+        };
+
+        await CreateApplicationUser(user, UserRoles.Student);
+
+        _eventService.SendEvent(new UsersSyncMessage
+        {
+            AttempTime = 1,
+            UserType = "Test",
+            UsersSync = new List<UserSync> { mapper.Map<UserSync>(user) },
+            CreatedBy = "test"
+        });
+
+        await dbContext.CommitTransactionAsync();
+
+        return Ok();
+    }
 
     [HttpPost("import/students")]
     [Authorize(Roles = $"{UserRoles.SuperAdmin},{UserRoles.Admin},{UserRoles.Manager}")]

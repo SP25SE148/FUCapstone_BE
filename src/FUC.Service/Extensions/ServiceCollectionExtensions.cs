@@ -15,6 +15,7 @@ using FUC.Service.Services;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
+using FUC.Common.IntegrationEventLog.Services;
 
 namespace FUC.Service.Extensions;
 
@@ -55,7 +56,7 @@ public static class ServiceCollectionExtensions
         services.AddScoped<IMajorGroupService,MajorGroupService>();
         services.AddScoped<IGroupService, GroupService>();
         services.AddScoped<ISemesterService, SemesterService>();
-        services.AddScoped<IGroupMemberService, GroupMemberService>();
+        //services.AddScoped<IGroupMemberService, GroupMemberService>();
         services.AddScoped<IStudentService, StudentService>();
         services.AddScoped<ISupervisorService, SupervisorService>();
         // DI RabbitMQ

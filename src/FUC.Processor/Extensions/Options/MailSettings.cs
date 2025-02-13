@@ -1,4 +1,4 @@
-﻿namespace Notification.API.Extensions.Options;
+﻿namespace FUC.Processor.Extensions.Options;
 
 public class MailSettings
 {

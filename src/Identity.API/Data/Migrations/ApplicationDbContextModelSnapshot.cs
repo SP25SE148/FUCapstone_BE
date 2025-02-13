@@ -24,7 +24,7 @@ namespace Identity.API.Data.Migrations
 
             modelBuilder.Entity("FUC.Common.IntegrationEventLog.IntegrationEventLog", b =>
                 {
-                    b.Property<Guid>("EventId")
+                    b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uuid");
 
@@ -32,25 +32,22 @@ namespace Identity.API.Data.Migrations
                         .IsRequired()
                         .HasColumnType("text");
 
-                    b.Property<DateTime>("CreationTime")
+                    b.Property<string>("Error")
+                        .HasColumnType("text");
+
+                    b.Property<DateTime>("OccurredOnUtc")
                         .HasColumnType("timestamp with time zone");
 
-                    b.Property<string>("EventTypeName")
+                    b.Property<DateTime?>("ProcessedOnUtc")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("Type")
                         .IsRequired()
                         .HasColumnType("text");
 
-                    b.Property<int>("State")
-                        .HasColumnType("integer");
+                    b.HasKey("Id");
 
-                    b.Property<int>("TimesSent")
-                        .HasColumnType("integer");
-
-                    b.Property<Guid>("TransactionId")
-                        .HasColumnType("uuid");
-
-                    b.HasKey("EventId");
-
-                    b.ToTable("IntegrationEventLog", (string)null);
+                    b.ToTable("IntegrationEventLogs");
                 });
 
             modelBuilder.Entity("Identity.API.Models.ApplicationUser", b =>

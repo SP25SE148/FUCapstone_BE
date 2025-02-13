@@ -1,18 +1,32 @@
-﻿using FUC.Common.Options;
+﻿using FUC.Common.IntegrationEventLog.BackgroundJobs;
+using FUC.Common.Options;
+using FUC.Processor.Data;
+using FUC.Processor.Extensions.Options;
+using FUC.Processor.Services;
 using MassTransit;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
-using Notification.API.Extensions.Options;
-using Notification.API.Services;
+using Quartz;
 using System.Reflection;
 using System.Text;
 
-namespace Notification.API.Extensions;
+namespace FUC.Processor.Extensions;
 
 public static class ServiceCollectionExtensions
 {
     public static IServiceCollection AddApplicationServices(this IServiceCollection services, IConfiguration configuration)
     {
+        services.AddDbContext<FucDbContext>((provider, options) =>
+        {
+            options.UseNpgsql(configuration.GetConnectionString("FucConnection"));
+        });
+
+        services.AddDbContext<ApplicationDbContext>((provider, options) =>
+        {
+            options.UseNpgsql(configuration.GetConnectionString("IdentityConnection"));
+        });
+
         services.AddMassTransit(x =>
         {
             x.AddConsumers(Assembly.GetExecutingAssembly());
@@ -42,7 +56,7 @@ public static class ServiceCollectionExtensions
         })
         .AddJwtBearer(o =>
         {
-            JwtOption jwtOption = new JwtOption();
+            var jwtOption = new JwtOption();
             configuration.GetSection(nameof(JwtOption)).Bind(jwtOption);
 
             o.SaveToken = true; // Save token into AuthenticationProperties
@@ -78,6 +92,39 @@ public static class ServiceCollectionExtensions
         });
 
         services.AddAuthorization();
+
+        return services;
+    }
+
+    public static IServiceCollection AddQuartzInfrastructure(this IServiceCollection services)
+    {
+        var dbContextTypes = Assembly.GetExecutingAssembly()
+            .GetTypes()
+            .Where(t => t.IsClass && !t.IsAbstract && typeof(DbContext).IsAssignableFrom(t))
+            .ToList();
+
+        services.AddQuartz(configure =>
+        {
+            foreach (var dbContextType in dbContextTypes)
+            {
+                var dbContextName = dbContextType.Name;
+
+                var jobKey = new JobKey($"ProcessIntegrationEventsJob-{dbContextName}");
+
+                var jobType = typeof(ProcessIntegrationEventsJob<>).MakeGenericType(dbContextType);
+
+                configure
+                    .AddJob(jobType, jobKey)
+                    .AddTrigger(trigger =>
+                        trigger.ForJob(jobKey)
+                            .WithSimpleSchedule(schedule =>
+                                schedule.WithInterval(TimeSpan.FromSeconds(10)) // Run every 10 sec
+                                        .RepeatForever()));
+            }
+        });
+
+        // Register Quartz Hosted Service
+        services.AddQuartzHostedService(options => options.WaitForJobsToComplete = false);
 
         return services;
     }

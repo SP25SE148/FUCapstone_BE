@@ -1,7 +1,7 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.SignalR;
 
-namespace Notification.API.Hubs;
+namespace FUC.Processor.Hubs;
 
 public interface INotificationClient
 {

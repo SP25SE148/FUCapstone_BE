@@ -2,9 +2,9 @@
 
 namespace FUC.Common.Events;
 
-public record IntegrationEvent
+public abstract class IntegrationEvent
 {
-    public IntegrationEvent()
+    protected IntegrationEvent()
     {
         Id = Guid.NewGuid();
         RetryCount = 0;

@@ -1,7 +1,5 @@
 ﻿using System.Text;
-using DocumentFormat.OpenXml.VariantTypes;
 using FUC.Common.IntegrationEventLog.Services;
-using Identity.API.Attributes;
 using Identity.API.Data;
 using Identity.API.Extensions.Options;
 using Identity.API.Infrastuctures.Authentication;
@@ -9,7 +7,6 @@ using Identity.API.Infrastuctures.Cache;
 using Identity.API.Interfaces;
 using Identity.API.Mapper;
 using Identity.API.Models;
-using Identity.API.Services;
 using MassTransit;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
@@ -23,17 +20,12 @@ public static class ApplicationServiceExtensions
     public static IServiceCollection AddApplicationServices(this IServiceCollection services,
     IConfiguration configuration)
     {
-        // services.AddScoped<IntegrationEventsInterceptor>();
-
         services.AddDbContext<ApplicationDbContext>((provider, options) =>
         {
-            // var integrationEventInterceptor = provider.GetService<IntegrationEventsInterceptor>();
             options.UseNpgsql(configuration.GetConnectionString("DefaultConnection"));
-                // .AddInterceptors(integrationEventInterceptor);
         });
-        //
-        // services.AddTransient<IIntegrationEventLogService, IntegrationEventLogService<ApplicationDbContext>>();
-        // services.AddTransient<IIntegrationEventService, IdentityIntegrationEventService>();
+
+        services.AddTransient<IIntegrationEventLogService, IntegrationEventLogService<ApplicationDbContext>>();
 
         services.AddAutoMapper(typeof(ServiceProfiles));
 

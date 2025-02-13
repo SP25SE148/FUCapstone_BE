@@ -1,7 +1,7 @@
 ﻿using FUC.Common.Events;
 
 namespace FUC.Common.Contracts;
-public record UsersSyncMessage : IntegrationEvent
+public sealed class UsersSyncMessage : IntegrationEvent
 {
     public int AttempTime { get; set; }
 
