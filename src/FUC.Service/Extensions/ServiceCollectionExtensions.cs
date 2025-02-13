@@ -5,6 +5,7 @@ using Amazon.S3;
 using Amazon.S3.Transfer;
 using FluentValidation;
 using FUC.Common.Abstractions;
+using FUC.Data.Entities;
 using FUC.Service.Abstractions;
 using FUC.Service.Extensions.Options;
 using FUC.Service.Infrastructure;
@@ -54,6 +55,9 @@ public static class ServiceCollectionExtensions
         services.AddScoped<IMajorGroupService,MajorGroupService>();
         services.AddScoped<IGroupService, GroupService>();
         services.AddScoped<ISemesterService, SemesterService>();
+        services.AddScoped<IGroupMemberService, GroupMemberService>();
+        services.AddScoped<IStudentService, StudentService>();
+        services.AddScoped<ISupervisorService, SupervisorService>();
         // DI RabbitMQ
         services.AddMassTransit(x =>
         {

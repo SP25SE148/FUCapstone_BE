@@ -1,0 +1,32 @@
+﻿using AutoMapper;
+using FUC.Common.Shared;
+using FUC.Data;
+using FUC.Data.Data;
+using FUC.Data.Entities;
+using FUC.Data.Repositories;
+using FUC.Service.Abstractions;
+using FUC.Service.DTOs.StudentDTO;
+using Microsoft.EntityFrameworkCore;
+
+namespace FUC.Service.Services;
+
+public sealed class StudentService(IMapper mapper, IUnitOfWork<FucDbContext> uow) : IStudentService
+{
+    private readonly IUnitOfWork<FucDbContext> _uow = uow ?? throw new ArgumentNullException(nameof(uow));
+
+    private readonly IRepository<Student> _studentRepository = uow.GetRepository<Student>() ?? throw new ArgumentNullException(nameof(uow));
+    private readonly IMapper _mapper = mapper ?? throw new ArgumentNullException(nameof(mapper));
+    
+    public async Task<OperationResult<IEnumerable<StudentResponseDTO>>> GetAllStudentAsync()
+    {
+        List<Student> students = await _studentRepository
+            .GetAllAsync(s => s
+                .Include(s=> s.Major)
+                .Include(s => s.Capstone)
+                .Include(s => s.Campus));
+        
+        return students.Count > 0
+            ? OperationResult.Success(_mapper.Map<IEnumerable<StudentResponseDTO>>(students))
+            : OperationResult.Failure<IEnumerable<StudentResponseDTO>>(Error.NullValue);
+    }
+}
