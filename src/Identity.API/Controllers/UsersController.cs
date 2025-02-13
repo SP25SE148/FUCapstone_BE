@@ -9,7 +9,6 @@ using Identity.API.Data;
 using Identity.API.Models;
 using Identity.API.Payloads.Requests;
 using Identity.API.Payloads.Responses;
-using MassTransit;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
@@ -20,11 +19,10 @@ namespace Identity.API.Controllers;
 public class UsersController(ILogger<UsersController> logger,
     UserManager<ApplicationUser> userManager,
     ApplicationDbContext dbContext,
-    IPublishEndpoint publishEndpoint,
-    IIntegrationEventLogService _eventService,
+    IIntegrationEventLogService eventService,
     IMapper mapper) : ApiController
 {
-    private const int BatchSize = 100;
+    private const int BatchSize = 200;
 
     [HttpPost("admins")]
     [Authorize(Roles = $"{UserRoles.SuperAdmin}")]
@@ -42,7 +40,7 @@ public class UsersController(ILogger<UsersController> logger,
             EmailConfirmed = true
         }, UserRoles.Admin);
 
-        return Ok();
+        return Ok(OperationResult.Success());
     }
 
     [HttpPost("managers")]
@@ -61,13 +59,15 @@ public class UsersController(ILogger<UsersController> logger,
             EmailConfirmed = true,
         }, UserRoles.Manager);
 
-        return Ok();
+        return Ok(OperationResult.Success());
     }
 
     [HttpPost("supervisors")]
     [Authorize(Roles = $"{UserRoles.SuperAdmin},{UserRoles.Admin},{UserRoles.Manager}")]
     public async Task<IActionResult> CreateSupervisors([FromBody] SupervisorDto user)
     {
+        await dbContext.BeginTransactionAsync();
+
         var supervisor = new ApplicationUser
         {
             UserCode = user.Email.Split("@")[0],
@@ -82,17 +82,21 @@ public class UsersController(ILogger<UsersController> logger,
 
         await CreateApplicationUser(supervisor, UserRoles.Supervisor);
 
-        await SyncUsersToFUCService(new List<UserSync>{ mapper.Map<UserSync>(supervisor) }, 
+        SyncUsersToFUCService(new List<UserSync>{ mapper.Map<UserSync>(supervisor) }, 
             UserRoles.Supervisor, 
             User.FindFirst(ClaimTypes.Email)!.Value, 1, 1);
 
-        return Ok();
+        await dbContext.CommitTransactionAsync();
+
+        return Ok(OperationResult.Success());
     }
 
     [HttpPost("students")]
     [Authorize(Roles = $"{UserRoles.SuperAdmin},{UserRoles.Admin},{UserRoles.Manager}")]
     public async Task<IActionResult> CreateStudent([FromBody] StudentDto user)
     {
+        await dbContext.BeginTransactionAsync();
+
         var student = new ApplicationUser
         {
             UserCode = user.StudentCode,
@@ -107,11 +111,13 @@ public class UsersController(ILogger<UsersController> logger,
 
         await CreateApplicationUser(student, UserRoles.Student);
 
-        await SyncUsersToFUCService(new List<UserSync> { mapper.Map<UserSync>(student) }, 
+        SyncUsersToFUCService(new List<UserSync> { mapper.Map<UserSync>(student) }, 
             UserRoles.Student, 
             User.FindFirst(ClaimTypes.Email)!.Value, 1, 1);
 
-        return Ok();
+        await dbContext.CommitTransactionAsync();
+
+        return Ok(OperationResult.Success());
     }
 
     [HttpPost("test/bus/{i}")]
@@ -135,7 +141,7 @@ public class UsersController(ILogger<UsersController> logger,
 
         await CreateApplicationUser(user, UserRoles.Student);
 
-        _eventService.SendEvent(new UsersSyncMessage
+        eventService.SendEvent(new UsersSyncMessage
         {
             AttempTime = 1,
             UserType = "Test",
@@ -154,7 +160,7 @@ public class UsersController(ILogger<UsersController> logger,
     {
         var email = User.FindFirst(ClaimTypes.Email)!.Value;
         var result = await ImporProcessingtUsers(UserRoles.Student, file, email);
-        return result.IsSuccess ? Ok() : HandleFailure(result);
+        return result.IsSuccess ? Ok(result) : HandleFailure(result);
     }
 
     [HttpPost("import/supervisors")]
@@ -163,7 +169,7 @@ public class UsersController(ILogger<UsersController> logger,
     {
         var result = await ImporProcessingtUsers(UserRoles.Supervisor, file,
             User.FindFirst(ClaimTypes.Email)!.Value);
-        return result.IsSuccess ? Ok() : HandleFailure(result);
+        return result.IsSuccess ? Ok(result) : HandleFailure(result);
     }
 
     [HttpGet("get-all-admin")]
@@ -220,13 +226,15 @@ public class UsersController(ILogger<UsersController> logger,
             return OperationResult.Failure(new Error("File.Format", "File is wrong format"));
         }
 
+        await dbContext.BeginTransactionAsync();
+
         foreach (IXLRow row in workSheet.Rows().Skip(4))
         {
             // Check the end of table
             if (!row.Cell(2).TryGetValue<string>(out var usercode)
                 || string.IsNullOrEmpty(usercode))
             {
-                await SyncUsersToFUCService(users, userType, emailImporter, numberOfUsersInBatchSize, attempTime);
+                SyncUsersToFUCService(users, userType, emailImporter, numberOfUsersInBatchSize, attempTime);
                 break;
             }
 
@@ -253,10 +261,12 @@ public class UsersController(ILogger<UsersController> logger,
                 continue;
             }
 
-            await SyncUsersToFUCService(users, userType, emailImporter, numberOfUsersInBatchSize, attempTime++);
+            SyncUsersToFUCService(users, userType, emailImporter, numberOfUsersInBatchSize, attempTime++);
             users.Clear();
             numberOfUsersInBatchSize = 0;
         }
+
+        await dbContext.CommitTransactionAsync();
 
         return OperationResult.Success();
     }
@@ -268,16 +278,14 @@ public class UsersController(ILogger<UsersController> logger,
             file.FileName.Contains(userType, StringComparison.OrdinalIgnoreCase);
     }
 
-    private async Task SyncUsersToFUCService(List<UserSync> users, string userType, string emailImporter, int numberOfUsersSync, int attemptTime)
+    private void SyncUsersToFUCService(List<UserSync> users, string userType, string emailImporter, int numberOfUsersSync, int attemptTime)
     {
         if (numberOfUsersSync > 0)
         {
             logger.LogInformation("{SyncCount} synced in attemp: {Time}", numberOfUsersSync, attemptTime);
 
-            var user = await         userManager.GetUsersInRoleAsync("Admin");
-
             // Sync user into FUC service
-            await publishEndpoint.Publish(new UsersSyncMessage
+            eventService.SendEvent(new UsersSyncMessage
             {
                 AttempTime = attemptTime,
                 UserType = userType,
