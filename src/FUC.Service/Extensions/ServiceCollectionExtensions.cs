@@ -16,6 +16,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 using FUC.Common.IntegrationEventLog.Services;
+using FUC.Data.Data;
 
 namespace FUC.Service.Extensions;
 
@@ -59,6 +60,7 @@ public static class ServiceCollectionExtensions
         //services.AddScoped<IGroupMemberService, GroupMemberService>();
         services.AddScoped<IStudentService, StudentService>();
         services.AddScoped<ISupervisorService, SupervisorService>();
+        services.AddTransient<IIntegrationEventLogService, IntegrationEventLogService<FucDbContext>>();
         // DI RabbitMQ
         services.AddMassTransit(x =>
         {
