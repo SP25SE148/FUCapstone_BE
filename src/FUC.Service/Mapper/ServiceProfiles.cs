@@ -6,6 +6,8 @@ using FUC.Service.DTOs.GroupDTO;
 using FUC.Service.DTOs.MajorDTO;
 using FUC.Service.DTOs.MajorGroupDTO;
 using FUC.Service.DTOs.SemesterDTO;
+using FUC.Service.DTOs.StudentDTO;
+using FUC.Service.DTOs.SupervisorDTO;
 
 namespace FUC.Service.Mapper;
 
@@ -51,5 +53,19 @@ public class ServiceProfiles : Profile
                     .MapFrom(src =>  src.GroupMembers
                         .Select(gm => gm.Student.Email)
                         .ToList()));
+        
+        // Student mapping
+        CreateMap<Student, StudentResponseDTO>()
+            .ForMember(s => s.MajorName, opt => opt.MapFrom(s => s.Major.Name))
+            .ForMember(s => s.CapstoneName, opt => opt.MapFrom(s => s.Capstone.Name))
+            .ForMember(s => s.CampusName, opt => opt.MapFrom(s => s.Campus.Name))
+            .ForMember(s => s.Status, opt => opt.MapFrom(s => s.Status.ToString()));
+
+        // Supervisor mapping
+        CreateMap<Supervisor,SupervisorResponseDTO>()
+            .ForMember(s => s.MajorName, opt => opt.MapFrom(s => s.Major.Name))
+            .ForMember(s => s.CampusName, opt => opt.MapFrom(s => s.Campus.Name));
+        
+
     }
 }
