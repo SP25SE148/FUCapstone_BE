@@ -13,5 +13,5 @@ public sealed record StudentResponseDTO(
     string CampusName,
     string Email,
     bool IsEligible,
-    StudentStatus Status
+    string Status
 );
