@@ -1,4 +1,7 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using FUC.Common.IntegrationEventLog.BackgroundJobs;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.DependencyInjection;
+using Quartz;
 
 namespace FUC.Common.IntegrationEventLog;
 
@@ -8,9 +11,9 @@ public static class IntegrationLogExtensions
     {
         builder.Entity<IntegrationEventLog>(builder =>
         {
-            builder.ToTable("IntegrationEventLog");
+            builder.ToTable("IntegrationEventLogs");
 
-            builder.HasKey(e => e.EventId);
+            builder.HasKey(e => e.Id);
         });
     }
 }

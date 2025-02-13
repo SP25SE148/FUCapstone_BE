@@ -1,7 +1,7 @@
 ﻿using FUC.Common.Constants;
 using Microsoft.AspNetCore.Mvc;
 
-namespace Notification.API.Middlewares;
+namespace FUC.Processor.Middlewares;
 
 public class ExceptionHandlingMiddleware
 {

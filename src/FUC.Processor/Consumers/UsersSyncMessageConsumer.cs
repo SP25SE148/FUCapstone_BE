@@ -1,8 +1,8 @@
 ﻿using FUC.Common.Contracts;
+using FUC.Processor.Services;
 using MassTransit;
-using Notification.API.Services;
 
-namespace Notification.API.Consumers;
+namespace FUC.Processor.Consumers;
 
 public class UsersSyncMessageConsumer : IConsumer<UsersSyncMessage>
 {
@@ -16,7 +16,7 @@ public class UsersSyncMessageConsumer : IConsumer<UsersSyncMessage>
     }
 
     public async Task Consume(ConsumeContext<UsersSyncMessage> context)
-    {   
+    {
         _logger.LogInformation("--> users sync consume in Notification service");
 
         var userEmails = context.Message.UsersSync.Select(x => x.Email).ToArray();

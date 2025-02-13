@@ -1,4 +1,5 @@
-﻿using FUC.Data.Entities;
+﻿using FUC.Common.IntegrationEventLog;
+using FUC.Data.Entities;
 using Microsoft.EntityFrameworkCore;
 
 namespace FUC.Data.Data;
@@ -27,6 +28,8 @@ public class FucDbContext : DbContext
 
     public DbSet<Supervisor> Supervisors { get; set; }
 
+    public DbSet<IntegrationEventLog> IntegrationEventLogs { get; set; }
+
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
     {
         optionsBuilder.UseNpgsql("Server=localhost:5432; User Id=postgres;Password=postgrespw;Database=fuc");
@@ -36,5 +39,6 @@ public class FucDbContext : DbContext
     {
         base.OnModelCreating(modelBuilder);
         modelBuilder.ApplyConfigurationsFromAssembly(typeof(FucDbContext).Assembly);
+        modelBuilder.UseIntegrationEventLogs();
     }
 }

@@ -9,6 +9,8 @@ namespace Identity.API.Data;
 
 public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
 {
+    public DbSet<IntegrationEventLog> IntegrationEventLogs { get; set; }
+
     private IDbContextTransaction _currentTransaction;
 
     public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options) : base(options) { }
@@ -34,17 +36,12 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
         return _currentTransaction;
     }
 
-    public async Task CommitTransactionAsync(IDbContextTransaction transaction)
+    public async Task CommitTransactionAsync()
     {
-        ArgumentNullException.ThrowIfNull(transaction);
-
-        if (transaction != _currentTransaction)
-            throw new InvalidOperationException($"Transaction {transaction.TransactionId} is not current");
-
         try
         {
             await SaveChangesAsync();
-            await transaction.CommitAsync();
+            await _currentTransaction.CommitAsync();
         }
         catch
         {

@@ -1,9 +1,9 @@
 ﻿using System.Net;
 using System.Net.Mail;
+using FUC.Processor.Extensions.Options;
 using Microsoft.Extensions.Options;
-using Notification.API.Extensions.Options;
 
-namespace Notification.API.Services;
+namespace FUC.Processor.Services;
 
 
 public interface IEmailService
