@@ -1,8 +1,7 @@
 ﻿using System.Security.Claims;
 using FUC.Common.Abstractions;
-using Microsoft.AspNetCore.Http;
 
-namespace FUC.Service.Infrastructure;
+namespace Identity.API.Infrastuctures;
 public class CurrentUser(IHttpContextAccessor httpContextAccessor) : ICurrentUser
 {
     public string Id => httpContextAccessor.HttpContext!.User.FindFirst(ClaimTypes.NameIdentifier)!.Value;

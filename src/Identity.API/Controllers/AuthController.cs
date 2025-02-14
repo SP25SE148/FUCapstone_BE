@@ -1,6 +1,7 @@
 ﻿using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using FUC.Common.Payloads;
+using FUC.Common.Shared;
 using Identity.API.Interfaces;
 using Identity.API.Models;
 using Identity.API.Payloads.Requests;
@@ -26,13 +27,13 @@ public class AuthController(UserManager<ApplicationUser> userManager,
         if (user is null)
         {
             logger.LogError("User with Email:{Email} does not exist", request.Email);
-            return Unauthorized("User does not exist");
+            return Unauthorized(OperationResult.Failure(new Error("Unauthorized", "User does not exist")));
         }
 
         var result = await userManager.CheckPasswordAsync(user, request.Password);
 
         if (!result)
-            return Unauthorized("Invalid password");
+            return Unauthorized(OperationResult.Failure(new Error("Unauthorized", "Invalid password.")));
 
         var userClaims = new List<Claim>
         {
@@ -40,6 +41,9 @@ public class AuthController(UserManager<ApplicationUser> userManager,
             new Claim(ClaimTypes.GivenName, user.UserCode),
             new Claim(ClaimTypes.Email, request.Email),
             new Claim(JwtRegisteredClaimNames.Name, user.FullName!),
+            new Claim("MajorId", user.MajorId),
+            new Claim("CapstoneId", user.CapstoneId),
+            new Claim("CampusId", user.CampusId),
         };
 
         var roles = await userManager.GetRolesAsync(user);
@@ -56,7 +60,7 @@ public class AuthController(UserManager<ApplicationUser> userManager,
         // Add the token into whitelist
         await cacheService.SetAsync(request.Email, authenticationResponse, cancellationToken);
 
-        return Ok(authenticationResponse);
+        return Ok(OperationResult.Success(authenticationResponse));
     }
 
     [HttpPost("token/refresh")]
@@ -84,7 +88,7 @@ public class AuthController(UserManager<ApplicationUser> userManager,
 
         await cacheService.SetAsync(emailKey, newAuthenticated, cancellationToken);
 
-        return Ok(newAuthenticated);
+        return Ok(OperationResult.Success(newAuthenticated));
     }
 
     [HttpPost("token/revoke")]
@@ -104,6 +108,6 @@ public class AuthController(UserManager<ApplicationUser> userManager,
 
         await cacheService.RemoveAsync(emailKey, cancellationToken);
 
-        return Ok();
+        return Ok(OperationResult.Success());
     }
 }
