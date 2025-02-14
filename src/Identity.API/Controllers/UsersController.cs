@@ -58,7 +58,7 @@ public class UsersController(ILogger<UsersController> logger,
             Email = user.Email,
             UserName = user.Email,
             CampusId = currentUser.CampusId,
-            CapstoneId = "All",
+            CapstoneId = user.CapstoneId,
             MajorId = "All",
             EmailConfirmed = true,
         }, UserRoles.Manager);
@@ -163,7 +163,7 @@ public class UsersController(ILogger<UsersController> logger,
     public async Task<IActionResult> ImportStudents(IFormFile file)
     {
         var email = User.FindFirst(ClaimTypes.Email)!.Value;
-        var result = await ImporProcessingtUsers(UserRoles.Student, file, email);
+        var result = await ImportProcessingtUsers(UserRoles.Student, file, email);
         return result.IsSuccess ? Ok(result) : HandleFailure(result);
     }
 
@@ -171,7 +171,7 @@ public class UsersController(ILogger<UsersController> logger,
     [Authorize(Roles = $"{UserRoles.SuperAdmin},{UserRoles.Admin},{UserRoles.Manager}")]
     public async Task<IActionResult> ImportSupervisors(IFormFile file)
     {
-        var result = await ImporProcessingtUsers(UserRoles.Supervisor, file,
+        var result = await ImportProcessingtUsers(UserRoles.Supervisor, file,
             User.FindFirst(ClaimTypes.Email)!.Value);
         return result.IsSuccess ? Ok(result) : HandleFailure(result);
     }
@@ -196,7 +196,7 @@ public class UsersController(ILogger<UsersController> logger,
             ? Ok(result)
             : HandleFailure(result);
     }
-    private async Task<OperationResult> ImporProcessingtUsers(string userType, IFormFile file, string emailImporter)
+    private async Task<OperationResult> ImportProcessingtUsers(string userType, IFormFile file, string emailImporter)
     {
         logger.LogInformation("Start processing Users file");
         if (!IsValidFile(userType, file))
@@ -250,7 +250,7 @@ public class UsersController(ILogger<UsersController> logger,
                 UserName = row.Cell(4).GetValue<string>(),
                 Email = row.Cell(4).GetValue<string>(),
                 MajorId = row.Cell(5).GetValue<string>(),
-                CapstoneId = row.Cell(6).GetValue<string>(),
+                CapstoneId = row.Cell(6).GetValue<string>() is string value && !string.IsNullOrEmpty(value) ? value : "All",
                 CampusId = campusCode,
                 EmailConfirmed = true,
             };

@@ -9,4 +9,7 @@ public class ManagerDto
 
     [Required]
     public string FullName { get; set; }
+
+    [Required]
+    public string CapstoneId { get; set; }
 }
