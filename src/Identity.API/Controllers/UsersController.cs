@@ -1,4 +1,5 @@
-﻿using System.Security.Claims;
+﻿using System.Linq.Expressions;
+using System.Security.Claims;
 using AutoMapper;
 using ClosedXML.Excel;
 using FUC.Common.Abstractions;
@@ -7,6 +8,7 @@ using FUC.Common.Contracts;
 using FUC.Common.IntegrationEventLog.Services;
 using FUC.Common.Shared;
 using Identity.API.Data;
+using Identity.API.Infrastuctures;
 using Identity.API.Models;
 using Identity.API.Payloads.Requests;
 using Identity.API.Payloads.Responses;
@@ -175,10 +177,11 @@ public class UsersController(ILogger<UsersController> logger,
     }
 
     [HttpGet("get-all-admin")]
-    [Authorize(Roles = $"{UserRoles.SuperAdmin}")]
+    [Authorize(Roles = nameof(UserRoles.SuperAdmin))]
     public async Task<IActionResult> GetAllAdminAsync()
     {
-        var result = await GetUserInRoleAsync(UserRoles.Admin);
+        
+        var result = await GetUserInRoleAsync(UserRoles.Admin, currentUser.CampusId);
         return result.IsSuccess
             ? Ok(result)
             : HandleFailure(result);
@@ -188,7 +191,7 @@ public class UsersController(ILogger<UsersController> logger,
     [Authorize(Roles = $"{UserRoles.SuperAdmin},{UserRoles.Admin}")]
     public async Task<IActionResult> GetAllManagerAsync()
     {
-        var result = await GetUserInRoleAsync(UserRoles.Manager);
+        var result = await GetUserInRoleAsync(UserRoles.Manager, currentUser.CampusId);
         return result.IsSuccess
             ? Ok(result)
             : HandleFailure(result);
@@ -315,9 +318,13 @@ public class UsersController(ILogger<UsersController> logger,
         }
     }
 
-    private async Task<OperationResult<IEnumerable<UserResponseDTO>>> GetUserInRoleAsync(string role)
+    private async Task<OperationResult<IEnumerable<UserResponseDTO>>> GetUserInRoleAsync(string role, string predicate)
     {
-        var result = await userManager.GetUsersInRoleAsync(role);
+        IList<ApplicationUser> result = await userManager.GetUsersInRoleAsync(role);
+        if (!predicate.ToLower().Equals("all"))
+        {
+            result = result.Where(a => a.CampusId.ToLower().Equals(predicate.ToLower())).ToList();
+        }
         return result.ToList().Count > 0
             ? OperationResult.Success(mapper.Map<IEnumerable<UserResponseDTO>>(result.ToList()))
             : OperationResult.Failure<IEnumerable<UserResponseDTO>>(Error.NullValue);
