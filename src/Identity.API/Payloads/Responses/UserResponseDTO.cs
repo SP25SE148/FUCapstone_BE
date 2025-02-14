@@ -12,9 +12,7 @@ public sealed class UserResponseDTO
     public string CampusId { get; set; }
 
     public string CapstoneId { get; set; }
-
-    public string UserName { get; set; }
-
+    
     public string Email { get; set; }
 
 }
