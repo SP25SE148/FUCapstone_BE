@@ -1,7 +1,9 @@
 ﻿using System.Text;
+using FUC.Common.Abstractions;
 using FUC.Common.IntegrationEventLog.Services;
 using Identity.API.Data;
 using Identity.API.Extensions.Options;
+using Identity.API.Infrastuctures;
 using Identity.API.Infrastuctures.Authentication;
 using Identity.API.Infrastuctures.Cache;
 using Identity.API.Interfaces;
@@ -12,6 +14,7 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
+using ICacheService = Identity.API.Interfaces.ICacheService;
 
 namespace Identity.API.Extensions;
 
@@ -45,6 +48,10 @@ public static class ApplicationServiceExtensions
         });
 
         services.AddCors();
+
+        services.AddHttpContextAccessor();
+
+        services.AddScoped<ICurrentUser, CurrentUser>();
 
         return services;
     }

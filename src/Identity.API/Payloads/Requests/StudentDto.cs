@@ -12,14 +12,11 @@ public class StudentDto
     public string Email { get; set; }
 
     [Required]  
-    public string UserName { get; set; }
+    public string FullName { get; set; }
 
     [Required]
     public string MajorId { get; set; }
 
     [Required]
     public string CapstoneId { get; set; }
-
-    [Required]  
-    public string CampusId { get; set; }
 }

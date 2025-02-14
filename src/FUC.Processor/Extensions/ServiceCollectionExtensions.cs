@@ -2,6 +2,7 @@
 using FUC.Common.Options;
 using FUC.Processor.Data;
 using FUC.Processor.Extensions.Options;
+using FUC.Processor.Hubs;
 using FUC.Processor.Services;
 using MassTransit;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
@@ -47,6 +48,9 @@ public static class ServiceCollectionExtensions
 
         services.Configure<MailSettings>(configuration.GetSection("MailSettings"));
         services.AddScoped<IEmailService, EmailSerivce>();
+
+
+        services.AddSingleton<UsersTracker>();
 
         return services;
     }

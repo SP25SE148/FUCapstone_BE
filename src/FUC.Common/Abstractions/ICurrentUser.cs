@@ -5,5 +5,8 @@ public interface ICurrentUser
     public string Name { get; }
     public string Email { get; }
     public string UserCode { get; }
+    public string MajorId { get; }
+    public string CapstoneId { get; }
+    public string CampusId { get; }
 }
 

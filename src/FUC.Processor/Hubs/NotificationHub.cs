@@ -2,7 +2,7 @@
 using Microsoft.AspNetCore.SignalR;
 
 namespace FUC.Processor.Hubs;
-
+    
 public interface INotificationClient
 {
     Task ReceiveAllNotifications(string message);

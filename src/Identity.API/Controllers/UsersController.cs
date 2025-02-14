@@ -1,6 +1,7 @@
 ﻿using System.Security.Claims;
 using AutoMapper;
 using ClosedXML.Excel;
+using FUC.Common.Abstractions;
 using FUC.Common.Constants;
 using FUC.Common.Contracts;
 using FUC.Common.IntegrationEventLog.Services;
@@ -17,6 +18,7 @@ using Serilog;
 namespace Identity.API.Controllers;
 
 public class UsersController(ILogger<UsersController> logger,
+    ICurrentUser currentUser,
     UserManager<ApplicationUser> userManager,
     ApplicationDbContext dbContext,
     IIntegrationEventLogService eventService,
@@ -26,12 +28,12 @@ public class UsersController(ILogger<UsersController> logger,
 
     [HttpPost("admins")]
     [Authorize(Roles = $"{UserRoles.SuperAdmin}")]
-    public async Task<IActionResult> CreateAdmin([FromBody] ManagerDto user)
+    public async Task<IActionResult> CreateAdmin([FromBody] AdminDto user)
     {
         await CreateApplicationUser(new ApplicationUser
         {
             UserCode = user.Email.Split("@")[0],
-            FullName = user.UserName,
+            FullName = user.FullName,
             Email = user.Email,
             UserName = user.Email,
             CampusId = user.CampusId,
@@ -50,10 +52,10 @@ public class UsersController(ILogger<UsersController> logger,
         await CreateApplicationUser(new ApplicationUser
         {
             UserCode = user.Email.Split("@")[0],
-            FullName = user.UserName,
+            FullName = user.FullName,
             Email = user.Email,
             UserName = user.Email,
-            CampusId = user.CampusId,
+            CampusId = currentUser.CampusId,
             CapstoneId = "All",
             MajorId = "All",
             EmailConfirmed = true,
@@ -71,10 +73,10 @@ public class UsersController(ILogger<UsersController> logger,
         var supervisor = new ApplicationUser
         {
             UserCode = user.Email.Split("@")[0],
-            FullName = user.UserName,
+            FullName = user.FullName,
             Email = user.Email,
             UserName = user.Email,
-            CampusId = user.CampusId,
+            CampusId = currentUser.CampusId,
             CapstoneId = "All",
             MajorId = user.MajorId,
             EmailConfirmed = true
@@ -100,10 +102,10 @@ public class UsersController(ILogger<UsersController> logger,
         var student = new ApplicationUser
         {
             UserCode = user.StudentCode,
-            FullName = user.UserName,
+            FullName = user.FullName,
             Email = user.Email,
             UserName = user.Email,
-            CampusId = user.CampusId,
+            CampusId = currentUser.CampusId,
             CapstoneId = user.CapstoneId,
             MajorId = user.MajorId,
             EmailConfirmed = true
