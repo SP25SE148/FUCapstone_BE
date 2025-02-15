@@ -1,6 +1,6 @@
 ﻿using System.Text;
 using FUC.Common.Abstractions;
-using FUC.Common.IntegrationEventLog.Services;
+using FUC.Common.IntegrationEventLog;
 using Identity.API.Data;
 using Identity.API.Extensions.Options;
 using Identity.API.Infrastuctures;
@@ -28,7 +28,7 @@ public static class ApplicationServiceExtensions
             options.UseNpgsql(configuration.GetConnectionString("DefaultConnection"));
         });
 
-        services.AddTransient<IIntegrationEventLogService, IntegrationEventLogService<ApplicationDbContext>>();
+        services.AddIntegrationEventLogService<ApplicationDbContext>();
 
         services.AddAutoMapper(typeof(ServiceProfiles));
 

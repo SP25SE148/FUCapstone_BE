@@ -2,11 +2,13 @@
 using FUC.Common.Abstractions;
 using FUC.Common.Constants;
 using FUC.Common.Contracts;
+using FUC.Common.Options;
 using FUC.Data.Data;
 using FUC.Data.Entities;
 using FUC.Data.Enums;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 
 namespace FUC.Service.Consumers;
 public class UsersSyncMessageConsumer : BaseEventConsumer<UsersSyncMessage>
@@ -14,7 +16,8 @@ public class UsersSyncMessageConsumer : BaseEventConsumer<UsersSyncMessage>
     private readonly ILogger<UsersSyncMessageConsumer> _logger;
     private readonly FucDbContext _dbContext;
 
-    public UsersSyncMessageConsumer(ILogger<UsersSyncMessageConsumer> logger, IServiceProvider serviceProvider) : base(logger)
+    public UsersSyncMessageConsumer(ILogger<UsersSyncMessageConsumer> logger, IServiceProvider serviceProvider) : base(logger, 
+        serviceProvider.GetRequiredService<IOptions<EventConsumerConfiguration>>())
     {
         _logger = logger;
         _dbContext = serviceProvider.GetRequiredService<FucDbContext>();
@@ -34,7 +37,7 @@ public class UsersSyncMessageConsumer : BaseEventConsumer<UsersSyncMessage>
                 var students = users.Select(x => new Student
                 {
                     Id = x.UserCode,
-                    FullName = x.UserName,
+                    FullName = x.FullName,
                     MajorId = x.MajorId.ToUpper(),
                     CapstoneId = x.CapstoneId.ToUpper(),
                     CampusId = x.CampusId.ToUpper(),
@@ -54,7 +57,7 @@ public class UsersSyncMessageConsumer : BaseEventConsumer<UsersSyncMessage>
                 var supervisors = users.Select(x => new Supervisor
                 {
                     Id = x.UserCode,
-                    FullName = x.UserName,
+                    FullName = x.FullName,
                     MajorId = x.MajorId.ToUpper(),
                     CampusId = x.CampusId.ToUpper(),
                     Email = x.Email,

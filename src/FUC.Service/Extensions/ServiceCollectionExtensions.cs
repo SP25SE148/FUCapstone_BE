@@ -5,7 +5,6 @@ using Amazon.S3;
 using Amazon.S3.Transfer;
 using FluentValidation;
 using FUC.Common.Abstractions;
-using FUC.Data.Entities;
 using FUC.Service.Abstractions;
 using FUC.Service.Extensions.Options;
 using FUC.Service.Infrastructure;
@@ -15,8 +14,8 @@ using FUC.Service.Services;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
-using FUC.Common.IntegrationEventLog.Services;
 using FUC.Data.Data;
+using FUC.Common.IntegrationEventLog;
 
 namespace FUC.Service.Extensions;
 
@@ -40,7 +39,7 @@ public static class ServiceCollectionExtensions
 
             var config = new AmazonS3Config
             {
-                RegionEndpoint = RegionEndpoint.GetBySystemName(s3Settings.Region)
+                RegionEndpoint = RegionEndpoint.GetBySystemName(s3Settings.Region)  
             };
 
             return new AmazonS3Client(AwsCredentials, config);
@@ -60,7 +59,11 @@ public static class ServiceCollectionExtensions
         //services.AddScoped<IGroupMemberService, GroupMemberService>();
         services.AddScoped<IStudentService, StudentService>();
         services.AddScoped<ISupervisorService, SupervisorService>();
-        services.AddTransient<IIntegrationEventLogService, IntegrationEventLogService<FucDbContext>>();
+
+        // Add EventLogService
+        services.AddEventConsumerConfiguration(configuration);
+        services.AddIntegrationEventLogService<FucDbContext>();
+        
         // DI RabbitMQ
         services.AddMassTransit(x =>
         {

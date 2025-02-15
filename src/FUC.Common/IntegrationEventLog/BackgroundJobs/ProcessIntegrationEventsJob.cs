@@ -1,8 +1,10 @@
 ﻿using System.Collections.Concurrent;
 using System.Text.Json;
+using FUC.Common.Options;
 using MassTransit;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using Npgsql;
 using NpgsqlTypes;
 using Quartz;
