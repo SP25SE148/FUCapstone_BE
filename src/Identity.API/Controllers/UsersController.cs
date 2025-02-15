@@ -1,5 +1,4 @@
-﻿using System.Linq.Expressions;
-using System.Security.Claims;
+﻿using System.Security.Claims;
 using AutoMapper;
 using ClosedXML.Excel;
 using FUC.Common.Abstractions;
@@ -8,7 +7,6 @@ using FUC.Common.Contracts;
 using FUC.Common.IntegrationEventLog.Services;
 using FUC.Common.Shared;
 using Identity.API.Data;
-using Identity.API.Infrastuctures;
 using Identity.API.Models;
 using Identity.API.Payloads.Requests;
 using Identity.API.Payloads.Responses;
@@ -48,7 +46,7 @@ public class UsersController(ILogger<UsersController> logger,
     }
 
     [HttpPost("managers")]
-    [Authorize(Roles = $"{UserRoles.SuperAdmin},{UserRoles.Admin}")]
+    [Authorize(Roles = $"{UserRoles.Admin}")]
     public async Task<IActionResult> CreateManager([FromBody] ManagerDto user)
     {
         await CreateApplicationUser(new ApplicationUser
@@ -67,7 +65,7 @@ public class UsersController(ILogger<UsersController> logger,
     }
 
     [HttpPost("supervisors")]
-    [Authorize(Roles = $"{UserRoles.SuperAdmin},{UserRoles.Admin},{UserRoles.Manager}")]
+    [Authorize(Roles = $"{UserRoles.Admin},{UserRoles.Manager}")]
     public async Task<IActionResult> CreateSupervisors([FromBody] SupervisorDto user)
     {
         await dbContext.BeginTransactionAsync();
@@ -96,7 +94,7 @@ public class UsersController(ILogger<UsersController> logger,
     }
 
     [HttpPost("students")]
-    [Authorize(Roles = $"{UserRoles.SuperAdmin},{UserRoles.Admin},{UserRoles.Manager}")]
+    [Authorize(Roles = $"{UserRoles.Admin},{UserRoles.Manager}")]
     public async Task<IActionResult> CreateStudent([FromBody] StudentDto user)
     {
         await dbContext.BeginTransactionAsync();

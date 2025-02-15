@@ -11,7 +11,7 @@ public class ServiceProfiles : Profile
     {
         CreateMap<ApplicationUser, UserSync>()
             .ForMember(dest => dest.UserId, opt => opt.MapFrom(src => src.Id))
-            .ForMember(dest => dest.UserName, opt => opt.MapFrom(src => src.FullName));
+            .ForMember(dest => dest.FullName, opt => opt.MapFrom(src => src.FullName));
 
         CreateMap<ApplicationUser, UserResponseDTO>()
             .ForMember(dest => dest.UserId, opt => opt.MapFrom(src => src.Id));

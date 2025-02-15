@@ -1,6 +1,8 @@
 ﻿using FUC.Common.Events;
+using FUC.Common.Options;
 using MassTransit;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 
 namespace FUC.Common.Abstractions;
 
@@ -13,13 +15,15 @@ public abstract class BaseEventConsumer<TIntegrationEvent> : IConsumer<TIntegrat
 
     protected string ConsumerName => GetType().Name;
     
-    private const int MaxRetryCount = 3;
+    private readonly EventConsumerConfiguration _eventConsumerConfiguration;
 
     public sealed class ProcessMessageException(string message) : Exception(message) { }
 
-    protected BaseEventConsumer(ILogger<BaseEventConsumer<TIntegrationEvent>> logger)
+    protected BaseEventConsumer(ILogger<BaseEventConsumer<TIntegrationEvent>> logger,
+        IOptions<EventConsumerConfiguration> options)
     {
         _logger = logger;
+        _eventConsumerConfiguration = options.Value;
     }
 
 
@@ -31,7 +35,7 @@ public abstract class BaseEventConsumer<TIntegrationEvent> : IConsumer<TIntegrat
         
         try
         {
-            if (retryCount > MaxRetryCount)
+            if (retryCount > _eventConsumerConfiguration.MaxRetryCount)
             {
                 _logger.LogWarning("{Consumer}: Message failed after {RetryCount} retries. Unhandling message.", ConsumerName,
 
@@ -48,13 +52,15 @@ public abstract class BaseEventConsumer<TIntegrationEvent> : IConsumer<TIntegrat
         {
             _logger.LogWarning("{Consumer}: Message failed. Retrying {RetryCount}/{MaxRetryCount}. {Message}", ConsumerName,
 
-                    retryCount, MaxRetryCount, ex.Message);
+                    retryCount, _eventConsumerConfiguration.MaxRetryCount, ex.Message);
 
             retryCount++;
 
             var endpoint = await context.GetSendEndpoint(new Uri(context.DestinationAddress!.AbsoluteUri));
 
             context.Message.RetryCount = retryCount;
+
+            await Task.Delay(TimeSpan.FromSeconds(_eventConsumerConfiguration.DelayTime));
 
             await endpoint.Send(context.Message);
         }
