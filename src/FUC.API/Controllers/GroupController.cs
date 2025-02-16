@@ -1,17 +1,22 @@
 ﻿using System.Security.Claims;
 using FUC.API.Abstractions;
+using FUC.Common.Abstractions;
 using FUC.Common.Constants;
 using FUC.Common.Shared;
 using FUC.Service.Abstractions;
 using FUC.Service.DTOs.GroupDTO;
+using FUC.Service.DTOs.GroupMemberDTO;
+using FUC.Service.Infrastructure;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace FUC.API.Controllers;
 
 [Authorize]
-public class GroupController(IGroupService groupService) : ApiController
+public class GroupController(IGroupService groupService, IGroupMemberService groupMemberService, ICurrentUser currentUser) : ApiController
 {
+    #region Group Endpoint
+    
     [Authorize(Roles = nameof(UserRoles.Student))]
     [HttpPost]
     public async Task<IActionResult> CreateGroupAsync(CreateGroupRequest request)
@@ -21,7 +26,7 @@ public class GroupController(IGroupService groupService) : ApiController
             ? Ok(result.Value)
             : HandleFailure(result);
     }
-
+    
     [HttpGet]
     public async Task<IActionResult> GetGroups()
     {
@@ -75,4 +80,31 @@ public class GroupController(IGroupService groupService) : ApiController
             ? Ok(result.Value)
             : HandleFailure(result);
     }
+    #endregion
+
+    #region Group Member Endpoint
+
+    [Authorize(Roles = nameof(UserRoles.Student))]
+    [HttpPost("add-member")]
+    public async Task<IActionResult> AddMemberIntoGroupAsync(CreateGroupMemberRequest request)
+    {
+        request = request with { LeaderId = currentUser.UserCode };
+        OperationResult<Guid> result = await groupMemberService.CreateBulkGroupMemberAsync(request);
+        return result.IsSuccess
+            ? Ok(result)
+            : HandleFailure(result);
+    }
+
+
+    [Authorize(Roles = nameof(UserRoles.Student))]
+    [HttpPut("update-group-member-status")]
+    public async Task<IActionResult> UpdateGroupMemberStatusAsync(UpdateGroupMemberRequest request)
+    {
+        request = request with { MemberId = currentUser.UserCode };
+        OperationResult result = await groupMemberService.UpdateGroupMemberStatusAsync(request);
+        return result.IsSuccess
+            ? NoContent()
+            : HandleFailure(result);
+    }
+    #endregion
 }

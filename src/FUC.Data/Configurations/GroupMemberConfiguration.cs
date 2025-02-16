@@ -27,8 +27,8 @@ public sealed class GroupMemberConfiguration : IEntityTypeConfiguration<GroupMem
             .OnDelete(DeleteBehavior.Restrict);
 
         builder.HasOne(gm => gm.Student)
-            .WithOne(s => s.GroupMember)
-            .HasForeignKey<GroupMember>(gm => gm.StudentId)
+            .WithMany(s => s.GroupMembers)
+            .HasForeignKey(gm => gm.StudentId)
             .OnDelete(DeleteBehavior.Restrict);
     }
 }

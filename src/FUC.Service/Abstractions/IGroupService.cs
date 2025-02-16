@@ -12,7 +12,9 @@ public interface IGroupService
     Task<OperationResult<IEnumerable<GroupResponse>>> GetAllGroupByCapstoneIdAsync(string capstoneId);
     Task<OperationResult<IEnumerable<GroupResponse>>> GetAllGroupByCampusIdAsync(string campusId);
     Task<OperationResult<GroupResponse>> GetGroupByIdAsync(Guid id);
-    
-    
-    
+    Task<OperationResult> UpdateGroupStatusAsync();
+
+
+
+
 }
