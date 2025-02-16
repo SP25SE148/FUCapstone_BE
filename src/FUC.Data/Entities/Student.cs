@@ -18,5 +18,5 @@ public sealed class Student : AuditableSoftDeleteEntity
     public Major Major { get; set; } = null!;
     public Campus Campus { get; set; } = null!;
     public Capstone Capstone { get; set; } = null!;
-    public GroupMember GroupMember { get; set; } = null!;
+    public ICollection<GroupMember> GroupMembers { get; set; } = new List<GroupMember>();
 }

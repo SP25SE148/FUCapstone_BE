@@ -35,7 +35,7 @@ public class GroupService(IUnitOfWork<FucDbContext> uow, IMapper mapper, IPublis
                 s.IsEligible &&
                 !s.IsDeleted,
             include: s => 
-                s.Include(s => s.GroupMember)
+                s.Include(s => s.GroupMembers)
                     .ThenInclude(gm => gm.Group)
                     .Include(s => s.Capstone),
             orderBy: default,
@@ -52,8 +52,8 @@ public class GroupService(IUnitOfWork<FucDbContext> uow, IMapper mapper, IPublis
 
         // Check if Leader is eligible to create group 
         if (leader.Status.Equals(StudentStatus.Passed) ||
-            leader.GroupMember != null &&
-            leader.GroupMember.Status.Equals(GroupMemberStatus.Accepted))
+            leader.GroupMembers.Count > 0 &&
+            leader.GroupMembers.Any(s => s.Status.Equals(GroupMemberStatus.Accepted)))
             return OperationResult.Failure<Guid>(new Error("Error.InEligible", "Leader is ineligible to create group"));
         
         // Create group, group member for leader
@@ -91,12 +91,12 @@ public class GroupService(IUnitOfWork<FucDbContext> uow, IMapper mapper, IPublis
                                 s.IsEligible &&
                                 !s.Status.Equals(StudentStatus.Passed) &&
                                 !s.IsDeleted,
-                include: s => s.Include(s => s.GroupMember),
+                include: s => s.Include(s => s.GroupMembers),
                 orderBy: default,
                 cancellationToken: default);
             if (member is null ||
-                member.GroupMember != null &&
-                member.GroupMember.Status.Equals(GroupMemberStatus.Accepted))
+                member.GroupMembers.Count > 0 &&
+                member.GroupMembers.Any(s => s.Status.Equals(GroupMemberStatus.Accepted)))
                 return OperationResult.Failure<Guid>(new Error("Error.InEligible",$"Member with id {memberId} is ineligible !!"));
             
             // create group member for member
@@ -178,7 +178,12 @@ public class GroupService(IUnitOfWork<FucDbContext> uow, IMapper mapper, IPublis
             ? OperationResult.Failure<GroupResponse>(Error.NullValue)
             : OperationResult.Success(_mapper.Map<GroupResponse>(group));
     }
-    
+
+    public Task<OperationResult> UpdateGroupStatusAsync()
+    {
+        throw new NotImplementedException();
+    }
+
     private static Func<IQueryable<Group>, IIncludableQueryable<Group, object>> CreateIncludeForGroupResponse()
     {
         return g => 

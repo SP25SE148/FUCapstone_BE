@@ -56,7 +56,7 @@ public static class ServiceCollectionExtensions
         services.AddScoped<IMajorGroupService,MajorGroupService>();
         services.AddScoped<IGroupService, GroupService>();
         services.AddScoped<ISemesterService, SemesterService>();
-        //services.AddScoped<IGroupMemberService, GroupMemberService>();
+        services.AddScoped<IGroupMemberService, GroupMemberService>();
         services.AddScoped<IStudentService, StudentService>();
         services.AddScoped<ISupervisorService, SupervisorService>();
 
