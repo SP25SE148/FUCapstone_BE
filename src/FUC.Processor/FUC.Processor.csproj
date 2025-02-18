@@ -4,6 +4,9 @@
     <TargetFramework>net8.0</TargetFramework>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
+    <UserSecretsId>4b419d18-1676-4e75-b6df-13f943f8fa08</UserSecretsId>
+    <DockerDefaultTargetOS>Windows</DockerDefaultTargetOS>
+    <DockerfileContext>..\..</DockerfileContext>
   </PropertyGroup>
 	
 	<ItemGroup>
@@ -18,6 +21,7 @@
 		<PackageReference Include="EASendMail" Version="7.9.2.6" />
 		<PackageReference Include="MailKit" Version="4.8.0" />
 		<PackageReference Include="MassTransit.RabbitMQ" Version="8.3.4" />
+		<PackageReference Include="Microsoft.VisualStudio.Azure.Containers.Tools.Targets" Version="1.19.6" />
 		<PackageReference Include="MimeKit" Version="4.8.0" />
 	</ItemGroup>
 	
