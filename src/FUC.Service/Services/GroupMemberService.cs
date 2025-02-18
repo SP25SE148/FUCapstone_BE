@@ -1,4 +1,6 @@
-﻿using FUC.Common.Shared;
+﻿using FUC.Common.Contracts;
+using FUC.Common.IntegrationEventLog.Services;
+using FUC.Common.Shared;
 using FUC.Data;
 using FUC.Data.Data;
 using FUC.Data.Entities;
@@ -10,12 +12,14 @@ using Microsoft.EntityFrameworkCore;
 
 namespace FUC.Service.Services;
 
-public class GroupMemberService(IUnitOfWork<FucDbContext> uow) : IGroupMemberService
+public class GroupMemberService(IUnitOfWork<FucDbContext> uow, IIntegrationEventLogService integrationEventLogService) : IGroupMemberService
 {
     private readonly IUnitOfWork<FucDbContext> _uow = uow ?? throw new ArgumentNullException(nameof(uow));
     private readonly IRepository<GroupMember> _groupMemberRepository = uow.GetRepository<GroupMember>() ?? throw new ArgumentNullException(nameof(uow));
     private readonly IRepository<Student> _studentRepository = uow.GetRepository<Student>() ?? throw new ArgumentNullException(nameof(uow));
     private readonly IRepository<Group> _groupRepository = uow.GetRepository<Group>() ?? throw new ArgumentNullException(nameof(uow));
+
+    private readonly IIntegrationEventLogService _integrationEventLogService = integrationEventLogService ?? throw new ArgumentNullException(nameof(integrationEventLogService));
     
     
     public async Task<OperationResult<Guid>> CreateBulkGroupMemberAsync(CreateGroupMemberRequest request)
@@ -53,9 +57,11 @@ public class GroupMemberService(IUnitOfWork<FucDbContext> uow) : IGroupMemberSer
         // Check if the team size is invalid 
         if (request.MemberIdList.Count  > leader.Capstone.MaxMember - numOfMembers)
             return OperationResult.Failure<Guid>(new Error("Error.TeamSizeInvalid", "The team size is invalid"));
-        
-        
+
+        var groupMemberNotification = new List<GroupMemberNotification>();
+        Guid groupId = leader.GroupMembers.FirstOrDefault(s => s.IsLeader)!.GroupId;
         // create group member for member  
+        await _uow.BeginTransactionAsync();
         foreach (string memberId in request.MemberIdList)
         {
             //check if memberId value is duplicate with leaderId 
@@ -79,17 +85,34 @@ public class GroupMemberService(IUnitOfWork<FucDbContext> uow) : IGroupMemberSer
                                             s.Status.Equals(GroupMemberStatus.UnderReview)))
                 return OperationResult.Failure<Guid>(new Error("Error.CreateGroupMemberFail", $"Can not send request to member with id {member.Id} because the leader already send request to this member"));
             // create group member for member
-            _groupMemberRepository.Insert(new GroupMember
+            var newGroupMember = new GroupMember
             {
                 Id = Guid.NewGuid(),
-                GroupId = leader.GroupMembers.FirstOrDefault(s => s.IsLeader)!.GroupId,
+                GroupId = groupId,
                 StudentId = member.Id,
                 IsLeader = false,
                 Status = GroupMemberStatus.UnderReview
+            };
+            
+            _groupMemberRepository.Insert(newGroupMember);
+            
+            groupMemberNotification.Add(new GroupMemberNotification
+            {
+                GroupId = groupId,
+                MemberId = member.Id,
+                GroupMemberId = newGroupMember.Id   
             });
         }
-        await _uow.SaveChangesAsync();
-        return leader.GroupMembers.FirstOrDefault(s => s.IsLeader)!.GroupId;
+        _integrationEventLogService.SendEvent(new GroupMemberNotificationMessage
+        {
+            GroupMemberNotifications = groupMemberNotification,
+            CreateBy = leader.Id,
+            LeaderEmail = leader.Email,
+            LeaderName = leader.FullName,
+            AttemptTime = 1
+        });
+        await _uow.CommitAsync();
+        return groupId;
     }
 
     public async Task<OperationResult> UpdateGroupMemberStatusAsync(UpdateGroupMemberRequest request)
@@ -129,7 +152,8 @@ public class GroupMemberService(IUnitOfWork<FucDbContext> uow) : IGroupMemberSer
         // check if group member quantity is full
         if(groupMemberQuantities >=  member.Group.Capstone.MaxMember)
             return OperationResult.Failure(new Error("Error.ExceedGroupSlot",$"The group with id {request.GroupId} is full of member"));
-        
+
+        await _uow.BeginTransactionAsync();
         
         // Update status for requests
         switch (request.Status)
@@ -145,7 +169,6 @@ public class GroupMemberService(IUnitOfWork<FucDbContext> uow) : IGroupMemberSer
             case GroupMemberStatus.LeftGroup:
                 if (!member.Status.Equals(GroupMemberStatus.Accepted))
                     return OperationResult.Failure(new Error("Error.UpdateFailed",$"Can not left group from the other status different {GroupMemberStatus.Accepted.ToString()} status"));
-                // TODO: Leader left group ? => (Give the leader group permission to the others member?? || Delete group??)
                 if (!member.IsLeader)
                 {
                     member.Status = request.Status;
@@ -170,9 +193,14 @@ public class GroupMemberService(IUnitOfWork<FucDbContext> uow) : IGroupMemberSer
                 return OperationResult.Failure(new Error("Error.UpdateFailed", $"Can not update status with group member id {member.Id}!!")); 
             
         }
-
-        await _uow.SaveChangesAsync();
-        // TODO: Send Update Noti to leader 
+        _integrationEventLogService.SendEvent(new GroupMemberStatusUpdateMessage
+        {
+            AttemptTime = 1,
+            CreatedBy = member.StudentId,
+            Status = request.Status.ToString()
+        });
+        
+        await _uow.CommitAsync();
         return OperationResult.Success();
     }
 }

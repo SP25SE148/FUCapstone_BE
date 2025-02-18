@@ -1,6 +1,8 @@
 ﻿using AutoMapper;
 using Azure;
 using DocumentFormat.OpenXml.Office2010.ExcelAc;
+using FUC.Common.Contracts;
+using FUC.Common.IntegrationEventLog.Services;
 using FUC.Common.Shared;
 using FUC.Data;
 using FUC.Data.Data;
@@ -17,16 +19,16 @@ using NetTopologySuite.Geometries;
 
 namespace FUC.Service.Services;
 
-public class GroupService(IUnitOfWork<FucDbContext> uow, IMapper mapper, IPublishEndpoint publishEndpoint) : IGroupService
+public class GroupService(IUnitOfWork<FucDbContext> uow, IMapper mapper, IIntegrationEventLogService integrationEventLogService) : IGroupService
 {
     private readonly IUnitOfWork<FucDbContext> _uow = uow ?? throw new ArgumentNullException(nameof(uow));
+
+    private readonly IIntegrationEventLogService _integrationEventLogService = integrationEventLogService ?? throw new ArgumentNullException(nameof(integrationEventLogService));
     private readonly IRepository<Group> _groupRepository = uow.GetRepository<Group>() ?? throw new ArgumentNullException(nameof(uow));
     private readonly IMapper _mapper = mapper ?? throw new ArgumentNullException(nameof(mapper));
     private readonly IRepository<Student> _studentRepository = uow.GetRepository<Student>() ?? throw new ArgumentNullException(nameof(uow));
     private readonly IRepository<GroupMember> _groupMemberRepository = uow.GetRepository<GroupMember>() ?? throw new ArgumentNullException(nameof(uow));
-
-    private readonly IPublishEndpoint _publishEndpoint = publishEndpoint ?? throw new ArgumentNullException(nameof(publishEndpoint));
-
+    
     public async Task<OperationResult<Guid>> CreateGroupAsync(CreateGroupRequest request, string leaderId)
     {
         Student? leader = await _studentRepository.GetAsync(
@@ -78,6 +80,9 @@ public class GroupService(IUnitOfWork<FucDbContext> uow, IMapper mapper, IPublis
                 Status = GroupMemberStatus.Accepted
             });
 
+        // create groupMemberNotifications use for publish message
+        var groupMemberNotifications = new List<GroupMemberNotification>();
+        
         // create group member for member  
         foreach (string memberId in request.MembersId)
         {
@@ -100,15 +105,32 @@ public class GroupService(IUnitOfWork<FucDbContext> uow, IMapper mapper, IPublis
                 return OperationResult.Failure<Guid>(new Error("Error.InEligible",$"Member with id {memberId} is ineligible !!"));
             
             // create group member for member
-            _groupMemberRepository.Insert(new GroupMember
+            var newGroupMember = new GroupMember
             {
                 Id = Guid.NewGuid(),
                 GroupId = newGroup.Id,
                 StudentId = member.Id,
                 IsLeader = false,
                 Status = GroupMemberStatus.UnderReview
+            };
+            _groupMemberRepository.Insert(newGroupMember);
+            
+            groupMemberNotifications.Add(new GroupMemberNotification()
+            {
+                MemberId = member.Id,
+                GroupId = newGroup.Id,
+                GroupMemberId = newGroupMember.Id
             });
         }
+        integrationEventLogService.SendEvent(new GroupMemberNotificationMessage
+        {
+            CreateBy = leader.Id,
+            GroupMemberNotifications = groupMemberNotifications,
+            LeaderEmail = leader.Email,
+            LeaderName = leader.FullName,
+            AttemptTime = 1
+        });
+        
         await _uow.CommitAsync();
         return newGroup.Id;
     }

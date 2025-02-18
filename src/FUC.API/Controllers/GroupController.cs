@@ -2,6 +2,8 @@
 using FUC.API.Abstractions;
 using FUC.Common.Abstractions;
 using FUC.Common.Constants;
+using FUC.Common.Contracts;
+using FUC.Common.IntegrationEventLog.Services;
 using FUC.Common.Shared;
 using FUC.Service.Abstractions;
 using FUC.Service.DTOs.GroupDTO;
@@ -13,7 +15,7 @@ using Microsoft.AspNetCore.Mvc;
 namespace FUC.API.Controllers;
 
 [Authorize]
-public class GroupController(IGroupService groupService, IGroupMemberService groupMemberService, ICurrentUser currentUser) : ApiController
+public class GroupController(IGroupService groupService, IGroupMemberService groupMemberService, ICurrentUser currentUser, IIntegrationEventLogService integrationEventLogService) : ApiController
 {
     #region Group Endpoint
     
