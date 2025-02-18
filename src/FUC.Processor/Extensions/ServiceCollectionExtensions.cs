@@ -1,8 +1,10 @@
 ﻿using FUC.Common.IntegrationEventLog.BackgroundJobs;
 using FUC.Common.Options;
+using FUC.Processor.Abstractions;
 using FUC.Processor.Data;
 using FUC.Processor.Extensions.Options;
 using FUC.Processor.Hubs;
+using FUC.Processor.Jobs;
 using FUC.Processor.Services;
 using MassTransit;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
@@ -18,6 +20,11 @@ public static class ServiceCollectionExtensions
 {
     public static IServiceCollection AddApplicationServices(this IServiceCollection services, IConfiguration configuration)
     {
+        services.AddDbContext<ProcessorDbContext>((provider, options) =>
+        {
+            options.UseNpgsql(configuration.GetConnectionString("ProcessorConnection"));
+        });
+
         services.AddDbContext<FucDbContext>((provider, options) =>
         {
             options.UseNpgsql(configuration.GetConnectionString("FucConnection"));
@@ -107,14 +114,18 @@ public static class ServiceCollectionExtensions
 
     public static IServiceCollection AddQuartzInfrastructure(this IServiceCollection services)
     {
-        var dbContextTypes = Assembly.GetExecutingAssembly()
+        var integrationDbContextTypes = Assembly.GetExecutingAssembly()
             .GetTypes()
-            .Where(t => t.IsClass && !t.IsAbstract && typeof(DbContext).IsAssignableFrom(t))
+            .Where(t => t.IsClass && 
+                !t.IsAbstract && 
+                typeof(DbContext).IsAssignableFrom(t) && 
+                typeof(IIntegrationDbContext).IsAssignableFrom(t))
             .ToList();
 
         services.AddQuartz(configure =>
         {
-            foreach (var dbContextType in dbContextTypes)
+            // Add IntegrationEventJobs
+            foreach (var dbContextType in integrationDbContextTypes)
             {
                 var dbContextName = dbContextType.Name;
 
@@ -130,6 +141,16 @@ public static class ServiceCollectionExtensions
                                 schedule.WithInterval(TimeSpan.FromSeconds(10)) // Run every 10 sec
                                         .RepeatForever()));
             }
+
+            // Add ReminderJobs
+            var reminderJobKey = new JobKey(nameof(ProcessRemindersJob));
+
+            configure
+                .AddJob(typeof(ProcessRemindersJob), reminderJobKey)
+                .AddTrigger(trigger => 
+                    trigger.ForJob(reminderJobKey)
+                        .WithIdentity($"{nameof(ProcessRemindersJob)}_Trigger")
+                        .WithCronSchedule("0 0 7 * * ?"));
         });
 
         // Register Quartz Hosted Service

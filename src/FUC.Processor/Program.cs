@@ -1,3 +1,4 @@
+using FUC.Processor;
 using FUC.Processor.Extensions;
 using FUC.Processor.Hubs;
 using FUC.Processor.Middlewares;
@@ -29,4 +30,6 @@ app.MapGet("/test-mail", async (IEmailService emailService) =>
 
 app.MapHub<NotificationHub>("/notifications");
 
-app.Run();
+await AppDbInitializer.SeedData(app);
+
+await app.RunAsync();

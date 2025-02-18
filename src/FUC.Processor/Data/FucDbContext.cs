@@ -1,9 +1,10 @@
 ﻿using FUC.Common.IntegrationEventLog;
+using FUC.Processor.Abstractions;
 using Microsoft.EntityFrameworkCore;
 
 namespace FUC.Processor.Data;
 
-public class FucDbContext : DbContext
+public class FucDbContext : DbContext, IIntegrationDbContext
 {
     public FucDbContext() { }
 

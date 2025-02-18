@@ -1,10 +1,7 @@
 ﻿using System.Security.Claims;
 using System.Text.Json;
-using FUC.Data.Data;
 using FUC.Data.Entities;
-using Microsoft.AspNetCore.Builder;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.DependencyInjection;
 
 namespace FUC.API.SeedData;
 
