@@ -175,7 +175,7 @@ public class UsersController(ILogger<UsersController> logger,
     }
 
     [HttpGet("get-all-admin")]
-    [Authorize(Roles = nameof(UserRoles.SuperAdmin))]
+    [Authorize(Roles = $"{UserRoles.SuperAdmin}")]
     public async Task<IActionResult> GetAllAdminAsync()
     {
         
