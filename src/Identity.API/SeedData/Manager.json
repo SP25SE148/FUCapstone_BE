@@ -1,0 +1,322 @@
+[
+  {
+    "UserCode": "managerhnsep490",
+    "FullName": "Manager HN Sep490",
+    "Email": "managerhnsep490@fpt.edu.vn",
+    "CampusId": "HN",
+    "CapstoneId": "SEP490",
+    "MajorId": "SE"
+  },
+  {
+    "UserCode": "managerhnsap490",
+    "FullName": "Manager HN Sap490",
+    "Email": "managerhnsap490@fpt.edu.vn",
+    "CampusId": "HN",
+    "CapstoneId": "SAP490",
+    "MajorId": "SE"
+  },
+  {
+    "UserCode": "managerhnaip491",
+    "FullName": "Manager HN Aip491",
+    "Email": "managerhnaip491@fpt.edu.vn",
+    "CampusId": "HN",
+    "CapstoneId": "AIP491",
+    "MajorId": "AI"
+  },
+  {
+    "UserCode": "managerhniap491",
+    "FullName": "Manager HN Iap491",
+    "Email": "managerhniap491@fpt.edu.vn",
+    "CampusId": "HN",
+    "CapstoneId": "IAP491",
+    "MajorId": "IA"
+  },
+  {
+    "UserCode": "managerhngri491",
+    "FullName": "Manager HN Gri491",
+    "Email": "managerhngri491@fpt.edu.vn",
+    "CampusId": "HN",
+    "CapstoneId": "GRI491",
+    "MajorId": "IB"
+  },
+  {
+    "UserCode": "managerhngrf491",
+    "FullName": "Manager HN Grf491",
+    "Email": "managerhngrf491@fpt.edu.vn",
+    "CampusId": "HN",
+    "CapstoneId": "GRF491",
+    "MajorId": "FT"
+  },
+  {
+    "UserCode": "managerhngrm491",
+    "FullName": "Manager HN Grm491",
+    "Email": "managerhngrm491@fpt.edu.vn",
+    "CampusId": "HN",
+    "CapstoneId": "GRM491",
+    "MajorId": "DM"
+  },
+  {
+    "UserCode": "managerhngra491",
+    "FullName": "Manager HN Gra491",
+    "Email": "managerhngra497@fpt.edu.vn",
+    "CampusId": "HN",
+    "CapstoneId": "GRA497",
+    "MajorId": "MC"
+  },
+  {
+    "UserCode": "managerhcmsep490",
+    "FullName": "Manager HCM Sep490",
+    "Email": "managerhcmsep490@fpt.edu.vn",
+    "CampusId": "HCM",
+    "CapstoneId": "SEP490",
+    "MajorId": "SE"
+  },
+  {
+    "UserCode": "managerhcmsap490",
+    "FullName": "Manager HCM Sap490",
+    "Email": "managerhcmsap490@fpt.edu.vn",
+    "CampusId": "HCM",
+    "CapstoneId": "SAP490",
+    "MajorId": "SE"
+  },
+  {
+    "UserCode": "managerhcmaip491",
+    "FullName": "Manager HCM Aip491",
+    "Email": "managerhcmaip491@fpt.edu.vn",
+    "CampusId": "HCM",
+    "CapstoneId": "AIP491",
+    "MajorId": "AI"
+  },
+  {
+    "UserCode": "managerhcmiap491",
+    "FullName": "Manager HCM Iap491",
+    "Email": "managerhcmiap491@fpt.edu.vn",
+    "CampusId": "HCM",
+    "CapstoneId": "IAP491",
+    "MajorId": "IA"
+  },
+  {
+    "UserCode": "managerhcmgri491",
+    "FullName": "Manager HCM Gri491",
+    "Email": "managerhcmgri491@fpt.edu.vn",
+    "CampusId": "HCM",
+    "CapstoneId": "GRI491",
+    "MajorId": "IB"
+  },
+  {
+    "UserCode": "managerhcmgrf491",
+    "FullName": "Manager HCM Grf491",
+    "Email": "managerhcmgrf491@fpt.edu.vn",
+    "CampusId": "HCM",
+    "CapstoneId": "GRF491",
+    "MajorId": "FT"
+  },
+  {
+    "UserCode": "managerhcmgrm491",
+    "FullName": "Manager HCM Grm491",
+    "Email": "managerhcmgrm491@fpt.edu.vn",
+    "CampusId": "HCM",
+    "CapstoneId": "GRM491",
+    "MajorId": "DM"
+  },
+  {
+    "UserCode": "managerhcmgra491",
+    "FullName": "Manager HCM Gra491",
+    "Email": "managerhcmgra497@fpt.edu.vn",
+    "CampusId": "HCM",
+    "CapstoneId": "GRA497",
+    "MajorId": "MC"
+  },
+  {
+    "UserCode": "managerdnsep490",
+    "FullName": "Manager DN Sep490",
+    "Email": "managerdnsep490@fpt.edu.vn",
+    "CampusId": "DN",
+    "CapstoneId": "SEP490",
+    "MajorId": "SE"
+  },
+  {
+    "UserCode": "managerdnsap490",
+    "FullName": "Manager DN Sap490",
+    "Email": "managerdnsap490@fpt.edu.vn",
+    "CampusId": "DN",
+    "CapstoneId": "SAP490",
+    "MajorId": "SE"
+  },
+  {
+    "UserCode": "managerdnaip491",
+    "FullName": "Manager DN Aip491",
+    "Email": "managerdnaip491@fpt.edu.vn",
+    "CampusId": "DN",
+    "CapstoneId": "AIP491",
+    "MajorId": "AI"
+  },
+  {
+    "UserCode": "managerdniap491",
+    "FullName": "Manager DN Iap491",
+    "Email": "managerdniap491@fpt.edu.vn",
+    "CampusId": "DN",
+    "CapstoneId": "IAP491",
+    "MajorId": "IA"
+  },
+  {
+    "UserCode": "managerdngri491",
+    "FullName": "Manager DN Gri491",
+    "Email": "managerdngri491@fpt.edu.vn",
+    "CampusId": "DN",
+    "CapstoneId": "GRI491",
+    "MajorId": "IB"
+  },
+  {
+    "UserCode": "managerdngrf491",
+    "FullName": "Manager DN Grf491",
+    "Email": "managerdngrf491@fpt.edu.vn",
+    "CampusId": "DN",
+    "CapstoneId": "GRF491",
+    "MajorId": "FT"
+  },
+  {
+    "UserCode": "managerdngrm491",
+    "FullName": "Manager DN Grm491",
+    "Email": "managerdngrm491@fpt.edu.vn",
+    "CampusId": "DN",
+    "CapstoneId": "GRM491",
+    "MajorId": "DM"
+  },
+  {
+    "UserCode": "managerdngra491",
+    "FullName": "Manager DN Gra491",
+    "Email": "managerdngra497@fpt.edu.vn",
+    "CampusId": "DN",
+    "CapstoneId": "GRA497",
+    "MajorId": "MC"
+  },
+  {
+    "UserCode": "managerctsep490",
+    "FullName": "Manager CT Sep490",
+    "Email": "managerctsep490@fpt.edu.vn",
+    "CampusId": "CT",
+    "CapstoneId": "SEP490",
+    "MajorId": "SE"
+  },
+  {
+    "UserCode": "managerctsap490",
+    "FullName": "Manager CT Sap490",
+    "Email": "managerctsap490@fpt.edu.vn",
+    "CampusId": "CT",
+    "CapstoneId": "SAP490",
+    "MajorId": "SE"
+  },
+  {
+    "UserCode": "managerctaip491",
+    "FullName": "Manager CT Aip491",
+    "Email": "managerctaip491@fpt.edu.vn",
+    "CampusId": "CT",
+    "CapstoneId": "AIP491",
+    "MajorId": "AI"
+  },
+  {
+    "UserCode": "managerctiap491",
+    "FullName": "Manager CT Iap491",
+    "Email": "managerctiap491@fpt.edu.vn",
+    "CampusId": "CT",
+    "CapstoneId": "IAP491",
+    "MajorId": "IA"
+  },
+  {
+    "UserCode": "managerctgri491",
+    "FullName": "Manager CT Gri491",
+    "Email": "managerctgri491@fpt.edu.vn",
+    "CampusId": "CT",
+    "CapstoneId": "GRI491",
+    "MajorId": "IB"
+  },
+  {
+    "UserCode": "managerctgrf491",
+    "FullName": "Manager CT Grf491",
+    "Email": "managerctgrf491@fpt.edu.vn",
+    "CampusId": "CT",
+    "CapstoneId": "GRF491",
+    "MajorId": "FT"
+  },
+  {
+    "UserCode": "managerctgrm491",
+    "FullName": "Manager CT Grm491",
+    "Email": "managerctgrm491@fpt.edu.vn",
+    "CampusId": "CT",
+    "CapstoneId": "GRM491",
+    "MajorId": "DM"
+  },
+  {
+    "UserCode": "managerctgra491",
+    "FullName": "Manager CT Gra491",
+    "Email": "managerctgra497@fpt.edu.vn",
+    "CampusId": "CT",
+    "CapstoneId": "GRA497",
+    "MajorId": "MC"
+  },
+  {
+    "UserCode": "managerqnsep490",
+    "FullName": "Manager QN Sep490",
+    "Email": "managerqnsep490@fpt.edu.vn",
+    "CampusId": "QN",
+    "CapstoneId": "SEP490",
+    "MajorId": "SE"
+  },
+  {
+    "UserCode": "managerqnsap490",
+    "FullName": "Manager QN Sap490",
+    "Email": "managerqnsap490@fpt.edu.vn",
+    "CampusId": "QN",
+    "CapstoneId": "SAP490",
+    "MajorId": "SE"
+  },
+  {
+    "UserCode": "managerqnaip491",
+    "FullName": "Manager QN Aip491",
+    "Email": "managerqnaip491@fpt.edu.vn",
+    "CampusId": "QN",
+    "CapstoneId": "AIP491",
+    "MajorId": "AI"
+  },
+  {
+    "UserCode": "managerqniap491",
+    "FullName": "Manager QN Iap491",
+    "Email": "managerqniap491@fpt.edu.vn",
+    "CampusId": "QN",
+    "CapstoneId": "IAP491",
+    "MajorId": "IA"
+  },
+  {
+    "UserCode": "managerqngri491",
+    "FullName": "Manager QN Gri491",
+    "Email": "managerqngri491@fpt.edu.vn",
+    "CampusId": "QN",
+    "CapstoneId": "GRI491",
+    "MajorId": "IB"
+  },
+  {
+    "UserCode": "managerqngrf491",
+    "FullName": "Manager QN Grf491",
+    "Email": "managerqngrf491@fpt.edu.vn",
+    "CampusId": "QN",
+    "CapstoneId": "GRF491",
+    "MajorId": "FT"
+  },
+  {
+    "UserCode": "managerqngrm491",
+    "FullName": "Manager QN Grm491",
+    "Email": "managerqngrm491@fpt.edu.vn",
+    "CampusId": "QN",
+    "CapstoneId": "GRM491",
+    "MajorId": "DM"
+  },
+  {
+    "UserCode": "managerqngra491",
+    "FullName": "Manager QN Gra491",
+    "Email": "managerqngra497@fpt.edu.vn",
+    "CampusId": "QN",
+    "CapstoneId": "GRA497",
+    "MajorId": "MC"
+  }
+]

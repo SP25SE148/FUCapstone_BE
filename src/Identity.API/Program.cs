@@ -1,6 +1,6 @@
-using Identity.API;
 using Identity.API.Extensions;
 using Identity.API.Middlewares;
+using Identity.API.SeedData;
 using Microsoft.OpenApi.Models;
 using Serilog;
 
