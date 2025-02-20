@@ -33,7 +33,7 @@ public class GroupMemberNotificationMessageConsumer : IConsumer<GroupMemberNotif
              List<string> connections = await _usersTracker.GetConnectionForUser(messageGroupMemberNotification.MemberEmail);
              if (connections.Any())
              {
-                 _hub.Clients.Clients(connections).ReceiveAllNotifications("context.Message");
+                 _hub.Clients.Clients(connections).ReceiveAllNotifications("context.Message ");
              }
          }
         

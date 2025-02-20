@@ -6,4 +6,5 @@ namespace FUC.Service.Abstractions;
 public interface IStudentService
 {
     Task<OperationResult<IEnumerable<StudentResponseDTO>>> GetAllStudentAsync();
+    Task<OperationResult<StudentResponseDTO>> GetStudentByIdAsync(string id);
 }

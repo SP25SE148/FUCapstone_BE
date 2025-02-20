@@ -1,5 +1,6 @@
 ﻿using AutoMapper;
 using FUC.Data.Entities;
+using FUC.Data.Enums;
 using FUC.Service.DTOs.CampusDTO;
 using FUC.Service.DTOs.CapstoneDTO;
 using FUC.Service.DTOs.GroupDTO;
@@ -59,7 +60,9 @@ public class ServiceProfiles : Profile
             .ForMember(s => s.MajorName, opt => opt.MapFrom(s => s.Major.Name))
             .ForMember(s => s.CapstoneName, opt => opt.MapFrom(s => s.Capstone.Name))
             .ForMember(s => s.CampusName, opt => opt.MapFrom(s => s.Campus.Name))
-            .ForMember(s => s.Status, opt => opt.MapFrom(s => s.Status.ToString()));
+            .ForMember(s => s.Status, opt => opt.MapFrom(s => s.Status.ToString()))
+            .ForMember(s => s.IsHaveBeenJoinGroup, opt => opt.MapFrom(s => s.GroupMembers.Any(gm => gm.Status.Equals(GroupMemberStatus.Accepted))));
+        
 
         // Supervisor mapping
         CreateMap<Supervisor,SupervisorResponseDTO>()

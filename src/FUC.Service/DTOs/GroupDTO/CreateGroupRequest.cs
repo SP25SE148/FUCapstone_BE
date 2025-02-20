@@ -3,9 +3,9 @@
 namespace FUC.Service.DTOs.GroupDTO;
 
 public record CreateGroupRequest(
-    string SemesterId,
+    string SemesterId/*,
     string MajorId,
     string CampusId,
     string CapstoneId,
-    IReadOnlyList<string> MembersId
+    IReadOnlyList<string> MembersId*/
     );

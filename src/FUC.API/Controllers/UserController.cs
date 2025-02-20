@@ -1,4 +1,6 @@
-﻿using FUC.API.Abstractions;
+﻿using Amazon.Runtime.Internal.Transform;
+using FUC.API.Abstractions;
+using FUC.Common.Abstractions;
 using FUC.Common.Constants;
 using FUC.Common.Shared;
 using FUC.Service.Abstractions;
@@ -10,7 +12,7 @@ using Microsoft.AspNetCore.Mvc;
 namespace FUC.API.Controllers;
 
 [Authorize]
-public sealed class UserController(IStudentService studentService, ISupervisorService supervisorService) : ApiController
+public sealed class UserController(ICurrentUser currentUser,IStudentService studentService, ISupervisorService supervisorService) : ApiController
 {
 
     [HttpGet("get-all-student")]
@@ -31,5 +33,17 @@ public sealed class UserController(IStudentService studentService, ISupervisorSe
         return result.IsSuccess
             ? Ok(result)
             : HandleFailure(result);
+    }
+
+    [HttpGet("student/{id}")]
+    
+    public async Task<IActionResult> GetStudentInformation(string id)
+    {
+            OperationResult<StudentResponseDTO> studentInfo =currentUser.Role.Equals(UserRoles.Student) 
+                ? await studentService.GetStudentByIdAsync(currentUser.UserCode)
+                : await studentService.GetStudentByIdAsync(id);
+            return studentInfo.IsSuccess
+                ? Ok(studentInfo)
+                : HandleFailure(studentInfo);
     }
 }
