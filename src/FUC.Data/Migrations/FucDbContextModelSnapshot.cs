@@ -941,7 +941,10 @@ namespace FUC.Data.Migrations
                     b.HasOne("FUC.Data.Entities.BusinessArea", "BusinessArea")
                         .WithMany("Students")
                         .HasForeignKey("BusinessAreaId")
+
                         .OnDelete(DeleteBehavior.Restrict);
+
+
 
                     b.HasOne("FUC.Data.Entities.Campus", "Campus")
                         .WithMany("Students")

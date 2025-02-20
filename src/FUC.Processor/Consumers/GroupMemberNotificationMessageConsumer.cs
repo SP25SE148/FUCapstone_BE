@@ -34,6 +34,7 @@ public class GroupMemberNotificationMessageConsumer : IConsumer<GroupMemberNotif
              if (connections.Any())
              {
                  _hub.Clients.Clients(connections).ReceiveAllNotifications("context.Message ");
+
              }
          }
         
