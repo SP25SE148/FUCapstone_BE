@@ -42,16 +42,16 @@ public class GroupService(IUnitOfWork<FucDbContext> uow, IMapper mapper, IIntegr
                     .Include(s => s.Capstone),
             orderBy: default,
             cancellationToken: default);
-
+    
         // Check if leader is null 
         if (leader is null)
             return OperationResult.Failure<Guid>(Error.NullValue);
-        
-        // Check if the team size is invalid 
-        if (request.MembersId.Count  > leader.Capstone.MaxMember -1 ||
-            request.MembersId.Count < leader.Capstone.MinMember - 1)
-            return OperationResult.Failure<Guid>(new Error("Error.TeamSizeInvalid", "The team size is invalid"));
-
+        //
+        // // Check if the team size is invalid 
+        // if (request.MembersId.Count  > leader.Capstone.MaxMember -1 ||
+        //     request.MembersId.Count < leader.Capstone.MinMember - 1)
+        //     return OperationResult.Failure<Guid>(new Error("Error.TeamSizeInvalid", "The team size is invalid"));
+        //
         // Check if Leader is eligible to create group 
         if (leader.Status.Equals(StudentStatus.Passed) ||
             leader.GroupMembers.Count > 0 &&
@@ -63,14 +63,14 @@ public class GroupService(IUnitOfWork<FucDbContext> uow, IMapper mapper, IIntegr
         var newGroup = new Group()
         {
             Id = Guid.NewGuid(),
-            CampusId = request.CampusId,
-            CapstoneId = request.CapstoneId,
-            MajorId = request.MajorId,
+            CampusId = leader.CampusId,
+            CapstoneId = leader.CapstoneId,
+            MajorId = leader.MajorId,
             SemesterId = request.SemesterId,
             Status = GroupStatus.Pending
         };
         _groupRepository.Insert(newGroup);
-
+    
         _groupMemberRepository.Insert(new()
             {
                 Id = Guid.NewGuid(),
@@ -79,62 +79,63 @@ public class GroupService(IUnitOfWork<FucDbContext> uow, IMapper mapper, IIntegr
                 IsLeader = true,
                 Status = GroupMemberStatus.Accepted
             });
-
-        // create groupMemberNotifications use for publish message
-        var groupMemberNotifications = new List<GroupMemberNotification>();
-        
-        // create group member for member  
-        foreach (string memberId in request.MembersId)
-        {
-            //check if memberId value is duplicate with leaderId 
-            if (memberId.Equals(leaderId))
-                return OperationResult.Failure<Guid>(new Error("Error.DuplicateValue",$"The member id with {memberId} was duplicate with leader id {leaderId}"));
-            
-            // check if member is eligible to send join group request
-            Student? member = await _studentRepository.GetAsync(
-                predicate: s => s.Id.Equals(memberId) && 
-                                s.IsEligible &&
-                                !s.Status.Equals(StudentStatus.Passed) &&
-                                !s.IsDeleted,
-                include: s => s.Include(s => s.GroupMembers),
-                orderBy: default,
-                cancellationToken: default);
-            if (member is null ||
-                member.GroupMembers.Count > 0 &&
-                member.GroupMembers.Any(s => s.Status.Equals(GroupMemberStatus.Accepted)))
-                return OperationResult.Failure<Guid>(new Error("Error.InEligible",$"Member with id {memberId} is ineligible !!"));
-            
-            // create group member for member
-            var newGroupMember = new GroupMember
-            {
-                Id = Guid.NewGuid(),
-                GroupId = newGroup.Id,
-                StudentId = member.Id,
-                IsLeader = false,
-                Status = GroupMemberStatus.UnderReview
-            };
-            _groupMemberRepository.Insert(newGroupMember);
-            
-            groupMemberNotifications.Add(new GroupMemberNotification()
-            {
-                MemberId = member.Id,
-                MemberEmail = member.Email,
-                GroupId = newGroup.Id,
-                GroupMemberId = newGroupMember.Id
-            });
-        }
-        integrationEventLogService.SendEvent(new GroupMemberNotificationMessage
-        {
-            CreateBy = leader.Id,
-            GroupMemberNotifications = groupMemberNotifications,
-            LeaderEmail = leader.Email,
-            LeaderName = leader.FullName,
-            AttemptTime = 1
-        });
+        //
+        // // create groupMemberNotifications use for publish message
+        // var groupMemberNotifications = new List<GroupMemberNotification>();
+        //
+        // // create group member for member  
+        // foreach (string memberId in request.MembersId)
+        // {
+        //     //check if memberId value is duplicate with leaderId 
+        //     if (memberId.Equals(leaderId))
+        //         return OperationResult.Failure<Guid>(new Error("Error.DuplicateValue",$"The member id with {memberId} was duplicate with leader id {leaderId}"));
+        //     
+        //     // check if member is eligible to send join group request
+        //     Student? member = await _studentRepository.GetAsync(
+        //         predicate: s => s.Id.Equals(memberId) && 
+        //                         s.IsEligible &&
+        //                         !s.Status.Equals(StudentStatus.Passed) &&
+        //                         !s.IsDeleted,
+        //         include: s => s.Include(s => s.GroupMembers),
+        //         orderBy: default,
+        //         cancellationToken: default);
+        //     if (member is null ||
+        //         member.GroupMembers.Count > 0 &&
+        //         member.GroupMembers.Any(s => s.Status.Equals(GroupMemberStatus.Accepted)))
+        //         return OperationResult.Failure<Guid>(new Error("Error.InEligible",$"Member with id {memberId} is ineligible !!"));
+        //     
+        //     // create group member for member
+        //     var newGroupMember = new GroupMember
+        //     {
+        //         Id = Guid.NewGuid(),
+        //         GroupId = newGroup.Id,
+        //         StudentId = member.Id,
+        //         IsLeader = false,
+        //         Status = GroupMemberStatus.UnderReview
+        //     };
+        //     _groupMemberRepository.Insert(newGroupMember);
+        //     
+        //     groupMemberNotifications.Add(new GroupMemberNotification()
+        //     {
+        //         MemberId = member.Id,
+        //         MemberEmail = member.Email,
+        //         GroupId = newGroup.Id,
+        //         GroupMemberId = newGroupMember.Id
+        //     });
+        // }
+        // integrationEventLogService.SendEvent(new GroupMemberNotificationMessage
+        // {
+        //     CreateBy = leader.Id,
+        //     GroupMemberNotifications = groupMemberNotifications,
+        //     LeaderEmail = leader.Email,
+        //     LeaderName = leader.FullName,
+        //     AttemptTime = 1
+        // });
         
         await _uow.CommitAsync();
         return newGroup.Id;
     }
+    
 
     public async Task<OperationResult<IEnumerable<GroupResponse>>> GetAllGroupAsync()
     {
@@ -143,8 +144,7 @@ public class GroupService(IUnitOfWork<FucDbContext> uow, IMapper mapper, IIntegr
 
          return groups.Count > 0
             ? OperationResult.Success(_mapper.Map<IEnumerable<GroupResponse>>(groups))
-            : OperationResult.Failure<IEnumerable<GroupResponse>>(Error.NullValue);
-
+            : OperationResult.Failure<IEnumerable<GroupResponse>>(Error.NullValue); 
     }
 
     public async Task<OperationResult<IEnumerable<GroupResponse>>> GetAllGroupBySemesterIdAsync(string semesterId)

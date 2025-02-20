@@ -8,5 +8,6 @@ public interface ICurrentUser
     public string MajorId { get; }
     public string CapstoneId { get; }
     public string CampusId { get; }
+    public string Role { get;}
 }
 

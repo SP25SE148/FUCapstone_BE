@@ -17,4 +17,5 @@ public class CurrentUser(IHttpContextAccessor httpContextAccessor) : ICurrentUse
     public string CapstoneId => httpContextAccessor.HttpContext!.User.FindFirst("CapstoneId")!.Value;
 
     public string CampusId => httpContextAccessor.HttpContext!.User.FindFirst("CampusId")!.Value;
+    public string Role => httpContextAccessor.HttpContext!.User.FindFirst(ClaimTypes.Role)!.Value;
 }
