@@ -99,6 +99,7 @@ public class GroupMemberService(IUnitOfWork<FucDbContext> uow, IIntegrationEvent
             groupMemberNotification.Add(new GroupMemberNotification
             {
                 GroupId = groupId,
+                MemberEmail = member.Email,
                 MemberId = member.Id,
                 GroupMemberId = newGroupMember.Id   
             });

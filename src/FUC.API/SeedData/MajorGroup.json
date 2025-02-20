@@ -1,46 +1,102 @@
 ﻿[
   {
-    "Id": "ENG",
-    "Name": "Engineering",
-    "Description": "Engineering-related majors.",
+    "Id": "IT",
+    "Name": "Information Technology",
+    "Description": "Information technology descriptions.",
     "Majors": [
       {
         "Id": "SE",
         "Name": "Software Engineering",
-        "Description": "Learn about algorithms and software.",
+        "Description": "Software engineering descriptions.",
         "Capstones": [
           {
-            "Id": "CPT001",
-            "Name": "AI Project",
-            "MinMember": 3,
+            "Id": "SEP490",
+            "Name": "Software Engineering Capstone Project",
+            "MinMember": 4,
             "MaxMember": 5,
-            "ReviewCount": 2
+            "ReviewCount": 3
           },
           {
-            "Id": "SEP490",
-            "Name": "Web Development Project",
-            "MinMember": 4,
+            "Id": "SAP490",
+            "Name": "SAP Interdisciplinary Capstone Project",
+            "MinMember": 3,
             "MaxMember": 5,
             "ReviewCount": 3
           }
         ]
       },
       {
-        "Id": "EE101",
-        "Name": "Electrical Engineering",
-        "Description": "Learn about circuits and power systems.",
+        "Id": "AI",
+        "Name": "Artificial Intelligence",
+        "Description": "Artificial intelligence descriptions.",
         "Capstones": [
           {
-            "Id": "CPT003",
-            "Name": "Smart Grid Design",
-            "MinMember": 5,
-            "MaxMember": 8,
-            "ReviewCount": 2
-          },
-          {
-            "Id": "CPT004",
-            "Name": "IoT-Based Automation",
+            "Id": "AIP491",
+            "Name": "Artificial Intelligence Capstone Project",
             "MinMember": 3,
+            "MaxMember": 4,
+            "ReviewCount": 3
+          }
+        ]
+      },
+      {
+        "Id": "IA",
+        "Name": "Information Assurance",
+        "Description": "Information assurance descriptions.",
+        "Capstones": [
+          {
+            "Id": "IAP491",
+            "Name": "Information Assurance Capstone Project",
+            "MinMember": 4,
+            "MaxMember": 5,
+            "ReviewCount": 3
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "Id": "BA",
+    "Name": "Business Administration",
+    "Description": "Business administration descriptions.",
+    "Majors": [
+      {
+        "Id": "IB",
+        "Name": "International Business",
+        "Description": "International business descriptions.",
+        "Capstones": [
+          {
+            "Id": "GRI491",
+            "Name": "Graduation Thesis - International Business",
+            "MinMember": 4,
+            "MaxMember": 6,
+            "ReviewCount": 3
+          }
+        ]
+      },
+      {
+        "Id": "FT",
+        "Name": "Financial Technology",
+        "Description": "Financial technology descriptions.",
+        "Capstones": [
+          {
+            "Id": "GRF491",
+            "Name": "Graduation Thesis - Finance",
+            "MinMember": 4,
+            "MaxMember": 6,
+            "ReviewCount": 3
+          }
+        ]
+      },
+      {
+        "Id": "DM",
+        "Name": "Digital Marketing",
+        "Description": "Digital marketing descriptions.",
+        "Capstones": [
+          {
+            "Id": "GRM491",
+            "Name": "Graduation Thesis - Marketing",
+            "MinMember": 4,
             "MaxMember": 6,
             "ReviewCount": 3
           }
@@ -49,48 +105,20 @@
     ]
   },
   {
-    "Id": "BUS",
-    "Name": "Business",
-    "Description": "Business-related majors.",
+    "Id": "CT",
+    "Name": "Communication Technology",
+    "Description": "Communication Technology descriptions.",
     "Majors": [
       {
-        "Id": "MKT102",
-        "Name": "Marketing",
-        "Description": "Learn about marketing strategies.",
+        "Id": "MC",
+        "Name": "Multimedia Communication",
+        "Description": "Multimedia communication descriptions.",
         "Capstones": [
           {
-            "Id": "CPT005",
-            "Name": "Advertising Campaign",
-            "MinMember": 4,
-            "MaxMember": 6,
-            "ReviewCount": 3
-          },
-          {
-            "Id": "CPT006",
-            "Name": "Brand Management Strategy",
-            "MinMember": 2,
-            "MaxMember": 5,
-            "ReviewCount": 1
-          }
-        ]
-      },
-      {
-        "Name": "Finance",
-        "Id": "FIN103",
-        "Description": "Learn about financial markets and analysis.",
-        "Capstones": [
-          {
-            "Id": "CPT007",
-            "Name": "Investment Portfolio Analysis",
+            "Id": "GRA497",
+            "Name": "Capstone Project Multimedia Communications",
             "MinMember": 3,
             "MaxMember": 5,
-            "ReviewCount": 2
-          },
-          {
-            "Id": "CPT008",
-            "Name": "Corporate Finance Strategy",
-            "MinMember": 4,
-            "MaxMember": 6,
             "ReviewCount": 3
           }
         ]

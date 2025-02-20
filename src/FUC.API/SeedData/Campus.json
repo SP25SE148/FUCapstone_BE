@@ -1,16 +1,37 @@
 ﻿[
   {
-    "Id": "HCM",
-    "Name": "Ho Chi Minh Campus",
-    "Address": "123 Main Street",
-    "Phone": "1234567890",
-    "Email": "hcm@campus.edu"
+    "Id": "HN",
+    "Name": "Ha Noi campus",
+    "Address": "Education and Training Area - Hoa Lac High-Tech Park - Km29 Thang Long Avenue, Thach That District, City. Hanoi",
+    "Phone": "(024) 7300 5588",
+    "Email": "tuyensinh.hanoi@fpt.edu.vn"
   },
   {
-    "Id": "HN",
-    "Name": "Ha Noi Campus",
-    "Address": "456 City Avenue",
-    "Phone": "0987654321",
-    "Email": "hanoi@campus.edu"
+    "Id": "HCM",
+    "Name": "Ho Chi Minh campus",
+    "Address": "Lot E2a-7, Street D1 High-Tech Park, Long Thanh My Ward, City. Thu Duc, City. Ho Chi Minh",
+    "Phone": "(028) 7300 5588",
+    "Email": "daihoc.hcm@fpt.edu.vn"
+  },
+  {
+    "Id": "DN",
+    "Name": "Da Nang campus",
+    "Address": "FPT Danang Technology Urban Area, Hoa Hai Ward, Ngu Hanh Son District, City. Da Nang",
+    "Phone": "(0236) 730 0999",
+    "Email": "dnuni@fe.edu.vn"
+  },
+  {
+    "Id": "CT",
+    "Name": "Can Tho campus",
+    "Address": "No. 600 Nguyen Van Cu Street (extended), An Binh Ward, Ninh Kieu District, City. Can Tho",
+    "Phone": "(0292) 730 3636",
+    "Email": "fptu.cantho@fe.edu.vn"
+  },
+  {
+    "Id": "QN",
+    "Name": "Quy Nhon campus",
+    "Address": "An Phu Thinh new urban area, Nhon Binh Ward & Dong Da Ward, City. Quy Nhon, Binh Dinh",
+    "Phone": "(0256) 7300 999",
+    "Email": "qnuni@fe.edu.vn"
   }
 ]
