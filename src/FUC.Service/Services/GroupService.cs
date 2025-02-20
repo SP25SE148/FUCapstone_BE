@@ -118,6 +118,7 @@ public class GroupService(IUnitOfWork<FucDbContext> uow, IMapper mapper, IIntegr
             groupMemberNotifications.Add(new GroupMemberNotification()
             {
                 MemberId = member.Id,
+                MemberEmail = member.Email,
                 GroupId = newGroup.Id,
                 GroupMemberId = newGroupMember.Id
             });
