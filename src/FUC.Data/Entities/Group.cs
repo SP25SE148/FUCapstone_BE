@@ -11,8 +11,6 @@ public sealed class Group : AuditableSoftDeleteEntity
     public string MajorId { get; set; }
     public string CampusId { get; set; }
     
-    public Guid? TopicId { get; set; }
-    
     public string CapstoneId { get; set; }
     
     public string? TopicCode { get; set; }

@@ -22,5 +22,7 @@ public sealed class CapstoneConfiguration : IEntityTypeConfiguration<Capstone>
             .WithMany(m => m.Capstones)
             .HasForeignKey(c => c.MajorId)
             .OnDelete(DeleteBehavior.Restrict);
+        
+        
     }
 }

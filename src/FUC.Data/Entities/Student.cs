@@ -11,7 +11,11 @@ public sealed class Student : AuditableSoftDeleteEntity
     public string MajorId { get; set; }
     public string CapstoneId { get; set; }
     public string CampusId { get; set; }
+    
+    public Guid BusinessAreaId { get; set; }
+    
     public string Email { get; set; }
+    public float Mark { get; set; }
     public bool IsEligible { get; set; }
     public StudentStatus Status { get; set; }
 
@@ -19,4 +23,6 @@ public sealed class Student : AuditableSoftDeleteEntity
     public Campus Campus { get; set; } = null!;
     public Capstone Capstone { get; set; } = null!;
     public ICollection<GroupMember> GroupMembers { get; set; } = new List<GroupMember>();
+    public BusinessArea BusinessArea { get; set; } = null!;
+    public ICollection<StudentExpertise> StudentExpertises { get; set; } = new List<StudentExpertise>();
 }
