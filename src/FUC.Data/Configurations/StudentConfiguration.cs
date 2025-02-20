@@ -48,5 +48,15 @@ public sealed class StudentConfiguration : IEntityTypeConfiguration<Student>
             .WithOne(gm => gm.Student)
             .HasForeignKey(gm => gm.StudentId)
             .OnDelete(DeleteBehavior.Restrict);
+
+        builder.HasOne(s => s.BusinessArea)
+            .WithMany(b => b.Students)
+            .HasForeignKey(s => s.BusinessAreaId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        builder.HasMany(s => s.StudentExpertises)
+            .WithOne(s => s.Student)
+            .HasForeignKey(s => s.StudentId)
+            .OnDelete(DeleteBehavior.Restrict);
     }
 }

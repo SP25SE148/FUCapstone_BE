@@ -31,5 +31,16 @@ public class SupervisorConfiguration : IEntityTypeConfiguration<Supervisor>
             .WithMany(m => m.Supervisors)
             .HasForeignKey(s => s.CampusId)
             .OnDelete(DeleteBehavior.Restrict);
+
+        builder.HasMany(s => s.Topics)
+            .WithOne(t => t.MainSupervisor)
+            .HasForeignKey(s => s.MainSupervisorId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        
+        builder.HasMany(s => s.CoSupervisors)
+            .WithOne(c => c.Supervisor)
+            .HasForeignKey(c => c.SupervisorId)
+            .OnDelete(DeleteBehavior.Cascade);
     }
 }

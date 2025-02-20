@@ -1,4 +1,5 @@
-﻿using FUC.Data.Abstractions;
+﻿using System.Collections;
+using FUC.Data.Abstractions;
 using FUC.Data.Abstractions.Entities;
 
 namespace FUC.Data.Entities;
@@ -14,5 +15,6 @@ public sealed class Campus : AuditableSoftDeleteEntity
     public  ICollection<Group> Groups { get; set; } = new List<Group>();
     public  ICollection<Student> Students { get; set; } = new List<Student>();
     public  ICollection<Supervisor> Supervisors { get; set; } = new List<Supervisor>();
-   
+
+    public ICollection<Topic> Topics { get; set; } = new List<Topic>();
 }
