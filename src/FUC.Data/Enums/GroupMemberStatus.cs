@@ -5,5 +5,6 @@ public enum GroupMemberStatus
     UnderReview,
     Accepted,
     Rejected,
-    LeftGroup
+    LeftGroup,
+    Canceled
 }
