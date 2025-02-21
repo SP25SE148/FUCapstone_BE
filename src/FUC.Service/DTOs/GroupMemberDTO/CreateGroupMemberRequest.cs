@@ -2,5 +2,5 @@
 
 public sealed record CreateGroupMemberRequest(
     string LeaderId,
-    IReadOnlyList<string> MemberIdList
+    IReadOnlyList<string> MemberEmailList
 );
