@@ -13,11 +13,16 @@ public class AppDbInitializer
         var majorGroupData = await File.ReadAllTextAsync("SeedData/MajorGroup.json");
         var campusData = await File.ReadAllTextAsync("SeedData/Campus.json");
         var semesterData = await File.ReadAllTextAsync("SeedData/Semester.json");
+        var businessAreaData = await File.ReadAllTextAsync("SeedData/BusinessArea.json");
+        var TechnicalsAreaData = await File.ReadAllTextAsync("SeedData/TechnicalArea.json");
+        
         var options = new JsonSerializerOptions { PropertyNameCaseInsensitive = true };
 
         var majorGroups = JsonSerializer.Deserialize<List<MajorGroup>>(majorGroupData, options);
         var campuses = JsonSerializer.Deserialize<List<Campus>>(campusData, options);
         var semesters = JsonSerializer.Deserialize<List<Semester>>(semesterData, options);
+        var businessAreas = JsonSerializer.Deserialize<List<BusinessArea>>(businessAreaData, options); 
+        var technicalAreas = JsonSerializer.Deserialize<List<TechnicalArea>>(TechnicalsAreaData, options); 
         using (var serviceScope = applicationBuilder.ApplicationServices.CreateScope())
         {
             var services = serviceScope.ServiceProvider;
@@ -44,6 +49,15 @@ public class AppDbInitializer
             context.Database.EnsureCreated();
 
             // Seed data
+            if (!context.Set<BusinessArea>().Any() && businessAreas is not null)
+            {
+                await context.Set<BusinessArea>().AddRangeAsync(businessAreas);
+            }
+            
+            if (!context.Set<TechnicalArea>().Any() && technicalAreas is not null)
+            {
+                await context.Set<TechnicalArea>().AddRangeAsync(technicalAreas);
+            }
             if (!context.Set<MajorGroup>().Any() && majorGroups is not null)
             {
                 foreach (var majorGroup in majorGroups)
@@ -53,17 +67,17 @@ public class AppDbInitializer
                     {
                         foreach (var capstone in major.Capstones)
                         {
-                            context.Set<Capstone>().Add(capstone);
+                            await context.Set<Capstone>().AddAsync(capstone);
                         }
-                        context.Set<Major>().Add(major);
+                        await context.Set<Major>().AddAsync(major);
                     }
-                    context.Set<MajorGroup>().Add(majorGroup);
+                    await context.Set<MajorGroup>().AddAsync(majorGroup);
                 }
             }
 
             if (!context.Set<Campus>().Any() && campuses is not null)
             {
-                context.Set<Campus>().AddRange(campuses);
+                await context.Set<Campus>().AddRangeAsync(campuses);
             }
             
             if (!context.Set<Semester>().Any() && semesters is not null)
@@ -79,7 +93,7 @@ public class AppDbInitializer
                     {
                         semester.EndDate = DateTime.SpecifyKind(semester.EndDate, DateTimeKind.Utc);
                     }
-                    context.Set<Semester>().Add(semester);
+                    await context.Set<Semester>().AddAsync(semester);
                 }
             }
 

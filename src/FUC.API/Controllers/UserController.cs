@@ -46,4 +46,14 @@ public sealed class UserController(ICurrentUser currentUser,IStudentService stud
                 ? Ok(studentInfo)
                 : HandleFailure(studentInfo);
     }
+
+    [HttpPut("student")]
+    [Authorize(Roles = UserRoles.Student)]
+    public async Task<IActionResult> UpdateStudentInformation([FromBody] UpdateStudentRequest request)
+    {
+        var result = await studentService.UpdateStudentInformation(request, currentUser.UserCode);
+        return result.IsSuccess
+            ? NoContent()
+            : HandleFailure(result);
+    }
 }

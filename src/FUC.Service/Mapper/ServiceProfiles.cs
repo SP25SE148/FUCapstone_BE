@@ -61,6 +61,8 @@ public class ServiceProfiles : Profile
             .ForMember(s => s.CapstoneName, opt => opt.MapFrom(s => s.Capstone.Name))
             .ForMember(s => s.CampusName, opt => opt.MapFrom(s => s.Campus.Name))
             .ForMember(s => s.Status, opt => opt.MapFrom(s => s.Status.ToString()))
+            .ForMember(s => s.BusinessArea, opt => opt.MapFrom(s => s.BusinessArea.Name))
+            .ForMember(s => s.StudentExpertises, opt => opt.MapFrom(s => (s.StudentExpertises ?? new List<StudentExpertise>()) .Select(se => se.TechnicalArea.Name).ToList()))
             .ForMember(s => s.IsHaveBeenJoinGroup, opt => opt.MapFrom(s => s.GroupMembers.Any(gm => gm.Status.Equals(GroupMemberStatus.Accepted))));
         
 

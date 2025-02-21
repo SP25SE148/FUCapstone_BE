@@ -1,0 +1,14 @@
+﻿[
+  {
+    "Name": "Finance",
+    "Description": "Lĩnh vực kinh doanh liên quan đến quản lý tài chính và đầu tư."
+  },
+  {
+    "Name": "Marketing",
+    "Description": "Lĩnh vực tập trung vào nghiên cứu thị trường, quảng cáo và xây dựng thương hiệu."
+  },
+  {
+    "Name": "Human Resources",
+    "Description": "Lĩnh vực liên quan đến tuyển dụng, đào tạo và quản lý nhân viên."
+  }
+]

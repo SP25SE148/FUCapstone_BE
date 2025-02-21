@@ -1,0 +1,14 @@
+﻿[
+  {
+    "Name": "Artificial Intelligence",
+    "Description": "Lĩnh vực công nghệ tập trung vào học máy và học sâu."
+  },
+  {
+    "Name": "Cybersecurity",
+    "Description": "Lĩnh vực bảo mật hệ thống và mạng khỏi các mối đe dọa an ninh mạng."
+  },
+  {
+    "Name": "Software Engineering",
+    "Description": "Lĩnh vực phát triển phần mềm và kiến trúc hệ thống."
+  }
+]
