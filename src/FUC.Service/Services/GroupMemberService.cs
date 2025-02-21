@@ -55,22 +55,22 @@ public class GroupMemberService(IUnitOfWork<FucDbContext> uow, IIntegrationEvent
              gm.Status.Equals(GroupMemberStatus.Accepted))).Count;
             
         // Check if the team size is invalid 
-        if (request.MemberIdList.Count  > leader.Capstone.MaxMember - numOfMembers)
+        if (request.MemberEmailList.Count  > leader.Capstone.MaxMember - numOfMembers)
             return OperationResult.Failure<Guid>(new Error("Error.TeamSizeInvalid", "The team size is invalid"));
 
         var groupMemberNotification = new List<GroupMemberNotification>();
         Guid groupId = leader.GroupMembers.FirstOrDefault(s => s.IsLeader)!.GroupId;
         // create group member for member  
         await _uow.BeginTransactionAsync();
-        foreach (string memberId in request.MemberIdList)
+        foreach (string memberEmail in request.MemberEmailList)
         {
             //check if memberId value is duplicate with leaderId 
-            if (memberId.Equals(leader.Id))
-                return OperationResult.Failure<Guid>(new Error("Error.DuplicateValue",$"The member id with {memberId} was duplicate with leader id {leader.Id}"));
+            if (memberEmail.Equals(leader.Id))
+                return OperationResult.Failure<Guid>(new Error("Error.DuplicateValue",$"The member id with {memberEmail} was duplicate with leader id {leader.Id}"));
             
             // check if member is eligible to send join group request
             Student? member = await _studentRepository.GetAsync(
-                predicate: s => s.Id.Equals(memberId) && 
+                predicate: s => s.Email.ToLower().Equals(memberEmail.ToLower()) && 
                                 s.IsEligible &&
                                 !s.Status.Equals(StudentStatus.Passed) &&
                                 !s.IsDeleted,
@@ -79,11 +79,11 @@ public class GroupMemberService(IUnitOfWork<FucDbContext> uow, IIntegrationEvent
                 cancellationToken: default);
             if (member is null ||
                 member.GroupMembers.Any(s => s.Status.Equals(GroupMemberStatus.Accepted)))
-                return OperationResult.Failure<Guid>(new Error("Error.InEligible",$"Member with id {memberId} is ineligible !!"));
+                return OperationResult.Failure<Guid>(new Error("Error.InEligible",$"Member with email {memberEmail} is ineligible !!"));
             
             if(member.GroupMembers.Any(s => s.GroupId == groupIdOfLeader && 
                                             s.Status.Equals(GroupMemberStatus.UnderReview)))
-                return OperationResult.Failure<Guid>(new Error("Error.CreateGroupMemberFail", $"Can not send request to member with id {member.Id} because the leader already send request to this member"));
+                return OperationResult.Failure<Guid>(new Error("Error.CreateGroupMemberFail", $"Can not send request to member with email {member.Email} because the leader already send request to this member"));
             // create group member for member
             var newGroupMember = new GroupMember
             {
