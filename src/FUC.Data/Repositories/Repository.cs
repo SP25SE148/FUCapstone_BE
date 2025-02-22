@@ -2,9 +2,7 @@
 using Microsoft.EntityFrameworkCore.Query;
 using Microsoft.EntityFrameworkCore;
 using System.Linq.Expressions;
-using FUC.Data.Abstractions.Entities;
 using FUC.Data.Abstractions;
-using FUC.Data.Data;
 
 namespace FUC.Data.Repositories;
 
@@ -78,6 +76,20 @@ public class Repository<TEntity>(DbContext dbContext) : IRepository<TEntity>
             .Where(predicate);
 
         return await PaginatedList<TEntity>.CreateAsync(queryable, page, numberOfItems, cancellationToken);
+    }
+
+    public async Task<PaginatedList<TResult>> FindPaginatedAsync<TResult>(Expression<Func<TEntity, bool>> predicate,
+        int page,
+        int numberOfItems,
+        Func<IQueryable<TEntity>, IOrderedQueryable<TEntity>>? orderBy,
+        Func<IQueryable<TEntity>, IIncludableQueryable<TEntity, object?>>? include,
+        Expression<Func<TEntity, TResult>> selector,
+        CancellationToken cancellationToken = default)
+    {
+        var queryable = ApplyIncludesAndOrdering(GetQueryable(), include, orderBy)
+            .Where(predicate).Select(selector);
+
+        return await PaginatedList<TResult>.CreateAsync(queryable, page, numberOfItems, cancellationToken);
     }
 
     public async Task<bool> AnyAsync(Expression<Func<TEntity, bool>> predicate,

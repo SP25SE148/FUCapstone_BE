@@ -5,7 +5,10 @@
       "launchBrowser": true,
       "launchUrl": "swagger",
       "environmentVariables": {
-        "ASPNETCORE_ENVIRONMENT": "Development"
+        "ASPNETCORE_ENVIRONMENT": "Development",
+        "TOPIC_BUCKET_NAME": "fuc-topic",
+        "TEMPLATE_BUCKET_NAME": "fuc-template",
+        "ENABLE_PROFILE": "true"
       },
       "dotnetRunMessages": true,
       "applicationUrl": "https://localhost:7000"
@@ -16,7 +19,10 @@
       "launchUrl": "{Scheme}://{ServiceHost}:{ServicePort}/swagger",
       "environmentVariables": {
         "ASPNETCORE_HTTPS_PORTS": "8081",
-        "ASPNETCORE_HTTP_PORTS": "8080"
+        "ASPNETCORE_HTTP_PORTS": "8080",
+        "TOPIC_BUCKET_NAME": "fuc-topic",
+        "TEMPLATE_BUCKET_NAME": "fuc-template",
+        "ENABLE_PROFILE": "true"
       },
       "publishAllPorts": true,
       "useSSL": true
