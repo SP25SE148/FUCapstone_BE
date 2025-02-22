@@ -1,5 +1,4 @@
-﻿using System.Collections;
-using FUC.Data.Abstractions;
+﻿using FUC.Data.Abstractions;
 using FUC.Data.Enums;
 
 namespace FUC.Data.Entities;

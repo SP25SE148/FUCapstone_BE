@@ -99,7 +99,7 @@ public class WeatherForecastController : ApiController
     {
         try
         {
-            var response = await _s3Service.GetFromS3(s3Settings.Bucket, $"images/{key}");
+            var response = await _s3Service.GetFromS3("fuc-test", $"images/{key}");
 
             return response is not null ? File(response.ResponseStream, response.Headers.ContentType, response.Metadata["file-name"]) : BadRequest("Not found");
         }

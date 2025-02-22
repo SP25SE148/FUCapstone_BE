@@ -14,13 +14,16 @@ model = SentenceTransformer("sentence-transformers/stsb-roberta-large")
 executor = ThreadPoolExecutor(max_workers=4)
 
 class ContextRequest(BaseModel):
-    topic_id: int
+    topic_id: str
 
 def get_pass_topics():
     conn = psycopg2.connect(DATABASE_URL)
-    cursor = conn.cursor()
-    cursor.execute("SELECT id, context FROM topics WHERE status = 'Pass';")
-    topics = [{"id": row[0], "context": row[1]} for row in cursor.fetchall()]
+    cursor = conn.cursor(cursor_factory=DictCursor)  # Use DictCursor for key-value access
+
+    cursor.execute('SELECT "Id", "Description" FROM "Topic" WHERE "Status" = %s;', ('Pass',))
+
+    topics = [{"id": str(row["Id"]), "context": row["Description"]} for row in cursor.fetchall()]
+
     cursor.close()
     conn.close()
     return topics
@@ -30,16 +33,18 @@ def compute_embedding(text):
 
 @app.get("/test")
 def get_test():
-    return {"message": "Ok"}
+    return {"message": "Service is running on port 9000"}
 
-@app.post("/sematic")
+@app.post("/semantic")
 def find_best_match(request: ContextRequest):
     topics = get_pass_topics()
     new_topic = next((t for t in topics if t["id"] == request.topic_id), None)
+    
     if not new_topic:
         raise HTTPException(status_code=404, detail="Topic not found or not 'Pass'.")
 
     new_embedding = model.encode(new_topic["context"])
+    
     with executor:
         topic_embeddings = list(executor.map(compute_embedding, [t["context"] for t in topics]))
 
@@ -50,4 +55,4 @@ def find_best_match(request: ContextRequest):
 
 if __name__ == "__main__":
     import uvicorn
-    uvicorn.run(app, host="127.0.0.1", port=9000)
+    uvicorn.run(app, host="0.0.0.0", port=9000)  # Ensure port 9000 is used inside the container

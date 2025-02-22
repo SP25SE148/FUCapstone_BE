@@ -1,9 +1,11 @@
-using FUC.Service.Extensions;
-using FUC.Data.Extensions;
-using Serilog;
-using FUC.API.Middlewares;
 using FUC.API.Extensions;
+using FUC.API.Middlewares;
 using FUC.API.SeedData;
+using FUC.Data.Extensions;
+using FUC.Service.Extensions;
+using FUC.Service.Extensions.Options;
+using Microsoft.Extensions.DependencyInjection;
+using Serilog;
 
 Log.Logger = new LoggerConfiguration()
     .WriteTo.Console()
@@ -18,6 +20,14 @@ try
     builder.Host.UseSerilog((ctx, lc) => lc
         .Enrich.FromLogContext()
         .ReadFrom.Configuration(ctx.Configuration));
+
+    var bucketConfiguration = new S3BucketConfiguration
+    {
+        FUCTopicBucket = Environment.GetEnvironmentVariable("TOPIC_BUCKET_NAME"),
+        FUCTemplateBucket = Environment.GetEnvironmentVariable("TEMPLATE_BUCKET_NAME")
+    };
+
+    builder.Services.AddSingleton(bucketConfiguration);
 
     // Add services to the container.
     builder.Services.AddServices();

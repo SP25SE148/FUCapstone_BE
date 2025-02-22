@@ -1,6 +1,5 @@
 ﻿using FUC.Common.Shared;
 using FUC.Data.Abstractions;
-using FUC.Data.Abstractions.Entities;
 using Microsoft.EntityFrameworkCore.Query;
 using System.Linq.Expressions;
 
@@ -72,6 +71,15 @@ public interface IRepository<TEntity> where TEntity : Entity
         Func<IQueryable<TEntity>, IOrderedQueryable<TEntity>> orderBy,
         Func<IQueryable<TEntity>, IIncludableQueryable<TEntity, object?>>? include = null,
         CancellationToken cancellationToken = default);
+
+    Task<PaginatedList<TResult>> FindPaginatedAsync<TResult>(Expression<Func<TEntity, bool>> predicate,
+        int page,
+        int numberOfItems,
+        Func<IQueryable<TEntity>, IOrderedQueryable<TEntity>>? orderBy,
+        Func<IQueryable<TEntity>, IIncludableQueryable<TEntity, object?>>? include,
+        Expression<Func<TEntity, TResult>> selector,
+        CancellationToken cancellationToken = default);
+
     Task<bool> AnyAsync(Expression<Func<TEntity, bool>> predicate, CancellationToken cancellationToken = default);
 
     Task<int> CountAsync(Expression<Func<TEntity, bool>> predicate, CancellationToken cancellationToken = default);

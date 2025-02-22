@@ -23,13 +23,13 @@ services:
       - /var/lib/redis/data
 
   # semantic_service:
-  #   image: fuc/semantic_service:latest
+  #   image: semantic_service:latest
   #   build:
   #     context: .  
   #     dockerfile: semantic/Dockerfile
   #   depends_on:
   #     - postgres
   #   ports:
-  #     - "9000:80"
+  #     - "9000:9000"
   #   environment:
   #     DATABASE_URL: "postgresql://postgres:postgrespw@postgres:5432/fuc"

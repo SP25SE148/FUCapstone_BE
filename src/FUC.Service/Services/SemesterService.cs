@@ -6,10 +6,13 @@ using FUC.Data.Entities;
 using FUC.Data.Repositories;
 using FUC.Service.Abstractions;
 using FUC.Service.DTOs.SemesterDTO;
+using Microsoft.Extensions.Logging;
 
 namespace FUC.Service.Services;
 
-public sealed class SemesterService(IMapper mapper,IUnitOfWork<FucDbContext> uow) : ISemesterService
+public sealed class SemesterService(ILogger<SemesterService> logger ,
+    IMapper mapper,
+    IUnitOfWork<FucDbContext> uow) : ISemesterService
 {
     private readonly IUnitOfWork<FucDbContext> _uow = uow ?? throw new ArgumentNullException(nameof(uow));
 
@@ -93,5 +96,20 @@ public sealed class SemesterService(IMapper mapper,IUnitOfWork<FucDbContext> uow
         _semesterRepository.Update(semester);
         await _uow.SaveChangesAsync();
         return OperationResult.Success();
+    }
+
+    public async Task<OperationResult<Semester>> GetCurrentSemesterAsync()
+    {
+        var currentSemester = await _semesterRepository.GetAsync(x => DateTime.UtcNow >= x.StartDate 
+            && DateTime.UtcNow <= x.EndDate, 
+            cancellationToken: default);
+
+        if (currentSemester is null)
+        {
+            logger.LogInformation("The current semester is not going on.");
+            return OperationResult.Failure<Semester>(new Error("Semester.Error", "No semester is going on."));
+        }
+
+        return OperationResult.Success(currentSemester);
     }
 }

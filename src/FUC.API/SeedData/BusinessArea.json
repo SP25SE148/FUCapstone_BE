@@ -1,11 +1,31 @@
 ﻿[
   {
+    "Name": "Education",
+    "Description": "Services related to learning, training, and academic institutions."
+  },
+  {
     "Name": "Finance",
     "Description": "Lĩnh vực kinh doanh liên quan đến quản lý tài chính và đầu tư."
   },
   {
+    "Name": "HealthCare",
+    "Description": "Medical and health-related services, including hospitals and clinics."
+  },
+  {
     "Name": "Marketing",
     "Description": "Lĩnh vực tập trung vào nghiên cứu thị trường, quảng cáo và xây dựng thương hiệu."
+  },
+  {
+    "Name": "F&B",
+    "Description": "Food and beverage industry, including restaurants, cafes, and catering."
+  },
+  {
+    "Name": "Booking",
+    "Description": "Online and offline booking services for travel, accommodations, and events."
+  },
+  {
+    "Name": "Ecommerce",
+    "Description": "Online shopping platforms and digital marketplaces."
   },
   {
     "Name": "Human Resources",

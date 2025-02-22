@@ -1,5 +1,5 @@
 ﻿using FUC.Common.Shared;
-using FUC.Service.DTOs.CampusDTO;
+using FUC.Data.Entities;
 using FUC.Service.DTOs.SemesterDTO;
 
 namespace FUC.Service.Abstractions;
@@ -12,4 +12,5 @@ public interface ISemesterService
     Task<OperationResult<IEnumerable<SemesterResponse>>> GetAllActiveSemestersAsync();
     Task<OperationResult<SemesterResponse>> GetSemesterByIdAsync(string semesterId);
     Task<OperationResult> DeleteSemesterAsync(string semesterId);
+    Task<OperationResult<Semester>> GetCurrentSemesterAsync();
 }
