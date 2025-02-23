@@ -66,7 +66,7 @@ public sealed class AcademicManagementController(
     public async Task<IActionResult> UpdateCampusAsync([FromBody] UpdateCampusRequest request)
     {
        OperationResult<CampusResponse> result = await campusService.UpdateCampusAsync(request);
-       return !result.IsFailure ? NoContent() : HandleFailure(result);
+       return !result.IsFailure ? Ok(result) : HandleFailure(result);
     }
     #endregion
     
@@ -117,7 +117,7 @@ public sealed class AcademicManagementController(
     public async Task<IActionResult> UpdateMajorAsync([FromBody] UpdateMajorRequest request)
     {
         OperationResult<MajorResponse> result = await majorService.UpdateMajorAsync(request);
-        return !result.IsFailure ? NoContent() : HandleFailure(result);
+        return !result.IsFailure ? Ok(result) : HandleFailure(result);
     }
 
     [Authorize(Roles = nameof(UserRoles.SuperAdmin))]
@@ -167,7 +167,7 @@ public sealed class AcademicManagementController(
     public async Task<IActionResult> UpdateMajorGroupAsync([FromBody] UpdateMajorGroupRequest request)
     {
         OperationResult<MajorGroupResponse> result = await majorGroupService.UpdateMajorGroupAsync(request);
-        return !result.IsFailure ? NoContent() : HandleFailure(result);
+        return !result.IsFailure ? Ok(result) : HandleFailure(result);
     }
 
     [Authorize(Roles = nameof(UserRoles.SuperAdmin))]
@@ -226,7 +226,7 @@ public sealed class AcademicManagementController(
     public async Task<IActionResult> UpdateCapstoneAsync([FromBody] UpdateCapstoneRequest request)
     {
         OperationResult<CapstoneResponse> result = await capstoneService.UpdateCapstoneAsync(request);
-        return !result.IsFailure ? NoContent() : HandleFailure(result);
+        return !result.IsFailure ? Ok(result) : HandleFailure(result);
     }
 
     [Authorize(Roles = nameof(UserRoles.SuperAdmin))]
