@@ -16,8 +16,7 @@ public sealed class StudentService(IMapper mapper, IUnitOfWork<FucDbContext> uow
     private readonly IUnitOfWork<FucDbContext> _uow = uow ?? throw new ArgumentNullException(nameof(uow));
 
     private readonly IRepository<Student> _studentRepository = uow.GetRepository<Student>() ?? throw new ArgumentNullException(nameof(uow));
-    private readonly IRepository<StudentExpertise> _studentExpertiseRepository = uow.GetRepository<StudentExpertise>() ?? throw new ArgumentNullException(nameof(uow));
-    private readonly IMapper _mapper = mapper ?? throw new ArgumentNullException(nameof(mapper));
+        private readonly IMapper _mapper = mapper ?? throw new ArgumentNullException(nameof(mapper));
     
     public async Task<OperationResult<IEnumerable<StudentResponseDTO>>> GetAllStudentAsync()
     {
@@ -49,33 +48,10 @@ public sealed class StudentService(IMapper mapper, IUnitOfWork<FucDbContext> uow
             return OperationResult.Failure(new Error("Error.NotFound", $"Student with id {studentId} is not found !!!"));
 
         // update student info
-        await _uow.BeginTransactionAsync();
         student.BusinessAreaId = request.BusinessAreaId;
-        if (student.StudentExpertises.Count < 1)
-        {
-            foreach (var studentExpertise  in request.StudentExpertises)
-            {
-               _studentExpertiseRepository.Insert(new StudentExpertise
-               {
-                   Id = Guid.NewGuid(),
-                   StudentId = student.Id,
-                   TechnicalAreaId = studentExpertise.TechnicalAreaId
-               }); 
-            }    
-        }
-        else
-        {
-            foreach (var studentExpertise in request.StudentExpertises)
-            {
-                var result = student.StudentExpertises.FirstOrDefault(se => se.Id.Equals(studentExpertise.Id));
-                if(result is null)
-                    return OperationResult.Failure(new Error("Error.UpdateFailed",$"Can not update student expertise with id {studentExpertise.Id}"));
-                result.TechnicalAreaId = studentExpertise.TechnicalAreaId;
-            }            
-        }
-
+        student.Mark = request.Mark;
         _studentRepository.Update(student);
-        await _uow.CommitAsync();
+        await _uow.SaveChangesAsync();
         return OperationResult.Success();
     }
 
@@ -86,8 +62,6 @@ public sealed class StudentService(IMapper mapper, IUnitOfWork<FucDbContext> uow
             .Include(s => s.Capstone)
             .Include(s => s.Campus)
             .Include(s => s.GroupMembers)
-            .Include(s => s.BusinessArea)
-            .Include(s => s.StudentExpertises)
-            .ThenInclude(se => se.TechnicalArea);
+            .Include(s => s.BusinessArea);
     }
 }

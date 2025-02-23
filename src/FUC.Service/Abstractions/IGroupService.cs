@@ -6,8 +6,7 @@ namespace FUC.Service.Abstractions;
 
 public interface IGroupService
 {
-    Task<OperationResult<Guid>> CreateGroupAsync(CreateGroupRequest request,
-        string leaderId);
+    Task<OperationResult<Guid>> CreateGroupAsync(string leaderId);
     Task<OperationResult<IEnumerable<GroupResponse>>> GetAllGroupAsync();
     Task<OperationResult<IEnumerable<GroupResponse>>> GetAllGroupBySemesterIdAsync(string semesterId);
     Task<OperationResult<IEnumerable<GroupResponse>>> GetAllGroupByMajorIdAsync(string majorId);
