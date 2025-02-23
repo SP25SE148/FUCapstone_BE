@@ -36,12 +36,9 @@ public sealed class UserController(ICurrentUser currentUser,IStudentService stud
     }
 
     [HttpGet("student/{id}")]
-    
     public async Task<IActionResult> GetStudentInformation(string id)
     {
-            OperationResult<StudentResponseDTO> studentInfo =currentUser.Role.Equals(UserRoles.Student) 
-                ? await studentService.GetStudentByIdAsync(currentUser.UserCode)
-                : await studentService.GetStudentByIdAsync(id);
+            OperationResult<StudentResponseDTO> studentInfo = await studentService.GetStudentByIdAsync(id);
             return studentInfo.IsSuccess
                 ? Ok(studentInfo)
                 : HandleFailure(studentInfo);
