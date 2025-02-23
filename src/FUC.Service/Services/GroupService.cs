@@ -19,7 +19,7 @@ using NetTopologySuite.Geometries;
 
 namespace FUC.Service.Services;
 
-public class GroupService(IUnitOfWork<FucDbContext> uow, IMapper mapper, IIntegrationEventLogService integrationEventLogService) : IGroupService
+public class GroupService(IUnitOfWork<FucDbContext> uow,ISemesterService semesterService, IMapper mapper, IIntegrationEventLogService integrationEventLogService) : IGroupService
 {
     private readonly IUnitOfWork<FucDbContext> _uow = uow ?? throw new ArgumentNullException(nameof(uow));
 
@@ -29,8 +29,12 @@ public class GroupService(IUnitOfWork<FucDbContext> uow, IMapper mapper, IIntegr
     private readonly IRepository<Student> _studentRepository = uow.GetRepository<Student>() ?? throw new ArgumentNullException(nameof(uow));
     private readonly IRepository<GroupMember> _groupMemberRepository = uow.GetRepository<GroupMember>() ?? throw new ArgumentNullException(nameof(uow));
     
-    public async Task<OperationResult<Guid>> CreateGroupAsync(CreateGroupRequest request, string leaderId)
+    public async Task<OperationResult<Guid>> CreateGroupAsync(string leaderId)
     {
+        OperationResult<Semester> currentSemester = await semesterService.GetCurrentSemesterAsync();
+        if (currentSemester.IsFailure)
+            return OperationResult.Failure<Guid>(new Error("Error.SemesterIsNotGoingOn", "The current semester is not going on"));
+
         Student? leader = await _studentRepository.GetAsync(
             predicate: s => 
                 s.Id.Equals(leaderId) &&
@@ -66,7 +70,7 @@ public class GroupService(IUnitOfWork<FucDbContext> uow, IMapper mapper, IIntegr
             CampusId = leader.CampusId,
             CapstoneId = leader.CapstoneId,
             MajorId = leader.MajorId,
-            SemesterId = request.SemesterId,
+            SemesterId = currentSemester.Value.Id,
             Status = GroupStatus.Pending
         };
         _groupRepository.Insert(newGroup);

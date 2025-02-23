@@ -22,5 +22,4 @@ public sealed class Student : AuditableSoftDeleteEntity
     public Capstone Capstone { get; set; } = null!;
     public ICollection<GroupMember> GroupMembers { get; set; } = new List<GroupMember>();
     public BusinessArea BusinessArea { get; set; } = null!;
-    public ICollection<StudentExpertise> StudentExpertises { get; set; } = new List<StudentExpertise>();
 }

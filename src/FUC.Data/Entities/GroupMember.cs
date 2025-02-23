@@ -4,7 +4,7 @@ using FUC.Data.Enums;
 namespace FUC.Data.Entities;
 
 
-public sealed class GroupMember : Entity
+public sealed class GroupMember : AuditableEntity
 {
     public Guid Id { get; set; }
     public Guid GroupId { get; set; }

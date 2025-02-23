@@ -2,13 +2,11 @@
 using FUC.API.Abstractions;
 using FUC.Common.Abstractions;
 using FUC.Common.Constants;
-using FUC.Common.Contracts;
 using FUC.Common.IntegrationEventLog.Services;
 using FUC.Common.Shared;
 using FUC.Service.Abstractions;
 using FUC.Service.DTOs.GroupDTO;
 using FUC.Service.DTOs.GroupMemberDTO;
-using FUC.Service.Infrastructure;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -21,9 +19,9 @@ public class GroupController(IGroupService groupService, IGroupMemberService gro
     
     [Authorize(Roles = nameof(UserRoles.Student))]
     [HttpPost]
-    public async Task<IActionResult> CreateGroupAsync(CreateGroupRequest request)
+    public async Task<IActionResult> CreateGroupAsync()
     {
-        OperationResult<Guid> result = await groupService.CreateGroupAsync(request,User.FindFirst(ClaimTypes.GivenName)!.Value);
+        OperationResult<Guid> result = await groupService.CreateGroupAsync(User.FindFirst(ClaimTypes.GivenName)!.Value);
         return !result.IsFailure
             ? Ok(result.Value)
             : HandleFailure(result);
@@ -102,11 +100,12 @@ public class GroupController(IGroupService groupService, IGroupMemberService gro
     [HttpPut("update-group-member-status")]
     public async Task<IActionResult> UpdateGroupMemberStatusAsync(UpdateGroupMemberRequest request)
     {
-        request = request with { MemberId = currentUser.UserCode };
         OperationResult result = await groupMemberService.UpdateGroupMemberStatusAsync(request);
         return result.IsSuccess
             ? NoContent()
             : HandleFailure(result);
     }
+    
+    
     #endregion
 }

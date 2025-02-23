@@ -13,9 +13,7 @@ internal static class TableNames {
     internal const string Supervisor = nameof(Supervisor);
     internal const string CoSupervisor = nameof(CoSupervisor);
     internal const string BusinessArea = nameof(BusinessArea);
-    internal const string TechnicalArea = nameof(TechnicalArea);
     internal const string TemplateDocument = nameof(TemplateDocument);
-    internal const string StudentExpertise = nameof(StudentExpertise);
     internal const string TopicAppraisal = nameof(TopicAppraisal);
     
 }

@@ -18,7 +18,6 @@ public sealed record StudentResponseDTO
     
     public string BusinessArea { get; set; } = string.Empty;
     
-    public IReadOnlyList<string> StudentExpertises { get; set; } = new List<string>();
     public bool IsHaveBeenJoinGroup { get; init; }
 
     // Constructor mặc định

@@ -14,7 +14,6 @@ public class AppDbInitializer
         var campusData = await File.ReadAllTextAsync("SeedData/Campus.json");
         var semesterData = await File.ReadAllTextAsync("SeedData/Semester.json");
         var businessAreaData = await File.ReadAllTextAsync("SeedData/BusinessArea.json");
-        var TechnicalsAreaData = await File.ReadAllTextAsync("SeedData/TechnicalArea.json");
         
         var options = new JsonSerializerOptions { PropertyNameCaseInsensitive = true };
 
@@ -22,7 +21,6 @@ public class AppDbInitializer
         var campuses = JsonSerializer.Deserialize<List<Campus>>(campusData, options);
         var semesters = JsonSerializer.Deserialize<List<Semester>>(semesterData, options);
         var businessAreas = JsonSerializer.Deserialize<List<BusinessArea>>(businessAreaData, options); 
-        var technicalAreas = JsonSerializer.Deserialize<List<TechnicalArea>>(TechnicalsAreaData, options); 
         using (var serviceScope = applicationBuilder.ApplicationServices.CreateScope())
         {
             var services = serviceScope.ServiceProvider;
@@ -53,11 +51,7 @@ public class AppDbInitializer
             {
                 await context.Set<BusinessArea>().AddRangeAsync(businessAreas);
             }
-            
-            if (!context.Set<TechnicalArea>().Any() && technicalAreas is not null)
-            {
-                await context.Set<TechnicalArea>().AddRangeAsync(technicalAreas);
-            }
+     
             if (!context.Set<MajorGroup>().Any() && majorGroups is not null)
             {
                 foreach (var majorGroup in majorGroups)
