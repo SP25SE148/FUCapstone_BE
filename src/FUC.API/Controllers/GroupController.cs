@@ -88,7 +88,6 @@ public class GroupController(IGroupService groupService, IGroupMemberService gro
     [HttpPost("add-member")]
     public async Task<IActionResult> AddMemberIntoGroupAsync(CreateGroupMemberRequest request)
     {
-        request = request with { LeaderId = currentUser.UserCode };
         OperationResult<Guid> result = await groupMemberService.CreateBulkGroupMemberAsync(request);
         return result.IsSuccess
             ? Ok(result)
@@ -105,9 +104,15 @@ public class GroupController(IGroupService groupService, IGroupMemberService gro
             ? Ok(result)
             : HandleFailure(result);
     }
-    //
-    // [Authorize(Roles = nameof(UserRoles.Student))]
-    // [HttpGet("student/get-group-member-request")]
-    // public async Task<IActionResult>     
+
+    [Authorize(Roles = nameof(UserRoles.Student))]
+    [HttpGet("student/get-group-member-request")]
+    public async Task<IActionResult> GetGroupMemberRequest()
+    {
+        var result = await groupMemberService.GetGroupMemberRequestByMemberId();
+        return result.IsSuccess
+            ? Ok(result)
+            : HandleFailure(result);
+    }     
     #endregion
 }

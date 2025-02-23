@@ -32,7 +32,7 @@ public class GroupMemberService(IUnitOfWork<FucDbContext> uow,
     {
         Student? leader = await _studentRepository.GetAsync(
             predicate: s => 
-                s.Id.Equals(request.LeaderId) &&
+                s.Id.Equals(currentUser.UserCode) &&
                 s.IsEligible &&
                 !s.IsDeleted &&
                 !s.Status.Equals(StudentStatus.Passed),
@@ -50,7 +50,7 @@ public class GroupMemberService(IUnitOfWork<FucDbContext> uow,
         if (leader.GroupMembers.FirstOrDefault(gm => gm.IsLeader) is null ||
             !leader.GroupMembers.Any(s => s.Status.Equals(GroupMemberStatus.Accepted)) ||
             !leader.GroupMembers.Any(s => s.IsLeader))
-            return OperationResult.Failure<Guid>(new Error("Error.InEligible", $"User with id {request.LeaderId} is ineligible to add member"));
+            return OperationResult.Failure<Guid>(new Error("Error.InEligible", $"User with id {currentUser.UserCode} is ineligible to add member"));
 
         
         
@@ -234,22 +234,43 @@ public class GroupMemberService(IUnitOfWork<FucDbContext> uow,
     {
         IList<GroupMember> groupMembers = await _groupMemberRepository.FindAsync(
             gm => gm.StudentId.Equals(currentUser.UserCode),
-            gm => gm.Include(gm => gm.Group));
+            gm => gm.Include(gm => gm.Student),
+            x => x.OrderBy(x => x.CreatedDate));
 
         if (groupMembers.Count < 1)
             return OperationResult.Failure<IEnumerable<GroupMemberResponse>>(Error.NullValue);
 
         if (!groupMembers.Any(gm => gm.IsLeader))
         {
-            return OperationResult.Success(mapper.Map<IEnumerable<GroupMemberResponse>>(groupMembers));
+            return OperationResult.Success(groupMembers.Select(
+                x => new GroupMemberResponse()
+                {
+                    Id = x.Id,
+                    Status = x.Status.ToString(),
+                    GroupId = x.GroupId,
+                    StudentId = x.StudentId,
+                    StudentFullName = x.Student.FullName,
+                    LeaderEmail = x.CreatedBy
+                }));
         }
 
-        IList<GroupMember> groupMembersRequestOfLeader =
+        IList<GroupMemberResponse> groupMembersRequestOfLeader =
             await _groupMemberRepository.FindAsync(
                 gm => gm.CreatedBy.Equals(currentUser.Email),
-                gm => gm.Include(gm => gm.Group));
+                gm => gm.Include(gm => gm.Student),
+                x => x.OrderBy(x => x.CreatedDate),
+                x => new GroupMemberResponse()
+                {
+                    Id = x.Id,
+                    Status = x.Status.ToString(),
+                    GroupId = x.GroupId,
+                    StudentId = x.StudentId,
+                    StudentFullName = x.Student.FullName,
+                    LeaderEmail = x.CreatedBy
+                });
+        
         return groupMembersRequestOfLeader.Count > 0
-            ? OperationResult.Success(mapper.Map<IEnumerable<GroupMemberResponse>>(groupMembersRequestOfLeader)) 
+            ? OperationResult.Success(groupMembersRequestOfLeader.Where(gm => gm.LeaderEmail != currentUser.Email)) 
             : OperationResult.Failure<IEnumerable<GroupMemberResponse>>(Error.NullValue);
     }
     
