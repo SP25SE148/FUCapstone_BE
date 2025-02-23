@@ -102,10 +102,12 @@ public class GroupController(IGroupService groupService, IGroupMemberService gro
     {
         OperationResult result = await groupMemberService.UpdateGroupMemberStatusAsync(request);
         return result.IsSuccess
-            ? NoContent()
+            ? Ok(result)
             : HandleFailure(result);
     }
-    
-    
+    //
+    // [Authorize(Roles = nameof(UserRoles.Student))]
+    // [HttpGet("student/get-group-member-request")]
+    // public async Task<IActionResult>     
     #endregion
 }

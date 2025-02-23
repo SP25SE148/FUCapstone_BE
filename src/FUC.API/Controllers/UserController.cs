@@ -50,7 +50,7 @@ public sealed class UserController(ICurrentUser currentUser,IStudentService stud
     {
         var result = await studentService.UpdateStudentInformation(request, currentUser.UserCode);
         return result.IsSuccess
-            ? NoContent()
+            ? Ok(result)
             : HandleFailure(result);
     }
 }
