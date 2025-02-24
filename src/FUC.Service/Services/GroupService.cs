@@ -279,7 +279,6 @@ public class GroupService(
             $"The group with id {group.Id} just {group.Status.ToString()} because it have invalid team size");
     }
 
-
     private static Func<IQueryable<Group>, IIncludableQueryable<Group, object>> CreateIncludeForGroupResponse()
     {
         return g =>

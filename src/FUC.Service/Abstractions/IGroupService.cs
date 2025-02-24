@@ -14,6 +14,5 @@ public interface IGroupService
     Task<OperationResult<IEnumerable<GroupResponse>>> GetAllGroupByCampusIdAsync(string campusId);
     Task<OperationResult<GroupResponse>> GetGroupByIdAsync(Guid id);
     Task<OperationResult<GroupResponse>> GetGroupByStudentIdAsync();
-    Task<OperationResult> UpdateGroupStatusAsync();
-    
+    Task<OperationResult> UpdateGroupStatusAsync();    
 }

@@ -31,6 +31,8 @@ public class GroupController(IGroupService groupService, IGroupMemberService gro
     public async Task<IActionResult> CreateGroupCodeAsync()
     {
         var result = await groupService.UpdateGroupStatusAsync();
+
+
         return result.IsSuccess
             ? Ok(result)
             : HandleFailure(result);
