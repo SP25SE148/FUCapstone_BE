@@ -21,18 +21,35 @@ public class GroupController(IGroupService groupService, IGroupMemberService gro
     [HttpPost]
     public async Task<IActionResult> CreateGroupAsync()
     {
-        OperationResult<Guid> result = await groupService.CreateGroupAsync(User.FindFirst(ClaimTypes.GivenName)!.Value);
+        OperationResult<Guid> result = await groupService.CreateGroupAsync();
         return !result.IsFailure
-            ? Ok(result.Value)
+            ? Ok(result)
             : HandleFailure(result);
     }
-    
+
+    [HttpPut("{groupId}")]
+    public async Task<IActionResult> CreateGroupCodeAsync()
+    {
+        var result = await groupService.UpdateGroupStatusAsync();
+        return result.IsSuccess
+            ? Ok(result)
+            : HandleFailure(result);
+    }
+
+    [HttpGet("get-by-student-id")]
+    public async Task<IActionResult> GetGroupInfoByStudentId()
+    {
+        var result = await groupService.GetGroupByStudentIdAsync();
+        return result.IsSuccess
+            ? Ok(result)
+            : HandleFailure(result);
+    }
     [HttpGet]
     public async Task<IActionResult> GetGroups()
     {
         OperationResult<IEnumerable<GroupResponse>> result = await groupService.GetAllGroupAsync();
         return !result.IsFailure
-            ? Ok(result.Value)
+            ? Ok(result)
             : HandleFailure(result);
     }
 
@@ -41,7 +58,7 @@ public class GroupController(IGroupService groupService, IGroupMemberService gro
     {
         OperationResult<IEnumerable<GroupResponse>> result = await groupService.GetAllGroupBySemesterIdAsync(semesterId);
         return result.IsSuccess
-            ? Ok(result.Value)
+            ? Ok(result)
             : HandleFailure(result);
     }
     
@@ -50,7 +67,7 @@ public class GroupController(IGroupService groupService, IGroupMemberService gro
     {
         OperationResult<IEnumerable<GroupResponse>> result = await groupService.GetAllGroupByMajorIdAsync(majorId);
         return result.IsSuccess
-            ? Ok(result.Value)
+            ? Ok(result)
             : HandleFailure(result);
     }
     
@@ -59,7 +76,7 @@ public class GroupController(IGroupService groupService, IGroupMemberService gro
     {
         OperationResult<IEnumerable<GroupResponse>> result = await groupService.GetAllGroupByCapstoneIdAsync(capstoneId);
         return result.IsSuccess
-            ? Ok(result.Value)
+            ? Ok(result)
             : HandleFailure(result);
     }
     
@@ -68,7 +85,7 @@ public class GroupController(IGroupService groupService, IGroupMemberService gro
     {
         OperationResult<GroupResponse> result = await groupService.GetGroupByIdAsync(id);
         return result.IsSuccess
-            ? Ok(result.Value)
+            ? Ok(result)
             : HandleFailure(result);
     }
 
@@ -77,7 +94,7 @@ public class GroupController(IGroupService groupService, IGroupMemberService gro
     {
         OperationResult<IEnumerable<GroupResponse>> result = await groupService.GetAllGroupByCampusIdAsync(campusId);
         return result.IsSuccess
-            ? Ok(result.Value)
+            ? Ok(result)
             : HandleFailure(result);
     }
     #endregion

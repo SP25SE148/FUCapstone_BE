@@ -16,6 +16,10 @@ public interface IRepository<TEntity> where TEntity : Entity
     /// <returns></returns>
     Task<List<TEntity>> GetAllAsync(Func<IQueryable<TEntity>, IIncludableQueryable<TEntity, object>>? include = null);
 
+    Task<List<TResult>> GetAllAsync<TResult>(
+        Func<IQueryable<TEntity>, IIncludableQueryable<TEntity, object>>? include,
+        Func<IQueryable<TEntity>,IOrderedQueryable<TEntity>>? orderBy,
+        Expression<Func<TEntity, TResult>> selector);
     Task<TEntity?> GetAsync(Expression<Func<TEntity, bool>> predicate,
         CancellationToken cancellationToken = default) =>
         GetAsync(predicate, false, null, null, cancellationToken);
