@@ -174,5 +174,15 @@ public class Repository<TEntity>(DbContext dbContext) : IRepository<TEntity>
         return query.ToListAsync();
     }
 
+    public async Task<List<TResult>> GetAllAsync<TResult>(
+        Func<IQueryable<TEntity>, IIncludableQueryable<TEntity, object>>? include,
+        Func<IQueryable<TEntity>, IOrderedQueryable<TEntity>>? orderBy,
+        Expression<Func<TEntity, TResult>> selector)
+    {
+        var query = ApplyIncludesAndOrdering(GetQueryable(), include, orderBy);
+    
+        return await query.Select(selector).ToListAsync();
+    }
+
     private DbSet<TEntity> DbSet => dbContext.Set<TEntity>();
 }

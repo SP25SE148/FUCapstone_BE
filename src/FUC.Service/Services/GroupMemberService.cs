@@ -236,7 +236,7 @@ public class GroupMemberService(IUnitOfWork<FucDbContext> uow,
             gm => gm.StudentId.Equals(currentUser.UserCode),
             gm => gm.Include(gm => gm.Student),
             x => x.OrderBy(x => x.CreatedDate));
-
+        
         if (groupMembers.Count < 1)
             return OperationResult.Failure<IEnumerable<GroupMemberResponse>>(Error.NullValue);
 
@@ -250,7 +250,8 @@ public class GroupMemberService(IUnitOfWork<FucDbContext> uow,
                     GroupId = x.GroupId,
                     StudentId = x.StudentId,
                     StudentFullName = x.Student.FullName,
-                    LeaderEmail = x.CreatedBy
+                    StudentEmail = x.Student.Email,
+                    IsLeader = x.IsLeader
                 }));
         }
 
@@ -266,11 +267,12 @@ public class GroupMemberService(IUnitOfWork<FucDbContext> uow,
                     GroupId = x.GroupId,
                     StudentId = x.StudentId,
                     StudentFullName = x.Student.FullName,
-                    LeaderEmail = x.CreatedBy
+                    StudentEmail = x.Student.Email,
+                    IsLeader = x.IsLeader
                 });
         
         return groupMembersRequestOfLeader.Count > 0
-            ? OperationResult.Success(groupMembersRequestOfLeader.Where(gm => gm.LeaderEmail != currentUser.Email)) 
+            ? OperationResult.Success(groupMembersRequestOfLeader.Where(gm => !gm.IsLeader)) 
             : OperationResult.Failure<IEnumerable<GroupMemberResponse>>(Error.NullValue);
     }
     
