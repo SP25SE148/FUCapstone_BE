@@ -225,9 +225,16 @@ public class GroupService(
          return OperationResult.Success(groupResponse);
     }
 
-    public async Task<OperationResult> UpdateGroupStatusAsync(Guid groupId)
+    public async Task<OperationResult> UpdateGroupStatusAsync()
     {
         var capstone = await capstoneService.GetCapstoneByIdAsync(currentUser.CapstoneId);
+        var groupId =
+            (await _groupMemberRepository.GetAsync(
+                gm => gm.StudentId.Equals(currentUser.UserCode) && gm.IsLeader,
+                default))?.GroupId;
+        if (groupId is null)
+            return OperationResult.Failure(Error.NullValue); 
+        
         var group = await _groupRepository.GetAsync(
             g => g.Id.Equals(groupId),
             true,
@@ -241,12 +248,13 @@ public class GroupService(
             return OperationResult.Failure(new Error("Error.UpdateFailed",
                 $"Can not update group status with group id {group.Id} from {group.Status.ToString()}"));
 
-        group.Status = group.GroupMembers.Count < capstone.Value.MinMember ||
-                       group.GroupMembers.Count > capstone.Value.MaxMember
+        group.Status = group.GroupMembers.Where(gm => gm.Status.Equals(GroupMemberStatus.Accepted)).ToList().Count < capstone.Value.MinMember ||
+                       group.GroupMembers.Where(gm => gm.Status.Equals(GroupMemberStatus.Accepted)).ToList().Count > capstone.Value.MaxMember
             ? GroupStatus.Rejected
             : GroupStatus.InProgress;
+        
 
-        var groupCodeList = (await _groupRepository.FindAsync(g => g.GroupCode != null)).Select(g => g.GroupCode).ToList();
+        var groupCodeList = (await _groupRepository.FindAsync(g => string.IsNullOrEmpty(g.GroupCode))).Select(g => g.GroupCode).ToList();
         var random = new Random();
         
         if (group.Status.Equals(GroupStatus.InProgress))
@@ -260,7 +268,7 @@ public class GroupService(
                 do
                 {
                     group.GroupCode = $"{group.SemesterId}{group.MajorId}{random.Next(1,9999)}";
-                } while (!groupCodeList.Exists(x => x.Equals(group.GroupCode)));   
+                } while (groupCodeList.Exists(x => x.Equals(group.GroupCode)));   
             }
             await _uow.SaveChangesAsync();
             return OperationResult.Success();
@@ -270,7 +278,6 @@ public class GroupService(
         return OperationResult.Success(
             $"The group with id {group.Id} just {group.Status.ToString()} because it have invalid team size");
     }
-
 
     private static Func<IQueryable<Group>, IIncludableQueryable<Group, object>> CreateIncludeForGroupResponse()
     {

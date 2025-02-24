@@ -28,9 +28,11 @@ public class GroupController(IGroupService groupService, IGroupMemberService gro
     }
 
     [HttpPut("{groupId}")]
-    public async Task<IActionResult> CreateGroupCodeAsync(Guid groupId)
+    public async Task<IActionResult> CreateGroupCodeAsync()
     {
-        var result = await groupService.UpdateGroupStatusAsync(groupId);
+        var result = await groupService.UpdateGroupStatusAsync();
+
+
         return result.IsSuccess
             ? Ok(result)
             : HandleFailure(result);
