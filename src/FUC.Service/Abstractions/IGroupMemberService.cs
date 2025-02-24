@@ -7,5 +7,5 @@ public interface IGroupMemberService
 {
     Task<OperationResult<Guid>> CreateBulkGroupMemberAsync(CreateGroupMemberRequest request);
     Task<OperationResult> UpdateGroupMemberStatusAsync(UpdateGroupMemberRequest request);
-    Task<OperationResult<IEnumerable<GroupMemberResponse>>> GetGroupMemberRequestByMemberId();
+    Task<OperationResult<GroupMemberRequestResponse>> GetGroupMemberRequestByMemberId();
 }

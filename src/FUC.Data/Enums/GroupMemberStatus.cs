@@ -6,5 +6,5 @@ public enum GroupMemberStatus
     Accepted,
     Rejected,
     LeftGroup,
-    Canceled
+    Cancelled
 }

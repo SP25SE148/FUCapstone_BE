@@ -51,7 +51,9 @@ public sealed class StudentService(IMapper mapper, IUnitOfWork<FucDbContext> uow
         student.BusinessAreaId = request.BusinessAreaId;
         student.Mark = request.Mark;
         _studentRepository.Update(student);
+        
         await _uow.SaveChangesAsync();
+        
         return OperationResult.Success();
     }
 
