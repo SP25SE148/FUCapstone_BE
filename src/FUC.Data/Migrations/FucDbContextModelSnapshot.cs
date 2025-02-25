@@ -757,7 +757,7 @@ namespace FUC.Data.Migrations
                     b.Property<DateTime>("CreatedDate")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("timestamp with time zone")
-                        .HasDefaultValue(new DateTime(2025, 2, 25, 11, 15, 10, 452, DateTimeKind.Utc).AddTicks(6087));
+                        .HasDefaultValue(new DateTime(2025, 2, 25, 15, 58, 54, 829, DateTimeKind.Utc).AddTicks(400));
 
                     b.Property<Guid>("TopicId")
                         .HasColumnType("uuid");
