@@ -30,4 +30,5 @@ public sealed class Topic : AuditableSoftDeleteEntity
 
     public ICollection<CoSupervisor> CoSupervisors { get; set; } = new List<CoSupervisor>();
     public ICollection<TopicAppraisal> TopicAppraisals { get; set; } = new List<TopicAppraisal>();
+    public ICollection<TopicAnalysis> TopicAnalyses { get; set; } = new List<TopicAnalysis>();
 }

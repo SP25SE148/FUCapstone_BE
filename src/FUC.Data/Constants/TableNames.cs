@@ -15,5 +15,6 @@ internal static class TableNames {
     internal const string BusinessArea = nameof(BusinessArea);
     internal const string TemplateDocument = nameof(TemplateDocument);
     internal const string TopicAppraisal = nameof(TopicAppraisal);
+    internal const string TopicAnalysis = nameof(TopicAnalysis);
     
 }

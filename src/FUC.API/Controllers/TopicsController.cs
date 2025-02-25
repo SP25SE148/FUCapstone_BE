@@ -9,6 +9,14 @@ namespace FUC.API.Controllers;
 
 public class TopicsController(ITopicService topicService) : ApiController
 {
+    [HttpGet]
+    public async Task<IActionResult> GetTopics([FromQuery] TopicRequest request)
+    {
+        var result = await topicService.GetTopics(request);
+
+        return result.IsSuccess ? Ok(result) : HandleFailure(result);
+    }
+
     [HttpPost]
     [Authorize(Roles = $"{UserRoles.Supervisor}")]
     public async Task<IActionResult> CreateTopic([FromForm] CreateTopicRequest request)
@@ -18,6 +26,14 @@ public class TopicsController(ITopicService topicService) : ApiController
         return result.IsSuccess ? 
             Ok(result) :
             HandleFailure(result);
+    }
+
+    [HttpGet("statistic/{topId}")]
+    public async Task<IActionResult> GetStatisticTopics(string topId)
+    {
+        var result = await topicService.GetTopicAnalysises(Guid.Parse(topId), default);
+
+        return result.IsSuccess ? Ok(result) : HandleFailure(result);
     }
 
     [HttpGet("business")]

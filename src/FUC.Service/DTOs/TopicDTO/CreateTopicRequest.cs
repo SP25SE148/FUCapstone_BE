@@ -10,6 +10,7 @@ public class CreateTopicRequest
     public string VietnameseName { get; set; }
     public string Abbreviation { get; set; }
     public string Description { get; set; }
+    public List<string> CoSupervisorEmails { get; set; }
     public DifficultyLevel DifficultyLevel { get; set; }
     public IFormFile File { get; set; }
 }

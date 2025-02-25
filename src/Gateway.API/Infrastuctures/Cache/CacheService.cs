@@ -26,6 +26,18 @@ public class CacheService : ICacheService
         return value;
     }
 
+    public async Task SetTimeoutAsync<T>(string key, T value, TimeSpan absoluteExpiration, CancellationToken cancellationToken = default)
+        where T : class
+    {
+        var options = new DistributedCacheEntryOptions
+        {
+            AbsoluteExpirationRelativeToNow = absoluteExpiration, 
+        };
+
+        var cacheValue = JsonSerializer.Serialize(value);
+        await _distributedCache.SetStringAsync(key, cacheValue, options, cancellationToken);
+    }
+
     public async Task SetAsync<T>(string key, T value, CancellationToken cancellationToken = default) where T : class
     {
         string cacheValue = JsonSerializer.Serialize(value);

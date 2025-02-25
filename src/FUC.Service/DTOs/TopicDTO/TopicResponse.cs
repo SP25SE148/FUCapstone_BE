@@ -4,6 +4,7 @@ namespace FUC.Service.DTOs.TopicDTO;
 
 public class TopicResponse
 {
+    public string Id { get; set; }
     public string Code { get; set; }
     public string MainSupervisorName { get; set; }
     public string MainSupervisorEmail { get; set; }

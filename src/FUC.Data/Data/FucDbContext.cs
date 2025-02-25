@@ -32,6 +32,7 @@ public class FucDbContext : DbContext
 
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
     {
+        optionsBuilder.LogTo(Console.WriteLine).EnableSensitiveDataLogging();
         optionsBuilder.UseNpgsql("Server=localhost:5432; User Id=postgres;Password=postgrespw;Database=fuc");
     }
 

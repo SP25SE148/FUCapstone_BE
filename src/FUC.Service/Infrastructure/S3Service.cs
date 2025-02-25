@@ -264,4 +264,46 @@ public class S3Service(
             throw;
         }
     }
+
+    public async Task<List<string>> GetS3ObjectKeys(string bucketName, string? prefix)
+    {
+        long startTime = 0;
+        var s3ObjectKeys = new List<string>();
+        try
+        {
+            if (_logTime)
+            {
+                startTime = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
+            }
+
+            var listObjectsV2Request = new ListObjectsV2Request
+            {
+                BucketName = bucketName,
+                Prefix = prefix,
+                Delimiter = "/"
+            };
+
+            var s3Response = await S3Client.ListObjectsV2Async(listObjectsV2Request);
+
+            foreach (var s3 in s3Response.S3Objects)
+            {
+                s3ObjectKeys.Add(s3.Key);
+            }
+        }
+        catch (AmazonS3Exception ex) when (ex.Message is "The specified key does not exist.")
+        {
+            logger.LogWarning(ex, "The specified key does not exist.");
+        }
+        finally
+        {
+            if (_logTime)
+            {
+                var endTime = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
+                var duration = endTime - startTime;
+                logger.LogInformation("GetFromS3 took {Duration} ms", duration);
+            }
+        }
+
+        return s3ObjectKeys;
+    }
 }
