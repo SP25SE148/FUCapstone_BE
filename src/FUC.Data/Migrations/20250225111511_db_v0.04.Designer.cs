@@ -3,6 +3,7 @@ using System;
 using FUC.Data.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
@@ -11,9 +12,11 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace FUC.Data.Migrations
 {
     [DbContext(typeof(FucDbContext))]
-    partial class FucDbContextModelSnapshot : ModelSnapshot
+    [Migration("20250225111511_db_v0.04")]
+    partial class db_v004
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -287,13 +290,6 @@ namespace FUC.Data.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uuid");
 
-                    b.Property<string>("CreatedBy")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<DateTime>("CreatedDate")
-                        .HasColumnType("timestamp with time zone");
-
                     b.Property<Guid>("GroupId")
                         .HasColumnType("uuid");
 
@@ -307,12 +303,6 @@ namespace FUC.Data.Migrations
                     b.Property<string>("StudentId")
                         .IsRequired()
                         .HasColumnType("text");
-
-                    b.Property<string>("UpdatedBy")
-                        .HasColumnType("text");
-
-                    b.Property<DateTime?>("UpdatedDate")
-                        .HasColumnType("timestamp with time zone");
 
                     b.HasKey("Id");
 
@@ -514,6 +504,41 @@ namespace FUC.Data.Migrations
                     b.ToTable("Student", (string)null);
                 });
 
+            modelBuilder.Entity("FUC.Data.Entities.StudentExpertise", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("CreatedBy")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<DateTime>("CreatedDate")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("StudentId")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<Guid>("TechnicalAreaId")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("UpdatedBy")
+                        .HasColumnType("text");
+
+                    b.Property<DateTime?>("UpdatedDate")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("StudentId");
+
+                    b.HasIndex("TechnicalAreaId");
+
+                    b.ToTable("StudentExpertise", (string)null);
+                });
+
             modelBuilder.Entity("FUC.Data.Entities.Supervisor", b =>
                 {
                     b.Property<string>("Id")
@@ -613,6 +638,44 @@ namespace FUC.Data.Migrations
                     b.HasIndex("SupervisorId");
 
                     b.ToTable("SupervisorGroupAssignment", (string)null);
+                });
+
+            modelBuilder.Entity("FUC.Data.Entities.TechnicalArea", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("CreatedBy")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<DateTime>("CreatedDate")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<DateTime?>("DeletedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("Description")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("boolean");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("UpdatedBy")
+                        .HasColumnType("text");
+
+                    b.Property<DateTime?>("UpdatedDate")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("TechnicalArea", (string)null);
                 });
 
             modelBuilder.Entity("FUC.Data.Entities.TemplateDocument", b =>
@@ -935,6 +998,25 @@ namespace FUC.Data.Migrations
                     b.Navigation("Major");
                 });
 
+            modelBuilder.Entity("FUC.Data.Entities.StudentExpertise", b =>
+                {
+                    b.HasOne("FUC.Data.Entities.Student", "Student")
+                        .WithMany("StudentExpertises")
+                        .HasForeignKey("StudentId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("FUC.Data.Entities.TechnicalArea", "TechnicalArea")
+                        .WithMany("StudentExpertises")
+                        .HasForeignKey("TechnicalAreaId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("Student");
+
+                    b.Navigation("TechnicalArea");
+                });
+
             modelBuilder.Entity("FUC.Data.Entities.Supervisor", b =>
                 {
                     b.HasOne("FUC.Data.Entities.Campus", "Campus")
@@ -1111,6 +1193,8 @@ namespace FUC.Data.Migrations
             modelBuilder.Entity("FUC.Data.Entities.Student", b =>
                 {
                     b.Navigation("GroupMembers");
+
+                    b.Navigation("StudentExpertises");
                 });
 
             modelBuilder.Entity("FUC.Data.Entities.Supervisor", b =>
@@ -1120,6 +1204,11 @@ namespace FUC.Data.Migrations
                     b.Navigation("TopicAppraisals");
 
                     b.Navigation("Topics");
+                });
+
+            modelBuilder.Entity("FUC.Data.Entities.TechnicalArea", b =>
+                {
+                    b.Navigation("StudentExpertises");
                 });
 
             modelBuilder.Entity("FUC.Data.Entities.Topic", b =>

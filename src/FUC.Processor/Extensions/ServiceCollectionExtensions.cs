@@ -11,6 +11,7 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Quartz;
+using Refit;
 using System.Reflection;
 using System.Text;
 
@@ -56,6 +57,8 @@ public static class ServiceCollectionExtensions
         services.Configure<MailSettings>(configuration.GetSection("MailSettings"));
         services.AddScoped<IEmailService, EmailSerivce>();
 
+        services.AddRefitClient<ISemanticApi>()
+            .ConfigureHttpClient(c => c.BaseAddress = new Uri("http://localhost:9000"));
 
         services.AddSingleton<UsersTracker>();
 

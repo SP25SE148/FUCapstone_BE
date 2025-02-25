@@ -13,5 +13,6 @@ public sealed class TemplateDocumentConfiguration : IEntityTypeConfiguration<Tem
         builder.ToTable(TableNames.TemplateDocument);
         builder.Property(t => t.FileName).IsRequired();
         builder.Property(t => t.FileUrl).IsRequired();
+        builder.Property(t => t.IsActive).IsRequired();
     }
 }

@@ -61,6 +61,7 @@ public class UsersSyncMessageConsumer : BaseEventConsumer<UsersSyncMessage>
                     MajorId = x.MajorId.ToUpper(),
                     CampusId = x.CampusId.ToUpper(),
                     Email = x.Email,
+                    IsAvailable = true,
                     CreatedBy = message.CreatedBy,
                     CreatedDate = DateTime.SpecifyKind(DateTime.Now, DateTimeKind.Utc)
                 }).ToList();

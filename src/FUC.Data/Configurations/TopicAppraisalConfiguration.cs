@@ -1,9 +1,7 @@
-﻿using FUC.Data.Abstractions.Entities;
-using FUC.Data.Constants;
+﻿using FUC.Data.Constants;
 using FUC.Data.Entities;
 using FUC.Data.Enums;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.Metadata;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
 namespace FUC.Data.Configurations;

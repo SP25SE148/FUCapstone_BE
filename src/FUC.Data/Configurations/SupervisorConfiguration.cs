@@ -21,6 +21,8 @@ public class SupervisorConfiguration : IEntityTypeConfiguration<Supervisor>
         builder.Property(s => s.CreatedBy).IsRequired();
         builder.Property(s => s.CreatedDate).IsRequired();
 
+        builder.Property(s => s.IsAvailable).IsRequired();
+
         // relationship config 
         builder.HasOne(s => s.Major)
             .WithMany(m => m.Supervisors)

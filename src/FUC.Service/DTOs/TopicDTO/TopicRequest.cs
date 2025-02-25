@@ -4,9 +4,8 @@ namespace FUC.Service.DTOs.TopicDTO;
 
 public class TopicRequest : PaginationParams
 {
-    public string Code { get; set; }
     public string MainSupervisorEmail { get; set; } = "all";
-    public string SearchTerm { get; set; }
+    public string? SearchTerm { get; set; }
     public string Status { get; set; } = "all";
     public string DifficultyLevel { get; set; } = "all";
     public string BusinessAreaName { get; set; } = "all";
