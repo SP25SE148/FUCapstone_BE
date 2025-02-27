@@ -14,11 +14,13 @@ public sealed class GroupConfiguration : IEntityTypeConfiguration<Group>
         builder.HasKey(g => g.Id);
 
         builder.Property(g => g.GroupCode).IsRequired();
+        builder.Property(g => g.Id).HasDefaultValue(Guid.NewGuid());
 
         builder.Property(g => g.Status)
             .HasConversion(
                 v => v.ToString(),
-                v => (GroupStatus)Enum.Parse(typeof(GroupStatus), v));
+                v => (GroupStatus)Enum.Parse(typeof(GroupStatus), v))
+            .HasDefaultValue(GroupStatus.Pending);
 
         // relationship config
 
@@ -36,7 +38,7 @@ public sealed class GroupConfiguration : IEntityTypeConfiguration<Group>
             .WithMany(m => m.Groups)
             .HasForeignKey(g => g.SemesterId)
             .OnDelete(DeleteBehavior.Restrict);
-        
+
         builder.HasOne(g => g.Capstone)
             .WithMany(m => m.Groups)
             .HasForeignKey(g => g.CapstoneId)

@@ -1,3 +1,9 @@
 ﻿namespace FUC.Data.Enums;
 
-public enum TopicAppraisalStatus {  }
+public enum TopicAppraisalStatus
+{
+    Pending,
+    Accepted,
+    Considered,
+    Rejected
+}

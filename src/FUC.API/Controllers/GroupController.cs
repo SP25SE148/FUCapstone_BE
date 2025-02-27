@@ -13,12 +13,16 @@ using Microsoft.AspNetCore.Mvc;
 namespace FUC.API.Controllers;
 
 [Authorize]
-public class GroupController(IGroupService groupService, IGroupMemberService groupMemberService, ICurrentUser currentUser, IIntegrationEventLogService integrationEventLogService) : ApiController
+public class GroupController(
+    IGroupService groupService,
+    IGroupMemberService groupMemberService,
+    ICurrentUser currentUser,
+    IIntegrationEventLogService integrationEventLogService) : ApiController
 {
     #region Group Endpoint
-    
-    [Authorize(Roles = nameof(UserRoles.Student))]
+
     [HttpPost]
+    [Authorize(Roles = nameof(UserRoles.Student))]
     public async Task<IActionResult> CreateGroupAsync()
     {
         OperationResult<Guid> result = await groupService.CreateGroupAsync();
@@ -28,6 +32,7 @@ public class GroupController(IGroupService groupService, IGroupMemberService gro
     }
 
     [HttpPut("{groupId}")]
+    [Authorize(Roles = nameof(UserRoles.Student))]
     public async Task<IActionResult> CreateGroupCodeAsync()
     {
         var result = await groupService.UpdateGroupStatusAsync();
@@ -39,6 +44,7 @@ public class GroupController(IGroupService groupService, IGroupMemberService gro
     }
 
     [HttpGet("get-by-student-id")]
+    [Authorize(Roles = UserRoles.Student)]
     public async Task<IActionResult> GetGroupInfoByStudentId()
     {
         var result = await groupService.GetGroupByStudentIdAsync();
@@ -46,7 +52,9 @@ public class GroupController(IGroupService groupService, IGroupMemberService gro
             ? Ok(result)
             : HandleFailure(result);
     }
+
     [HttpGet]
+    [Authorize(Roles = UserRoles.SuperAdmin)]
     public async Task<IActionResult> GetGroups()
     {
         OperationResult<IEnumerable<GroupResponse>> result = await groupService.GetAllGroupAsync();
@@ -56,15 +64,18 @@ public class GroupController(IGroupService groupService, IGroupMemberService gro
     }
 
     [HttpGet("get-by-semester-id/{semesterId}")]
+    [Authorize(Roles = $"{UserRoles.SuperAdmin},{UserRoles.Admin},{UserRoles.Manager}")]
     public async Task<IActionResult> GetGroupsBySemesterId(string semesterId)
     {
-        OperationResult<IEnumerable<GroupResponse>> result = await groupService.GetAllGroupBySemesterIdAsync(semesterId);
+        OperationResult<IEnumerable<GroupResponse>>
+            result = await groupService.GetAllGroupBySemesterIdAsync(semesterId);
         return result.IsSuccess
             ? Ok(result)
             : HandleFailure(result);
     }
-    
+
     [HttpGet("get-by-major-id/{majorId}")]
+    [Authorize(Roles = $"{UserRoles.SuperAdmin},{UserRoles.Admin},{UserRoles.Manager}")]
     public async Task<IActionResult> GetGroupsByMajorId(string majorId)
     {
         OperationResult<IEnumerable<GroupResponse>> result = await groupService.GetAllGroupByMajorIdAsync(majorId);
@@ -72,16 +83,19 @@ public class GroupController(IGroupService groupService, IGroupMemberService gro
             ? Ok(result)
             : HandleFailure(result);
     }
-    
+
     [HttpGet("get-by-capstone-id/{capstoneId}")]
+    [Authorize(Roles = $"{UserRoles.SuperAdmin},{UserRoles.Admin},{UserRoles.Manager}")]
     public async Task<IActionResult> GetGroupsByCampusId(string capstoneId)
     {
-        OperationResult<IEnumerable<GroupResponse>> result = await groupService.GetAllGroupByCapstoneIdAsync(capstoneId);
+        OperationResult<IEnumerable<GroupResponse>>
+            result = await groupService.GetAllGroupByCapstoneIdAsync(capstoneId);
         return result.IsSuccess
             ? Ok(result)
             : HandleFailure(result);
     }
-    
+
+
     [HttpGet("{id}")]
     public async Task<IActionResult> GetGroupByIdAsync(Guid id)
     {
@@ -92,6 +106,7 @@ public class GroupController(IGroupService groupService, IGroupMemberService gro
     }
 
     [HttpGet("get-by-campus-id/{campusId}")]
+    [Authorize(Roles = UserRoles.SuperAdmin)]
     public async Task<IActionResult> GetGroupByCampusIdAsync(string campusId)
     {
         OperationResult<IEnumerable<GroupResponse>> result = await groupService.GetAllGroupByCampusIdAsync(campusId);
@@ -99,6 +114,7 @@ public class GroupController(IGroupService groupService, IGroupMemberService gro
             ? Ok(result)
             : HandleFailure(result);
     }
+
     #endregion
 
     #region Group Member Endpoint
@@ -132,6 +148,7 @@ public class GroupController(IGroupService groupService, IGroupMemberService gro
         return result.IsSuccess
             ? Ok(result)
             : HandleFailure(result);
-    }     
+    }
+
     #endregion
 }

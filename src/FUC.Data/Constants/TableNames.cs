@@ -1,6 +1,7 @@
 ﻿namespace FUC.Data.Constants;
 
-internal static class TableNames {
+internal static class TableNames
+{
     internal const string Topic = nameof(Topic);
     internal const string Campus = nameof(Campus);
     internal const string Capstone = nameof(Capstone);
@@ -16,5 +17,5 @@ internal static class TableNames {
     internal const string TemplateDocument = nameof(TemplateDocument);
     internal const string TopicAppraisal = nameof(TopicAppraisal);
     internal const string TopicAnalysis = nameof(TopicAnalysis);
-    
+    internal const string SupervisorGroupAssignment = nameof(SupervisorGroupAssignment);
 }

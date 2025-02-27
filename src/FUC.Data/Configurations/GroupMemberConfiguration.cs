@@ -13,13 +13,15 @@ public sealed class GroupMemberConfiguration : IEntityTypeConfiguration<GroupMem
         builder.ToTable(TableNames.GroupMember);
         builder.HasKey(gm => gm.Id);
 
+        builder.Property(gm => gm.Id).HasDefaultValue(Guid.NewGuid());
         builder.Property(gm => gm.IsLeader).IsRequired();
         builder.Property(gm => gm.Status)
             .HasConversion(
                 v => v.ToString(),
-                v => (GroupMemberStatus)Enum.Parse(typeof(GroupMemberStatus), v));
+                v => (GroupMemberStatus)Enum.Parse(typeof(GroupMemberStatus), v))
+            .HasDefaultValue(GroupMemberStatus.UnderReview);
 
-        
+
         // relationship config
         builder.HasOne(gm => gm.Group)
             .WithMany(g => g.GroupMembers)

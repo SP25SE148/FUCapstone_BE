@@ -12,6 +12,8 @@ public class TopicAnalysisConfiguration : IEntityTypeConfiguration<TopicAnalysis
         builder.ToTable(TableNames.TopicAnalysis);
 
         builder.HasKey(t => t.Id);
+        builder.Property(t => t.Id).HasDefaultValue(Guid.NewGuid());
+
         builder.Property(t => t.AnalysisResult).IsRequired();
 
         builder.Property(t => t.CreatedDate).HasDefaultValue(DateTime.UtcNow);
