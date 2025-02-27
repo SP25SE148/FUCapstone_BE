@@ -5,7 +5,6 @@ using Identity.API.Data;
 using Identity.API.Extensions.Options;
 using Identity.API.Infrastuctures;
 using Identity.API.Infrastuctures.Authentication;
-using Identity.API.Infrastuctures.Cache;
 using Identity.API.Interfaces;
 using Identity.API.Mapper;
 using Identity.API.Models;
@@ -14,7 +13,6 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
-using ICacheService = Identity.API.Interfaces.ICacheService;
 
 namespace Identity.API.Extensions;
 
@@ -51,6 +49,7 @@ public static class ApplicationServiceExtensions
 
         services.AddHttpContextAccessor();
 
+        services.AddTransient<IJwtTokenService, JwtTokenService>();
         services.AddScoped<ICurrentUser, CurrentUser>();
 
         return services;
@@ -112,18 +111,5 @@ public static class ApplicationServiceExtensions
 
         services.AddAuthorization();
         //services.AddScoped<CustomJwtBearerEvents>();
-    }
-
-    public static void AddServicesInfrastructure(this IServiceCollection services)
-        => services.AddTransient<IJwtTokenService, JwtTokenService>()
-            .AddTransient<ICacheService, CacheService>();
-
-    public static void AddRedisInfrastructure(this IServiceCollection services, IConfiguration configuration)
-    {
-        services.AddStackExchangeRedisCache(redisOptions =>
-        {
-            var connectionString = configuration.GetConnectionString("Redis");
-            redisOptions.Configuration = connectionString;
-        });
     }
 }

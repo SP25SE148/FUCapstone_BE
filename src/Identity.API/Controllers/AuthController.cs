@@ -1,5 +1,6 @@
 ﻿using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
+using FUC.Common.Abstractions;
 using FUC.Common.Payloads;
 using FUC.Common.Shared;
 using Identity.API.Interfaces;

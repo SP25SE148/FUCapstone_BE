@@ -40,7 +40,7 @@ public static class ServiceCollectionExtensions
                                 Type = ReferenceType.SecurityScheme,
                                 Id = "Bearer"
                             }
-                        }, new string[] {}
+                        }, Array.Empty<string>()
                     }
                 });
             }

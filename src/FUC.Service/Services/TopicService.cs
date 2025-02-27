@@ -1,4 +1,4 @@
-﻿using System.Text.Json;
+using System.Text.Json;
 using Amazon.S3;
 using FUC.Common.Abstractions;
 using FUC.Common.Constants;
@@ -27,13 +27,14 @@ public class TopicService(
     ICurrentUser currentUser,
     IUnitOfWork<FucDbContext> unitOfWork,
     IRepository<Topic> topicRepository,
-    IRepository<TopicAnalysis> topicAnlysisRepository,
+    IRepository<TopicAppraisal> topicAppraisalRepository,
+    IRepository<TopicAnalysis> topicAnalysisRepository,
     IRepository<Supervisor> supervisorRepository,
     IRepository<Capstone> capstoneRepository,
-    IRepository<BusinessArea> bussinessRepository,
-    IRepository<TopicAppraisal> topicAppraisalRepository,
+    IRepository<BusinessArea> businessRepository,
     S3BucketConfiguration s3BucketConfiguration,
     ISemesterService semesterService,
+    ICacheService cache,
     IIntegrationEventLogService integrationEventLogService) : ITopicService
 {
     private const int MaxTopicsForCoSupervisors = 3;
@@ -59,8 +60,11 @@ public class TopicService(
             request.PageNumber,
             request.PageSize,
             x => x.OrderByDescending(x => x.CreatedDate),
-            x => x.Include(x => x.MainSupervisor)
-                .Include(x => x.BusinessArea),
+            x => x.AsSplitQuery()
+                .Include(x => x.MainSupervisor)
+                .Include(x => x.BusinessArea)
+                .Include(x => x.CoSupervisors)
+                    .ThenInclude(c => c.Supervisor),
             x => new TopicResponse
             {
                 Id = x.Id.ToString(),
@@ -78,20 +82,67 @@ public class TopicService(
                 BusinessAreaName = x.BusinessArea.Name,
                 CampusId = x.CampusId,
                 SemesterId = x.SemesterId,
-                CapstoneId = x.CapstoneId
+                CapstoneId = x.CapstoneId,
+                CoSupervisors = x.CoSupervisors.Select(x => new CoSupervisorDto
+                {
+                    SupervisorEmail = x.Supervisor.Email,
+                    SupervisorName = x.Supervisor.FullName,
+                }).ToList(),
             });
 
         return OperationResult.Success(topics);
     }
 
-    public async Task<OperationResult<Guid>> CreateTopic(CreateTopicRequest request,
+    public async Task<OperationResult> SemanticTopic(Guid topicId, bool withCurrentSemester, CancellationToken cancellationToken) 
+    {
+        try
+        {
+            var key = $"processing/{topicId.ToString()}";
+            var isInprogress = await cache.GetAsync<object>(key, cancellationToken);
+
+            if (isInprogress != null)
+            {
+                return OperationResult.Failure(new Error("Topic.Error", "Topic is in semantic progressing. Try it later!"));
+            }
+
+            var currentSemester = await semesterService.GetCurrentSemesterAsync();
+
+            if (currentSemester.IsFailure) 
+            {
+                return OperationResult.Failure(currentSemester.Error);
+            }
+
+            var semesterIds = withCurrentSemester
+                ? new List<string> { currentSemester.Value.Id }
+                : await semesterService.GetPreviouseSemesterIds(currentSemester.Value.StartDate);
+
+            integrationEventLogService.SendEvent(new SemanticTopicEvent
+            {
+                TopicId = topicId.ToString(),
+                IsCurrentSemester = withCurrentSemester,
+                SemesterIds = semesterIds,
+                ProcessedBy = currentUser.Email,
+            });
+
+            await unitOfWork.SaveChangesAsync(cancellationToken);
+
+            return OperationResult.Success();
+        }
+        catch (Exception ex)
+        {
+            logger.LogError("Can not send the semantic event with error: {Error}", ex.Message);
+            return OperationResult.Failure(new Error("Topic.Error", "Semantic topic was fail."));
+        } 
+    }
+
+    public async Task<OperationResult<Guid>> CreateTopic(CreateTopicRequest request, 
         CancellationToken cancellationToken)
     {
         var mainSupervisor = await supervisorRepository.GetAsync(s => s.Email == currentUser.Email, cancellationToken);
 
         if (mainSupervisor == null)
         {
-            logger.LogError("Create Topic fail with error: {SupervisorId} does not exist", currentUser.Id);
+            logger.LogError("Create Topic fail with error: {SupervisorId} does not exist", currentUser.Id);                                     
             return OperationResult.Failure<Guid>(new Error("Topic.Error", "Supervisor does not exist."));
         }
 
@@ -101,7 +152,7 @@ public class TopicService(
             return OperationResult.Failure<Guid>(new Error("Topic.Error", "Supervisor is not available."));
         }
 
-        if (!await bussinessRepository.AnyAsync(b => b.Id == request.BusinessAreaId, cancellationToken))
+        if (!await businessRepository.AnyAsync(b => b.Id == request.BusinessAreaId, cancellationToken))
         {
             logger.LogError("Create Topic fail with error: {BusinessArea} does not exist", request.BusinessAreaId);
             return OperationResult.Failure<Guid>(new Error("Topic.Error", "BusinessArea does not exist."));
@@ -167,9 +218,12 @@ public class TopicService(
 
             topicRepository.Insert(topic);
 
-            integrationEventLogService.SendEvent(new SemanticProcessingForCreatedTopicEvent
+            integrationEventLogService.SendEvent(new SemanticTopicEvent
             {
-                TopicId = topic.Id.ToString()
+                TopicId = topic.Id.ToString(),
+                SemesterIds = await semesterService.GetPreviouseSemesterIds(getCurrentSemesterResult.Value.StartDate),
+                ProcessedBy = currentUser.Email,
+                IsCurrentSemester = false
             });
 
             await unitOfWork.SaveChangesAsync(cancellationToken);
@@ -192,10 +246,43 @@ public class TopicService(
         }
     }
 
-    public async Task<OperationResult<List<TopicStatisticResponse>>> GetTopicAnalysises(Guid topicId,
+    public async Task<OperationResult<string>> PresentTopicPresignedUrl(Guid topicId, CancellationToken cancellationToken)
+    {
+        var topic = await topicRepository.GetAsync(t => t.Id == topicId, cancellationToken);
+
+        if (topic == null)
+        {
+            return OperationResult.Failure<string>(new Error("Topic.Error", "Topic does not exist."));
+        }
+
+        try
+        {
+            var cacheKey = string.Join("/", s3BucketConfiguration.FUCTopicBucket, topic.FileUrl);
+
+            var presignedUrl = await cache.GetAsync<string>(cacheKey, default);
+
+            if (presignedUrl is null)
+            {
+                presignedUrl = await s3Service.GetPresignedUrl(s3BucketConfiguration.FUCTopicBucket, 
+                    topic.FileUrl, 1440, 
+                    isUpload: false);
+
+                await cache.SetTimeoutAsync(cacheKey, presignedUrl, TimeSpan.FromDays(1), default);
+            }
+
+            return OperationResult.Success(presignedUrl);
+        }
+        catch (Exception ex)
+        {
+            logger.LogError("Get presignUrl for topic failed with error {Error}", ex.Message);
+            return OperationResult.Failure<string>(new Error("Topic.Error", "Get presigned url of topic fail."));
+        }
+    }
+
+    public async Task<OperationResult<List<TopicStatisticResponse>>> GetTopicAnalysises(Guid topicId, 
         CancellationToken cancellationToken)
     {
-        var topicAnalysises = await topicAnlysisRepository.FindAsync(x => x.TopicId == topicId,
+        var topicAnalysises = await topicAnalysisRepository.FindAsync(x => x.TopicId == topicId,
             orderBy: x => x.OrderByDescending(x => x.CreatedDate),
             cancellationToken);
 
@@ -230,15 +317,13 @@ public class TopicService(
                 });
             }
 
-#pragma warning disable S3358 // Ternary operators should not be nested
             result.Add(new TopicStatisticResponse
             {
                 Analysises = analysisResponse,
                 Over80Ratio = analysisResponse.Count != 0 ? (double)over80ratio / analysisResponse.Count : 0,
                 Over90Ratio = analysisResponse.Count != 0 ? (double)over90ratio / analysisResponse.Count : 0,
-                StatusAnalysis = over90ratio > 0 ? "Fail" : over80ratio > 0 ? "Consider" : "Pass"
+                
             });
-#pragma warning restore S3358 // Ternary operators should not be nested
         }
 
         return OperationResult.Success(result);
@@ -317,8 +402,9 @@ public class TopicService(
         return OperationResult.Success();
     }
 
-    private async Task<List<(string SupervisorId, string SupervisorEmail)>> GetAvailableSupervisorsForSupportingTopic(
-        List<string> coSupervisorEmails, CancellationToken cancellationToken)
+    private async Task<List<(string SupervisorId, string SupervisorEmail)>> 
+        GetAvailableSupervisorsForSupportingTopic(List<string> coSupervisorEmails,
+        CancellationToken cancellationToken)
     {
         var result = new List<(string, string)>();
 
@@ -345,7 +431,7 @@ public class TopicService(
 
     public async Task<OperationResult<List<BusinessAreaResponse>>> GetAllBusinessAreas()
     {
-        var queryable = from ba in bussinessRepository.GetQueryable()
+        var queryable = from ba in businessRepository.GetQueryable()
             select new BusinessAreaResponse
             {
                 Id = ba.Id,

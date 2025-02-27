@@ -60,6 +60,7 @@ public static class ServiceCollectionExtensions
         services.AddScoped<IStudentService, StudentService>();
         services.AddScoped<ISupervisorService, SupervisorService>();
         services.AddScoped<ITopicService, TopicService>();
+        services.AddScoped<IDocumentsService, DocumentsService>();
 
         // Add EventLogService
         services.AddEventConsumerConfiguration(configuration);

@@ -112,4 +112,23 @@ public sealed class SemesterService(ILogger<SemesterService> logger ,
 
         return OperationResult.Success(currentSemester);
     }
+
+    public async Task<List<string>> GetPreviouseSemesterIds(DateTime? startDayOfCurrentSemester = null)
+    {
+        if (startDayOfCurrentSemester is null)
+        {
+            var currentSemester = await GetCurrentSemesterAsync();
+            startDayOfCurrentSemester = currentSemester.Value.StartDate;
+        }
+
+        var previousSemesterIds = await _semesterRepository.FindAsync(
+            predicate: s => s.StartDate < startDayOfCurrentSemester,
+            null,
+            orderBy: s => s.OrderByDescending(s => s.StartDate),
+            selector: x => x.Id,
+            top: 3,
+            default);
+
+        return [.. previousSemesterIds];
+    }
 }

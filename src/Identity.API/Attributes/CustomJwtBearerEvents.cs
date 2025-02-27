@@ -1,6 +1,6 @@
 ﻿using System.Security.Claims;
+using FUC.Common.Abstractions;
 using FUC.Common.Payloads;
-using Identity.API.Interfaces;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.JsonWebTokens;
 

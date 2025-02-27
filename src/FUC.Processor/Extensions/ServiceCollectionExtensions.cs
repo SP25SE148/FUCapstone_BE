@@ -1,4 +1,5 @@
-﻿using FUC.Common.IntegrationEventLog.BackgroundJobs;
+﻿using FUC.Common.Cache;
+using FUC.Common.IntegrationEventLog.BackgroundJobs;
 using FUC.Common.Options;
 using FUC.Processor.Abstractions;
 using FUC.Processor.Data;
@@ -61,6 +62,8 @@ public static class ServiceCollectionExtensions
             .ConfigureHttpClient(c => c.BaseAddress = new Uri("http://localhost:9000"));
 
         services.AddSingleton<UsersTracker>();
+
+        services.AddCacheConfiguration(configuration);
 
         return services;
     }

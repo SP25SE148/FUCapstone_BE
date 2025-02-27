@@ -3,7 +3,7 @@ using Microsoft.Extensions.Caching.Distributed;
 using System.Collections.Concurrent;
 using System.Text.Json;
 
-namespace Gateway.API.Infrastuctures.Cache;
+namespace FUC.Common.Cache;
 
 public class CacheService : ICacheService
 {
@@ -31,7 +31,7 @@ public class CacheService : ICacheService
     {
         var options = new DistributedCacheEntryOptions
         {
-            AbsoluteExpirationRelativeToNow = absoluteExpiration, 
+            AbsoluteExpirationRelativeToNow = absoluteExpiration,
         };
 
         var cacheValue = JsonSerializer.Serialize(value);
@@ -42,7 +42,6 @@ public class CacheService : ICacheService
     {
         string cacheValue = JsonSerializer.Serialize(value);
         await _distributedCache.SetStringAsync(key, cacheValue, cancellationToken);
-
         CacheKeys.TryAdd(key, false);
     }
 
