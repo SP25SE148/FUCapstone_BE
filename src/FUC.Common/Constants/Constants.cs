@@ -15,3 +15,8 @@ public static class UserRoles
     public const string Manager = nameof(Manager);
     public const string Admin = nameof(Admin);
 }
+
+public static class TopicAppraisalRequirement
+{
+    public const int SupervisorAppraisalMinimum = 2;
+}

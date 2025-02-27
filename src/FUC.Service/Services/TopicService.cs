@@ -1,6 +1,7 @@
 ﻿using System.Text.Json;
 using Amazon.S3;
 using FUC.Common.Abstractions;
+using FUC.Common.Constants;
 using FUC.Common.Contracts;
 using FUC.Common.IntegrationEventLog.Services;
 using FUC.Common.Payloads;
@@ -20,7 +21,8 @@ using Microsoft.Extensions.Logging;
 
 namespace FUC.Service.Services;
 
-public class TopicService(ILogger<TopicService> logger,
+public class TopicService(
+    ILogger<TopicService> logger,
     IS3Service s3Service,
     ICurrentUser currentUser,
     IUnitOfWork<FucDbContext> unitOfWork,
@@ -29,6 +31,7 @@ public class TopicService(ILogger<TopicService> logger,
     IRepository<Supervisor> supervisorRepository,
     IRepository<Capstone> capstoneRepository,
     IRepository<BusinessArea> bussinessRepository,
+    IRepository<TopicAppraisal> topicAppraisalRepository,
     S3BucketConfiguration s3BucketConfiguration,
     ISemesterService semesterService,
     IIntegrationEventLogService integrationEventLogService) : ITopicService
@@ -39,20 +42,20 @@ public class TopicService(ILogger<TopicService> logger,
     {
         var topics = await topicRepository.FindPaginatedAsync(
             x => x.MainSupervisor.Email == request.MainSupervisorEmail &&
-            (string.IsNullOrEmpty(request.SearchTerm) ||
-            x.Code != null && x.Code.Contains(request.SearchTerm, StringComparison.OrdinalIgnoreCase) ||
-            x.EnglishName.Contains(request.SearchTerm, StringComparison.OrdinalIgnoreCase) ||
-            x.VietnameseName.Contains(request.SearchTerm, StringComparison.OrdinalIgnoreCase) ||
-            x.Abbreviation.Contains(request.SearchTerm, StringComparison.OrdinalIgnoreCase) ||
-            x.Description.Contains(request.SearchTerm, StringComparison.OrdinalIgnoreCase)) &&
-            (request.BusinessAreaName == "all" || x.BusinessArea.Name.Equals(request.BusinessAreaName,
-                StringComparison.OrdinalIgnoreCase)) &&
-            (request.DifficultyLevel == "all" || x.DifficultyLevel.ToString().Equals(request.DifficultyLevel,
-                StringComparison.OrdinalIgnoreCase)) &&
-            (request.Status == "all" || x.Status.ToString().Equals(request.Status,
-                StringComparison.OrdinalIgnoreCase)) &&
-            x.CapstoneId == request.CapstoneId &&
-            x.CampusId == request.CampusId,
+                 (string.IsNullOrEmpty(request.SearchTerm) ||
+                  x.Code != null && x.Code.Contains(request.SearchTerm, StringComparison.OrdinalIgnoreCase) ||
+                  x.EnglishName.Contains(request.SearchTerm, StringComparison.OrdinalIgnoreCase) ||
+                  x.VietnameseName.Contains(request.SearchTerm, StringComparison.OrdinalIgnoreCase) ||
+                  x.Abbreviation.Contains(request.SearchTerm, StringComparison.OrdinalIgnoreCase) ||
+                  x.Description.Contains(request.SearchTerm, StringComparison.OrdinalIgnoreCase)) &&
+                 (request.BusinessAreaName == "all" || x.BusinessArea.Name.Equals(request.BusinessAreaName,
+                     StringComparison.OrdinalIgnoreCase)) &&
+                 (request.DifficultyLevel == "all" || x.DifficultyLevel.ToString().Equals(request.DifficultyLevel,
+                     StringComparison.OrdinalIgnoreCase)) &&
+                 (request.Status == "all" || x.Status.ToString().Equals(request.Status,
+                     StringComparison.OrdinalIgnoreCase)) &&
+                 x.CapstoneId == request.CapstoneId &&
+                 x.CampusId == request.CampusId,
             request.PageNumber,
             request.PageSize,
             x => x.OrderByDescending(x => x.CreatedDate),
@@ -81,7 +84,8 @@ public class TopicService(ILogger<TopicService> logger,
         return OperationResult.Success(topics);
     }
 
-    public async Task<OperationResult<Guid>> CreateTopic(CreateTopicRequest request, CancellationToken cancellationToken)
+    public async Task<OperationResult<Guid>> CreateTopic(CreateTopicRequest request,
+        CancellationToken cancellationToken)
     {
         var mainSupervisor = await supervisorRepository.GetAsync(s => s.Email == currentUser.Email, cancellationToken);
 
@@ -111,10 +115,12 @@ public class TopicService(ILogger<TopicService> logger,
 
         if (request.CoSupervisorEmails.Any(x => x == currentUser.Email))
         {
-            return OperationResult.Failure<Guid>(new Error("Topic.Error", "The supervisor can not copporate topic himself."));
+            return OperationResult.Failure<Guid>(new Error("Topic.Error",
+                "The supervisor can not copporate topic himself."));
         }
 
-        var availableSupportSupervisors = await GetAvailableSupervisorsForSupportingTopic(request.CoSupervisorEmails, cancellationToken);
+        var availableSupportSupervisors =
+            await GetAvailableSupervisorsForSupportingTopic(request.CoSupervisorEmails, cancellationToken);
 
         if (availableSupportSupervisors.Count < request.CoSupervisorEmails.Count(x => !string.IsNullOrEmpty(x)))
         {
@@ -133,7 +139,8 @@ public class TopicService(ILogger<TopicService> logger,
             await unitOfWork.BeginTransactionAsync(cancellationToken);
 
             var topicId = Guid.NewGuid();
-            var key = $"{currentUser.CampusId}/{getCurrentSemesterResult.Value.Id}/{request.CapstoneId}/Pending/{topicId}";
+            var key =
+                $"{currentUser.CampusId}/{getCurrentSemesterResult.Value.Id}/{request.CapstoneId}/Pending/{topicId}";
 
             var topic = new Topic
             {
@@ -185,9 +192,10 @@ public class TopicService(ILogger<TopicService> logger,
         }
     }
 
-    public async Task<OperationResult<List<TopicStatisticResponse>>> GetTopicAnalysises(Guid topicId, CancellationToken cancellationToken)
+    public async Task<OperationResult<List<TopicStatisticResponse>>> GetTopicAnalysises(Guid topicId,
+        CancellationToken cancellationToken)
     {
-        var topicAnalysises = await topicAnlysisRepository.FindAsync(x => x.TopicId == topicId, 
+        var topicAnalysises = await topicAnlysisRepository.FindAsync(x => x.TopicId == topicId,
             orderBy: x => x.OrderByDescending(x => x.CreatedDate),
             cancellationToken);
 
@@ -204,12 +212,12 @@ public class TopicService(ILogger<TopicService> logger,
 
             foreach (var a in analysis!.MatchingTopics)
             {
-                if(a.Value.Similarity > 80)
+                if (a.Value.Similarity > 80)
                 {
                     over80ratio++;
-                }   
+                }
 
-                if(a.Value.Similarity > 90)
+                if (a.Value.Similarity > 90)
                 {
                     over90ratio++;
                 }
@@ -223,7 +231,8 @@ public class TopicService(ILogger<TopicService> logger,
             }
 
 #pragma warning disable S3358 // Ternary operators should not be nested
-            result.Add(new TopicStatisticResponse{
+            result.Add(new TopicStatisticResponse
+            {
                 Analysises = analysisResponse,
                 Over80Ratio = analysisResponse.Count != 0 ? (double)over80ratio / analysisResponse.Count : 0,
                 Over90Ratio = analysisResponse.Count != 0 ? (double)over90ratio / analysisResponse.Count : 0,
@@ -235,14 +244,88 @@ public class TopicService(ILogger<TopicService> logger,
         return OperationResult.Success(result);
     }
 
-    private async Task<List<(string SupervisorId, string SupervisorEmail)>> GetAvailableSupervisorsForSupportingTopic(List<string> coSupervisorEmails, CancellationToken cancellationToken)
+    public async Task<OperationResult> CreateTopicAppraisal(IReadOnlyList<string> supervisorEmail)
+    {
+        //TODO: Check the valid date to assign supervisors to topics
+
+        if (supervisorEmail.Count < TopicAppraisalRequirement.SupervisorAppraisalMinimum)
+            return OperationResult.Failure(new Error("Error.InvalidSupervisorAppraisalSize",
+                $"The Supervisor appraisal must be greater than {TopicAppraisalRequirement.SupervisorAppraisalMinimum}"));
+
+        var supervisorIdList = await (from s in supervisorRepository.GetQueryable()
+            where supervisorEmail.Contains(s.Email) &&
+                  s.IsAvailable &&
+                  s.MajorId.Equals(currentUser.MajorId)
+            // && s.CampusId.Equals(currentUser.CampusId)
+            select new { s.Id }).ToListAsync();
+        //check if supervisor list is null or empty!
+        if (supervisorIdList.Count < 1)
+        {
+            logger.LogError("Supervisors was not found !");
+            return OperationResult.Failure(Error.NullValue);
+        }
+
+        IList<Topic> topicList = await topicRepository
+            .FindAsync(t => t.Status.Equals(TopicStatus.Pending),
+                t => t.Include(t => t.MainSupervisor)
+                    .Include(t => t.CoSupervisors));
+
+        // check if topics list is null or empty!
+        if (topicList.Count < 1)
+        {
+            logger.LogError($"Topics with status Pending was not found !");
+            return OperationResult.Failure(Error.NullValue);
+        }
+
+        // Shuffle the supervisor id list 
+        var rand = new Random();
+        var shuffledSupervisorIdList = supervisorIdList.OrderBy(_ => rand.Next()).ToList();
+        int index = 0;
+        int supervisorCount = shuffledSupervisorIdList.Count;
+
+        foreach (Topic topic in topicList)
+        {
+            int selectedSupervisorIdTemp = 0;
+            while (selectedSupervisorIdTemp < 2)
+            {
+                if (index >= supervisorCount)
+                {
+                    index = 0;
+                    break;
+                }
+
+                string? selectedSupervisorId =
+                    shuffledSupervisorIdList[rand.Next(index++, supervisorCount - 1)].ToString();
+
+                if (string.IsNullOrEmpty(selectedSupervisorId) || selectedSupervisorId.Equals(topic.MainSupervisorId))
+                {
+                    continue;
+                }
+
+                topicAppraisalRepository.Insert(new TopicAppraisal
+                {
+                    Id = Guid.NewGuid(),
+                    SupervisorId = selectedSupervisorId,
+                    TopicId = topic.Id
+                });
+                selectedSupervisorIdTemp++;
+            }
+        }
+
+        await unitOfWork.SaveChangesAsync();
+
+        return OperationResult.Success();
+    }
+
+    private async Task<List<(string SupervisorId, string SupervisorEmail)>> GetAvailableSupervisorsForSupportingTopic(
+        List<string> coSupervisorEmails, CancellationToken cancellationToken)
     {
         var result = new List<(string, string)>();
 
         var query = from s in supervisorRepository.GetQueryable()
-                    where coSupervisorEmails.Contains(s.Email) &&
-                    s.CoSupervisors.Count < MaxTopicsForCoSupervisors
-                    select new { s.Id, s.Email };
+            where coSupervisorEmails.Contains(s.Email) &&
+                  s.CoSupervisors.Count < MaxTopicsForCoSupervisors
+            select new { s.Id, s.Email };
 
         (await query.ToListAsync(cancellationToken))
             .ForEach(s => result.Add((s.Id.ToString(), s.Email)));
@@ -254,7 +337,8 @@ public class TopicService(ILogger<TopicService> logger,
     {
         using var stream = file.OpenReadStream();
 
-        var s3Response = await s3Service.SaveToS3(s3BucketConfiguration.FUCTopicBucket, key, file.ContentType, stream, cancellationToken);
+        var s3Response = await s3Service.SaveToS3(s3BucketConfiguration.FUCTopicBucket, key, file.ContentType, stream,
+            cancellationToken);
 
         return s3Response.HttpStatusCode == System.Net.HttpStatusCode.OK;
     }
@@ -262,12 +346,12 @@ public class TopicService(ILogger<TopicService> logger,
     public async Task<OperationResult<List<BusinessAreaResponse>>> GetAllBusinessAreas()
     {
         var queryable = from ba in bussinessRepository.GetQueryable()
-                        select new BusinessAreaResponse
-                        {
-                            Id = ba.Id,
-                            Description = ba.Description,
-                            Name = ba.Name
-                        };
+            select new BusinessAreaResponse
+            {
+                Id = ba.Id,
+                Description = ba.Description,
+                Name = ba.Name
+            };
         var businessAreas = await queryable.ToListAsync();
 
         if (businessAreas.Count != 0)

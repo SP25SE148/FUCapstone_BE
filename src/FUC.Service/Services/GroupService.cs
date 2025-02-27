@@ -31,10 +31,10 @@ public class GroupService(
     ICapstoneService capstoneService) : IGroupService
 {
     private readonly IUnitOfWork<FucDbContext> _uow = uow ?? throw new ArgumentNullException(nameof(uow));
-    
+
     private readonly IRepository<Group> _groupRepository =
         uow.GetRepository<Group>() ?? throw new ArgumentNullException(nameof(uow));
-    
+
     private readonly IRepository<Student> _studentRepository =
         uow.GetRepository<Student>() ?? throw new ArgumentNullException(nameof(uow));
 
@@ -74,19 +74,16 @@ public class GroupService(
         await _uow.BeginTransactionAsync();
         var newGroup = new Group()
         {
-            Id = Guid.NewGuid(),
             CampusId = leader.CampusId,
             CapstoneId = leader.CapstoneId,
             MajorId = leader.MajorId,
             SemesterId = currentSemester.Value.Id,
-            Status = GroupStatus.Pending
         };
-        
+
         _groupRepository.Insert(newGroup);
 
         _groupMemberRepository.Insert(new()
         {
-            Id = Guid.NewGuid(),
             GroupId = newGroup.Id,
             StudentId = leader.Id,
             IsLeader = true,
@@ -101,6 +98,7 @@ public class GroupService(
                 _groupMemberRepository.Update(groupMember);
             }
         }
+
         await _uow.CommitAsync();
         return newGroup.Id;
     }
@@ -108,10 +106,10 @@ public class GroupService(
     public async Task<OperationResult<IEnumerable<GroupResponse>>> GetAllGroupAsync()
     {
         var groups = await _groupRepository.GetAllAsync(
-            CreateIncludeForGroupResponse(), 
+            CreateIncludeForGroupResponse(),
             g => g.OrderBy(group => group.CreatedDate),
             CreateSelectorForGroupResponse());
-        
+
         return groups.Count > 0
             ? OperationResult.Success<IEnumerable<GroupResponse>>(groups)
             : OperationResult.Failure<IEnumerable<GroupResponse>>(Error.NullValue);
@@ -124,11 +122,11 @@ public class GroupService(
             CreateIncludeForGroupResponse(),
             g => g.OrderBy(group => group.CreatedDate),
             CreateSelectorForGroupResponse()
-            );
+        );
 
         return groups.Count > 0
             ? OperationResult.Success<IEnumerable<GroupResponse>>(groups)
-             : OperationResult.Failure<IEnumerable<GroupResponse>>(Error.NullValue);
+            : OperationResult.Failure<IEnumerable<GroupResponse>>(Error.NullValue);
     }
 
     public async Task<OperationResult<IEnumerable<GroupResponse>>> GetAllGroupByMajorIdAsync(string majorId)
@@ -167,7 +165,7 @@ public class GroupService(
 
         return groups.Count > 0
             ? OperationResult.Success<IEnumerable<GroupResponse>>(groups)
-             : OperationResult.Failure<IEnumerable<GroupResponse>>(Error.NullValue);
+            : OperationResult.Failure<IEnumerable<GroupResponse>>(Error.NullValue);
     }
 
     public async Task<OperationResult<GroupResponse>> GetGroupByIdAsync(Guid id)
@@ -197,9 +195,10 @@ public class GroupService(
         {
             return OperationResult.Failure<GroupResponse>(Error.NullValue);
         }
+
         var groupMembers = group.GroupMembers.Where(gm => gm.Status.Equals(GroupMemberStatus.Accepted) ||
-                                                         gm.Status.Equals(GroupMemberStatus.UnderReview)).ToList();
-        group.GroupMembers =  groupMembers;
+                                                          gm.Status.Equals(GroupMemberStatus.UnderReview)).ToList();
+        group.GroupMembers = groupMembers;
 
         var groupResponse = new GroupResponse
         {
@@ -222,7 +221,7 @@ public class GroupService(
                 StudentEmail = gm.Student.Email
             })
         };
-         return OperationResult.Success(groupResponse);
+        return OperationResult.Success(groupResponse);
     }
 
     public async Task<OperationResult> UpdateGroupStatusAsync()
@@ -233,8 +232,8 @@ public class GroupService(
                 gm => gm.StudentId.Equals(currentUser.UserCode) && gm.IsLeader,
                 default))?.GroupId;
         if (groupId is null)
-            return OperationResult.Failure(Error.NullValue); 
-        
+            return OperationResult.Failure(Error.NullValue);
+
         var group = await _groupRepository.GetAsync(
             g => g.Id.Equals(groupId),
             true,
@@ -248,28 +247,32 @@ public class GroupService(
             return OperationResult.Failure(new Error("Error.UpdateFailed",
                 $"Can not update group status with group id {group.Id} from {group.Status.ToString()}"));
 
-        group.Status = group.GroupMembers.Where(gm => gm.Status.Equals(GroupMemberStatus.Accepted)).ToList().Count < capstone.Value.MinMember ||
-                       group.GroupMembers.Where(gm => gm.Status.Equals(GroupMemberStatus.Accepted)).ToList().Count > capstone.Value.MaxMember
+        group.Status = group.GroupMembers.Where(gm => gm.Status.Equals(GroupMemberStatus.Accepted)).ToList().Count <
+                       capstone.Value.MinMember ||
+                       group.GroupMembers.Where(gm => gm.Status.Equals(GroupMemberStatus.Accepted)).ToList().Count >
+                       capstone.Value.MaxMember
             ? GroupStatus.Rejected
             : GroupStatus.InProgress;
-        
 
-        var groupCodeList = (await _groupRepository.FindAsync(g => string.IsNullOrEmpty(g.GroupCode))).Select(g => g.GroupCode).ToList();
+
+        var groupCodeList = (await _groupRepository.FindAsync(g => string.IsNullOrEmpty(g.GroupCode)))
+            .Select(g => g.GroupCode).ToList();
         var random = new Random();
-        
+
         if (group.Status.Equals(GroupStatus.InProgress))
         {
             if (groupCodeList.Count < 1)
             {
-                group.GroupCode = $"{group.SemesterId}{group.MajorId}{random.Next(1,9999)}";
+                group.GroupCode = $"{group.SemesterId}{group.MajorId}{random.Next(1, 9999)}";
             }
             else
             {
                 do
                 {
-                    group.GroupCode = $"{group.SemesterId}{group.MajorId}{random.Next(1,9999)}";
-                } while (groupCodeList.Exists(x => x.Equals(group.GroupCode)));   
+                    group.GroupCode = $"{group.SemesterId}{group.MajorId}{random.Next(1, 9999)}";
+                } while (groupCodeList.Exists(x => x.Equals(group.GroupCode)));
             }
+
             await _uow.SaveChangesAsync();
             return OperationResult.Success();
         }
@@ -311,6 +314,7 @@ public class GroupService(
                 Status = gm.Status.ToString(),
                 GroupId = gm.GroupId,
                 StudentEmail = gm.Student.Email
-            })};
+            })
+        };
     }
 }

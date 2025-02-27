@@ -22,28 +22,29 @@ public sealed class StudentConfiguration : IEntityTypeConfiguration<Student>
         builder.Property(s => s.Email).IsRequired();
 
         builder.Property(s => s.Status).HasConversion(
-            v => v.ToString(),
-            v => (StudentStatus)Enum.Parse(typeof(StudentStatus), v));
+                v => v.ToString(),
+                v => (StudentStatus)Enum.Parse(typeof(StudentStatus), v))
+            .HasDefaultValue(StudentStatus.InProgress);
 
         builder.Property(s => s.CreatedBy).IsRequired();
         builder.Property(s => s.CreatedDate).IsRequired();
-        
+
         // relationship config 
         builder.HasOne(s => s.Major)
             .WithMany(m => m.Students)
             .HasForeignKey(s => s.MajorId)
             .OnDelete(DeleteBehavior.Restrict);
-        
+
         builder.HasOne(s => s.Campus)
             .WithMany(m => m.Students)
             .HasForeignKey(s => s.CampusId)
             .OnDelete(DeleteBehavior.Restrict);
-        
+
         builder.HasOne(s => s.Capstone)
             .WithMany(m => m.Students)
             .HasForeignKey(s => s.CapstoneId)
             .OnDelete(DeleteBehavior.Restrict);
-        
+
         builder.HasMany(s => s.GroupMembers)
             .WithOne(gm => gm.Student)
             .HasForeignKey(gm => gm.StudentId)
@@ -53,6 +54,5 @@ public sealed class StudentConfiguration : IEntityTypeConfiguration<Student>
             .WithMany(b => b.Students)
             .HasForeignKey(s => s.BusinessAreaId)
             .OnDelete(DeleteBehavior.Restrict);
-        
     }
 }

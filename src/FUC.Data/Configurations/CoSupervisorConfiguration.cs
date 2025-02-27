@@ -12,6 +12,7 @@ public sealed class CoSupervisorConfiguration : IEntityTypeConfiguration<CoSuper
     {
         builder.ToTable(TableNames.CoSupervisor);
         builder.HasKey(cs => cs.Id);
+        builder.Property(cs => cs.Id).HasDefaultValue(Guid.NewGuid());
 
         builder.HasOne(cs => cs.Supervisor)
             .WithMany(s => s.CoSupervisors)

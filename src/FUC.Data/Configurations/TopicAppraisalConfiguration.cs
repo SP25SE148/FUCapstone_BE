@@ -12,10 +12,12 @@ public sealed class TopicAppraisalConfiguration : IEntityTypeConfiguration<Topic
     {
         builder.ToTable(TableNames.TopicAppraisal);
         builder.HasKey(t => t.Id);
+        builder.Property(t => t.Id).HasDefaultValue(Guid.NewGuid());
         builder.Property(t => t.Status)
             .HasConversion(
                 v => v.ToString(),
-                v => (TopicAppraisalStatus)Enum.Parse(typeof(TopicAppraisalStatus), v));
+                v => (TopicAppraisalStatus)Enum.Parse(typeof(TopicAppraisalStatus), v))
+            .HasDefaultValue(TopicAppraisalStatus.Pending);
 
         builder.HasOne(t => t.Supervisor)
             .WithMany(s => s.TopicAppraisals)
@@ -26,7 +28,5 @@ public sealed class TopicAppraisalConfiguration : IEntityTypeConfiguration<Topic
             .WithMany(t => t.TopicAppraisals)
             .HasForeignKey(t => t.TopicId)
             .OnDelete(DeleteBehavior.Restrict);
-
-
     }
 }

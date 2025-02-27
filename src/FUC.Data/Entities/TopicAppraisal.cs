@@ -1,8 +1,9 @@
-﻿using FUC.Data.Enums;
+﻿using FUC.Data.Abstractions;
+using FUC.Data.Enums;
 
 namespace FUC.Data.Entities;
 
-public class TopicAppraisal
+public sealed class TopicAppraisal : AuditableSoftDeleteEntity
 {
     public Guid Id { get; set; }
     public string SupervisorId { get; set; }
