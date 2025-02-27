@@ -1,4 +1,5 @@
-﻿using FUC.Data.Entities;
+﻿using FUC.Data.Constants;
+using FUC.Data.Entities;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
@@ -8,12 +9,12 @@ public sealed class SupervisorGroupAssignmentConfiguration : IEntityTypeConfigur
 {
     public void Configure(EntityTypeBuilder<SupervisorGroupAssignment> builder)
     {
-        builder.ToTable("SupervisorGroupAssignment");
+        builder.ToTable(TableNames.SupervisorGroupAssignment);
 
         builder.HasKey(s => s.Id);
 
         builder.Property(sga => sga.Id)
-            .IsRequired();
+            .IsRequired().HasDefaultValue(Guid.NewGuid());
 
         builder.Property(sga => sga.SupervisorId)
             .IsRequired();

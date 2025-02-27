@@ -13,14 +13,16 @@ public sealed class TopicConfiguration : IEntityTypeConfiguration<Topic>
         builder.ToTable(TableNames.Topic);
 
         builder.HasKey(t => t.Id);
+        builder.Property(t => t.Id).HasDefaultValue(Guid.NewGuid());
 
         builder.Property(t => t.FileUrl).IsRequired();
         builder.Property(t => t.FileName).IsRequired();
         builder.Property(t => t.Status)
             .HasConversion(
                 v => v.ToString(),
-                v => (TopicStatus)Enum.Parse(typeof(TopicStatus), v));
-        
+                v => (TopicStatus)Enum.Parse(typeof(TopicStatus), v))
+            .HasDefaultValue(TopicStatus.Pending);
+
         builder.Property(t => t.DifficultyLevel)
             .HasConversion(
                 v => v.ToString(),
