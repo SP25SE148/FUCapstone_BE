@@ -1,4 +1,4 @@
-﻿using FUC.Common.Shared;
+using FUC.Common.Shared;
 using FUC.Service.DTOs.BusinessAreaDTO;
 using FUC.Service.DTOs.TopicDTO;
 

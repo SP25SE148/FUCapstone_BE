@@ -1,4 +1,4 @@
-﻿using System.Text.Json;
+using System.Text.Json;
 using Amazon.S3;
 using FUC.Common.Abstractions;
 using FUC.Common.Constants;
