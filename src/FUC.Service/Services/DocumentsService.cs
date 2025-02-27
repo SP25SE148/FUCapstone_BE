@@ -52,6 +52,7 @@ public class DocumentsService(ILogger<DocumentsService> logger,
         }
     }
 
+    // View template documents
     public async Task<OperationResult<string>> PresentTemplateDocumentFilePresignedUrl(Guid templateId, CancellationToken cancellationToken)
     {
         var template = await templateDocumentRepository.GetAsync(x => x.Id == templateId, cancellationToken);

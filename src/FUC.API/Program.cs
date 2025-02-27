@@ -1,10 +1,10 @@
 using FUC.API.Extensions;
 using FUC.API.Middlewares;
 using FUC.API.SeedData;
+using FUC.Common.Cache;
 using FUC.Data.Extensions;
 using FUC.Service.Extensions;
 using FUC.Service.Extensions.Options;
-using Microsoft.Extensions.DependencyInjection;
 using Serilog;
 
 Log.Logger = new LoggerConfiguration()
@@ -35,6 +35,7 @@ try
 
     // Add DI for FUC.Data
     builder.Services.AddDataAccessServices(builder.Configuration);
+    builder.Services.AddCacheConfiguration(builder.Configuration);
 
     // Add DI for FUC.Service 
     builder.Services.AddBusinessLogicServices(builder.Configuration);

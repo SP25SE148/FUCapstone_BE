@@ -17,6 +17,14 @@ public class TopicsController(ITopicService topicService) : ApiController
         return result.IsSuccess ? Ok(result) : HandleFailure(result);
     }
 
+    [HttpGet("presigned/{topicId}")]
+    public async Task<IActionResult> GetPresignedUrlTopic(string topicId)
+    {
+        var result = await topicService.PresentTopicPresignedUrl(Guid.Parse(topicId), default);
+
+        return result.IsSuccess ? Ok(result) : HandleFailure(result);
+    }
+
     [HttpPost]
     [Authorize(Roles = $"{UserRoles.Supervisor}")]
     public async Task<IActionResult> CreateTopic([FromForm] CreateTopicRequest request)
@@ -29,9 +37,28 @@ public class TopicsController(ITopicService topicService) : ApiController
     }
 
     [HttpGet("statistic/{topId}")]
+    [Authorize(Roles = $"{UserRoles.Supervisor},{UserRoles.Manager}")]
     public async Task<IActionResult> GetStatisticTopics(string topId)
     {
         var result = await topicService.GetTopicAnalysises(Guid.Parse(topId), default);
+
+        return result.IsSuccess ? Ok(result) : HandleFailure(result);
+    }
+
+    [HttpPost("semantic/{id}")]
+    [Authorize(Roles = $"{UserRoles.Supervisor}")]
+    public async Task<IActionResult> SemanticTopic(string id)
+    {
+        var result = await topicService.SemanticTopic(Guid.Parse(id), withCurrentSemester: false, default);
+
+        return result.IsSuccess ? Ok(result) : HandleFailure(result);
+    }
+
+    [HttpPost("semantic/appraisal/{id}")]
+    [Authorize(Roles = $"{UserRoles.Manager}")]
+    public async Task<IActionResult> SemanticTopicReviewer(string id)
+    {
+        var result = await topicService.SemanticTopic(Guid.Parse(id), withCurrentSemester: true, default);
 
         return result.IsSuccess ? Ok(result) : HandleFailure(result);
     }

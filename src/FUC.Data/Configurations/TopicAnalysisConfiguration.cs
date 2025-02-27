@@ -18,6 +18,8 @@ public class TopicAnalysisConfiguration : IEntityTypeConfiguration<TopicAnalysis
 
         builder.Property(t => t.CreatedDate).HasDefaultValue(DateTime.UtcNow);
 
+        builder.Property(t => t.ProcessedBy).IsRequired();  
+
         builder.HasOne(ta => ta.Topic)
             .WithMany(t => t.TopicAnalyses)
             .HasForeignKey(ta => ta.TopicId)

@@ -1,3 +1,4 @@
+using FUC.Common.Cache;
 using Identity.API.Extensions;
 using Identity.API.Middlewares;
 using Identity.API.SeedData;
@@ -60,8 +61,7 @@ try
     // DI Services
     builder.Services.AddApplicationServices(builder.Configuration);
     builder.Services.AddIdentityServices(builder.Configuration);
-    builder.Services.AddRedisInfrastructure(builder.Configuration);
-    builder.Services.AddServicesInfrastructure();
+    builder.Services.AddCacheConfiguration(builder.Configuration);
 
     var app = builder.Build();
 

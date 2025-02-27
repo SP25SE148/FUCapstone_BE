@@ -12,8 +12,8 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace FUC.Data.Migrations
 {
     [DbContext(typeof(FucDbContext))]
-    [Migration("20250225155855_db_v0.01")]
-    partial class db_v001
+    [Migration("20250227133419_đb_v0.01")]
+    partial class đb_v001
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -57,7 +57,8 @@ namespace FUC.Data.Migrations
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid");
+                        .HasColumnType("uuid")
+                        .HasDefaultValue(new Guid("b537ea7c-2056-489e-9b3a-9acc599862c8"));
 
                     b.Property<string>("CreatedBy")
                         .IsRequired()
@@ -188,7 +189,8 @@ namespace FUC.Data.Migrations
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid");
+                        .HasColumnType("uuid")
+                        .HasDefaultValue(new Guid("e7774739-dcd4-4c36-ab96-7a18c4eafa3b"));
 
                     b.Property<string>("CreatedBy")
                         .IsRequired()
@@ -223,7 +225,8 @@ namespace FUC.Data.Migrations
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid");
+                        .HasColumnType("uuid")
+                        .HasDefaultValue(new Guid("0e0bdf99-931d-41cf-9b8c-db36c77e965d"));
 
                     b.Property<string>("CampusId")
                         .IsRequired()
@@ -260,7 +263,9 @@ namespace FUC.Data.Migrations
 
                     b.Property<string>("Status")
                         .IsRequired()
-                        .HasColumnType("text");
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("text")
+                        .HasDefaultValue("Pending");
 
                     b.Property<string>("TopicCode")
                         .HasColumnType("text");
@@ -288,7 +293,8 @@ namespace FUC.Data.Migrations
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid");
+                        .HasColumnType("uuid")
+                        .HasDefaultValue(new Guid("5d60ab03-4c72-4c16-a49c-d5ce56080720"));
 
                     b.Property<string>("CreatedBy")
                         .IsRequired()
@@ -305,7 +311,9 @@ namespace FUC.Data.Migrations
 
                     b.Property<string>("Status")
                         .IsRequired()
-                        .HasColumnType("text");
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("text")
+                        .HasDefaultValue("UnderReview");
 
                     b.Property<string>("StudentId")
                         .IsRequired()
@@ -496,7 +504,9 @@ namespace FUC.Data.Migrations
 
                     b.Property<string>("Status")
                         .IsRequired()
-                        .HasColumnType("text");
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("text")
+                        .HasDefaultValue("InProgress");
 
                     b.Property<string>("UpdatedBy")
                         .HasColumnType("text");
@@ -576,7 +586,8 @@ namespace FUC.Data.Migrations
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid");
+                        .HasColumnType("uuid")
+                        .HasDefaultValue(new Guid("76b9b89a-633b-413f-8eab-3ccebaccd615"));
 
                     b.Property<string>("CreatedBy")
                         .IsRequired()
@@ -622,7 +633,8 @@ namespace FUC.Data.Migrations
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid");
+                        .HasColumnType("uuid")
+                        .HasDefaultValue(new Guid("98a1f1df-505a-49af-b3a5-2970ce25ede2"));
 
                     b.Property<string>("CreatedBy")
                         .IsRequired()
@@ -657,7 +669,8 @@ namespace FUC.Data.Migrations
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid");
+                        .HasColumnType("uuid")
+                        .HasDefaultValue(new Guid("ffd6df6e-1ca2-4b61-9ead-72a66765e64e"));
 
                     b.Property<string>("Abbreviation")
                         .IsRequired()
@@ -720,7 +733,9 @@ namespace FUC.Data.Migrations
 
                     b.Property<string>("Status")
                         .IsRequired()
-                        .HasColumnType("text");
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("text")
+                        .HasDefaultValue("Pending");
 
                     b.Property<string>("UpdatedBy")
                         .HasColumnType("text");
@@ -751,7 +766,8 @@ namespace FUC.Data.Migrations
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid");
+                        .HasColumnType("uuid")
+                        .HasDefaultValue(new Guid("20d9ca07-0f61-472a-bfc8-4fc430ac245b"));
 
                     b.Property<string>("AnalysisResult")
                         .IsRequired()
@@ -760,7 +776,11 @@ namespace FUC.Data.Migrations
                     b.Property<DateTime>("CreatedDate")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("timestamp with time zone")
-                        .HasDefaultValue(new DateTime(2025, 2, 25, 15, 58, 54, 829, DateTimeKind.Utc).AddTicks(400));
+                        .HasDefaultValue(new DateTime(2025, 2, 27, 13, 34, 18, 609, DateTimeKind.Utc).AddTicks(3949));
+
+                    b.Property<string>("ProcessedBy")
+                        .IsRequired()
+                        .HasColumnType("text");
 
                     b.Property<Guid>("TopicId")
                         .HasColumnType("uuid");
@@ -776,7 +796,8 @@ namespace FUC.Data.Migrations
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid");
+                        .HasColumnType("uuid")
+                        .HasDefaultValue(new Guid("312acbde-b3fd-4912-976c-73958f8806dd"));
 
                     b.Property<string>("AppraisalComment")
                         .IsRequired()
@@ -789,12 +810,16 @@ namespace FUC.Data.Migrations
                     b.Property<DateTime>("AppraisalDate")
                         .HasColumnType("timestamp with time zone");
 
-                    b.Property<string>("Status")
-                        .IsRequired()
+                    b.Property<string>("ManagerEmail")
                         .HasColumnType("text");
 
-                    b.Property<string>("SupervisorId")
+                    b.Property<string>("Status")
                         .IsRequired()
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("text")
+                        .HasDefaultValue("Pending");
+
+                    b.Property<string>("SupervisorId")
                         .HasColumnType("text");
 
                     b.Property<Guid>("TopicId")
@@ -1042,8 +1067,7 @@ namespace FUC.Data.Migrations
                     b.HasOne("FUC.Data.Entities.Supervisor", "Supervisor")
                         .WithMany("TopicAppraisals")
                         .HasForeignKey("SupervisorId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
+                        .OnDelete(DeleteBehavior.Restrict);
 
                     b.HasOne("FUC.Data.Entities.Topic", "Topic")
                         .WithMany("TopicAppraisals")

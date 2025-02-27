@@ -1,10 +1,11 @@
-import os
 from fastapi import FastAPI, HTTPException
+from pydantic import BaseModel
 import numpy as np
 from sentence_transformers import SentenceTransformer, util
 import psycopg2
 from psycopg2.extras import DictCursor
 from concurrent.futures import ThreadPoolExecutor
+from typing import List
 
 app = FastAPI()
 
@@ -13,13 +14,39 @@ DATABASE_URL = os.getenv("DATABASE_URL", "postgresql://postgres:postgrespw@postg
 model = SentenceTransformer("sentence-transformers/stsb-roberta-large")
 executor = ThreadPoolExecutor(max_workers=4)
 
-def get_pass_topics():
+class SemanticRequest(BaseModel):
+    topic_id: str
+    semester_ids: List[str]
+
+def get_topics(semester_ids: List[str], is_current_semester: bool):
+    """Retrieve topics based on the semester type."""
     conn = psycopg2.connect(DATABASE_URL)
-    cursor = conn.cursor(cursor_factory=DictCursor)  # Use DictCursor for key-value access
+    cursor = conn.cursor(cursor_factory=DictCursor)
 
-    cursor.execute('SELECT "Id", "Description", "EnglishName" FROM "Topic" WHERE "Status" = %s;', ('Pass',))
+    if is_current_semester:
+        # For the current semester, exclude "Fail" topics
+        cursor.execute('''
+            SELECT "Id", "Description", "EnglishName", "ProcessedBy"
+            FROM "Topic"
+            WHERE "SemesterId" = ANY(%s) AND "Status" != %s;
+        ''', (semester_ids, 'Fail'))
+    else:
+        # For previous semesters, only include "Pass" topics
+        cursor.execute('''
+            SELECT "Id", "Description", "EnglishName", "ProcessedBy"
+            FROM "Topic"
+            WHERE "SemesterId" = ANY(%s) AND "Status" = %s;
+        ''', (semester_ids, 'Pass'))
 
-    topics = [{"id": str(row["Id"]), "context": row["Description"], "english_name": row["EnglishName"]} for row in cursor.fetchall()]
+    topics = [
+        {
+            "id": str(row["Id"]),
+            "context": row["Description"],
+            "english_name": row["EnglishName"],
+            "processed_by": row["ProcessedBy"]
+        }
+        for row in cursor.fetchall()
+    ]
 
     cursor.close()
     conn.close()
@@ -28,17 +55,12 @@ def get_pass_topics():
 def compute_embedding(text):
     return model.encode(text)
 
-@app.get("/test")
-def get_test():
-    return {"message": "Service is running on port 9000"}
-
-@app.get("/semantic/{topic_id}")  # Keep endpoint but remove topic_id from response
-def find_best_match(topic_id: str):
-    topics = get_pass_topics()
+def find_best_match(topic_id: str, semester_ids: List[str], is_current_semester: bool):
+    topics = get_topics(semester_ids, is_current_semester)
     new_topic = next((t for t in topics if t["id"] == topic_id), None)
     
     if not new_topic:
-        raise HTTPException(status_code=404, detail="Topic not found or not 'Pass'.")
+        raise HTTPException(status_code=404, detail="Topic not found or does not match required status.")
 
     new_embedding = model.encode(new_topic["context"])
     
@@ -50,13 +72,28 @@ def find_best_match(topic_id: str):
     matching_topics = {
         topics[i]["id"]: {
             "similarity": round(float(sim) * 100, 2),
-            "english_name": topics[i]["english_name"]
+            "english_name": topics[i]["english_name"],
+            "processed_by": topics[i]["processed_by"]
         }
         for i, sim in enumerate(similarities) if sim >= 0.6
     }
 
-    return matching_topics  # Remove topic_id from response
+    return matching_topics  # Removed topic_id from response
+
+@app.get("/test")
+def get_test():
+    return {"message": "Service is running on port 9000"}
+
+@app.post("/semantic")
+def get_past_semesters_match(request: SemanticRequest):
+    """Find matching topics for a topic across multiple past semesters."""
+    return find_best_match(request.topic_id, request.semester_ids, is_current_semester=False)
+
+@app.get("/semantic/{semester_id}/{topic_id}")  
+def get_current_semester_match(semester_id: str, topic_id: str):
+    """Find matching topics from the current semester (excluding 'Fail' topics)."""
+    return find_best_match(topic_id, [semester_id], is_current_semester=True)
 
 if __name__ == "__main__":
     import uvicorn
-    uvicorn.run(app, host="0.0.0.0", port=9000)  # Ensure port 9000 is used inside the container
+    uvicorn.run(app, host="0.0.0.0", port=9000)

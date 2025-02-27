@@ -1,7 +1,6 @@
-using FUC.Common.Abstractions;
 using FUC.Common.Attributes;
+using FUC.Common.Cache;
 using FUC.Common.Options;
-using Gateway.API.Infrastuctures.Cache;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
@@ -11,13 +10,7 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddReverseProxy()
     .LoadFromConfig(builder.Configuration.GetSection("ReverseProxy"));
 
-builder.Services.AddStackExchangeRedisCache(redisOptions =>
-{
-    var connectionString = builder.Configuration.GetConnectionString("Redis");
-    redisOptions.Configuration = connectionString;
-});
-
-builder.Services.AddTransient<ICacheService, CacheService>();
+builder.Services.AddCacheConfiguration(builder.Configuration);
 
 builder.Services.AddAuthentication(options =>
 {
@@ -50,7 +43,7 @@ builder.Services.AddAuthentication(options =>
         {
             if (context.Exception.GetType() == typeof(SecurityTokenExpiredException))
             {
-                context.Response.Headers.Add("IS-TOKEN-EXPIRED", "true");
+                context.Response.Headers.Append("IS-TOKEN-EXPIRED", "true");
             }
             return Task.CompletedTask;
         }

@@ -9,9 +9,9 @@ public interface ITopicService
     Task<OperationResult<PaginatedList<TopicResponse>>> GetTopics(TopicRequest request);
     Task<OperationResult<Guid>> CreateTopic(CreateTopicRequest request, CancellationToken cancellationToken);
     Task<OperationResult<List<BusinessAreaResponse>>> GetAllBusinessAreas();
-
     Task<OperationResult<List<TopicStatisticResponse>>> GetTopicAnalysises(Guid topicId,
         CancellationToken cancellationToken);
-
+    Task<OperationResult> SemanticTopic(Guid topicId, bool withCurrentSemester, CancellationToken cancellationToken);
+    Task<OperationResult<string>> PresentTopicPresignedUrl(Guid topicId, CancellationToken cancellationToken);
     Task<OperationResult> CreateTopicAppraisal(IReadOnlyList<string> supervisorEmail);
 }

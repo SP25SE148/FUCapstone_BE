@@ -5,7 +5,7 @@
 namespace FUC.Data.Migrations;
 
 /// <inheritdoc />
-public partial class db_v001 : Migration
+public partial class đb_v001 : Migration
 {
     /// <inheritdoc />
     protected override void Up(MigrationBuilder migrationBuilder)
@@ -14,7 +14,7 @@ public partial class db_v001 : Migration
             name: "BusinessArea",
             columns: table => new
             {
-                Id = table.Column<Guid>(type: "uuid", nullable: false),
+                Id = table.Column<Guid>(type: "uuid", nullable: false, defaultValue: new Guid("b537ea7c-2056-489e-9b3a-9acc599862c8")),
                 Name = table.Column<string>(type: "text", nullable: false),
                 Description = table.Column<string>(type: "text", nullable: false),
                 CreatedDate = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
@@ -110,7 +110,7 @@ public partial class db_v001 : Migration
             name: "TemplateDocument",
             columns: table => new
             {
-                Id = table.Column<Guid>(type: "uuid", nullable: false),
+                Id = table.Column<Guid>(type: "uuid", nullable: false, defaultValue: new Guid("98a1f1df-505a-49af-b3a5-2970ce25ede2")),
                 FileName = table.Column<string>(type: "text", nullable: false),
                 FileUrl = table.Column<string>(type: "text", nullable: false),
                 IsActive = table.Column<bool>(type: "boolean", nullable: false),
@@ -217,14 +217,14 @@ public partial class db_v001 : Migration
             name: "Group",
             columns: table => new
             {
-                Id = table.Column<Guid>(type: "uuid", nullable: false),
+                Id = table.Column<Guid>(type: "uuid", nullable: false, defaultValue: new Guid("0e0bdf99-931d-41cf-9b8c-db36c77e965d")),
                 SemesterId = table.Column<string>(type: "text", nullable: false),
                 MajorId = table.Column<string>(type: "text", nullable: false),
                 CampusId = table.Column<string>(type: "text", nullable: false),
                 CapstoneId = table.Column<string>(type: "text", nullable: false),
                 TopicCode = table.Column<string>(type: "text", nullable: true),
                 GroupCode = table.Column<string>(type: "text", nullable: false),
-                Status = table.Column<string>(type: "text", nullable: false),
+                Status = table.Column<string>(type: "text", nullable: false, defaultValue: "Pending"),
                 CreatedDate = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
                 UpdatedDate = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
                 CreatedBy = table.Column<string>(type: "text", nullable: false),
@@ -274,7 +274,7 @@ public partial class db_v001 : Migration
                 Email = table.Column<string>(type: "text", nullable: false),
                 Mark = table.Column<float>(type: "real", nullable: false),
                 IsEligible = table.Column<bool>(type: "boolean", nullable: false),
-                Status = table.Column<string>(type: "text", nullable: false),
+                Status = table.Column<string>(type: "text", nullable: false, defaultValue: "InProgress"),
                 CreatedDate = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
                 UpdatedDate = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
                 CreatedBy = table.Column<string>(type: "text", nullable: false),
@@ -315,7 +315,7 @@ public partial class db_v001 : Migration
             name: "Topic",
             columns: table => new
             {
-                Id = table.Column<Guid>(type: "uuid", nullable: false),
+                Id = table.Column<Guid>(type: "uuid", nullable: false, defaultValue: new Guid("ffd6df6e-1ca2-4b61-9ead-72a66765e64e")),
                 MainSupervisorId = table.Column<string>(type: "text", nullable: false),
                 CapstoneId = table.Column<string>(type: "text", nullable: false),
                 SemesterId = table.Column<string>(type: "text", nullable: false),
@@ -328,7 +328,7 @@ public partial class db_v001 : Migration
                 Description = table.Column<string>(type: "text", nullable: false),
                 FileName = table.Column<string>(type: "text", nullable: false),
                 FileUrl = table.Column<string>(type: "text", nullable: false),
-                Status = table.Column<string>(type: "text", nullable: false),
+                Status = table.Column<string>(type: "text", nullable: false, defaultValue: "Pending"),
                 DifficultyLevel = table.Column<string>(type: "text", nullable: false),
                 CreatedDate = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
                 UpdatedDate = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
@@ -376,7 +376,7 @@ public partial class db_v001 : Migration
             name: "SupervisorGroupAssignment",
             columns: table => new
             {
-                Id = table.Column<Guid>(type: "uuid", nullable: false),
+                Id = table.Column<Guid>(type: "uuid", nullable: false, defaultValue: new Guid("76b9b89a-633b-413f-8eab-3ccebaccd615")),
                 GroupId = table.Column<Guid>(type: "uuid", nullable: false),
                 SupervisorId = table.Column<string>(type: "text", nullable: false),
                 Supervisor2Id = table.Column<string>(type: "text", nullable: true),
@@ -414,11 +414,11 @@ public partial class db_v001 : Migration
             name: "GroupMember",
             columns: table => new
             {
-                Id = table.Column<Guid>(type: "uuid", nullable: false),
+                Id = table.Column<Guid>(type: "uuid", nullable: false, defaultValue: new Guid("5d60ab03-4c72-4c16-a49c-d5ce56080720")),
                 GroupId = table.Column<Guid>(type: "uuid", nullable: false),
                 StudentId = table.Column<string>(type: "text", nullable: false),
                 IsLeader = table.Column<bool>(type: "boolean", nullable: false),
-                Status = table.Column<string>(type: "text", nullable: false),
+                Status = table.Column<string>(type: "text", nullable: false, defaultValue: "UnderReview"),
                 CreatedDate = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
                 UpdatedDate = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
                 CreatedBy = table.Column<string>(type: "text", nullable: false),
@@ -445,7 +445,7 @@ public partial class db_v001 : Migration
             name: "CoSupervisor",
             columns: table => new
             {
-                Id = table.Column<Guid>(type: "uuid", nullable: false),
+                Id = table.Column<Guid>(type: "uuid", nullable: false, defaultValue: new Guid("e7774739-dcd4-4c36-ab96-7a18c4eafa3b")),
                 SupervisorId = table.Column<string>(type: "text", nullable: false),
                 TopicId = table.Column<Guid>(type: "uuid", nullable: false),
                 CreatedDate = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
@@ -474,9 +474,10 @@ public partial class db_v001 : Migration
             name: "TopicAnalysis",
             columns: table => new
             {
-                Id = table.Column<Guid>(type: "uuid", nullable: false),
+                Id = table.Column<Guid>(type: "uuid", nullable: false, defaultValue: new Guid("20d9ca07-0f61-472a-bfc8-4fc430ac245b")),
                 AnalysisResult = table.Column<string>(type: "text", nullable: false),
-                CreatedDate = table.Column<DateTime>(type: "timestamp with time zone", nullable: false, defaultValue: new DateTime(2025, 2, 25, 15, 58, 54, 829, DateTimeKind.Utc).AddTicks(400)),
+                CreatedDate = table.Column<DateTime>(type: "timestamp with time zone", nullable: false, defaultValue: new DateTime(2025, 2, 27, 13, 34, 18, 609, DateTimeKind.Utc).AddTicks(3949)),
+                ProcessedBy = table.Column<string>(type: "text", nullable: false),
                 TopicId = table.Column<Guid>(type: "uuid", nullable: false)
             },
             constraints: table =>
@@ -494,12 +495,13 @@ public partial class db_v001 : Migration
             name: "TopicAppraisal",
             columns: table => new
             {
-                Id = table.Column<Guid>(type: "uuid", nullable: false),
-                SupervisorId = table.Column<string>(type: "text", nullable: false),
+                Id = table.Column<Guid>(type: "uuid", nullable: false, defaultValue: new Guid("312acbde-b3fd-4912-976c-73958f8806dd")),
+                SupervisorId = table.Column<string>(type: "text", nullable: true),
+                ManagerEmail = table.Column<string>(type: "text", nullable: true),
                 TopicId = table.Column<Guid>(type: "uuid", nullable: false),
                 AppraisalContent = table.Column<string>(type: "text", nullable: false),
                 AppraisalComment = table.Column<string>(type: "text", nullable: false),
-                Status = table.Column<string>(type: "text", nullable: false),
+                Status = table.Column<string>(type: "text", nullable: false, defaultValue: "Pending"),
                 AppraisalDate = table.Column<DateTime>(type: "timestamp with time zone", nullable: false)
             },
             constraints: table =>

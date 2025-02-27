@@ -20,4 +20,11 @@ public class TopicResponse
     public string CapstoneId { get; set; }
     public string SemesterId { get; set; }
     public string CampusId { get; set; }
+    public List<CoSupervisorDto> CoSupervisors { get; set; }
+}
+
+public class CoSupervisorDto
+{
+    public string SupervisorName { get; set; }
+    public string SupervisorEmail { get; set; }
 }
