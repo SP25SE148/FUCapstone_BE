@@ -13,8 +13,10 @@ using FUC.Data.Enums;
 using FUC.Data.Repositories;
 using FUC.Service.Abstractions;
 using FUC.Service.DTOs.BusinessAreaDTO;
+using FUC.Service.DTOs.TopicAppraisalDTO;
 using FUC.Service.DTOs.TopicDTO;
 using FUC.Service.Extensions.Options;
+using FUC.Service.Filters;
 using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
@@ -35,7 +37,8 @@ public class TopicService(
     S3BucketConfiguration s3BucketConfiguration,
     ISemesterService semesterService,
     ICacheService cache,
-    IIntegrationEventLogService integrationEventLogService) : ITopicService
+    IIntegrationEventLogService integrationEventLogService,
+    TopicAppraisalFilterFactory topicAppraisalFilterFactory) : ITopicService
 {
     private const int MaxTopicsForCoSupervisors = 3;
 
@@ -64,7 +67,7 @@ public class TopicService(
                 .Include(x => x.MainSupervisor)
                 .Include(x => x.BusinessArea)
                 .Include(x => x.CoSupervisors)
-                    .ThenInclude(c => c.Supervisor),
+                .ThenInclude(c => c.Supervisor),
             x => new TopicResponse
             {
                 Id = x.Id.ToString(),
@@ -93,7 +96,8 @@ public class TopicService(
         return OperationResult.Success(topics);
     }
 
-    public async Task<OperationResult> SemanticTopic(Guid topicId, bool withCurrentSemester, CancellationToken cancellationToken) 
+    public async Task<OperationResult> SemanticTopic(Guid topicId, bool withCurrentSemester,
+        CancellationToken cancellationToken)
     {
         try
         {
@@ -102,12 +106,13 @@ public class TopicService(
 
             if (isInprogress != null)
             {
-                return OperationResult.Failure(new Error("Topic.Error", "Topic is in semantic progressing. Try it later!"));
+                return OperationResult.Failure(new Error("Topic.Error",
+                    "Topic is in semantic progressing. Try it later!"));
             }
 
             var currentSemester = await semesterService.GetCurrentSemesterAsync();
 
-            if (currentSemester.IsFailure) 
+            if (currentSemester.IsFailure)
             {
                 return OperationResult.Failure(currentSemester.Error);
             }
@@ -132,17 +137,17 @@ public class TopicService(
         {
             logger.LogError("Can not send the semantic event with error: {Error}", ex.Message);
             return OperationResult.Failure(new Error("Topic.Error", "Semantic topic was fail."));
-        } 
+        }
     }
 
-    public async Task<OperationResult<Guid>> CreateTopic(CreateTopicRequest request, 
+    public async Task<OperationResult<Guid>> CreateTopic(CreateTopicRequest request,
         CancellationToken cancellationToken)
     {
         var mainSupervisor = await supervisorRepository.GetAsync(s => s.Email == currentUser.Email, cancellationToken);
 
         if (mainSupervisor == null)
         {
-            logger.LogError("Create Topic fail with error: {SupervisorId} does not exist", currentUser.Id);                                     
+            logger.LogError("Create Topic fail with error: {SupervisorId} does not exist", currentUser.Id);
             return OperationResult.Failure<Guid>(new Error("Topic.Error", "Supervisor does not exist."));
         }
 
@@ -246,7 +251,8 @@ public class TopicService(
         }
     }
 
-    public async Task<OperationResult<string>> PresentTopicPresignedUrl(Guid topicId, CancellationToken cancellationToken)
+    public async Task<OperationResult<string>> PresentTopicPresignedUrl(Guid topicId,
+        CancellationToken cancellationToken)
     {
         var topic = await topicRepository.GetAsync(t => t.Id == topicId, cancellationToken);
 
@@ -263,8 +269,8 @@ public class TopicService(
 
             if (presignedUrl is null)
             {
-                presignedUrl = await s3Service.GetPresignedUrl(s3BucketConfiguration.FUCTopicBucket, 
-                    topic.FileUrl, 1440, 
+                presignedUrl = await s3Service.GetPresignedUrl(s3BucketConfiguration.FUCTopicBucket,
+                    topic.FileUrl, 1440,
                     isUpload: false);
 
                 await cache.SetTimeoutAsync(cacheKey, presignedUrl, TimeSpan.FromDays(1), default);
@@ -279,7 +285,7 @@ public class TopicService(
         }
     }
 
-    public async Task<OperationResult<List<TopicStatisticResponse>>> GetTopicAnalysises(Guid topicId, 
+    public async Task<OperationResult<List<TopicStatisticResponse>>> GetTopicAnalysises(Guid topicId,
         CancellationToken cancellationToken)
     {
         var topicAnalysises = await topicAnalysisRepository.FindAsync(x => x.TopicId == topicId,
@@ -331,18 +337,28 @@ public class TopicService(
 
     public async Task<OperationResult> CreateTopicAppraisal(IReadOnlyList<string> supervisorEmail)
     {
-        //TODO: Check the valid date to assign supervisors to topics
+        //TODO: Check the valid date to assign supervisors to topics (TimeCongig table)
+
+        var currentSemester = await semesterService.GetCurrentSemesterAsync();
+        if (currentSemester.IsFailure)
+        {
+            logger.LogError("The current semester is inactive !");
+            return OperationResult.Failure(new Error("Error.CurrentSemesterIsNull", " Current semester is inactive !"));
+        }
 
         if (supervisorEmail.Count < TopicAppraisalRequirement.SupervisorAppraisalMinimum)
+        {
+            logger.LogError("The Supervisor Appraisal size is invalid !");
             return OperationResult.Failure(new Error("Error.InvalidSupervisorAppraisalSize",
                 $"The Supervisor appraisal must be greater than {TopicAppraisalRequirement.SupervisorAppraisalMinimum}"));
+        }
 
         var supervisorIdList = await (from s in supervisorRepository.GetQueryable()
             where supervisorEmail.Contains(s.Email) &&
                   s.IsAvailable &&
-                  s.MajorId.Equals(currentUser.MajorId)
-            // && s.CampusId.Equals(currentUser.CampusId)
-            select new { s.Id }).ToListAsync();
+                  s.MajorId.Equals(currentUser.MajorId) &&
+                  s.CampusId.Equals(currentUser.CampusId)
+            select s.Id).ToListAsync();
         //check if supervisor list is null or empty!
         if (supervisorIdList.Count < 1)
         {
@@ -351,9 +367,18 @@ public class TopicService(
         }
 
         IList<Topic> topicList = await topicRepository
-            .FindAsync(t => t.Status.Equals(TopicStatus.Pending),
-                t => t.Include(t => t.MainSupervisor)
-                    .Include(t => t.CoSupervisors));
+            .FindAsync(t => t.Status.Equals(TopicStatus.Pending) &&
+                            t.CampusId.Equals(currentUser.CampusId) &&
+                            t.SemesterId.Equals(currentSemester.Value.Id),
+                t => t
+                    .Include(t => t.MainSupervisor)
+                    .Include(t => t.CoSupervisors)
+                    .Include(t => t.Capstone)
+                    .Include(t => t.TopicAppraisals));
+
+        // get topic list based on current manager major
+        topicList = topicList.Where(t => t.Capstone.MajorId.Equals(currentUser.MajorId) &&
+                                         (t.TopicAppraisals.Count == 0 || t.TopicAppraisals == null)).ToList();
 
         // check if topics list is null or empty!
         if (topicList.Count < 1)
@@ -370,31 +395,32 @@ public class TopicService(
 
         foreach (Topic topic in topicList)
         {
-            int selectedSupervisorIdTemp = 0;
-            while (selectedSupervisorIdTemp < 2)
+            var selectedSupervisorIdList = new List<string>();
+            index = 0;
+            while (selectedSupervisorIdList.Count < 2)
             {
                 if (index >= supervisorCount)
                 {
-                    index = 0;
                     break;
                 }
 
-                string? selectedSupervisorId =
-                    shuffledSupervisorIdList[rand.Next(index++, supervisorCount - 1)].ToString();
+                string selectedSupervisorId = shuffledSupervisorIdList[index++]!;
 
-                if (string.IsNullOrEmpty(selectedSupervisorId) || selectedSupervisorId.Equals(topic.MainSupervisorId))
+                if (!string.IsNullOrEmpty(selectedSupervisorId) &&
+                    !selectedSupervisorId.Equals(topic.MainSupervisorId) &&
+                    !selectedSupervisorIdList.Contains(selectedSupervisorId))
                 {
-                    continue;
+                    selectedSupervisorIdList.Add(selectedSupervisorId);
                 }
-
-                topicAppraisalRepository.Insert(new TopicAppraisal
-                {
-                    Id = Guid.NewGuid(),
-                    SupervisorId = selectedSupervisorId,
-                    TopicId = topic.Id
-                });
-                selectedSupervisorIdTemp++;
             }
+
+            var topicAppraisalList = selectedSupervisorIdList.Select(s => new TopicAppraisal
+            {
+                SupervisorId = s.ToString(),
+                TopicId = topic.Id
+            }).ToList();
+
+            topicAppraisalRepository.InsertRange(topicAppraisalList);
         }
 
         await unitOfWork.SaveChangesAsync();
@@ -402,9 +428,67 @@ public class TopicService(
         return OperationResult.Success();
     }
 
-    private async Task<List<(string SupervisorId, string SupervisorEmail)>> 
+    public async Task<OperationResult<List<TopicAppraisalResponse>>> GetTopicAppraisalByUserId(
+        TopicAppraisalBaseRequest request)
+    {
+        var query = topicAppraisalRepository.GetQueryable();
+
+        ITopicAppraisalFilterStrategy filterStrategy =
+            topicAppraisalFilterFactory.GetStrategy(request, currentUser.Role);
+
+        query = filterStrategy.ApplyFilter(query, currentUser.UserCode).Include(ta => ta.Topic);
+
+        if (!string.IsNullOrEmpty(request.SearchTerm))
+        {
+            query = query.Where(ta => ta.Topic.EnglishName.Contains(request.SearchTerm));
+        }
+
+        if (!string.IsNullOrEmpty(request.Status) &&
+            Enum.TryParse<TopicAppraisalStatus>(
+                request.Status,
+                true,
+                out TopicAppraisalStatus enumStatus))
+        {
+            query = enumStatus switch
+            {
+                TopicAppraisalStatus.Pending => query.Where(ta => ta.Status.Equals(TopicAppraisalStatus.Pending)),
+                TopicAppraisalStatus.Accepted => query.Where(ta => ta.Status.Equals(TopicAppraisalStatus.Accepted)),
+                TopicAppraisalStatus.Considered => query.Where(ta => ta.Status.Equals(TopicAppraisalStatus.Considered)),
+                TopicAppraisalStatus.Rejected => query.Where(ta => ta.Status.Equals(TopicAppraisalStatus.Rejected)),
+                _ => query
+            };
+        }
+
+        if (!string.IsNullOrEmpty(request.OrderByAppraisalDate))
+        {
+            query = request.OrderByAppraisalDate switch
+            {
+                "_asc" => query.OrderBy(ta => ta.CreatedDate),
+                _ => query.OrderByDescending(ta => ta.CreatedDate)
+            };
+        }
+
+        var response = await query.Select(ta => new TopicAppraisalResponse
+        {
+            TopicAppraisalId = ta.Id,
+            SupervisorId = ta.SupervisorId,
+            Status = ta.Status.ToString(),
+            AppraisalComment = ta.AppraisalComment,
+            AppraisalContent = ta.AppraisalContent,
+            AppraisalDate = ta.AppraisalDate,
+            ManagerId = ta.ManagerId,
+            TopicId = ta.TopicId,
+            TopicEnglishName = ta.Topic.EnglishName
+        }).ToListAsync();
+
+        return response.Count < 1
+            ? OperationResult.Failure<List<TopicAppraisalResponse>>(Error.NullValue)
+            : OperationResult.Success(response);
+    }
+
+    private async Task<List<(string SupervisorId, string SupervisorEmail)>>
         GetAvailableSupervisorsForSupportingTopic(List<string> coSupervisorEmails,
-        CancellationToken cancellationToken)
+            CancellationToken cancellationToken)
     {
         var result = new List<(string, string)>();
 

@@ -1,4 +1,5 @@
-﻿using FUC.Common.Shared;
+﻿using System.Collections.ObjectModel;
+using FUC.Common.Shared;
 using FUC.Data.Abstractions;
 using Microsoft.EntityFrameworkCore.Query;
 using System.Linq.Expressions;
@@ -18,30 +19,36 @@ public interface IRepository<TEntity> where TEntity : Entity
 
     Task<List<TResult>> GetAllAsync<TResult>(
         Func<IQueryable<TEntity>, IIncludableQueryable<TEntity, object>>? include,
-        Func<IQueryable<TEntity>,IOrderedQueryable<TEntity>>? orderBy,
+        Func<IQueryable<TEntity>, IOrderedQueryable<TEntity>>? orderBy,
         Expression<Func<TEntity, TResult>> selector);
+
     Task<TEntity?> GetAsync(Expression<Func<TEntity, bool>> predicate,
         CancellationToken cancellationToken = default) =>
         GetAsync(predicate, false, null, null, cancellationToken);
+
     Task<TEntity?> GetAsync(Expression<Func<TEntity, bool>> predicate,
         Func<IQueryable<TEntity>, IIncludableQueryable<TEntity, object?>>? include,
         Func<IQueryable<TEntity>, IOrderedQueryable<TEntity>>? orderBy,
         CancellationToken cancellationToken = default) =>
         GetAsync(predicate, false, include, orderBy, cancellationToken);
+
     Task<TEntity?> GetAsync(Expression<Func<TEntity, bool>> predicate,
         bool isEnabledTracking = false,
         Func<IQueryable<TEntity>, IIncludableQueryable<TEntity, object?>>? include = null,
         Func<IQueryable<TEntity>, IOrderedQueryable<TEntity>>? orderBy = null,
         CancellationToken cancellationToken = default);
+
     #endregion
 
     #region FindAsync
+
     Task<IList<TEntity>> FindAsync(Expression<Func<TEntity, bool>> predicate,
         CancellationToken cancellationToken = default);
 
     Task<IList<TEntity>> FindAsync(Expression<Func<TEntity, bool>> predicate,
         Func<IQueryable<TEntity>, IIncludableQueryable<TEntity, object?>> include,
         CancellationToken cancellationToken = default);
+
     Task<IList<TEntity>> FindAsync(Expression<Func<TEntity, bool>> predicate,
         Func<IQueryable<TEntity>, IIncludableQueryable<TEntity, object?>>? include,
         bool isEnabledTracking,
@@ -50,6 +57,7 @@ public interface IRepository<TEntity> where TEntity : Entity
     Task<IList<TEntity>> FindAsync(Expression<Func<TEntity, bool>> predicate,
         Func<IQueryable<TEntity>, IOrderedQueryable<TEntity>> orderBy,
         CancellationToken cancellationToken = default);
+
     Task<IList<TEntity>> FindAsync(Expression<Func<TEntity, bool>> predicate,
         Func<IQueryable<TEntity>, IIncludableQueryable<TEntity, object?>> include,
         Func<IQueryable<TEntity>, IOrderedQueryable<TEntity>> orderBy,
@@ -61,12 +69,14 @@ public interface IRepository<TEntity> where TEntity : Entity
         Func<IQueryable<TEntity>, IOrderedQueryable<TEntity>>? orderBy,
         Expression<Func<TEntity, TResult>> selector,
         CancellationToken cancellationToken = default);
+
     Task<IList<TResult>> FindAsync<TResult>(Expression<Func<TEntity, bool>> predicate,
         Func<IQueryable<TEntity>, IIncludableQueryable<TEntity, object?>>? include,
         Func<IQueryable<TEntity>, IOrderedQueryable<TEntity>>? orderBy,
         Expression<Func<TEntity, TResult>> selector,
         int top,
         CancellationToken cancellationToken = default);
+
     #endregion
 
     Task<PaginatedList<TEntity>> FindPaginatedAsync(Expression<Func<TEntity, bool>> predicate,
@@ -94,6 +104,7 @@ public interface IRepository<TEntity> where TEntity : Entity
 
     void Insert(TEntity entity);
 
+    void InsertRange(IReadOnlyList<TEntity> entities);
     void Update(TEntity entity);
 
     void Delete(TEntity entity);

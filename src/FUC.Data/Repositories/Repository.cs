@@ -32,8 +32,8 @@ public class Repository<TEntity>(DbContext dbContext) : IRepository<TEntity>
         Func<IQueryable<TEntity>, IIncludableQueryable<TEntity, object?>>? include,
         bool isEnabledTracking,
         CancellationToken cancellationToken = default)
-     => await ApplyIncludesAndOrdering(GetQueryable(isEnabledTracking), include, null)
-        .Where(predicate).ToListAsync(cancellationToken);
+        => await ApplyIncludesAndOrdering(GetQueryable(isEnabledTracking), include, null)
+            .Where(predicate).ToListAsync(cancellationToken);
 
     public async Task<IList<TEntity>> FindAsync(Expression<Func<TEntity, bool>> predicate,
         Func<IQueryable<TEntity>, IOrderedQueryable<TEntity>> orderBy,
@@ -93,11 +93,17 @@ public class Repository<TEntity>(DbContext dbContext) : IRepository<TEntity>
     }
 
     public async Task<bool> AnyAsync(Expression<Func<TEntity, bool>> predicate,
-        CancellationToken cancellationToken = default) => await GetQueryable().Where(predicate).AnyAsync(cancellationToken);
+        CancellationToken cancellationToken = default) =>
+        await GetQueryable().Where(predicate).AnyAsync(cancellationToken);
 
     public void Insert(TEntity entity)
     {
         DbSet.Add(entity);
+    }
+
+    public void InsertRange(IReadOnlyList<TEntity> entities)
+    {
+        DbSet.AddRange(entities);
     }
 
     public void Update(TEntity entity)
@@ -152,7 +158,8 @@ public class Repository<TEntity>(DbContext dbContext) : IRepository<TEntity>
         return queryable;
     }
 
-    public Task<int> CountAsync(Expression<Func<TEntity, bool>> predicate, CancellationToken cancellationToken = default)
+    public Task<int> CountAsync(Expression<Func<TEntity, bool>> predicate,
+        CancellationToken cancellationToken = default)
     {
         return GetQueryable(predicate).CountAsync(cancellationToken);
     }
@@ -162,7 +169,8 @@ public class Repository<TEntity>(DbContext dbContext) : IRepository<TEntity>
         return GetQueryable(false).Where(predicate);
     }
 
-    public Task<List<TEntity>> GetAllAsync(Func<IQueryable<TEntity>, IIncludableQueryable<TEntity, object>>? include = null)
+    public Task<List<TEntity>> GetAllAsync(
+        Func<IQueryable<TEntity>, IIncludableQueryable<TEntity, object>>? include = null)
     {
         var query = GetQueryable();
 
@@ -180,7 +188,7 @@ public class Repository<TEntity>(DbContext dbContext) : IRepository<TEntity>
         Expression<Func<TEntity, TResult>> selector)
     {
         var query = ApplyIncludesAndOrdering(GetQueryable(), include, orderBy);
-    
+
         return await query.Select(selector).ToListAsync();
     }
 
