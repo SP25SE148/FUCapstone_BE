@@ -1,5 +1,6 @@
 ﻿[
   {
+    "Id": "55afeacc-972c-4724-9ad2-727adc429845",
     "Name": "Education",
     "Description": "Services related to learning, training, and academic institutions."
   },
@@ -20,10 +21,12 @@
     "Description": "Food and beverage industry, including restaurants, cafes, and catering."
   },
   {
+    "Id": "7a8503ae-e41b-4718-9532-c4ebc5e5081d",
     "Name": "Booking",
     "Description": "Online and offline booking services for travel, accommodations, and events."
   },
   {
+    "Id": "a46b82bb-803e-4e19-a6e0-5cc3c656fe30",
     "Name": "Ecommerce",
     "Description": "Online shopping platforms and digital marketplaces."
   },

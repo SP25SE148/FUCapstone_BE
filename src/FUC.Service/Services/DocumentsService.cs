@@ -37,6 +37,8 @@ public class DocumentsService(ILogger<DocumentsService> logger,
                                 Id = t.Id,
                                 FileUrl = t.FileUrl,
                                 IsActive = t.IsActive,
+                                CreatedBy = t.CreatedBy,
+                                CreatedDate = t.CreatedDate,
                             };
 
                 result = await query.ToListAsync(cancellationToken);

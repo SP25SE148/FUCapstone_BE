@@ -1,6 +1,8 @@
 ﻿using FUC.API.Abstractions;
+using FUC.Common.Constants;
 using FUC.Service.Abstractions;
 using FUC.Service.DTOs.DocumentDTO;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace FUC.API.Controllers;
@@ -12,10 +14,11 @@ public class DocumentsController(IDocumentsService documentsService) : ApiContro
     {
         var result = await documentsService.GetTemplateDocuments(default);
 
-        return result.IsSuccess ? Ok(result) : HandleFailure(result);   
+        return result.IsSuccess ? Ok(result) : HandleFailure(result);
     }
 
     [HttpPost("templates")]
+    [Authorize(Roles = $"{UserRoles.SuperAdmin}")]
     public async Task<IActionResult> UploadTemplateDocument([FromForm] UploadTemplateDocumentRequest request)
     {
         var result = await documentsService.CreateTemplateDocument(request.Path, request.File, default);
@@ -32,6 +35,7 @@ public class DocumentsController(IDocumentsService documentsService) : ApiContro
     }
 
     [HttpDelete("template/{id}")]
+    [Authorize(Roles = $"{UserRoles.SuperAdmin}")]
     public async Task<IActionResult> DeleteTemplateDocument(string id)
     {
         var result = await documentsService.DeleteTemplateDocument(Guid.Parse(id), cancellationToken: default);
@@ -40,6 +44,7 @@ public class DocumentsController(IDocumentsService documentsService) : ApiContro
     }
 
     [HttpPut("template/{id}")]
+    [Authorize(Roles = $"{UserRoles.SuperAdmin}")]
     public async Task<IActionResult> UpdateActiveStatusForTemplateDocument(string id)
     {
         var result = await documentsService.UpdateActiveStatusForTemplateDocument(Guid.Parse(id), default);
