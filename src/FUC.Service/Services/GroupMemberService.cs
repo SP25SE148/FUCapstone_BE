@@ -276,7 +276,9 @@ public class GroupMemberService(
                 StudentId = x.StudentId,
                 StudentFullName = x.Student.FullName,
                 StudentEmail = x.Student.Email,
-                IsLeader = x.IsLeader
+                IsLeader = x.IsLeader,
+                CreatedDate = x.CreatedDate,
+                CreatedBy = x.CreatedBy
             }).ToList();
         if (groupMembers.Any(gm => gm.IsLeader))
         {
@@ -293,7 +295,9 @@ public class GroupMemberService(
                         StudentId = x.StudentId,
                         StudentFullName = x.Student.FullName,
                         StudentEmail = x.Student.Email,
-                        IsLeader = x.IsLeader
+                        IsLeader = x.IsLeader,
+                        CreatedDate = x.CreatedDate,
+                        CreatedBy = x.CreatedBy
                     });
             if (groupMembersRequestOfLeader.Count < 1)
                 return OperationResult.Failure<GroupMemberRequestResponse>(Error.NullValue);

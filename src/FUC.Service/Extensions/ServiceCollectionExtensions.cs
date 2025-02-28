@@ -16,12 +16,14 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 using FUC.Data.Data;
 using FUC.Common.IntegrationEventLog;
+using FUC.Service.Filters;
 
 namespace FUC.Service.Extensions;
 
 public static class ServiceCollectionExtensions
 {
-    public static IServiceCollection AddBusinessLogicServices(this IServiceCollection services, IConfiguration configuration)
+    public static IServiceCollection AddBusinessLogicServices(this IServiceCollection services,
+        IConfiguration configuration)
     {
         services.AddAutoMapper(typeof(ServiceProfiles));
 
@@ -39,7 +41,7 @@ public static class ServiceCollectionExtensions
 
             var config = new AmazonS3Config
             {
-                RegionEndpoint = RegionEndpoint.GetBySystemName(s3Settings.Region)  
+                RegionEndpoint = RegionEndpoint.GetBySystemName(s3Settings.Region)
             };
 
             return new AmazonS3Client(AwsCredentials, config);
@@ -48,12 +50,12 @@ public static class ServiceCollectionExtensions
         services.AddScoped<IS3Service, S3Service>();
 
         services.AddScoped<ICurrentUser, CurrentUser>();
-        
+
         // DI Service
         services.AddScoped<ICampusService, CampusService>();
-        services.AddScoped<ICapstoneService,CapstoneService>();
-        services.AddScoped<IMajorService,MajorService>();
-        services.AddScoped<IMajorGroupService,MajorGroupService>();
+        services.AddScoped<ICapstoneService, CapstoneService>();
+        services.AddScoped<IMajorService, MajorService>();
+        services.AddScoped<IMajorGroupService, MajorGroupService>();
         services.AddScoped<IGroupService, GroupService>();
         services.AddScoped<ISemesterService, SemesterService>();
         services.AddScoped<IGroupMemberService, GroupMemberService>();
@@ -61,11 +63,11 @@ public static class ServiceCollectionExtensions
         services.AddScoped<ISupervisorService, SupervisorService>();
         services.AddScoped<ITopicService, TopicService>();
         services.AddScoped<IDocumentsService, DocumentsService>();
-
+        services.AddScoped<TopicAppraisalFilterFactory>();
         // Add EventLogService
         services.AddEventConsumerConfiguration(configuration);
         services.AddIntegrationEventLogService<FucDbContext>();
-        
+
         // DI RabbitMQ
         services.AddMassTransit(x =>
         {
@@ -76,7 +78,8 @@ public static class ServiceCollectionExtensions
 
             x.UsingRabbitMq((context, cfg) =>
             {
-                cfg.Host(configuration["RabbitMq:Host"], "/", host => {
+                cfg.Host(configuration["RabbitMq:Host"], "/", host =>
+                {
                     host.Username(configuration.GetValue("RabbitMq:Username", "guest"));
                     host.Password(configuration.GetValue("RabbitMq:Password", "guest"));
                 });
