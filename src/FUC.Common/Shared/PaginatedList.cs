@@ -10,11 +10,16 @@ public class PaginatedList<T>
 
     public int CurrentPage { get; }
 
-    public PaginatedList(IEnumerable<T> items, long totalNumberOfItems, int currentPage)
+    public int TotalNumberOfPages { get; }
+
+    public PaginatedList(IEnumerable<T> items, long totalNumberOfItems, 
+        int currentPage, 
+        int totalNumberOfPages)
     {
         Items = items;
         TotalNumberOfItems = totalNumberOfItems;
         CurrentPage = currentPage;
+        TotalNumberOfPages = totalNumberOfPages;    
     }
 
     public static async Task<PaginatedList<T>> CreateAsync(
@@ -29,7 +34,7 @@ public class PaginatedList<T>
 
         if (totalNumberOfItems == 0)
         {
-            return new PaginatedList<T>([], totalNumberOfItems, default);
+            return new PaginatedList<T>([], totalNumberOfItems, default, default);
         }
 
         var totalNumberOfPages = (int)Math.Ceiling(totalNumberOfItems / (decimal)numberOfItems);
@@ -51,6 +56,6 @@ public class PaginatedList<T>
             .Take(numberOfItems)
             .ToListAsync(cancellationToken);
 
-        return new PaginatedList<T>(items, totalNumberOfItems, page);
+        return new PaginatedList<T>(items, totalNumberOfItems, page, totalNumberOfPages);
     }
 }

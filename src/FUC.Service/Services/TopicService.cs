@@ -45,25 +45,25 @@ public class TopicService(
     public async Task<OperationResult<PaginatedList<TopicResponse>>> GetTopics(TopicRequest request)
     {
         var topics = await topicRepository.FindPaginatedAsync(
-            x => x.MainSupervisor.Email == request.MainSupervisorEmail &&
+            x => (request.MainSupervisorEmail == "all" || 
+                    x.MainSupervisor.Email == request.MainSupervisorEmail) &&
                  (string.IsNullOrEmpty(request.SearchTerm) ||
-                  x.Code != null && x.Code.Contains(request.SearchTerm, StringComparison.OrdinalIgnoreCase) ||
-                  x.EnglishName.Contains(request.SearchTerm, StringComparison.OrdinalIgnoreCase) ||
-                  x.VietnameseName.Contains(request.SearchTerm, StringComparison.OrdinalIgnoreCase) ||
-                  x.Abbreviation.Contains(request.SearchTerm, StringComparison.OrdinalIgnoreCase) ||
-                  x.Description.Contains(request.SearchTerm, StringComparison.OrdinalIgnoreCase)) &&
-                 (request.BusinessAreaName == "all" || x.BusinessArea.Name.Equals(request.BusinessAreaName,
-                     StringComparison.OrdinalIgnoreCase)) &&
-                 (request.DifficultyLevel == "all" || x.DifficultyLevel.ToString().Equals(request.DifficultyLevel,
-                     StringComparison.OrdinalIgnoreCase)) &&
-                 (request.Status == "all" || x.Status.ToString().Equals(request.Status,
-                     StringComparison.OrdinalIgnoreCase)) &&
+                  x.Code != null && x.Code.Contains(request.SearchTerm.Trim()) ||
+                  x.EnglishName.Contains(request.SearchTerm.Trim()) ||
+                  x.VietnameseName.Contains(request.SearchTerm.Trim()) ||
+                  x.Abbreviation.Contains(request.SearchTerm.Trim()) ||
+                  x.Description.Contains(request.SearchTerm.Trim())) &&
+                 (request.BusinessAreaId == "all" || 
+                    x.BusinessAreaId == Guid.Parse(request.BusinessAreaId)) &&
+                 (request.DifficultyLevel == "all" || 
+                    x.DifficultyLevel == Enum.Parse<DifficultyLevel>(request.DifficultyLevel, true))  &&
+                 (request.Status == "all" || x.Status == Enum.Parse<TopicStatus>(request.Status, true)) &&
                  x.CapstoneId == request.CapstoneId &&
                  x.CampusId == request.CampusId,
             request.PageNumber,
             request.PageSize,
             x => x.OrderByDescending(x => x.CreatedDate),
-            x => x.AsSplitQuery()
+            x => x.AsSplitQuery()   
                 .Include(x => x.MainSupervisor)
                 .Include(x => x.BusinessArea)
                 .Include(x => x.CoSupervisors)
@@ -72,7 +72,7 @@ public class TopicService(
             {
                 Id = x.Id.ToString(),
                 Code = x.Code ?? "undefined",
-                MainSupervisorEmail = request.MainSupervisorEmail,
+                MainSupervisorEmail = x.MainSupervisor.Email,
                 MainSupervisorName = x.MainSupervisor.FullName,
                 EnglishName = x.EnglishName,
                 VietnameseName = x.VietnameseName,
@@ -91,6 +91,7 @@ public class TopicService(
                     SupervisorEmail = x.Supervisor.Email,
                     SupervisorName = x.Supervisor.FullName,
                 }).ToList(),
+                CreatedDate = x.CreatedDate,
             });
 
         return OperationResult.Success(topics);
