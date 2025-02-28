@@ -18,18 +18,18 @@ class SemanticRequest(BaseModel):
     topic_id: str
     semester_ids: List[str]
 
-def get_topics(semester_ids: List[str], is_current_semester: bool):
+def get_topics(semester_ids: List[str], is_current_semester: bool, exclude_topic_id: str = None):
     """Retrieve topics based on the semester type."""
     conn = psycopg2.connect(DATABASE_URL)
     cursor = conn.cursor(cursor_factory=DictCursor)
 
     if is_current_semester:
-        # For the current semester, exclude "Fail" topics
+        # For the current semester, exclude "Fail" topics and exclude the topic itself
         cursor.execute('''
             SELECT "Id", "Description", "EnglishName", "ProcessedBy"
             FROM "Topic"
-            WHERE "SemesterId" = ANY(%s) AND "Status" != %s;
-        ''', (semester_ids, 'Fail'))
+            WHERE "SemesterId" = ANY(%s) AND "Status" != %s AND "Id" != %s;
+        ''', (semester_ids, 'Fail', exclude_topic_id))
     else:
         # For previous semesters, only include "Pass" topics
         cursor.execute('''
@@ -56,9 +56,9 @@ def compute_embedding(text):
     return model.encode(text)
 
 def find_best_match(topic_id: str, semester_ids: List[str], is_current_semester: bool):
-    topics = get_topics(semester_ids, is_current_semester)
+    topics = get_topics(semester_ids, is_current_semester, exclude_topic_id=topic_id if is_current_semester else None)
     new_topic = next((t for t in topics if t["id"] == topic_id), None)
-    
+
     if not new_topic:
         raise HTTPException(status_code=404, detail="Topic not found or does not match required status.")
 
@@ -91,7 +91,7 @@ def get_past_semesters_match(request: SemanticRequest):
 
 @app.get("/semantic/{semester_id}/{topic_id}")  
 def get_current_semester_match(semester_id: str, topic_id: str):
-    """Find matching topics from the current semester (excluding 'Fail' topics)."""
+    """Find matching topics from the current semester (excluding 'Fail' topics and itself)."""
     return find_best_match(topic_id, [semester_id], is_current_semester=True)
 
 if __name__ == "__main__":
