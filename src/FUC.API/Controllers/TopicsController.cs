@@ -18,6 +18,15 @@ public class TopicsController(ITopicService topicService) : ApiController
         return result.IsSuccess ? Ok(result) : HandleFailure(result);
     }
 
+    [HttpGet("supervisor")]
+    [Authorize(Roles = $"{UserRoles.Supervisor}")]
+    public async Task<IActionResult> GetTopicsBySupervisor()
+    {
+        var result = await topicService.GetTopicsBySupervisor();
+
+        return result.IsSuccess ? Ok(result) : HandleFailure(result);
+    }
+
     [HttpGet("presigned/{topicId}")]
     public async Task<IActionResult> GetPresignedUrlTopic(string topicId)
     {

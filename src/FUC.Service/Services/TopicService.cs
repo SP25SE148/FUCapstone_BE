@@ -42,6 +42,45 @@ public class TopicService(
 {
     private const int MaxTopicsForCoSupervisors = 3;
 
+    public async Task<OperationResult<IList<TopicResponse>>> GetTopicsBySupervisor()
+    {
+        var topics = await topicRepository.FindAsync(
+            x => x.MainSupervisorId == currentUser.Id,
+            x => x.AsSplitQuery()
+                .Include(x => x.MainSupervisor)
+                .Include(x => x.BusinessArea)
+                .Include(x => x.CoSupervisors)
+                .ThenInclude(c => c.Supervisor),
+            x => x.OrderByDescending(x => x.CreatedDate),
+            x => new TopicResponse
+            {
+                Id = x.Id.ToString(),
+                Code = x.Code ?? "undefined",
+                MainSupervisorEmail = x.MainSupervisor.Email,
+                MainSupervisorName = x.MainSupervisor.FullName,
+                EnglishName = x.EnglishName,
+                VietnameseName = x.VietnameseName,
+                Abbreviation = x.Abbreviation,
+                Description = x.Description,
+                FileName = x.FileName,
+                FileUrl = x.FileUrl,
+                Status = x.Status,
+                DifficultyLevel = x.DifficultyLevel,
+                BusinessAreaName = x.BusinessArea.Name,
+                CampusId = x.CampusId,
+                SemesterId = x.SemesterId,
+                CapstoneId = x.CapstoneId,
+                CoSupervisors = x.CoSupervisors.Select(x => new CoSupervisorDto
+                {
+                    SupervisorEmail = x.Supervisor.Email,
+                    SupervisorName = x.Supervisor.FullName,
+                }).ToList(),
+                CreatedDate = x.CreatedDate,
+            });
+
+        return OperationResult.Success(topics);
+    }
+
     public async Task<OperationResult<PaginatedList<TopicResponse>>> GetTopics(TopicRequest request)
     {
         var topics = await topicRepository.FindPaginatedAsync(
