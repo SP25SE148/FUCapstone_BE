@@ -12,6 +12,7 @@
     "VietnameseName": "Chia sẻ bài tập và lời giải",
     "Abbreviation": "SES",
     "Description": "Share Exercises and Solutions is an online platform that connects a learning community where users can share exercises, search for solutions, and discuss problem-solving approaches across various subjects such as Mathematics, Physics, Chemistry, Programming, and more. The platform aims to create an open learning environment where users can ask questions, receive quick feedback from the community, and find the most suitable solutions. Users can contribute by sharing exercises, providing detailed solutions, or helping others through comments and discussions.Additionally, the platform integrates learning support features such as an intelligent search system, exercise filtering by topic and difficulty level, solution quality ratings, and a point-based reward system to encourage users to contribute high-quality content.With Share Exercises and Solutions, learning is no longer a solitary journey but an interactive, collaborative, and growth-driven experience.",
+    "Status": "Passed",
     "DifficultyLevel": "1"
   },
   {
@@ -27,6 +28,7 @@
     "VietnameseName": "Trang web mua bán đồ chơi xách tay.",
     "Abbreviation": "PTM",
     "Description": "Portable Toy Marketplace is an online platform dedicated to buying and selling portable toys, connecting buyers and sellers quickly and conveniently. The platform provides a secure trading environment where users can easily list, search for, and purchase handheld toys, mini toys, model kits, remote-controlled toys, and many more. With a user-friendly interface and an intelligent search system, users can browse a wide range of categories, filter products by price, brand, condition (new or used), and check reviews from previous buyers. Additionally, the platform supports multiple secure payment methods and features a live chat system for seamless communication between buyers and sellers. Moreover, Portable Toy Marketplace integrates seller support features such as inventory management, order tracking, and product promotion tools to help sellers reach more customers. With a trusted rating system ensuring transparency and product quality, users can shop and sell with confidence. With Portable Toy Marketplace, buying and selling portable toys has never been easier!",
+    "Status": "Passed",
     "DifficultyLevel": "1"
   },
   {
@@ -42,6 +44,7 @@
     "VietnameseName": "Hệ thống đặt lịch cho homestay",
     "Abbreviation": "HSS",
     "Description": "Homestay Scheduling System is an online platform designed to simplify the booking and management of homestay reservations. It provides an efficient and user-friendly solution for both hosts and guests, ensuring a seamless booking experience. For guests, the system allows easy browsing of available homestays, filtering options based on location, price, amenities, and availability. Users can view detailed property descriptions, check reviews from previous guests, and make instant bookings with secure payment options. For hosts, the platform offers powerful tools to manage bookings, update availability calendars, set pricing, and communicate with guests through an integrated messaging system. Automated reminders and notifications help ensure smooth scheduling and prevent double bookings. With Homestay Scheduling System, booking and managing homestay accommodations becomes more convenient, reliable, and hassle-free for everyone.",
+    "Status": "Passed",
     "DifficultyLevel": "2"
   },
   {
@@ -57,6 +60,7 @@
     "VietnameseName": "Hệ thống xếp lịch học cho trường phổ thông.",
     "Abbreviation": "CSSHS",
     "Description": "Class Scheduling System for High Schools is an advanced online platform designed to streamline the scheduling process for high schools. It provides an efficient way to manage class timetables, allocate teachers, and optimize classroom usage while ensuring minimal conflicts. For administrators, the system automates the scheduling process by considering factors such as subject requirements, teacher availability, and classroom capacity. It helps reduce manual workload and prevents scheduling conflicts, making timetable management more effective and error-free. For teachers, the platform provides an organized view of their assigned classes, enabling them to track their schedules and receive notifications about any changes or updates. For students, the system offers easy access to class schedules, helping them stay updated on their daily lessons, classroom locations, and any modifications made to the timetable. With Class Scheduling System for High Schools, schools can efficiently manage academic schedules, improve coordination, and ensure a smooth learning experience for both students and teachers.",
+    "Status": "Passed",
     "DifficultyLevel": "2"
   },
   {
@@ -72,6 +76,7 @@
     "VietnameseName": "Hệ thống quản lý bán hàng cho chuỗi cửa hàng đồ dùng cho em bé.",
     "Abbreviation": "BGSC",
     "Description": "Sales Management System for Baby Goods Store Chain is a comprehensive platform designed to help baby product retailers efficiently manage sales, inventory, and customer interactions across multiple store locations. It streamlines operations, enhances productivity, and provides valuable insights to optimize business performance. For store managers, the system offers real-time tracking of sales, stock levels, and order processing. It helps automate inventory management, preventing stock shortages or overstocking, while also enabling easy product categorization and pricing adjustments. For sales staff, the platform simplifies order processing, provides quick access to product information, and facilitates seamless billing with integrated payment options. It also supports customer loyalty programs and personalized promotions to enhance customer retention. For business owners, the system generates detailed sales reports and analytics, allowing them to monitor performance across different stores, identify trends, and make data-driven decisions to improve profitability. With Sales Management System for Baby Goods Store Chain, managing a retail business becomes more efficient, organized, and customer-friendly, ensuring a smooth shopping experience for parents and caregivers.",
+    "Status": "Passed",
     "DifficultyLevel": "1"
   },
   {
@@ -87,6 +92,7 @@
     "VietnameseName": "Ứng dụng đặt vé cho các chuyến đi",
     "Abbreviation": "TTBA",
     "Description": "Trip Ticket Booking Application is a user-friendly platform designed to simplify the process of booking tickets for various types of trips, including flights, buses, trains, and cruises. It provides a seamless experience for travelers by offering an intuitive interface, secure payments, and real-time availability updates. For travelers, the application allows easy browsing of available trips, filtering options based on destination, departure time, price, and travel class. Users can compare ticket prices, view seat availability, and make instant bookings with multiple payment options. For travel operators, the system enables efficient management of ticket sales, seat allocations, and real-time updates on booking status. It also provides tools for handling cancellations, refunds, and promotional offers to attract more customers. With Trip Ticket Booking Application, planning and booking trips becomes faster, more convenient, and stress-free, ensuring a smooth travel experience from start to finish.",
+    "Status": "Passed",
     "DifficultyLevel": "2"
   },
   {
@@ -102,6 +108,7 @@
     "VietnameseName": "Hệ thống học tập và thực hành trắc nghiệm.",
     "Abbreviation": "MCLPS",
     "Description": "Multiple-Choice Learning and Practice System is an interactive platform designed to help users learn and practice multiple-choice exercises across various subjects. It provides a structured and engaging way to test knowledge, improve understanding, and track progress over time. For learners, the system offers a vast collection of multiple-choice questions categorized by subject, topic, and difficulty level. Users can take practice tests, receive instant feedback on their answers, and review explanations to enhance their learning experience. For educators, the platform provides tools to create, manage, and analyze multiple-choice quizzes. It enables tracking student performance, identifying areas for improvement, and customizing question sets to match specific learning objectives. With Multiple-Choice Learning and Practice System, studying becomes more interactive, effective, and accessible, making it easier for learners to master new concepts and improve their test-taking skills.",
+    "Status": "Passed",
     "DifficultyLevel": "2"
   },
   {
@@ -117,6 +124,7 @@
     "VietnameseName": "Trang thương mại mua bán các tác phẩm thủ công.",
     "Abbreviation": "BSPT",
     "Description": "Handmade Marketplace is an online commercial platform designed to connect artisans and buyers, facilitating the buying and selling of unique, handcrafted products. It provides a space where creators can showcase their handmade works, and customers can discover one-of-a-kind items that are crafted with care and skill. For sellers, the platform offers an easy-to-use interface to list products, manage inventory, set pricing, and communicate with buyers. It also includes promotional tools and analytics to help artisans grow their businesses. For buyers, the marketplace provides a seamless shopping experience with diverse categories of handmade goods, secure payment options, and customer reviews to ensure product quality and authenticity. With Handmade Marketplace, artisans can turn their passion into profit, while buyers can access exclusive, high-quality handmade creations from around the world.",
+    "Status": "Passed",
     "DifficultyLevel": "1"
   },
   {
@@ -132,6 +140,7 @@
     "VietnameseName": "Hệ thống đặt vé các sự kiện.",
     "Abbreviation": "SSH",
     "Description": "Event Ticket Booking System is an efficient and user-friendly platform designed to simplify the process of booking tickets for various events, including concerts, sports matches, theater performances, conferences, and festivals. It ensures a seamless experience for both event organizers and attendees. For attendees, the system provides an intuitive interface to browse upcoming events, filter by date, location, category, and price range, and purchase tickets securely. Users can choose seats (if applicable), receive digital tickets, and get event reminders. For event organizers, the platform offers tools to create and manage events, set ticket pricing, track sales in real time, and handle attendee registrations. It also supports promotional campaigns, discount codes, and analytics to maximize ticket sales. With Event Ticket Booking System, attending and managing events becomes more convenient, organized, and hassle-free, ensuring a smooth experience from ticket purchase to event participation.",
+    "Status": "Passed",
     "DifficultyLevel": "2"
   },
   {
@@ -141,12 +150,13 @@
     "SemesterId": "SP25",
     "BusinessAreaId": "a46b82bb-803e-4e19-a6e0-5cc3c656fe30",
     "Code": "SP25SE001",
-    "FileName": "topic1",
-    "FileUrl": "topic/topic1",
+    "FileName": "topic10",
+    "FileUrl": "topic/topic10",
     "EnglishName": "Smart Home Automation",
     "VietnameseName": "Hệ thống nhà thông minh.",
     "Abbreviation": "SHA",
     "Description": "Smart Home Automation is an intelligent home control system allowing users to manage lighting, temperature, security, and more from a single interface.",
+    "Status": "Pending",
     "DifficultyLevel": "2"
   },
   {
@@ -156,13 +166,14 @@
     "SemesterId": "SP25",
     "BusinessAreaId": "a46b82bb-803e-4e19-a6e0-5cc3c656fe30",
     "Code": "SP25SE002",
-    "FileName": "topic2",
-    "FileUrl": "topic/topic2",
+    "FileName": "topic11",
+    "FileUrl": "topic/topic11",
     "EnglishName": "AI-Powered Resume Analyzer",
     "VietnameseName": "Trình phân tích hồ sơ xin việc bằng AI.",
     "Abbreviation": "AIRA",
     "Description": "AI-Powered Resume Analyzer helps job seekers optimize their resumes by analyzing content, suggesting improvements, and matching them with job descriptions.",
-    "DifficultyLevel": "3"
+    "Status": "Pending",
+    "DifficultyLevel": "0"
   },
   {
     "MainSupervisorId": "vulns",
@@ -171,12 +182,13 @@
     "SemesterId": "SP25",
     "BusinessAreaId": "a46b82bb-803e-4e19-a6e0-5cc3c656fe30",
     "Code": "SP25SE003",
-    "FileName": "topic3",
-    "FileUrl": "topic/topic3",
+    "FileName": "topic12",
+    "FileUrl": "topic/topic12",
     "EnglishName": "Elderly Care Monitoring System",
     "VietnameseName": "Hệ thống giám sát chăm sóc người già.",
     "Abbreviation": "ECMS",
     "Description": "Elderly Care Monitoring System uses IoT and AI to track the health status and daily activities of elderly individuals, providing timely alerts to caregivers.",
+    "Status": "Pending",
     "DifficultyLevel": "2"
   },
   {
@@ -186,13 +198,14 @@
     "SemesterId": "SP25",
     "BusinessAreaId": "a46b82bb-803e-4e19-a6e0-5cc3c656fe30",
     "Code": "SP25SE004",
-    "FileName": "topic4",
-    "FileUrl": "topic/topic4",
+    "FileName": "topic13",
+    "FileUrl": "topic/topic13",
     "EnglishName": "Blockchain-Based Voting System",
     "VietnameseName": "Hệ thống bầu cử dựa trên Blockchain.",
     "Abbreviation": "BBVS",
     "Description": "Blockchain-Based Voting System ensures secure, transparent, and tamper-proof elections by leveraging blockchain technology.",
-    "DifficultyLevel": "4"
+    "Status": "Pending",
+    "DifficultyLevel": "1"
   },
   {
     "MainSupervisorId": "vulns",
@@ -201,13 +214,14 @@
     "SemesterId": "SP25",
     "BusinessAreaId": "a46b82bb-803e-4e19-a6e0-5cc3c656fe30",
     "Code": "SP25SE005",
-    "FileName": "topic5",
-    "FileUrl": "topic/topic5",
+    "FileName": "topic14",
+    "FileUrl": "topic/topic14",
     "EnglishName": "AI Chatbot for Mental Health",
     "VietnameseName": "Chatbot AI hỗ trợ sức khỏe tinh thần.",
     "Abbreviation": "AIMH",
     "Description": "AI Chatbot for Mental Health provides emotional support and therapy recommendations using natural language processing and sentiment analysis.",
-    "DifficultyLevel": "3"
+    "Status": "Pending",
+    "DifficultyLevel": "1"
   },
   {
     "MainSupervisorId": "vulns",
@@ -216,12 +230,13 @@
     "SemesterId": "SP25",
     "BusinessAreaId": "a46b82bb-803e-4e19-a6e0-5cc3c656fe30",
     "Code": "SP25SE006",
-    "FileName": "topic6",
-    "FileUrl": "topic/topic6",
+    "FileName": "topic15",
+    "FileUrl": "topic/topic15",
     "EnglishName": "Online Learning Platform with Gamification",
     "VietnameseName": "Nền tảng học trực tuyến kết hợp game hóa.",
     "Abbreviation": "OLPG",
     "Description": "An online learning platform integrating gamification elements to enhance engagement and motivation for students.",
+    "Status": "Pending",
     "DifficultyLevel": "2"
   },
   {
@@ -231,13 +246,14 @@
     "SemesterId": "SP25",
     "BusinessAreaId": "a46b82bb-803e-4e19-a6e0-5cc3c656fe30",
     "Code": "SP25SE007",
-    "FileName": "topic7",
-    "FileUrl": "topic/topic7",
+    "FileName": "topic16",
+    "FileUrl": "topic/topic16",
     "EnglishName": "Personal Finance Management App",
     "VietnameseName": "Ứng dụng quản lý tài chính cá nhân.",
     "Abbreviation": "PFM",
     "Description": "An application that helps users track expenses, set budgets, and manage financial goals with AI-based spending analysis.",
-    "DifficultyLevel": "3"
+    "Status": "Pending",
+    "DifficultyLevel": "1"
   },
   {
     "MainSupervisorId": "vulns",
@@ -246,13 +262,14 @@
     "SemesterId": "SP25",
     "BusinessAreaId": "a46b82bb-803e-4e19-a6e0-5cc3c656fe30",
     "Code": "SP25SE008",
-    "FileName": "topic8",
-    "FileUrl": "topic/topic8",
+    "FileName": "topic17",
+    "FileUrl": "topic/topic17",
     "EnglishName": "AI-Based Fraud Detection System",
     "VietnameseName": "Hệ thống phát hiện gian lận dựa trên AI.",
     "Abbreviation": "AIFD",
     "Description": "AI-Based Fraud Detection System detects fraudulent activities in financial transactions using machine learning algorithms.",
-    "DifficultyLevel": "4"
+    "Status": "Pending",
+    "DifficultyLevel": "2"
   },
   {
     "MainSupervisorId": "vulns",
@@ -261,13 +278,14 @@
     "SemesterId": "SP25",
     "BusinessAreaId": "a46b82bb-803e-4e19-a6e0-5cc3c656fe30",
     "Code": "SP25SE009",
-    "FileName": "topic9",
-    "FileUrl": "topic/topic9",
+    "FileName": "topic18",
+    "FileUrl": "topic/topic18",
     "EnglishName": "E-Commerce Recommendation System",
     "VietnameseName": "Hệ thống gợi ý thương mại điện tử.",
     "Abbreviation": "ECRS",
     "Description": "An AI-powered recommendation system that provides personalized product suggestions based on user behavior and preferences.",
-    "DifficultyLevel": "3"
+    "Status": "Pending",
+    "DifficultyLevel": "1"
   },
   {
     "MainSupervisorId": "vulns",
@@ -276,12 +294,13 @@
     "SemesterId": "SP25",
     "BusinessAreaId": "a46b82bb-803e-4e19-a6e0-5cc3c656fe30",
     "Code": "SP25SE010",
-    "FileName": "topic10",
-    "FileUrl": "topic/topic10",
+    "FileName": "topic19",
+    "FileUrl": "topic/topic19",
     "EnglishName": "Health and Fitness Tracking App",
     "VietnameseName": "Ứng dụng theo dõi sức khỏe và thể hình.",
     "Abbreviation": "HFTA",
     "Description": "A mobile application that tracks fitness activities, diet plans, and health metrics to help users maintain a healthy lifestyle.",
+    "Status": "Pending",
     "DifficultyLevel": "2"
   }
 ]

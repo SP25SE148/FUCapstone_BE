@@ -1,4 +1,5 @@
-from fastapi import FastAPI, HTTPException
+import os
+from fastapi import FastAPI, HTTPException, Query
 from pydantic import BaseModel
 import numpy as np
 from sentence_transformers import SentenceTransformer, util
