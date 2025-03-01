@@ -29,7 +29,8 @@ public class SemanticTopicEventConsumer : BaseEventConsumer<SemanticTopicEvent>
 
     protected override async Task ProcessMessage(SemanticTopicEvent message)
     {
-        _logger.LogInformation("--> Consume semantic for Topic {TopicId} - Event {EventId}", message.TopicId, message.Id);
+        _logger.LogInformation("--> Consume semantic for Topic {TopicId} - Event {EventId}", message.TopicId,
+            message.Id);
 
         var key = $"processing/{message.TopicId}";
 
@@ -37,13 +38,13 @@ public class SemanticTopicEventConsumer : BaseEventConsumer<SemanticTopicEvent>
 
         try
         {
-            var response = message.IsCurrentSemester ?
-                await _semanticApi.GetSemanticStatisticWithCurrentSemester(message.SemesterIds[0], message.TopicId)
-            :   await _semanticApi.GetSemanticStatisticWithPreviousSemesters(new SemanticPreviousSemesterRequest
-            {
-                SemesterIds = message.SemesterIds,
-                TopicId = message.TopicId
-            });
+            var response = message.IsCurrentSemester
+                ? await _semanticApi.GetSemanticStatisticWithCurrentSemester(message.SemesterIds[0], message.TopicId)
+                : await _semanticApi.GetSemanticStatisticWithPreviousSemesters(new SemanticPreviousSemesterRequest
+                {
+                    SemesterIds = message.SemesterIds,
+                    TopicId = message.TopicId
+                });
 
             if (!response.IsSuccessStatusCode)
             {
@@ -52,10 +53,10 @@ public class SemanticTopicEventConsumer : BaseEventConsumer<SemanticTopicEvent>
 
             var analysisResult = await response.Content.ReadAsStringAsync();
 
-            _dbContext.TopicAnalyses.Add(new TopicAnalysis
+            _dbContext.TopicAnalysis.Add(new TopicAnalysis
             {
                 AnalysisResult = analysisResult,
-                TopicId = message.Id,
+                TopicId = Guid.Parse(message.TopicId),
                 ProcessedBy = message.ProcessedBy
             });
 
