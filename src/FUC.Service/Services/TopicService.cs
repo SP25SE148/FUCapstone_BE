@@ -84,26 +84,26 @@ public class TopicService(
     public async Task<OperationResult<PaginatedList<TopicResponse>>> GetTopics(TopicRequest request)
     {
         var topics = await topicRepository.FindPaginatedAsync(
-            x => (request.MainSupervisorEmail == "all" || 
-                    x.MainSupervisor.Email == request.MainSupervisorEmail) &&
+            x => (request.MainSupervisorEmail == "all" ||
+                  x.MainSupervisor.Email == request.MainSupervisorEmail) &&
                  (string.IsNullOrEmpty(request.SearchTerm) ||
                   x.Code != null && x.Code.Contains(request.SearchTerm.Trim()) ||
                   x.EnglishName.Contains(request.SearchTerm.Trim()) ||
                   x.VietnameseName.Contains(request.SearchTerm.Trim()) ||
                   x.Abbreviation.Contains(request.SearchTerm.Trim()) ||
                   x.Description.Contains(request.SearchTerm.Trim())) &&
-                 (request.BusinessAreaId == "all" || 
-                    x.BusinessAreaId == Guid.Parse(request.BusinessAreaId)) &&
-                 (request.DifficultyLevel == "all" || 
-                    x.DifficultyLevel == Enum.Parse<DifficultyLevel>(request.DifficultyLevel, true))  &&
+                 (request.BusinessAreaId == "all" ||
+                  x.BusinessAreaId == Guid.Parse(request.BusinessAreaId)) &&
+                 (request.DifficultyLevel == "all" ||
+                  x.DifficultyLevel == Enum.Parse<DifficultyLevel>(request.DifficultyLevel, true)) &&
                  (request.Status == "all" || x.Status == Enum.Parse<TopicStatus>(request.Status, true)) &&
                  (request.CapstoneId == "all" || x.CapstoneId == request.CapstoneId) &&
-                 (request.CampusId == "all" || x.CampusId == request.CampusId) && 
+                 (request.CampusId == "all" || x.CampusId == request.CampusId) &&
                  (request.SemesterId == "all" || x.SemesterId == request.SemesterId),
             request.PageNumber,
             request.PageSize,
             x => x.OrderByDescending(x => x.CreatedDate),
-            x => x.AsSplitQuery()   
+            x => x.AsSplitQuery()
                 .Include(x => x.MainSupervisor)
                 .Include(x => x.BusinessArea)
                 .Include(x => x.CoSupervisors)
@@ -344,7 +344,7 @@ public class TopicService(
 
             var analysisResponse = new List<TopicAnalysisResponse>();
 
-            foreach (var a in analysis!.MatchingTopics)
+            foreach (var a in analysis!)
             {
                 if (a.Value.Similarity > 80)
                 {
@@ -370,7 +370,7 @@ public class TopicService(
                 Over80Ratio = analysisResponse.Count != 0 ? (double)over80ratio / analysisResponse.Count : 0,
                 Over90Ratio = analysisResponse.Count != 0 ? (double)over90ratio / analysisResponse.Count : 0,
                 CreatedDate = item.CreatedDate,
-                ProcessedBy = item.ProcessedBy, 
+                ProcessedBy = item.ProcessedBy,
             });
         }
 

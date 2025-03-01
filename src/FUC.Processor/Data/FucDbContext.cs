@@ -12,5 +12,5 @@ public class FucDbContext : DbContext, IIntegrationDbContext
     public FucDbContext(DbContextOptions<FucDbContext> options) : base(options) { }
 
     public DbSet<IntegrationEventLog> IntegrationEventLogs { get; set; }
-    public DbSet<TopicAnalysis> TopicAnalyses { get; set; }
+    public DbSet<TopicAnalysis> TopicAnalysis { get; set; }
 }

@@ -8,6 +8,7 @@ using FUC.Data.Entities;
 using System.Text.Json;
 using FUC.API.Abstractions;
 using System.Text.Json.Serialization;
+using System.ComponentModel.DataAnnotations;
 using Microsoft.AspNetCore.Authorization;
 
 namespace FUC.API.Controllers;
@@ -20,7 +21,7 @@ public class SeedController : ApiController
     private readonly IPublishEndpoint _publishEndpoint;
     private readonly IServiceProvider _serviceProvider;
 
-    public SeedController(ILogger<SeedController> logger, 
+    public SeedController(ILogger<SeedController> logger,
         ICurrentUser currentUser,
         IBus bus,
         IPublishEndpoint publishEndpoint,
@@ -29,7 +30,7 @@ public class SeedController : ApiController
         _logger = logger;
         _currentUser = currentUser;
         _bus = bus;
-        _publishEndpoint = publishEndpoint; 
+        _publishEndpoint = publishEndpoint;
         _serviceProvider = serviceProvider;
     }
 
@@ -40,7 +41,7 @@ public class SeedController : ApiController
         return Ok(new
         {
             _currentUser.Id,
-            _currentUser.Name,  
+            _currentUser.Name,
             _currentUser.Email,
             _currentUser.UserCode
         });
@@ -62,12 +63,12 @@ public class SeedController : ApiController
 
         // Manually create a fake HttpContext with a test user
         var claims = new List<Claim>
-            {
-                new Claim(ClaimTypes.NameIdentifier, "supervisor1"),
-                new Claim("name", "Supervisor 1"),
-                new Claim(ClaimTypes.Email, "supervisor1@fe.edu.vn"),
-                new Claim(ClaimTypes.GivenName, "supervisor1")
-            };
+        {
+            new Claim(ClaimTypes.NameIdentifier, "supervisor1"),
+            new Claim("name", "Supervisor 1"),
+            new Claim(ClaimTypes.Email, "supervisor1@fe.edu.vn"),
+            new Claim(ClaimTypes.GivenName, "supervisor1")
+        };
 
         var identity = new ClaimsIdentity(claims, "TestAuth");
         var user = new ClaimsPrincipal(identity);
@@ -75,9 +76,9 @@ public class SeedController : ApiController
         // Set the fake user in IHttpContextAccessor
         httpContextAccessor.HttpContext = new DefaultHttpContext { User = user };
 
-        if(!context.Set<Topic>().Any() && topics is not null)
+        if (!context.Set<Topic>().Any() && topics is not null)
         {
-            context.Set<Topic>().AddRange(topics);  
+            context.Set<Topic>().AddRange(topics);
         }
 
         await context.SaveChangesAsync();
@@ -86,7 +87,7 @@ public class SeedController : ApiController
     }
 
     [HttpPost("test/bus")]
-    public async Task<IActionResult> TestBus() 
+    public async Task<IActionResult> TestBus()
     {
         _logger.LogInformation("Test publish message into queue");
 
