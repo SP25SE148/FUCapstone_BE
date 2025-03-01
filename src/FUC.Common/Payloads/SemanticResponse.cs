@@ -14,7 +14,4 @@ public class MatchingTopic
 
     [JsonPropertyName("english_name")]
     public string EnglishName { get; set; }
-
-    [JsonPropertyName("processed_by")]
-    public string ProcessedBy { get; set; }
 }

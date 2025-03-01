@@ -27,14 +27,14 @@ def get_topics(semester_ids: List[str], is_current_semester: bool, exclude_topic
     if is_current_semester:
         # For the current semester, exclude "Fail" topics and exclude the topic itself
         cursor.execute('''
-            SELECT "Id", "Description", "EnglishName", "ProcessedBy"
+            SELECT "Id", "Description", "EnglishName"
             FROM "Topic"
             WHERE "SemesterId" = ANY(%s) AND "Status" != %s AND "Id" != %s;
         ''', (semester_ids, 'Fail', exclude_topic_id))
     else:
         # For previous semesters, only include "Pass" topics
         cursor.execute('''
-            SELECT "Id", "Description", "EnglishName", "ProcessedBy"
+            SELECT "Id", "Description", "EnglishName"
             FROM "Topic"
             WHERE "SemesterId" = ANY(%s) AND "Status" = %s;
         ''', (semester_ids, 'Pass'))
@@ -43,8 +43,7 @@ def get_topics(semester_ids: List[str], is_current_semester: bool, exclude_topic
         {
             "id": str(row["Id"]),
             "context": row["Description"],
-            "english_name": row["EnglishName"],
-            "processed_by": row["ProcessedBy"]
+            "english_name": row["EnglishName"]
         }
         for row in cursor.fetchall()
     ]
@@ -73,8 +72,7 @@ def find_best_match(topic_id: str, semester_ids: List[str], is_current_semester:
     matching_topics = {
         topics[i]["id"]: {
             "similarity": round(float(sim) * 100, 2),
-            "english_name": topics[i]["english_name"],
-            "processed_by": topics[i]["processed_by"]
+            "english_name": topics[i]["english_name"]
         }
         for i, sim in enumerate(similarities) if sim >= 0.6
     }
