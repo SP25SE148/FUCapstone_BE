@@ -369,6 +369,7 @@ public class TopicService(
                 Over80Ratio = analysisResponse.Count != 0 ? (double)over80ratio / analysisResponse.Count : 0,
                 Over90Ratio = analysisResponse.Count != 0 ? (double)over90ratio / analysisResponse.Count : 0,
                 CreatedDate = item.CreatedDate,
+                ProcessedBy = item.ProcessedBy, 
             });
         }
 
