@@ -97,8 +97,9 @@ public class TopicService(
                  (request.DifficultyLevel == "all" || 
                     x.DifficultyLevel == Enum.Parse<DifficultyLevel>(request.DifficultyLevel, true))  &&
                  (request.Status == "all" || x.Status == Enum.Parse<TopicStatus>(request.Status, true)) &&
-                 x.CapstoneId == request.CapstoneId &&
-                 x.CampusId == request.CampusId,
+                 (request.CapstoneId == "all" || x.CapstoneId == request.CapstoneId) &&
+                 (request.CampusId == "all" || x.CampusId == request.CampusId) && 
+                 (request.SemesterId == "all" || x.SemesterId == request.SemesterId),
             request.PageNumber,
             request.PageSize,
             x => x.OrderByDescending(x => x.CreatedDate),

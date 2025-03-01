@@ -1,6 +1,6 @@
 [
   {
-    "MainSupervisorId": "vulns",
+    "MainSupervisorId": "supervisor1",
     "CapstoneId": "SEP490",
     "CampusId": "HCM",
     "SemesterId": "FA24",
@@ -16,7 +16,7 @@
     "DifficultyLevel": "1"
   },
   {
-    "MainSupervisorId": "vulns",
+    "MainSupervisorId": "supervisor1",
     "CapstoneId": "SEP490",
     "CampusId": "HCM",
     "SemesterId": "FA24",
@@ -32,7 +32,7 @@
     "DifficultyLevel": "1"
   },
   {
-    "MainSupervisorId": "vulns",
+    "MainSupervisorId": "supervisor1",
     "CapstoneId": "SEP490",
     "CampusId": "HCM",
     "SemesterId": "FA24",
@@ -48,7 +48,7 @@
     "DifficultyLevel": "2"
   },
   {
-    "MainSupervisorId": "vulns",
+    "MainSupervisorId": "supervisor1",
     "CapstoneId": "SEP490",
     "CampusId": "HCM",
     "SemesterId": "SU24",
@@ -64,7 +64,7 @@
     "DifficultyLevel": "2"
   },
   {
-    "MainSupervisorId": "vulns",
+    "MainSupervisorId": "supervisor1",
     "CapstoneId": "SEP490",
     "CampusId": "HCM",
     "SemesterId": "SU24",
@@ -80,7 +80,7 @@
     "DifficultyLevel": "1"
   },
   {
-    "MainSupervisorId": "vulns",
+    "MainSupervisorId": "supervisor1",
     "CapstoneId": "SEP490",
     "CampusId": "HCM",
     "SemesterId": "SU24",
@@ -96,7 +96,7 @@
     "DifficultyLevel": "2"
   },
   {
-    "MainSupervisorId": "vulns",
+    "MainSupervisorId": "supervisor1",
     "CapstoneId": "SEP490",
     "CampusId": "HCM",
     "SemesterId": "SP24",
@@ -112,7 +112,7 @@
     "DifficultyLevel": "2"
   },
   {
-    "MainSupervisorId": "vulns",
+    "MainSupervisorId": "supervisor1",
     "CapstoneId": "SEP490",
     "CampusId": "HCM",
     "SemesterId": "SP24",
@@ -128,7 +128,7 @@
     "DifficultyLevel": "1"
   },
   {
-    "MainSupervisorId": "vulns",
+    "MainSupervisorId": "supervisor1",
     "CapstoneId": "SEP490",
     "CampusId": "HCM",
     "SemesterId": "SP24",
@@ -144,7 +144,7 @@
     "DifficultyLevel": "2"
   },
   {
-    "MainSupervisorId": "vulns",
+    "MainSupervisorId": "supervisor1",
     "CapstoneId": "SEP490",
     "CampusId": "HCM",
     "SemesterId": "SP25",
@@ -160,7 +160,7 @@
     "DifficultyLevel": "2"
   },
   {
-    "MainSupervisorId": "vulns",
+    "MainSupervisorId": "supervisor1",
     "CapstoneId": "SEP490",
     "CampusId": "HCM",
     "SemesterId": "SP25",
@@ -176,7 +176,7 @@
     "DifficultyLevel": "0"
   },
   {
-    "MainSupervisorId": "vulns",
+    "MainSupervisorId": "supervisor1",
     "CapstoneId": "SEP490",
     "CampusId": "HCM",
     "SemesterId": "SP25",
@@ -192,7 +192,7 @@
     "DifficultyLevel": "2"
   },
   {
-    "MainSupervisorId": "vulns",
+    "MainSupervisorId": "supervisor1",
     "CapstoneId": "SEP490",
     "CampusId": "HCM",
     "SemesterId": "SP25",
@@ -208,7 +208,7 @@
     "DifficultyLevel": "1"
   },
   {
-    "MainSupervisorId": "vulns",
+    "MainSupervisorId": "supervisor1",
     "CapstoneId": "SEP490",
     "CampusId": "HCM",
     "SemesterId": "SP25",
@@ -224,7 +224,7 @@
     "DifficultyLevel": "1"
   },
   {
-    "MainSupervisorId": "vulns",
+    "MainSupervisorId": "supervisor1",
     "CapstoneId": "SEP490",
     "CampusId": "HCM",
     "SemesterId": "SP25",
@@ -240,7 +240,7 @@
     "DifficultyLevel": "2"
   },
   {
-    "MainSupervisorId": "vulns",
+    "MainSupervisorId": "supervisor1",
     "CapstoneId": "SEP490",
     "CampusId": "HCM",
     "SemesterId": "SP25",
@@ -256,7 +256,7 @@
     "DifficultyLevel": "1"
   },
   {
-    "MainSupervisorId": "vulns",
+    "MainSupervisorId": "supervisor1",
     "CapstoneId": "SEP490",
     "CampusId": "HCM",
     "SemesterId": "SP25",
@@ -272,7 +272,7 @@
     "DifficultyLevel": "2"
   },
   {
-    "MainSupervisorId": "vulns",
+    "MainSupervisorId": "supervisor1",
     "CapstoneId": "SEP490",
     "CampusId": "HCM",
     "SemesterId": "SP25",
@@ -288,7 +288,7 @@
     "DifficultyLevel": "1"
   },
   {
-    "MainSupervisorId": "vulns",
+    "MainSupervisorId": "supervisor1",
     "CapstoneId": "SEP490",
     "CampusId": "HCM",
     "SemesterId": "SP25",

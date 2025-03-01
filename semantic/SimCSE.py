@@ -19,7 +19,7 @@ class SemanticRequest(BaseModel):
     topic_id: str
     semester_ids: List[str]
 
-def get_topics(semester_ids: List[str], is_current_semester: bool, exclude_topic_id: str = None):
+def get_topics(semester_ids: List[str], is_current_semester: bool):
     """Retrieve topics based on the semester type."""
     conn = psycopg2.connect(DATABASE_URL)
     cursor = conn.cursor(cursor_factory=DictCursor)
@@ -29,15 +29,15 @@ def get_topics(semester_ids: List[str], is_current_semester: bool, exclude_topic
         cursor.execute('''
             SELECT "Id", "Description", "EnglishName"
             FROM "Topic"
-            WHERE "SemesterId" = ANY(%s) AND "Status" != %s AND "Id" != %s;
-        ''', (semester_ids, 'Fail', exclude_topic_id))
+            WHERE "SemesterId" = ANY(%s) AND "Status" != %s;
+        ''', (semester_ids, 'Failed'))
     else:
         # For previous semesters, only include "Pass" topics
         cursor.execute('''
             SELECT "Id", "Description", "EnglishName"
             FROM "Topic"
             WHERE "SemesterId" = ANY(%s) AND "Status" = %s;
-        ''', (semester_ids, 'Pass'))
+        ''', (semester_ids, 'Passed'))
 
     topics = [
         {
@@ -52,15 +52,41 @@ def get_topics(semester_ids: List[str], is_current_semester: bool, exclude_topic
     conn.close()
     return topics
 
+def get_topic_by_id(topic_id: str):
+    """Retrieve a single topic by ID."""
+    conn = psycopg2.connect(DATABASE_URL)
+    cursor = conn.cursor(cursor_factory=DictCursor)
+
+    cursor.execute('''
+        SELECT "Id", "Description", "EnglishName"
+        FROM "Topic"
+        WHERE "Id" = %s;
+    ''', (topic_id,))
+
+    row = cursor.fetchone()
+    cursor.close()
+    conn.close()
+
+    if row:
+        return {
+            "id": str(row["Id"]),
+            "context": row["Description"],
+            "english_name": row["EnglishName"]
+        }
+    return None
+
 def compute_embedding(text):
     return model.encode(text)
 
 def find_best_match(topic_id: str, semester_ids: List[str], is_current_semester: bool):
-    topics = get_topics(semester_ids, is_current_semester, exclude_topic_id=topic_id if is_current_semester else None)
-    new_topic = next((t for t in topics if t["id"] == topic_id), None)
+    topics = get_topics(semester_ids, is_current_semester)
+    new_topic = next((t for t in topics if t["id"] == topic_id), None) if is_current_semester else get_topic_by_id(topic_id)
 
     if not new_topic:
         raise HTTPException(status_code=404, detail="Topic not found or does not match required status.")
+
+    if not topics:
+        return {}
 
     new_embedding = model.encode(new_topic["context"])
     

@@ -8,7 +8,6 @@ using FUC.Data.Entities;
 using System.Text.Json;
 using FUC.API.Abstractions;
 using System.Text.Json.Serialization;
-using System.ComponentModel.DataAnnotations;
 using Microsoft.AspNetCore.Authorization;
 
 namespace FUC.API.Controllers;
@@ -64,10 +63,10 @@ public class SeedController : ApiController
         // Manually create a fake HttpContext with a test user
         var claims = new List<Claim>
             {
-                new Claim(ClaimTypes.NameIdentifier, "vulns"),
-                new Claim("name", "Le Nguyen Son Vu"),
-                new Claim(ClaimTypes.Email, "vulns@fe.edu.vn"),
-                new Claim(ClaimTypes.GivenName, "vulns")
+                new Claim(ClaimTypes.NameIdentifier, "supervisor1"),
+                new Claim("name", "Supervisor 1"),
+                new Claim(ClaimTypes.Email, "supervisor1@fe.edu.vn"),
+                new Claim(ClaimTypes.GivenName, "supervisor1")
             };
 
         var identity = new ClaimsIdentity(claims, "TestAuth");

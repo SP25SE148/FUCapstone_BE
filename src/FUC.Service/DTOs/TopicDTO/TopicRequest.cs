@@ -9,7 +9,7 @@ public class TopicRequest : PaginationParams
     public string Status { get; set; } = "all";
     public string DifficultyLevel { get; set; } = "all";
     public string BusinessAreaId { get; set; } = "all";
-    public string CapstoneId { get; set; }
-    public string SemesterId { get; set; }
-    public string CampusId { get; set; }
+    public string CapstoneId { get; set; } = "all";
+    public string SemesterId { get; set; } = "all";
+    public string CampusId { get; set; } = "all";
 }
