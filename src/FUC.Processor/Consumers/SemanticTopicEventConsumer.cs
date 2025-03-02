@@ -39,11 +39,13 @@ public class SemanticTopicEventConsumer : BaseEventConsumer<SemanticTopicEvent>
         try
         {
             var response = message.IsCurrentSemester
-                ? await _semanticApi.GetSemanticStatisticWithCurrentSemester(message.SemesterIds[0], message.TopicId)
+                ? await _semanticApi.GetSemanticStatisticWithCurrentSemester(message.CampusId, message.CapstoneId, message.SemesterIds[0], message.TopicId)
                 : await _semanticApi.GetSemanticStatisticWithPreviousSemesters(new SemanticPreviousSemesterRequest
                 {
                     SemesterIds = message.SemesterIds,
-                    TopicId = message.TopicId
+                    TopicId = message.TopicId,
+                    CapstoneId = message.CapstoneId,
+                    CampusId = message.CapstoneId,  
                 });
 
             if (!response.IsSuccessStatusCode)

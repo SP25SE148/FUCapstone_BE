@@ -302,5 +302,53 @@
     "Description": "A mobile application that tracks fitness activities, diet plans, and health metrics to help users maintain a healthy lifestyle.",
     "Status": "Pending",
     "DifficultyLevel": "2"
+  },
+  {
+    "MainSupervisorId": "supervisor1",
+    "CapstoneId": "SEP490",
+    "CampusId": "HCM",
+    "SemesterId": "SP25",
+    "BusinessAreaId": "a46b82bb-803e-4e19-a6e0-5cc3c656fe30",
+    "Code": "SP25SE009",
+    "FileName": "topic20",
+    "FileUrl": "topic/topic20",
+    "EnglishName": "AI-Based Anomaly Detection in Transactions",
+    "VietnameseName": "Hệ thống phát hiện bất thường trong giao dịch dựa trên AI.",
+    "Abbreviation": "AIADT",
+    "Description": "AI-Based Anomaly Detection in Transactions analyzes financial activities to identify unusual patterns that may indicate fraudulent behavior, enhancing transaction security.",
+    "Status": "Pending",
+    "DifficultyLevel": "2"
+  },
+  {
+    "MainSupervisorId": "supervisor1",
+    "CapstoneId": "SEP490",
+    "CampusId": "HCM",
+    "SemesterId": "SP25",
+    "BusinessAreaId": "a46b82bb-803e-4e19-a6e0-5cc3c656fe30",
+    "Code": "SP25SE010",
+    "FileName": "topic21",
+    "FileUrl": "topic/topic21",
+    "EnglishName": "AI-Enhanced Banking Fraud Detection",
+    "VietnameseName": "Hệ thống phát hiện gian lận ngân hàng dựa trên AI.",
+    "Abbreviation": "AIEBFD",
+    "Description": "AI-Enhanced Banking Fraud Detection system applies machine learning to detect and prevent fraudulent banking transactions, reducing financial risks for institutions and customers.",
+    "Status": "Pending",
+    "DifficultyLevel": "2"
+  },
+  {
+    "MainSupervisorId": "supervisor1",
+    "CapstoneId": "SEP490",
+    "CampusId": "HCM",
+    "SemesterId": "SP25",
+    "BusinessAreaId": "a46b82bb-803e-4e19-a6e0-5cc3c656fe30",
+    "Code": "SP25SE011",
+    "FileName": "topic22",
+    "FileUrl": "topic/topic22",
+    "EnglishName": "AI-Powered Financial Security System",
+    "VietnameseName": "Hệ thống bảo mật tài chính dựa trên AI.",
+    "Abbreviation": "AIFSS",
+    "Description": "AI-Powered Financial Security System leverages artificial intelligence to monitor and detect suspicious financial activities, ensuring enhanced protection against fraud and unauthorized transactions.",
+    "Status": "Pending",
+    "DifficultyLevel": "1"
   }
 ]
