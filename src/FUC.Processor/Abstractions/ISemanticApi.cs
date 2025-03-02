@@ -5,10 +5,11 @@ namespace FUC.Processor.Abstractions;
 
 public interface ISemanticApi
 {
-    [Get("/semantic/{semesterId}/{id}")]
-    Task<HttpResponseMessage> GetSemanticStatisticWithCurrentSemester(string semesterId, string id);
+    [Get("/semantic/{campusId}/{capstoneId}/{semesterId}/{id}")]
+    Task<HttpResponseMessage> GetSemanticStatisticWithCurrentSemester(string campusId, string capstoneId, string semesterId, string id);
 
-    [Post("/semantic")]
+    [Post("/previous/semantic")]
+    [Headers("Content-Type: application/json")]
     Task<HttpResponseMessage> GetSemanticStatisticWithPreviousSemesters([Body] SemanticPreviousSemesterRequest request);
 }
 
@@ -19,4 +20,10 @@ public class SemanticPreviousSemesterRequest
 
     [JsonPropertyName("semester_ids")]
     public List<string> SemesterIds { get; set; }
+
+    [JsonPropertyName("campus_id")]
+    public string CampusId { get; set; }
+
+    [JsonPropertyName("capstone_id")]
+    public string CapstoneId { get; set; }
 }

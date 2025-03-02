@@ -142,6 +142,13 @@ public class TopicService(
     {
         try
         {
+            var topic = await topicRepository.GetAsync(x => x.Id == topicId, cancellationToken);
+
+            if (topic == null)
+            {
+                return OperationResult.Failure(new Error("Topic.Error", "Topic does not exist."));
+            }
+
             var key = $"processing/{topicId.ToString()}";
             var isInprogress = await cache.GetAsync<object>(key, cancellationToken);
 
@@ -168,6 +175,8 @@ public class TopicService(
                 IsCurrentSemester = withCurrentSemester,
                 SemesterIds = semesterIds,
                 ProcessedBy = currentUser.Email,
+                CampusId = topic.CampusId,
+                CapstoneId = topic.CapstoneId,
             });
 
             await unitOfWork.SaveChangesAsync(cancellationToken);
@@ -269,7 +278,9 @@ public class TopicService(
                 TopicId = topic.Id.ToString(),
                 SemesterIds = await semesterService.GetPreviouseSemesterIds(getCurrentSemesterResult.Value.StartDate),
                 ProcessedBy = currentUser.Email,
-                IsCurrentSemester = false
+                IsCurrentSemester = false,
+                CampusId = currentUser.CampusId,
+                CapstoneId = request.CapstoneId
             });
 
             await unitOfWork.SaveChangesAsync(cancellationToken);
@@ -340,11 +351,25 @@ public class TopicService(
             int over80ratio = 0;
             int over90ratio = 0;
 
-            var analysis = JsonSerializer.Deserialize<SemanticResponse>(item.AnalysisResult);
+            var analysis = JsonSerializer.Deserialize<Dictionary<string, MatchingTopic>>(item.AnalysisResult);
+
+            if(analysis is null || analysis.Count == 0)
+            {
+                result.Add(new TopicStatisticResponse
+                {
+                    Analysises = default,
+                    Over80Ratio = over80ratio,
+                    Over90Ratio = over90ratio,
+                    CreatedDate = item.CreatedDate,
+                    ProcessedBy = item.ProcessedBy,
+                    StatusSemantic = "clean"
+                });
+                continue;
+            }
 
             var analysisResponse = new List<TopicAnalysisResponse>();
 
-            foreach (var a in analysis!)
+            foreach (var a in analysis)
             {
                 if (a.Value.Similarity > 80)
                 {
@@ -371,6 +396,7 @@ public class TopicService(
                 Over90Ratio = analysisResponse.Count != 0 ? (double)over90ratio / analysisResponse.Count : 0,
                 CreatedDate = item.CreatedDate,
                 ProcessedBy = item.ProcessedBy,
+                StatusSemantic = "un_clean"
             });
         }
 

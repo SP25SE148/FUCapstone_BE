@@ -2,11 +2,12 @@
 
 public class TopicStatisticResponse
 {
-    public List<TopicAnalysisResponse> Analysises { get; set; }
+    public IReadOnlyCollection<TopicAnalysisResponse>? Analysises { get; set; }
     public double Over80Ratio { get; set; }
     public double Over90Ratio { get; set; }
     public DateTime CreatedDate { get; set; }
-    public string ProcessedBy { get; set; }
+    public required string ProcessedBy { get; set; }
+    public string StatusSemantic { get; set; }
 }
 
 public class TopicAnalysisResponse
