@@ -45,7 +45,7 @@ public class SemanticTopicEventConsumer : BaseEventConsumer<SemanticTopicEvent>
                     SemesterIds = message.SemesterIds,
                     TopicId = message.TopicId,
                     CapstoneId = message.CapstoneId,
-                    CampusId = message.CapstoneId,  
+                    CampusId = message.CampusId,  
                 });
 
             if (!response.IsSuccessStatusCode)
