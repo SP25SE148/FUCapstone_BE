@@ -45,7 +45,7 @@ public class TopicService(
     public async Task<OperationResult<IList<TopicResponse>>> GetTopicsBySupervisor()
     {
         var topics = await topicRepository.FindAsync(
-            x => x.MainSupervisorId == currentUser.Id,
+            x => x.MainSupervisorId == currentUser.UserCode,
             x => x.AsSplitQuery()
                 .Include(x => x.MainSupervisor)
                 .Include(x => x.BusinessArea)
