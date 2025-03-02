@@ -10,6 +10,14 @@ namespace FUC.API.Controllers;
 
 public class TopicsController(ITopicService topicService) : ApiController
 {
+    [HttpGet("{topicId}")]
+    public async Task<IActionResult> GetTopicById(Guid topicId)
+    {
+        var result = await topicService.GetTopicById(topicId, default);
+
+        return result.IsSuccess ? Ok(result) : HandleFailure(result);
+    }
+
     [HttpGet]
     public async Task<IActionResult> GetTopics([FromQuery] TopicRequest request)
     {

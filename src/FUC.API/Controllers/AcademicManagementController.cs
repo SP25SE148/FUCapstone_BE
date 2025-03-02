@@ -245,7 +245,7 @@ public sealed class AcademicManagementController(
     {
         OperationResult<IEnumerable<SemesterResponse>> semesters = await semesterService.GetSemestersAsync();
         return !semesters.IsFailure
-            ? Ok(semesters.Value)
+            ? Ok(semesters)
             : HandleFailure(semesters);
     }
 
@@ -254,7 +254,7 @@ public sealed class AcademicManagementController(
     {
         OperationResult<IEnumerable<SemesterResponse>> semesters = await semesterService.GetAllActiveSemestersAsync();
         return !semesters.IsFailure
-            ? Ok(semesters.Value)
+            ? Ok(semesters)
             : HandleFailure(semesters);
     }
 

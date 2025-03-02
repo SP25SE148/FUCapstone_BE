@@ -42,6 +42,51 @@ public class TopicService(
 {
     private const int MaxTopicsForCoSupervisors = 3;
 
+    public async Task<OperationResult<TopicResponse>> GetTopicById(Guid topicId, CancellationToken cancellationToken)
+    {
+        var topic = await topicRepository.GetAsync(
+            x => x.Id == topicId,
+            isEnabledTracking: false,
+            x => x.AsSplitQuery()
+                .Include(x => x.MainSupervisor)
+                .Include(x => x.BusinessArea)
+                .Include(x => x.CoSupervisors)
+                .ThenInclude(c => c.Supervisor),
+            null,
+            cancellationToken);
+
+        if (topic == null)
+        {
+            return OperationResult.Failure<TopicResponse>(new Error("Topic.Error", "Topic does not exist."));
+        }
+
+        return OperationResult.Success(new TopicResponse
+        {
+            Id = topic.Id.ToString(),
+            Code = topic.Code ?? "undefined",
+            MainSupervisorEmail = topic.MainSupervisor.Email,
+            MainSupervisorName = topic.MainSupervisor.FullName,
+            EnglishName = topic.EnglishName,
+            VietnameseName = topic.VietnameseName,
+            Abbreviation = topic.Abbreviation,
+            Description = topic.Description,
+            FileName = topic.FileName,
+            FileUrl = topic.FileUrl,
+            Status = topic.Status,
+            DifficultyLevel = topic.DifficultyLevel,
+            BusinessAreaName = topic.BusinessArea.Name,
+            CampusId = topic.CampusId,
+            SemesterId = topic.SemesterId,
+            CapstoneId = topic.CapstoneId,
+            CoSupervisors = topic.CoSupervisors.Select(x => new CoSupervisorDto
+            {
+                SupervisorEmail = x.Supervisor.Email,
+                SupervisorName = x.Supervisor.FullName,
+            }).ToList(),
+            CreatedDate = topic.CreatedDate,
+        });
+    }
+
     public async Task<OperationResult<IList<TopicResponse>>> GetTopicsBySupervisor()
     {
         var topics = await topicRepository.FindAsync(
@@ -353,7 +398,7 @@ public class TopicService(
 
             var analysis = JsonSerializer.Deserialize<Dictionary<string, MatchingTopic>>(item.AnalysisResult);
 
-            if(analysis is null || analysis.Count == 0)
+            if (analysis is null || analysis.Count == 0)
             {
                 result.Add(new TopicStatisticResponse
                 {
@@ -422,11 +467,11 @@ public class TopicService(
         }
 
         var supervisorIdList = await (from s in supervisorRepository.GetQueryable()
-            where supervisorEmail.Contains(s.Email) &&
-                  s.IsAvailable &&
-                  s.MajorId.Equals(currentUser.MajorId) &&
-                  s.CampusId.Equals(currentUser.CampusId)
-            select s.Id).ToListAsync();
+                                      where supervisorEmail.Contains(s.Email) &&
+                                            s.IsAvailable &&
+                                            s.MajorId.Equals(currentUser.MajorId) &&
+                                            s.CampusId.Equals(currentUser.CampusId)
+                                      select s.Id).ToListAsync();
         //check if supervisor list is null or empty!
         if (supervisorIdList.Count < 1)
         {
@@ -554,6 +599,152 @@ public class TopicService(
             : OperationResult.Success(response);
     }
 
+    public async Task<OperationResult> AppraisalTopic(AppraisalTopicRequest request, CancellationToken cancellationToken)
+    {
+        try
+        {
+            if (request.Status == TopicAppraisalStatus.Pending)
+            {
+                return OperationResult.Failure(new Error("TopicAppraisal.Error", "This appraisal is already Pending."));
+            }
+
+            var topicAppraisal = await topicAppraisalRepository.GetAsync(
+                t => t.Id == request.TopicAppraisalId,
+            cancellationToken);
+
+            if (topicAppraisal is null)
+            {
+                return OperationResult.Failure(new Error("Topic.Error", $"The appraisal topic of supervisor: {currentUser.Name} does not exist."));
+            }
+
+            if (topicAppraisal.Status != TopicAppraisalStatus.Pending)
+            {
+                return OperationResult.Failure(new Error("TopicAppraisal.Error", "This appraisal was reviewed."));
+            }
+
+            await unitOfWork.BeginTransactionAsync(cancellationToken);
+
+            await SubmitAppraisalTopic(topicAppraisal,
+            request.AppraisalContent,
+            request.AppraisalComment,
+            request.Status, 
+            cancellationToken);
+
+            var otherTopicAppraisals = await topicAppraisalRepository.FindAsync(
+                x => x.TopicId == topicAppraisal.TopicId &&
+                x.CreatedDate == topicAppraisal.CreatedDate &&
+                x.Id != topicAppraisal.Id,
+                cancellationToken);
+
+            if (otherTopicAppraisals is null || otherTopicAppraisals.Count == 0)
+            {
+                return OperationResult.Failure(new Error("Topic.Error", $"The other appraisal of this topic does not exist."));
+            }
+
+            if (otherTopicAppraisals.All(x => x.Status == topicAppraisal.Status))
+            {
+                var topic = await topicRepository.GetAsync(x => x.Id == topicAppraisal.TopicId, cancellationToken);
+
+                await (topicAppraisal.Status switch
+                {
+                    TopicAppraisalStatus.Accepted => UpdateStatusTopicAfterAppraisal(topic!, TopicStatus.Passed, cancellationToken),
+                    TopicAppraisalStatus.Rejected => UpdateStatusTopicAfterAppraisal(topic!, TopicStatus.Failed, cancellationToken),
+                    TopicAppraisalStatus.Considered => UpdateStatusTopicAfterAppraisal(topic!, TopicStatus.Considered, cancellationToken),
+                    TopicAppraisalStatus.Pending => throw new NotImplementedException(),
+                    _ => throw new InvalidOperationException()
+                });
+            }
+
+            await unitOfWork.CommitAsync(cancellationToken);
+
+            return OperationResult.Success();
+        }
+        catch (Exception ex)
+        {
+            logger.LogError("Submit appraisal topic fail with {Error}", ex.Message);
+            return OperationResult.Failure(new Error("Topic.Error", "Appraisal Topic create fail."));
+        }
+    }
+
+    private async Task UpdateStatusTopicAfterAppraisal(Topic topic, TopicStatus topicStatus, CancellationToken cancellationToken)
+    {
+        try
+        {
+            topic.Status = topicStatus;
+
+            if (topic.Status == TopicStatus.Passed)
+            {
+                // TODO: generate topic code
+            }
+
+            topicRepository.Update(topic);
+
+            // TODO: If status is Passed, then move the file of topic out the Pending folder in S3
+
+            // TODO: Notification for relative people
+
+            await unitOfWork.SaveChangesAsync(cancellationToken);
+        }
+        catch (Exception ex)
+        {
+            logger.LogError("Update status of topic fail with error {Message}", ex.Message);
+            throw;
+        }
+    }
+
+    private async Task SubmitAppraisalTopic(TopicAppraisal topicAppraisal,
+        string appraisalContent,
+        string appraisalComment,
+        TopicAppraisalStatus status,
+        CancellationToken cancellationToken)
+    {
+        try
+        {
+            topicAppraisal.Status = status;
+            topicAppraisal.AppraisalContent = appraisalContent;
+            topicAppraisal.AppraisalComment = appraisalComment;
+            topicAppraisal.AppraisalDate = DateTime.UtcNow;
+
+            topicAppraisalRepository.Update(topicAppraisal);
+
+            await unitOfWork.SaveChangesAsync(cancellationToken);
+        }
+        catch(Exception ex)
+        {
+            logger.LogError("Submit appraisal topic fail with error {Message}", ex.Message);
+            throw;
+        }
+    }
+
+    public async Task<OperationResult> FinalSubmitAppraisalTopic(FinalAppraisalTopicRequest request, CancellationToken cancellationToken)
+    {
+        try
+        {
+            var topic = await topicRepository.GetAsync(
+                predicate: x => x.Id == request.TopicId,
+                include: x => x.Include(t => t.TopicAppraisals),
+                orderBy: null,
+                cancellationToken);
+
+            if (topic == null)
+            { 
+                return OperationResult.Failure(new Error("Topic.Error", "Topic does not exist."));
+            }
+
+            // check if any pending appraisal
+            if (topic.TopicAppraisals.Any(x => x.AppraisalDate is null))
+            {
+                OperationResult.Failure(new Error("Topic.Error", "Final appraisal topic can done with some supervisor's reviews is not done."));
+            }
+
+            return OperationResult.Success();   
+        }
+        catch (Exception ex)
+        {
+            return OperationResult.Failure(new Error("",""));
+        }
+    }
+
     private async Task<List<(string SupervisorId, string SupervisorEmail)>>
         GetAvailableSupervisorsForSupportingTopic(List<string> coSupervisorEmails,
             CancellationToken cancellationToken)
@@ -561,9 +752,9 @@ public class TopicService(
         var result = new List<(string, string)>();
 
         var query = from s in supervisorRepository.GetQueryable()
-            where coSupervisorEmails.Contains(s.Email) &&
-                  s.CoSupervisors.Count < MaxTopicsForCoSupervisors
-            select new { s.Id, s.Email };
+                    where coSupervisorEmails.Contains(s.Email) &&
+                          s.CoSupervisors.Count < MaxTopicsForCoSupervisors
+                    select new { s.Id, s.Email };
 
         (await query.ToListAsync(cancellationToken))
             .ForEach(s => result.Add((s.Id.ToString(), s.Email)));
@@ -584,12 +775,12 @@ public class TopicService(
     public async Task<OperationResult<List<BusinessAreaResponse>>> GetAllBusinessAreas()
     {
         var queryable = from ba in businessRepository.GetQueryable()
-            select new BusinessAreaResponse
-            {
-                Id = ba.Id,
-                Description = ba.Description,
-                Name = ba.Name
-            };
+                        select new BusinessAreaResponse
+                        {
+                            Id = ba.Id,
+                            Description = ba.Description,
+                            Name = ba.Name
+                        };
         var businessAreas = await queryable.ToListAsync();
 
         if (businessAreas.Count != 0)
