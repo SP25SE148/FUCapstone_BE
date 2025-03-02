@@ -7,6 +7,7 @@ namespace FUC.Service.Abstractions;
 
 public interface ITopicService
 {
+    Task<OperationResult<TopicResponse>> GetTopicById(Guid topicId, CancellationToken cancellationToken);
     Task<OperationResult<IList<TopicResponse>>> GetTopicsBySupervisor();
     Task<OperationResult<PaginatedList<TopicResponse>>> GetTopics(TopicRequest request);
     Task<OperationResult<Guid>> CreateTopic(CreateTopicRequest request, CancellationToken cancellationToken);
