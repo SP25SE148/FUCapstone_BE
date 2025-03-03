@@ -8,7 +8,6 @@ using FUC.Data.Entities;
 using System.Text.Json;
 using FUC.API.Abstractions;
 using System.Text.Json.Serialization;
-using System.ComponentModel.DataAnnotations;
 using Microsoft.AspNetCore.Authorization;
 
 namespace FUC.API.Controllers;

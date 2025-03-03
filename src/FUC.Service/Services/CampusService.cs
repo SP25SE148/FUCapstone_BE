@@ -1,7 +1,4 @@
-﻿using System.Linq.Expressions;
-using System.Runtime.InteropServices.JavaScript;
-using AutoMapper;
-using DocumentFormat.OpenXml.Office2010.Excel;
+﻿using AutoMapper;
 using FUC.Common.Shared;
 using FUC.Data;
 using FUC.Data.Data;
@@ -9,7 +6,6 @@ using FUC.Data.Entities;
 using FUC.Data.Repositories;
 using FUC.Service.Abstractions;
 using FUC.Service.DTOs.CampusDTO;
-using Microsoft.VisualBasic;
 
 namespace FUC.Service.Services;
 

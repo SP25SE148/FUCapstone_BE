@@ -17,7 +17,7 @@ public interface IS3Service
 
     Task<CopyObjectResponse> CopyObjectAsync(string bucketName, string sourceKey, string destinationKey);
 
-    Task<bool> MoveFileAsync(string bucketName, List<string> s3SourceKey, string destinationFolder);
+    Task<bool> MoveFileAsync(string bucketName, List<string> s3SourceKey, string destinationFolder, bool isChangeFile);
 
     Task<GetObjectMetadataResponse?> GetObjectMetadataAsync(string bucketName, string key);
 
