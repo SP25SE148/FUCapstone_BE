@@ -10,18 +10,30 @@ namespace FUC.API.Controllers;
 public class DocumentsController(IDocumentsService documentsService) : ApiController
 {
     [HttpGet("templates")]
-    public async Task<IActionResult> GetTemplateDocuments()
+    public async Task<IActionResult> GetTemplateDocuments([FromQuery] Guid? templateId)
     {
-        var result = await documentsService.GetTemplateDocuments(default);
+        var result = await documentsService.GetSubTemplateDocuments(templateId, default);
 
         return result.IsSuccess ? Ok(result) : HandleFailure(result);
     }
 
-    [HttpPost("templates")]
+    [HttpPost("templates/folder")]
     [Authorize(Roles = $"{UserRoles.SuperAdmin}")]
-    public async Task<IActionResult> UploadTemplateDocument([FromForm] UploadTemplateDocumentRequest request)
+    public async Task<IActionResult> CreateFolderTemplateDocument([FromBody] UploadFolderTemplateDocumentRequest request)
     {
-        var result = await documentsService.CreateTemplateDocument(request.Path, request.File, default);
+        var result = await documentsService.CreateTemplateDocument(string.IsNullOrEmpty(request.ParentId) ? null : 
+            Guid.Parse(request.ParentId), 
+            request.FolderName, null, default);
+
+        return result.IsSuccess ? Ok(result) : HandleFailure(result);
+    }
+
+    [HttpPost("templates/file")]
+    [Authorize(Roles = $"{UserRoles.SuperAdmin}")]
+    public async Task<IActionResult> CreateTemplateDocument([FromForm] UploadTemplateDocumentRequest request)
+    {
+        var result = await documentsService.CreateTemplateDocument(string.IsNullOrEmpty(request.ParentId) ? null : 
+            Guid.Parse(request.ParentId), null, request.File, default);
 
         return result.IsSuccess ? Ok(result) : HandleFailure(result);
     }
