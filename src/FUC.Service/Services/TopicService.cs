@@ -665,6 +665,8 @@ public class TopicService(
         catch (Exception ex)
         {
             logger.LogError("Submit appraisal topic fail with {Error}", ex.Message);
+            await unitOfWork.RollbackAsync(cancellationToken);
+
             return OperationResult.Failure(new Error("Topic.Error", "Appraisal Topic create fail."));
         }
     }
@@ -829,6 +831,8 @@ public class TopicService(
         catch (Exception ex)
         {
             logger.LogError("Fail to final appraisal topic with error {Message}", ex.Message);
+            await unitOfWork.RollbackAsync(cancellationToken);
+
             return OperationResult.Failure(new Error("Topic.Error","Fail to create appraisal topic for manager"));
         }
     }

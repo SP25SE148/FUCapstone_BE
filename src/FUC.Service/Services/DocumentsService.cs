@@ -1,4 +1,5 @@
 ﻿using Amazon.S3;
+using DocumentFormat.OpenXml.Bibliography;
 using FUC.Common.Abstractions;
 using FUC.Common.Shared;
 using FUC.Data;
@@ -21,36 +22,152 @@ public class DocumentsService(ILogger<DocumentsService> logger,
     ICacheService cacheService,
     S3BucketConfiguration s3BucketConfiguration) : IDocumentsService
 {
-    public async Task<OperationResult<List<TemplateDocumentRespone>>> GetTemplateDocuments(CancellationToken cancellationToken)
+    public async Task<OperationResult<IList<TemplateDocumentRespone>>> GetSubTemplateDocuments(Guid? templateId, CancellationToken cancellationToken)
+    {
+        // get the root of folder
+        if (templateId == null)
+        {
+            var query = from t in templateDocumentRepository.GetQueryable()
+                        where t.ParentId == null
+                        select new TemplateDocumentRespone
+                        {
+                            Id = t.Id,
+                            FileUrl = t.FileUrl,
+                            FileName = t.FileName,
+                            IsActive = t.IsActive,
+                            CreatedBy = t.CreatedBy,
+                            CreatedDate = t.CreatedDate,
+                            IsFile = t.IsFile,
+                        };
+
+            return await query.ToListAsync(cancellationToken);
+        }
+
+        // the subfolder or file of current folder
+        var template = await templateDocumentRepository.GetAsync(
+            x => x.Id == templateId, 
+            cancellationToken); 
+
+        if (template == null) 
+        { 
+            return OperationResult.Failure<IList<TemplateDocumentRespone>>(new Error("Document.Error", "Template does not exist."));
+        }
+
+        if (template.IsFile)
+        {
+            return OperationResult.Failure<IList<TemplateDocumentRespone>>(new Error("Document.Error", 
+                "This is file you can not get subfolder from there."));
+        }
+
+        var subfolder = await templateDocumentRepository.FindAsync(
+            x => x.ParentId == templateId,
+            include: null,
+            orderBy: x => x.OrderByDescending(x => !x.IsFile)
+                .ThenBy(x => x.FileName),
+            selector: t => new TemplateDocumentRespone
+            {
+                Id = t.Id,
+                FileUrl = t.FileUrl,
+                FileName = t.FileName,
+                IsActive = t.IsActive,
+                CreatedBy = t.CreatedBy,
+                CreatedDate = t.CreatedDate,
+                IsFile = t.IsFile,
+            }, cancellationToken);
+
+        return OperationResult.Success(subfolder);
+    }
+
+    public async Task<OperationResult> CreateTemplateDocument(Guid? parentId, string? folderName, IFormFile? file, CancellationToken cancellationToken)
     {
         try
         {
-            var cacheKey = s3BucketConfiguration.FUCTemplateBucket;
+            var parentTemplate = parentId != null ? await templateDocumentRepository.GetAsync(
+            x => x.Id == parentId,
+            cancellationToken) : null;
 
-            var result = await cacheService.GetAsync<List<TemplateDocumentRespone>>(cacheKey, cancellationToken);
-
-            if (result is null)
+            if (parentId != null && parentTemplate == null)
             {
-                var query = from t in templateDocumentRepository.GetQueryable()
-                            select new TemplateDocumentRespone
-                            {
-                                Id = t.Id,
-                                FileUrl = t.FileUrl,
-                                IsActive = t.IsActive,
-                                CreatedBy = t.CreatedBy,
-                                CreatedDate = t.CreatedDate,
-                            };
-
-                result = await query.ToListAsync(cancellationToken);
-
-                await cacheService.SetAsync(cacheKey, result, cancellationToken);
+                return OperationResult.Failure<IList<TemplateDocumentRespone>>(new Error("Document.Error", "Template does not exist."));
             }
 
-            return OperationResult.Success(result);
+            if (parentTemplate != null && parentTemplate.IsFile)
+            {
+                return OperationResult.Failure<IList<TemplateDocumentRespone>>(new Error("Document.Error",
+                    "This is file you can not get subfolder from there."));
+            }
+
+            if (file is null)
+            {
+                if (folderName is null)
+                {
+                    return OperationResult.Failure<IList<TemplateDocumentRespone>>(new Error("Document.Error",
+                    "You can not create subfolder"));
+                }
+
+                templateDocumentRepository.Insert(new TemplateDocument
+                {
+                    FileName = folderName,
+                    FileUrl = parentTemplate is not null ? string.Join("/", parentTemplate.FileUrl, folderName) : folderName,
+                    ParentId = parentId,
+                    IsFile = false,
+                    IsActive = true
+                });
+
+                await unitOfWork.SaveChangesAsync(cancellationToken);
+
+                return OperationResult.Success();
+            }
+
+            await unitOfWork.BeginTransactionAsync(cancellationToken);
+
+            var key = parentTemplate is not null ? string.Join('/', parentTemplate.FileUrl, file.FileName) : file.FileName;
+
+            var keyCount = await templateDocumentRepository.CountAsync(x => x.FileUrl == key, cancellationToken);
+
+            if (keyCount > 0)
+            {
+                key += $"({keyCount})";
+            }
+
+            var activedTemplateDocument = await templateDocumentRepository
+                .GetAsync(x => x.FileUrl.StartsWith(parentTemplate != null ? parentTemplate.FileUrl : "") && x.IsActive,
+                isEnabledTracking: true, null, null,
+                cancellationToken);
+
+            if (activedTemplateDocument is not null)
+            {
+                activedTemplateDocument.IsActive = false;
+            }
+
+            var templateDocument = new TemplateDocument
+            {
+                FileName = file.FileName,
+                FileUrl = key,
+                IsActive = true,
+                IsFile = true,
+                ParentId =parentId
+            };
+
+            templateDocumentRepository.Insert(templateDocument);
+
+            await unitOfWork.SaveChangesAsync(cancellationToken);
+
+            if (!await SaveDocumentToS3(file, s3BucketConfiguration.FUCTemplateBucket, key, cancellationToken))
+            {
+                throw new AmazonS3Exception("Failed to save to S3, database changes rolled back.");
+            }
+
+            await unitOfWork.CommitAsync(cancellationToken);
+
+            return OperationResult.Success();
         }
         catch (Exception ex)
         {
-            return OperationResult.Failure<List<TemplateDocumentRespone>>(new Error("Document.Error", ex.Message));
+            logger.LogError("Fail to create subfolder of {ParentId} with error {Message}", parentId, ex.Message);
+            await unitOfWork.RollbackAsync(cancellationToken);
+
+            return OperationResult.Failure(new Error("TemplateDocument.Error", $"Fail to create folder/file"));
         }
     }
 
@@ -62,6 +179,11 @@ public class DocumentsService(ILogger<DocumentsService> logger,
         if (template is null)
         {
             return OperationResult.Failure<string>(new Error("Document.Error","Template does not exist."));
+        }
+
+        if (!template.IsFile)
+        {
+            return OperationResult.Failure<string>(new Error("Document.Error", "This is folder you can not do action."));
         }
 
         return await PresentFilePresignedUrl(s3BucketConfiguration.FUCTemplateBucket, template.FileUrl);
@@ -90,68 +212,10 @@ public class DocumentsService(ILogger<DocumentsService> logger,
         }
     }
 
-    public async Task<OperationResult> CreateTemplateDocument(string keyPrefix, IFormFile file, CancellationToken cancellationToken)
-    {
-        try
-        {
-            await cacheService.RemoveAsync(s3BucketConfiguration.FUCTemplateBucket, cancellationToken);
-            
-            await unitOfWork.BeginTransactionAsync(cancellationToken);
-
-            var key = string.Join('/', keyPrefix, file.FileName);
-
-            var keyCount = await templateDocumentRepository.CountAsync(x => x.FileUrl == key, cancellationToken);
-
-            if (keyCount > 0)
-            {
-                key += $"({keyCount})"; 
-            }
-
-            var activedTemplateDocument = await templateDocumentRepository
-                .GetAsync(x => x.FileUrl.StartsWith(keyPrefix) && x.IsActive, 
-                isEnabledTracking: true, null, null, 
-                cancellationToken);
-
-            if (activedTemplateDocument is not null)
-            {
-                activedTemplateDocument.IsActive = false;   
-            }
-
-            var templateDocument = new TemplateDocument
-            {
-                FileName = file.FileName,
-                FileUrl = key,
-                IsActive = true
-            };
-
-            templateDocumentRepository.Insert(templateDocument);
-
-            await unitOfWork.SaveChangesAsync(cancellationToken);
-
-            if (!await SaveDocumentToS3(file, s3BucketConfiguration.FUCTemplateBucket, key, cancellationToken))
-            {
-                throw new AmazonS3Exception("Failed to save to S3, database changes rolled back.");
-            }
-
-            await unitOfWork.CommitAsync(cancellationToken);
-
-            return OperationResult.Success();
-        }
-        catch (Exception)
-        {
-            logger.LogError("Fail to upload document template file {FileName}.", file.FileName);
-            await unitOfWork.RollbackAsync(cancellationToken);
-
-            return OperationResult.Failure(new Error("TemplateDocument.Error", $"Fail to upload file {file.FileName}"));
-        }
-    }
-
     public async Task<OperationResult> DeleteTemplateDocument(Guid templateId, CancellationToken cancellationToken)
     {
         try
         {
-            await cacheService.RemoveAsync(s3BucketConfiguration.FUCTemplateBucket, cancellationToken);
-
             await unitOfWork.BeginTransactionAsync(cancellationToken);
 
             var template = await templateDocumentRepository.GetAsync(x => x.Id == templateId, 
@@ -192,8 +256,6 @@ public class DocumentsService(ILogger<DocumentsService> logger,
     {
         try
         {
-            await cacheService.RemoveAsync(s3BucketConfiguration.FUCTemplateBucket, cancellationToken);
-
             var template = await templateDocumentRepository.GetAsync(x => x.Id == templateId,
             isEnabledTracking: true, null, null,
             cancellationToken);
