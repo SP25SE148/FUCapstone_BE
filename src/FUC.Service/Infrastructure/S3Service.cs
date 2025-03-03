@@ -194,7 +194,7 @@ public class S3Service(
         return await S3Client.CopyObjectAsync(copyRequest);
     }
 
-    public async Task<bool> MoveFileAsync(string bucketName, List<string> s3SourceKey, string destinationFolder)
+    public async Task<bool> MoveFileAsync(string bucketName, List<string> s3SourceKey, string destinationFolder, bool isChangeFile)
     {
         try
         {
@@ -206,7 +206,7 @@ public class S3Service(
             };
             foreach (var sourceKey in s3SourceKey)
             {
-                string destinationKey = destinationFolder + Path.GetFileName(sourceKey);
+                string destinationKey = isChangeFile ? destinationFolder : destinationFolder + Path.GetFileName(sourceKey);
                 // Copy file to the destination folder
                 var copyRequest = new CopyObjectRequest
                 {

@@ -291,7 +291,7 @@ public class TopicService(
 
             var topicId = Guid.NewGuid();
             var key =
-                $"{currentUser.CampusId}/{getCurrentSemesterResult.Value.Id}/{request.CapstoneId}/Pending/{topicId}";
+                $"{currentUser.CampusId}/{getCurrentSemesterResult.Value.Id}/{request.CapstoneId}/{topicId}";
 
             var topic = new Topic
             {
@@ -643,17 +643,20 @@ public class TopicService(
 
             if (otherTopicAppraisals.All(x => x.Status == topicAppraisal.Status))
             {
-                var topic = await topicRepository.GetAsync(x => x.Id == topicAppraisal.TopicId, cancellationToken);
-
                 await (topicAppraisal.Status switch
                 {
-                    TopicAppraisalStatus.Accepted => UpdateStatusTopicAfterAppraisal(topic!, TopicStatus.Passed, cancellationToken),
-                    TopicAppraisalStatus.Rejected => UpdateStatusTopicAfterAppraisal(topic!, TopicStatus.Failed, cancellationToken),
-                    TopicAppraisalStatus.Considered => UpdateStatusTopicAfterAppraisal(topic!, TopicStatus.Considered, cancellationToken),
+                    TopicAppraisalStatus.Accepted => UpdateStatusTopicAfterAppraisal(topicAppraisal.TopicId, TopicStatus.Passed, cancellationToken),
+                    TopicAppraisalStatus.Rejected => UpdateStatusTopicAfterAppraisal(topicAppraisal.TopicId, TopicStatus.Failed, cancellationToken),
+                    TopicAppraisalStatus.Considered => UpdateStatusTopicAfterAppraisal(topicAppraisal.TopicId, TopicStatus.Considered, cancellationToken),
                     TopicAppraisalStatus.Pending => throw new NotImplementedException(),
                     _ => throw new InvalidOperationException()
                 });
             }
+            else if(otherTopicAppraisals.All(x => x.AppraisalDate is not null && 
+                x.Status != TopicAppraisalStatus.Pending))
+            {
+                // TODO: Send notification for manager, with the supervisor's opinions are not the same
+            } 
 
             await unitOfWork.CommitAsync(cancellationToken);
 
@@ -666,28 +669,65 @@ public class TopicService(
         }
     }
 
-    private async Task UpdateStatusTopicAfterAppraisal(Topic topic, TopicStatus topicStatus, CancellationToken cancellationToken)
+    private async Task UpdateStatusTopicAfterAppraisal(Guid topicId, TopicStatus topicStatus, CancellationToken cancellationToken)
     {
         try
         {
+            var topic = await topicRepository.GetAsync(
+                x => x.Id == topicId, 
+                include: x => x.Include(x => x.Capstone),
+                orderBy: null,
+                cancellationToken);
+
+            if (topic!.Status != TopicStatus.Pending)
+            { 
+                throw new InvalidOperationException("The topic was already appraised");  
+            }
+
             topic.Status = topicStatus;
 
             if (topic.Status == TopicStatus.Passed)
             {
-                // TODO: generate topic code
+                topic.Code = await GenerationTopicCode(topic.Capstone.MajorId, cancellationToken);
             }
 
             topicRepository.Update(topic);
 
-            // TODO: If status is Passed, then move the file of topic out the Pending folder in S3
-
-            // TODO: Notification for relative people
+            // TODO: Notification for relative people, send integration event
 
             await unitOfWork.SaveChangesAsync(cancellationToken);
         }
         catch (Exception ex)
         {
             logger.LogError("Update status of topic fail with error {Message}", ex.Message);
+            throw;
+        }
+    }
+
+    private async Task<string> GenerationTopicCode(string majorId, CancellationToken cancellationToken)
+    {
+        try
+        {
+            var nextTopicNumer = await topicRepository.CountAsync(
+            t => t.Status == TopicStatus.Passed,
+            cancellationToken) + 1;
+
+#pragma warning disable CA1305 // Specify IFormatProvider
+            var topicNumberCode = nextTopicNumer.ToString($"D{Math.Max(3, nextTopicNumer.ToString().Length)}");
+#pragma warning restore CA1305 // Specify IFormatProvider
+
+            var currentSemesterCode = await semesterService.GetCurrentSemesterAsync();
+
+            if (currentSemesterCode.IsFailure)
+            {
+                throw new InvalidOperationException(currentSemesterCode.Error.ToString());
+            }
+
+            return $"{currentSemesterCode.Value.Id}{majorId}{topicNumberCode}";
+        }
+        catch(Exception ex)
+        {
+            logger.LogError("Generate the topic code fail with error {Message}", ex.Message);
             throw;
         }
     }
@@ -720,28 +760,76 @@ public class TopicService(
     {
         try
         {
-            var topic = await topicRepository.GetAsync(
-                predicate: x => x.Id == request.TopicId,
-                include: x => x.Include(t => t.TopicAppraisals),
-                orderBy: null,
+            if (request.Status == TopicAppraisalStatus.Pending)
+            {
+                return OperationResult.Failure(new Error("TopicAppraisal.Error", "This appraisal is already Pending."));
+            }
+
+            var topicAppraisals = await topicAppraisalRepository.FindAsync(
+                predicate: x => x.TopicId == request.TopicId && 
+                    x.SupervisorId != null &&
+                    x.ManagerId == null,
                 cancellationToken);
 
-            if (topic == null)
+            if (topicAppraisals == null || topicAppraisals.Count == 0)
             { 
-                return OperationResult.Failure(new Error("Topic.Error", "Topic does not exist."));
+                return OperationResult.Failure(new Error("Topic.Error", "Topic appraisals of supervisors does not exist."));
             }
 
             // check if any pending appraisal
-            if (topic.TopicAppraisals.Any(x => x.AppraisalDate is null))
+            if (topicAppraisals.Any(x => x.AppraisalDate is null))
             {
                 OperationResult.Failure(new Error("Topic.Error", "Final appraisal topic can done with some supervisor's reviews is not done."));
             }
+
+            await unitOfWork.BeginTransactionAsync(cancellationToken);
+
+            //create appraisal topic of manager
+            topicAppraisalRepository.Insert(new TopicAppraisal
+            {
+                Status = request.Status,
+                TopicId = request.TopicId,
+                AppraisalComment = request.AppraisalComment,
+                AppraisalContent = request.AppraisalContent,    
+                AppraisalDate = DateTime.UtcNow,
+                ManagerId = currentUser.UserCode,
+            });
+
+            switch (request.Status) 
+            {
+                case TopicAppraisalStatus.Accepted:
+                    await UpdateStatusTopicAfterAppraisal(request.TopicId, TopicStatus.Passed, cancellationToken);
+                    break;
+
+                case TopicAppraisalStatus.Considered:
+                    await UpdateStatusTopicAfterAppraisal(request.TopicId, TopicStatus.Considered, cancellationToken);
+                    var appraisalSupervisors = topicAppraisals.Select(x => x.SupervisorId).Distinct();
+
+                    topicAnalysisRepository.InsertRange((IReadOnlyList<TopicAnalysis>)appraisalSupervisors.Select(s => new TopicAppraisal
+                    {
+                        SupervisorId = s,
+                        TopicId = request.TopicId
+                    }));
+
+                    break;
+
+                case TopicAppraisalStatus.Rejected:
+                    await UpdateStatusTopicAfterAppraisal(request.TopicId, TopicStatus.Failed, cancellationToken);
+                    break;
+
+                default:
+                    throw new InvalidOperationException();
+            }
+
+            await unitOfWork.SaveChangesAsync(cancellationToken);
+            await unitOfWork.CommitAsync(cancellationToken);    
 
             return OperationResult.Success();   
         }
         catch (Exception ex)
         {
-            return OperationResult.Failure(new Error("",""));
+            logger.LogError("Fail to final appraisal topic with error {Message}", ex.Message);
+            return OperationResult.Failure(new Error("Topic.Error","Fail to create appraisal topic for manager"));
         }
     }
 

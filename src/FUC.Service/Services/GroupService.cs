@@ -1,9 +1,6 @@
 ﻿using System.Linq.Expressions;
 using AutoMapper;
-using Azure;
-using DocumentFormat.OpenXml.Office2010.ExcelAc;
 using FUC.Common.Abstractions;
-using FUC.Common.Contracts;
 using FUC.Common.IntegrationEventLog.Services;
 using FUC.Common.Shared;
 using FUC.Data;
@@ -14,11 +11,8 @@ using FUC.Data.Repositories;
 using FUC.Service.Abstractions;
 using FUC.Service.DTOs.GroupDTO;
 using FUC.Service.DTOs.GroupMemberDTO;
-using MassTransit;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Query;
-using Microsoft.VisualBasic;
-using NetTopologySuite.Geometries;
 
 namespace FUC.Service.Services;
 

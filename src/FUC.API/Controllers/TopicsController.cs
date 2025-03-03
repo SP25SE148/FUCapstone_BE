@@ -108,6 +108,25 @@ public class TopicsController(ITopicService topicService) : ApiController
             : HandleFailure(result);
     }
 
+    [HttpPost("appraisal")]
+    [Authorize(Roles = $"{UserRoles.Supervisor}")]
+    public async Task<IActionResult> SubmitAppraisalTopic([FromBody] AppraisalTopicRequest request)
+    {
+        var result = await topicService.AppraisalTopic(request, default);
+        return result.IsSuccess
+            ? Ok(result)
+            : HandleFailure(result);
+    }
+
+    [HttpPost("appraisal/final")]
+    [Authorize(Roles = $"{UserRoles.Manager}")]
+    public async Task<IActionResult> SubmitFinalAppraisalTopic([FromBody] FinalAppraisalTopicRequest request)
+    {
+        var result = await topicService.FinalSubmitAppraisalTopic(request, default);
+        return result.IsSuccess
+            ? Ok(result)
+            : HandleFailure(result);
+    }
 
     [HttpGet("business")]
     public async Task<IActionResult> GetAllBusinessAreas()

@@ -1,5 +1,4 @@
-﻿using System.Security.Claims;
-using FUC.API.Abstractions;
+﻿using FUC.API.Abstractions;
 using FUC.Common.Abstractions;
 using FUC.Common.Constants;
 using FUC.Common.IntegrationEventLog.Services;

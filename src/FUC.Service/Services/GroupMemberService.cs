@@ -1,5 +1,4 @@
-﻿using System.Runtime.InteropServices.JavaScript;
-using AutoMapper;
+﻿using AutoMapper;
 using FUC.Common.Abstractions;
 using FUC.Common.Contracts;
 using FUC.Common.IntegrationEventLog.Services;

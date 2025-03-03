@@ -24,7 +24,7 @@ public sealed class SupervisorService(IMapper mapper, IUnitOfWork<FucDbContext> 
                 .Include(s => s.Major)
                 .Include(s => s.Campus));
         return supervisors.Count > 0
-            ? OperationResult.Success<IEnumerable<SupervisorResponseDTO>>(_mapper.Map<IEnumerable<SupervisorResponseDTO>>(supervisors))
+            ? OperationResult.Success(_mapper.Map<IEnumerable<SupervisorResponseDTO>>(supervisors))
             : OperationResult.Failure<IEnumerable<SupervisorResponseDTO>>(Error.NullValue); 
     }
 }
