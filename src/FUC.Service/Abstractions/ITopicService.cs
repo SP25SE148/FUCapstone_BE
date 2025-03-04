@@ -1,7 +1,9 @@
 using FUC.Common.Shared;
+using FUC.Data.Entities;
 using FUC.Service.DTOs.BusinessAreaDTO;
 using FUC.Service.DTOs.TopicAppraisalDTO;
 using FUC.Service.DTOs.TopicDTO;
+using FUC.Service.DTOs.TopicRequestDTO;
 
 namespace FUC.Service.Abstractions;
 
@@ -9,6 +11,7 @@ public interface ITopicService
 {
     Task<OperationResult<TopicResponse>> GetTopicById(Guid topicId, CancellationToken cancellationToken);
     Task<OperationResult<IList<TopicResponse>>> GetTopicsBySupervisor();
+    Task<OperationResult<PaginatedList<TopicResponse>>> GetTopics(TopicParams requestParams);
     Task<OperationResult<IList<TopicResponse>>> GetTopicsByManagerLevel();
     Task<OperationResult<PaginatedList<TopicResponse>>> GetTopics(TopicRequest request);
     Task<OperationResult<Guid>> CreateTopic(CreateTopicRequest request, CancellationToken cancellationToken);
@@ -22,5 +25,9 @@ public interface ITopicService
     Task<OperationResult> CreateTopicAppraisal(IReadOnlyList<string> supervisorEmail);
     Task<OperationResult<List<TopicAppraisalResponse>>> GetTopicAppraisalByUserId(TopicAppraisalBaseRequest request);
     Task<OperationResult> AppraisalTopic(AppraisalTopicRequest request, CancellationToken cancellationToken);
-    Task<OperationResult> FinalSubmitAppraisalTopic(FinalAppraisalTopicRequest request, CancellationToken cancellationToken);
+
+    Task<OperationResult> FinalSubmitAppraisalTopic(FinalAppraisalTopicRequest request,
+        CancellationToken cancellationToken);
+
+    Task<OperationResult<Guid>> CreateTopicRequest(TopicRequest_Request request);
 }
