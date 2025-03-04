@@ -3,8 +3,8 @@
     "UserCode": "superadmin",
     "FullName": "Super Admin",
     "Email": "superadmin@fpt.edu.vn",
-    "CampusId": "ALL",
-    "CapstoneId": "ALL",
-    "MajorId": "ALL"
+    "CampusId": "all",
+    "CapstoneId": "all",
+    "MajorId": "all"
   }
 ]

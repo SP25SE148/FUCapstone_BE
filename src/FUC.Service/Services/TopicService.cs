@@ -87,6 +87,58 @@ public class TopicService(
         });
     }
 
+    public async Task<OperationResult<IList<TopicResponse>>> GetTopicsByManagerLevel()
+    {
+        var topics = await topicRepository.FindAsync(
+            x => (currentUser.CapstoneId == "all" || x.CapstoneId == currentUser.CapstoneId) &&
+                 (currentUser.CampusId == "all" || x.CampusId == currentUser.CampusId),
+            x => x.AsSplitQuery()
+                .Include(x => x.MainSupervisor)
+                .Include(x => x.BusinessArea)
+                .Include(x => x.CoSupervisors)
+                    .ThenInclude(c => c.Supervisor)
+                .ThenInclude(t => t.TopicAppraisals),
+            x => x.OrderByDescending(x => x.CreatedDate),
+            x => new TopicResponse
+            {
+                Id = x.Id.ToString(),
+                Code = x.Code ?? "undefined",
+                MainSupervisorEmail = x.MainSupervisor.Email,
+                MainSupervisorName = x.MainSupervisor.FullName,
+                EnglishName = x.EnglishName,
+                VietnameseName = x.VietnameseName,
+                Abbreviation = x.Abbreviation,
+                Description = x.Description,
+                FileName = x.FileName,
+                FileUrl = x.FileUrl,
+                Status = x.Status,
+                DifficultyLevel = x.DifficultyLevel,
+                BusinessAreaName = x.BusinessArea.Name,
+                CampusId = x.CampusId,
+                SemesterId = x.SemesterId,
+                CapstoneId = x.CapstoneId,
+                CoSupervisors = x.CoSupervisors.Select(x => new CoSupervisorDto
+                {
+                    SupervisorEmail = x.Supervisor.Email,
+                    SupervisorName = x.Supervisor.FullName,
+                }).ToList(),
+                CreatedDate = x.CreatedDate,
+                TopicAppraisals = x.TopicAppraisals.Select(x => new TopicAppraisalDto
+                {
+                    AppraisalComment = x.AppraisalComment,
+                    AppraisalContent = x.AppraisalContent,
+                    AppraisalDate = x.AppraisalDate,
+                    ManagerId = x.ManagerId,
+                    SupervisorId = x.SupervisorId,
+                    Status = x.Status,
+                    TopicAppraisalId = x.Id,
+                    TopicId =  x.TopicId
+                }).ToList()
+            });
+
+        return OperationResult.Success(topics);
+    }
+
     public async Task<OperationResult<IList<TopicResponse>>> GetTopicsBySupervisor()
     {
         var topics = await topicRepository.FindAsync(
@@ -95,7 +147,7 @@ public class TopicService(
                 .Include(x => x.MainSupervisor)
                 .Include(x => x.BusinessArea)
                 .Include(x => x.CoSupervisors)
-                .ThenInclude(c => c.Supervisor),
+                    .ThenInclude(c => c.Supervisor),
             x => x.OrderByDescending(x => x.CreatedDate),
             x => new TopicResponse
             {
@@ -152,7 +204,7 @@ public class TopicService(
                 .Include(x => x.MainSupervisor)
                 .Include(x => x.BusinessArea)
                 .Include(x => x.CoSupervisors)
-                .ThenInclude(c => c.Supervisor),
+                    .ThenInclude(c => c.Supervisor),
             x => new TopicResponse
             {
                 Id = x.Id.ToString(),

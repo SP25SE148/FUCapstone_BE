@@ -37,8 +37,8 @@ public class UsersController(ILogger<UsersController> logger,
             Email = user.Email,
             UserName = user.Email,
             CampusId = user.CampusId,
-            CapstoneId = "All",
-            MajorId = "All",
+            CapstoneId = "all",
+            MajorId = "all",
             EmailConfirmed = true
         }, UserRoles.Admin);
 
@@ -57,7 +57,7 @@ public class UsersController(ILogger<UsersController> logger,
             UserName = user.Email,
             CampusId = currentUser.CampusId,
             CapstoneId = user.CapstoneId,
-            MajorId = "All",
+            MajorId = "all",
             EmailConfirmed = true,
         }, UserRoles.Manager);
 
@@ -77,7 +77,7 @@ public class UsersController(ILogger<UsersController> logger,
             Email = user.Email,
             UserName = user.Email,
             CampusId = currentUser.CampusId,
-            CapstoneId = "All",
+            CapstoneId = "all",
             MajorId = user.MajorId,
             EmailConfirmed = true
         };

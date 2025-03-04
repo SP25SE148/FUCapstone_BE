@@ -4,39 +4,39 @@
     "FullName": "Admin HN",
     "Email": "adminhn@fpt.edu.vn",
     "CampusId": "HN",
-    "CapstoneId": "ALL",
-    "MajorId": "ALL"
+    "CapstoneId": "all",
+    "MajorId": "all"
   },
   {
     "UserCode": "adminhcm",
     "FullName": "Admin HCM",
     "Email": "adminhcm@fpt.edu.vn",
     "CampusId": "HCM",
-    "CapstoneId": "ALL",
-    "MajorId": "ALL"
+    "CapstoneId": "all",
+    "MajorId": "all"
   },
   {
     "UserCode": "admindn",
     "FullName": "Admin DN",
     "Email": "admindn@fpt.edu.vn",
     "CampusId": "DN",
-    "CapstoneId": "ALL",
-    "MajorId": "ALL"
+    "CapstoneId": "all",
+    "MajorId": "all"
   },
   {
     "UserCode": "adminct",
     "FullName": "Admin CT",
     "Email": "adminct@fpt.edu.vn",
     "CampusId": "CT",
-    "CapstoneId": "ALL",
-    "MajorId": "ALL"
+    "CapstoneId": "all",
+    "MajorId": "all"
   },
   {
     "UserCode": "adminqn",
     "FullName": "Admin QN",
     "Email": "adminqn@fpt.edu.vn",
     "CampusId": "QN",
-    "CapstoneId": "ALL",
-    "MajorId": "ALL"
+    "CapstoneId": "all",
+    "MajorId": "all"
   }
 ]

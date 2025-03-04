@@ -35,6 +35,15 @@ public class TopicsController(ITopicService topicService) : ApiController
         return result.IsSuccess ? Ok(result) : HandleFailure(result);
     }
 
+    [HttpGet("manager")]
+    [Authorize(Roles = $"{UserRoles.Manager},{UserRoles.Admin}")]
+    public async Task<IActionResult> GetTopicsByManagerLevel()
+    {
+        var result = await topicService.GetTopicsByManagerLevel();
+
+        return result.IsSuccess ? Ok(result) : HandleFailure(result);
+    }
+
     [HttpGet("presigned/{topicId}")]
     public async Task<IActionResult> GetPresignedUrlTopic(string topicId)
     {
