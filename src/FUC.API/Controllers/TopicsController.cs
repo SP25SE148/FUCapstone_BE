@@ -19,9 +19,9 @@ public class TopicsController(ITopicService topicService) : ApiController
     }
 
     [HttpGet]
-    public async Task<IActionResult> GetTopics([FromQuery] TopicRequest request)
+    public async Task<IActionResult> GetTopics([FromQuery] TopicParams requestParams)
     {
-        var result = await topicService.GetTopics(request);
+        var result = await topicService.GetTopics(requestParams);
 
         return result.IsSuccess ? Ok(result) : HandleFailure(result);
     }
@@ -93,7 +93,7 @@ public class TopicsController(ITopicService topicService) : ApiController
     public async Task<IActionResult> AssignTopicAppraisal([FromBody] IReadOnlyList<string> supervisorEmail)
     {
         var result = await topicService.CreateTopicAppraisal(supervisorEmail);
-        return result.IsSuccess ? Ok() : HandleFailure(result);
+        return result.IsSuccess ? Ok(result) : HandleFailure(result);
     }
 
     [HttpGet("get-topic-appraisal-by-self")]

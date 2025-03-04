@@ -5,5 +5,6 @@ public enum TopicStatus
     Pending,
     Passed,
     Considered,
-    Failed
+    Failed,
+    Assigned
 }

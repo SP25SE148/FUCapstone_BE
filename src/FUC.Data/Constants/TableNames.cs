@@ -17,5 +17,6 @@ internal static class TableNames
     internal const string TemplateDocument = nameof(TemplateDocument);
     internal const string TopicAppraisal = nameof(TopicAppraisal);
     internal const string TopicAnalysis = nameof(TopicAnalysis);
+    internal const string TopicRequest = nameof(TopicRequest);
     internal const string SupervisorGroupAssignment = nameof(SupervisorGroupAssignment);
 }

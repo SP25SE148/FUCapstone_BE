@@ -2,7 +2,7 @@
 
 namespace FUC.Service.DTOs.TopicDTO;
 
-public class TopicRequest : PaginationParams
+public class TopicParams : PaginationParams
 {
     public string MainSupervisorEmail { get; set; } = "all";
     public string? SearchTerm { get; set; }
