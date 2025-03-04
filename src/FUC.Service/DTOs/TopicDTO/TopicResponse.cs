@@ -22,10 +22,23 @@ public class TopicResponse
     public string CampusId { get; set; }
     public DateTime CreatedDate { get; set; }
     public List<CoSupervisorDto> CoSupervisors { get; set; }
+    public List<TopicAppraisalDto> TopicAppraisals { get; set; } = new();
 }
 
-public class CoSupervisorDto
+public sealed class CoSupervisorDto
 {
     public string SupervisorName { get; set; }
     public string SupervisorEmail { get; set; }
+}
+
+public sealed class TopicAppraisalDto
+{
+    public Guid TopicAppraisalId { get; set; }
+    public Guid TopicId { get; set; }
+    public string? SupervisorId { get; set; }
+    public string? ManagerId { get; set; }
+    public string? AppraisalContent { get; set; }
+    public string? AppraisalComment { get; set; }
+    public TopicAppraisalStatus Status { get; set; }
+    public DateTime? AppraisalDate { get; set; }
 }
