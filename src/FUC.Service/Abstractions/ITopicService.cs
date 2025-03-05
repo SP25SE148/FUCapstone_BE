@@ -11,9 +11,8 @@ public interface ITopicService
 {
     Task<OperationResult<TopicResponse>> GetTopicById(Guid topicId, CancellationToken cancellationToken);
     Task<OperationResult<IList<TopicResponse>>> GetTopicsBySupervisor();
-    Task<OperationResult<PaginatedList<TopicResponse>>> GetTopics(TopicParams requestParams);
+    Task<OperationResult<PaginatedList<TopicResponse>>> GetTopics(TopicParams request);
     Task<OperationResult<IList<TopicResponse>>> GetTopicsByManagerLevel();
-    Task<OperationResult<PaginatedList<TopicResponse>>> GetTopics(TopicRequest request);
     Task<OperationResult<Guid>> CreateTopic(CreateTopicRequest request, CancellationToken cancellationToken);
     Task<OperationResult> UpdateTopic(UpdateTopicRequest request, CancellationToken cancellationToken);
     Task<OperationResult<List<BusinessAreaResponse>>> GetAllBusinessAreas();

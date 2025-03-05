@@ -180,7 +180,7 @@ public class TopicService(
         return OperationResult.Success(topics);
     }
 
-    public async Task<OperationResult<PaginatedList<TopicResponse>>> GetTopics(TopicRequest request)
+    public async Task<OperationResult<PaginatedList<TopicResponse>>> GetTopics(TopicParams request)
     {
         var topics = await topicRepository.FindPaginatedAsync(
             x => (request.MainSupervisorEmail == "all" ||
