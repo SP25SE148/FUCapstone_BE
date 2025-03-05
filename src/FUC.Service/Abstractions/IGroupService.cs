@@ -1,6 +1,7 @@
 ﻿using FUC.Common.Contracts;
 using FUC.Common.Shared;
 using FUC.Service.DTOs.GroupDTO;
+using FUC.Service.DTOs.TopicRequestDTO;
 
 namespace FUC.Service.Abstractions;
 
@@ -14,5 +15,6 @@ public interface IGroupService
     Task<OperationResult<IEnumerable<GroupResponse>>> GetAllGroupByCampusIdAsync(string campusId);
     Task<OperationResult<GroupResponse>> GetGroupByIdAsync(Guid id);
     Task<OperationResult<GroupResponse>> GetGroupByStudentIdAsync();
-    Task<OperationResult> UpdateGroupStatusAsync();    
+    Task<OperationResult> UpdateGroupStatusAsync();
+    Task<OperationResult<Guid>> CreateTopicRequest(TopicRequest_Request request);
 }
