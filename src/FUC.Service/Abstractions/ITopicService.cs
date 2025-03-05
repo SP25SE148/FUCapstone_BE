@@ -15,6 +15,7 @@ public interface ITopicService
     Task<OperationResult<IList<TopicResponse>>> GetTopicsByManagerLevel();
     Task<OperationResult<PaginatedList<TopicResponse>>> GetTopics(TopicRequest request);
     Task<OperationResult<Guid>> CreateTopic(CreateTopicRequest request, CancellationToken cancellationToken);
+    Task<OperationResult> UpdateTopic(UpdateTopicRequest request, CancellationToken cancellationToken);
     Task<OperationResult<List<BusinessAreaResponse>>> GetAllBusinessAreas();
 
     Task<OperationResult<List<TopicStatisticResponse>>> GetTopicAnalysises(Guid topicId,

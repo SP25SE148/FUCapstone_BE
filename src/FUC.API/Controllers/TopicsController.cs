@@ -61,6 +61,16 @@ public class TopicsController(ITopicService topicService) : ApiController
         return result.IsSuccess ? Ok(result) : HandleFailure(result);
     }
 
+    [HttpPut("{topicId}")]
+    [Authorize(Roles = $"{UserRoles.Supervisor}")]
+    public async Task<IActionResult> UpdateTopic(Guid topicId, [FromForm] UpdateTopicRequest request)
+    {
+        request.TopicId = topicId;
+        var result = await topicService.UpdateTopic(request, default);
+
+        return result.IsSuccess ? Ok(result) : HandleFailure(result);
+    }
+
     [HttpGet("statistic/{topId}")]
     [Authorize(Roles = $"{UserRoles.Supervisor},{UserRoles.Manager}")]
     public async Task<IActionResult> GetStatisticTopics(string topId)
@@ -80,7 +90,7 @@ public class TopicsController(ITopicService topicService) : ApiController
     }
 
     [HttpPost("semantic/appraisal/{id}")]
-    [Authorize(Roles = $"{UserRoles.Manager}")]
+    [Authorize(Roles = $"{UserRoles.Manager},{UserRoles.Supervisor}")]
     public async Task<IActionResult> SemanticTopicReviewer(string id)
     {
         var result = await topicService.SemanticTopic(Guid.Parse(id), withCurrentSemester: true, default);
