@@ -11,6 +11,7 @@ using FUC.Data.Repositories;
 using FUC.Service.Abstractions;
 using FUC.Service.DTOs.GroupDTO;
 using FUC.Service.DTOs.GroupMemberDTO;
+using FUC.Service.DTOs.TopicRequestDTO;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Query;
 
@@ -22,6 +23,9 @@ public class GroupService(
     IMapper mapper,
     IIntegrationEventLogService integrationEventLogService,
     ICurrentUser currentUser,
+    IRepository<GroupMember> groupMemberRepository,
+    IRepository<Topic> topicRepository,
+    IRepository<TopicRequest> topicRequestRepository,
     ICapstoneService capstoneService) : IGroupService
 {
     private readonly IUnitOfWork<FucDbContext> _uow = uow ?? throw new ArgumentNullException(nameof(uow));
@@ -275,6 +279,66 @@ public class GroupService(
         return OperationResult.Success(
             $"The group with id {group.Id} just {group.Status.ToString()} because it have invalid team size");
     }
+
+
+    public async Task<OperationResult<Guid>> CreateTopicRequest(TopicRequest_Request request)
+    {
+        // TODO: Check if the create topic request is requested in invalid date
+
+        var groupMember = await groupMemberRepository
+            .GetAsync(
+                gm => gm.GroupId.Equals(request.GroupId) &&
+                      gm.StudentId.Equals(currentUser.UserCode) &&
+                      gm.IsLeader,
+                gm => gm.Include(gm => gm.Group)
+                    .ThenInclude(g => g.TopicRequests)
+                    .Include(gm => gm.Student),
+                default
+            );
+        // check if group member is null
+        if (groupMember is null)
+            return OperationResult.Failure<Guid>(Error.NullValue);
+
+        // check if the group is from current semester
+        if (groupMember.Group.IsDeleted)
+            return OperationResult.Failure<Guid>(new Error("Error.InvalidGroup",
+                $"The group with Id {request.GroupId} is not in current semester"));
+
+        // check if group status is different from InProgress
+        if (!groupMember.Group.Status.Equals(GroupStatus.InProgress))
+            return OperationResult.Failure<Guid>(new Error("Error.GroupInEligible",
+                $"Group with id {groupMember.GroupId} is not {GroupStatus.InProgress.ToString()} status"));
+
+        if (groupMember.Group.TopicRequests.Any(tr => !tr.Status.Equals(TopicRequestStatus.Rejected)))
+            return OperationResult.Failure<Guid>(new Error("Error.CreateTopicRequestFailed",
+                $"Can not create topic request while this group already have topic request is {TopicRequestStatus.UnderReview.ToString()} or {TopicRequestStatus.Accepted}"));
+
+        var topic = await topicRepository.GetAsync(t => t.Id.Equals(request.TopicId), default);
+        // check if topic is not null
+        if (topic is null)
+            return OperationResult.Failure<Guid>(Error.NullValue);
+        // check if topic is Passed and is not assigned to any group
+        if (!topic.Status.Equals(TopicStatus.Passed))
+            return OperationResult.Failure<Guid>(new Error("Error.CreateTopicRequestFailed",
+                "Error.CreateTopicRequestFailed"));
+
+        // check if topic's capstone is different from group's capstone
+        if (!topic.CapstoneId.Equals(groupMember.Group.CapstoneId))
+            return OperationResult.Failure<Guid>(new Error("Error.CreateTopicRequestFailed",
+                "Error.CreateTopicRequestFailed"));
+
+        var topicRequest = new TopicRequest
+        {
+            Id = Guid.NewGuid(),
+            SupervisorId = topic.MainSupervisorId,
+            GroupId = groupMember.GroupId,
+            TopicId = topic.Id
+        };
+        topicRequestRepository.Insert(topicRequest);
+        await _uow.SaveChangesAsync();
+        return topicRequest.Id;
+    }
+
 
     private static Func<IQueryable<Group>, IIncludableQueryable<Group, object>> CreateIncludeForGroupResponse()
     {

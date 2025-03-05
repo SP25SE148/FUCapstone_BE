@@ -58,36 +58,33 @@ public class TopicService(
             null,
             cancellationToken);
 
-        if (topic == null)
-        {
-            return OperationResult.Failure<TopicResponse>(new Error("Topic.Error", "Topic does not exist."));
-        }
-
-        return OperationResult.Success(new TopicResponse
-        {
-            Id = topic.Id.ToString(),
-            Code = topic.Code ?? "undefined",
-            MainSupervisorEmail = topic.MainSupervisor.Email,
-            MainSupervisorName = topic.MainSupervisor.FullName,
-            EnglishName = topic.EnglishName,
-            VietnameseName = topic.VietnameseName,
-            Abbreviation = topic.Abbreviation,
-            Description = topic.Description,
-            FileName = topic.FileName,
-            FileUrl = topic.FileUrl,
-            Status = topic.Status,
-            DifficultyLevel = topic.DifficultyLevel,
-            BusinessAreaName = topic.BusinessArea.Name,
-            CampusId = topic.CampusId,
-            SemesterId = topic.SemesterId,
-            CapstoneId = topic.CapstoneId,
-            CoSupervisors = topic.CoSupervisors.Select(x => new CoSupervisorDto
+        return topic == null
+            ? OperationResult.Failure<TopicResponse>(new Error("Topic.Error", "Topic does not exist."))
+            : OperationResult.Success(new TopicResponse
             {
-                SupervisorEmail = x.Supervisor.Email,
-                SupervisorName = x.Supervisor.FullName,
-            }).ToList(),
-            CreatedDate = topic.CreatedDate,
-        });
+                Id = topic.Id.ToString(),
+                Code = topic.Code ?? "undefined",
+                MainSupervisorEmail = topic.MainSupervisor.Email,
+                MainSupervisorName = topic.MainSupervisor.FullName,
+                EnglishName = topic.EnglishName,
+                VietnameseName = topic.VietnameseName,
+                Abbreviation = topic.Abbreviation,
+                Description = topic.Description,
+                FileName = topic.FileName,
+                FileUrl = topic.FileUrl,
+                Status = topic.Status,
+                DifficultyLevel = topic.DifficultyLevel,
+                BusinessAreaName = topic.BusinessArea.Name,
+                CampusId = topic.CampusId,
+                SemesterId = topic.SemesterId,
+                CapstoneId = topic.CapstoneId,
+                CoSupervisors = topic.CoSupervisors.Select(x => new CoSupervisorDto
+                {
+                    SupervisorEmail = x.Supervisor.Email,
+                    SupervisorName = x.Supervisor.FullName,
+                }).ToList(),
+                CreatedDate = topic.CreatedDate,
+            });
     }
 
     public async Task<OperationResult<IList<TopicResponse>>> GetTopicsByManagerLevel()
@@ -659,64 +656,6 @@ public class TopicService(
             : OperationResult.Success(response);
     }
 
-    public async Task<OperationResult<Guid>> CreateTopicRequest(TopicRequest_Request request)
-    {
-        // TODO: Check if the create topic request is requested in invalid date
-
-        var groupMember = await groupMemberRepository
-            .GetAsync(
-                gm => gm.GroupId.Equals(request.GroupId) &&
-                      gm.StudentId.Equals(currentUser.UserCode) &&
-                      gm.IsLeader,
-                gm => gm.Include(gm => gm.Group)
-                    .ThenInclude(g => g.TopicRequests)
-                    .Include(gm => gm.Student),
-                default
-            );
-        // check if group member is null
-        if (groupMember is null)
-            return OperationResult.Failure<Guid>(Error.NullValue);
-
-        // check if the group is from current semester
-        if (groupMember.Group.IsDeleted)
-            return OperationResult.Failure<Guid>(new Error("Error.InvalidGroup",
-                $"The group with Id {request.GroupId} is not in current semester"));
-
-        // check if group status is different from InProgress
-        if (!groupMember.Group.Status.Equals(GroupStatus.InProgress))
-            return OperationResult.Failure<Guid>(new Error("Error.GroupInEligible",
-                $"Group with id {groupMember.GroupId} is not {GroupStatus.InProgress.ToString()} status"));
-
-        if (groupMember.Group.TopicRequests.Any(tr => !tr.Status.Equals(TopicRequestStatus.Rejected)))
-            return OperationResult.Failure<Guid>(new Error("Error.CreateTopicRequestFailed",
-                $"Can not create topic request while this group already have topic request is {TopicRequestStatus.UnderReview.ToString()} or {TopicRequestStatus.Accepted}"));
-
-        var topic = await topicRepository.GetAsync(t => t.Id.Equals(request.TopicId), default);
-        // check if topic is not null
-        if (topic is null)
-            return OperationResult.Failure<Guid>(Error.NullValue);
-        // check if topic is Passed and is not assigned to any group
-        if (!topic.Status.Equals(TopicStatus.Passed))
-            return OperationResult.Failure<Guid>(new Error("Error.CreateTopicRequestFailed",
-                "Error.CreateTopicRequestFailed"));
-
-        // check if topic's capstone is different from group's capstone
-        if (!topic.CapstoneId.Equals(groupMember.Group.CapstoneId))
-            return OperationResult.Failure<Guid>(new Error("Error.CreateTopicRequestFailed",
-                "Error.CreateTopicRequestFailed"));
-
-        var topicRequest = new TopicRequest
-        {
-            Id = Guid.NewGuid(),
-            SupervisorId = topic.MainSupervisorId,
-            GroupId = groupMember.GroupId,
-            TopicId = topic.Id
-        };
-        topicRequestRepository.Insert(topicRequest);
-        await unitOfWork.SaveChangesAsync();
-        return topicRequest.Id;
-    }
-
     public async Task<OperationResult> AppraisalTopic(AppraisalTopicRequest request,
         CancellationToken cancellationToken)
     {
@@ -845,12 +784,9 @@ public class TopicService(
 
             var currentSemesterCode = await semesterService.GetCurrentSemesterAsync();
 
-            if (currentSemesterCode.IsFailure)
-            {
-                throw new InvalidOperationException(currentSemesterCode.Error.ToString());
-            }
-
-            return $"{currentSemesterCode.Value.Id}{majorId}{topicNumberCode}";
+            return currentSemesterCode.IsFailure
+                ? throw new InvalidOperationException(currentSemesterCode.Error.ToString())
+                : $"{currentSemesterCode.Value.Id}{majorId}{topicNumberCode}";
         }
         catch (Exception ex)
         {

@@ -28,6 +28,4 @@ public interface ITopicService
 
     Task<OperationResult> FinalSubmitAppraisalTopic(FinalAppraisalTopicRequest request,
         CancellationToken cancellationToken);
-
-    Task<OperationResult<Guid>> CreateTopicRequest(TopicRequest_Request request);
 }
