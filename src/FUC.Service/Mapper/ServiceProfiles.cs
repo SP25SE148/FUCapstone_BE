@@ -9,6 +9,7 @@ using FUC.Service.DTOs.MajorGroupDTO;
 using FUC.Service.DTOs.SemesterDTO;
 using FUC.Service.DTOs.StudentDTO;
 using FUC.Service.DTOs.SupervisorDTO;
+using FUC.Service.DTOs.TopicDTO;
 
 namespace FUC.Service.Mapper;
 
@@ -18,20 +19,20 @@ public class ServiceProfiles : Profile
     {
         // Campus mapping
         CreateMap<Campus, CampusResponse>();
-        
+
         // Capstone mapping
         CreateMap<Capstone, CapstoneResponse>();
-        
+
         // Major Group mapping
         CreateMap<MajorGroup, MajorGroupResponse>();
-        
+
         // Major mapping
         CreateMap<Major, MajorResponse>();
-        
+
         // Semester mapping
         CreateMap<Semester, SemesterResponse>();
-        
-        
+
+
         // Student mapping
         CreateMap<Student, StudentResponseDTO>()
             .ForMember(s => s.MajorName, opt => opt.MapFrom(s => s.Major.Name))
@@ -40,12 +41,18 @@ public class ServiceProfiles : Profile
             .ForMember(s => s.Status, opt => opt.MapFrom(s => s.Status.ToString()))
             .ForMember(s => s.BusinessArea, opt => opt.MapFrom(s => s.BusinessArea.Name))
             .ForMember(s => s.IsHaveBeenJoinGroup, opt => opt.MapFrom(s => s.GroupMembers.Any(gm => gm.Status.Equals(GroupMemberStatus.Accepted))));
-        
+
 
         // Supervisor mapping
-        CreateMap<Supervisor,SupervisorResponseDTO>()
+        CreateMap<Supervisor, SupervisorResponseDTO>()
             .ForMember(s => s.MajorName, opt => opt.MapFrom(s => s.Major.Name))
             .ForMember(s => s.CampusName, opt => opt.MapFrom(s => s.Campus.Name));
-        
+
+        CreateMap<UpdateTopicRequest, Topic>()
+            .ForMember(dest => dest.Id, opt => opt.MapFrom(src => src.TopicId))
+            .ForMember(dest => dest.BusinessAreaId, opt => opt.Condition(src => src.BusinessAreaId != null))
+            .ForMember(dest => dest.BusinessAreaId, opt => opt.MapFrom((src, dest) =>
+                src.BusinessAreaId != null ? Guid.Parse(src.BusinessAreaId) : dest.BusinessAreaId))
+            .ForAllMembers(opt => opt.Condition((src, dest, srcMember) => srcMember != null)); 
     }
 }
