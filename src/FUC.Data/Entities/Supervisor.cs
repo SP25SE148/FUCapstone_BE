@@ -1,5 +1,4 @@
 ﻿using FUC.Data.Abstractions;
-using FUC.Data.Enums;
 
 namespace FUC.Data.Entities;
 
@@ -20,4 +19,7 @@ public class Supervisor : AuditableSoftDeleteEntity
 
     public ICollection<TopicAppraisal> TopicAppraisals { get; set; } = new List<TopicAppraisal>();
     public ICollection<TopicRequest> TopicRequests { get; set; } = new List<TopicRequest>();
+    public ICollection<ProjectProgress> ProjectProgresses { get; set; } = new List<ProjectProgress>();
+    public ICollection<WeeklyEvaluation> WeeklyEvaluations { get; set; } = new List<WeeklyEvaluation>();
+
 }

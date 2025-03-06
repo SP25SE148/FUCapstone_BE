@@ -3,8 +3,7 @@
 public enum TopicStatus
 {
     Pending,
-    Passed,
+    Approved,
     Considered,
-    Failed,
-    Assigned
+    Rejected,
 }
