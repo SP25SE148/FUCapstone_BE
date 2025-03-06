@@ -17,4 +17,5 @@ public interface IGroupService
     Task<OperationResult<GroupResponse>> GetGroupByStudentIdAsync();
     Task<OperationResult> UpdateGroupStatusAsync();
     Task<OperationResult<Guid>> CreateTopicRequest(TopicRequest_Request request);
+    Task<OperationResult<IEnumerable<TopicRequestResponse>>> GetTopicRequests(TopicRequestParams request);
 }
