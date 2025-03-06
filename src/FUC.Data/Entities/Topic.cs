@@ -11,7 +11,6 @@ public sealed class Topic : AuditableSoftDeleteEntity
     public string SemesterId { get; set; }
     public string CampusId { get; set; }
     public Guid BusinessAreaId { get; set; }
-
     public string? Code { get; set; }
     public string EnglishName { get; set; }
     public string VietnameseName { get; set; }
@@ -20,8 +19,8 @@ public sealed class Topic : AuditableSoftDeleteEntity
     public string FileName { get; set; }
     public string FileUrl { get; set; }
     public TopicStatus Status { get; set; }
+    public bool IsAssignedToGroup { get; set; }
     public DifficultyLevel DifficultyLevel { get; set; }
-
     public Supervisor MainSupervisor { get; set; } = null!;
     public Capstone Capstone { get; set; } = null!;
     public Semester Semester { get; set; } = null!;

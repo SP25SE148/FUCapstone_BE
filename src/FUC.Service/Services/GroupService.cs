@@ -339,6 +339,11 @@ public class GroupService(
         return topicRequest.Id;
     }
 
+    public Task<OperationResult<IEnumerable<TopicRequestResponse>>> GetTopicRequests(TopicRequestParams request)
+    {
+        throw new NotImplementedException();
+    }
+
 
     private static Func<IQueryable<Group>, IIncludableQueryable<Group, object>> CreateIncludeForGroupResponse()
     {
