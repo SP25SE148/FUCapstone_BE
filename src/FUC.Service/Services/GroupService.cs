@@ -318,7 +318,7 @@ public class GroupService(
         if (topic is null)
             return OperationResult.Failure<Guid>(Error.NullValue);
         // check if topic is Passed and is not assigned to any group
-        if (!topic.Status.Equals(TopicStatus.Passed))
+        if (!topic.Status.Equals(TopicStatus.Approved))
             return OperationResult.Failure<Guid>(new Error("Error.CreateTopicRequestFailed",
                 "Error.CreateTopicRequestFailed"));
 

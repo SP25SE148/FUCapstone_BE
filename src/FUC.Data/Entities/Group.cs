@@ -23,4 +23,5 @@ public sealed class Group : AuditableSoftDeleteEntity
     public Capstone Capstone { get; set; } = null!;
     public ICollection<GroupMember> GroupMembers { get; set; } = new List<GroupMember>();
     public ICollection<TopicRequest> TopicRequests { get; set; } = new List<TopicRequest>();
+    public ICollection<ProjectProgress> ProjectProgresses { get; set; } = new List<ProjectProgress>();
 }

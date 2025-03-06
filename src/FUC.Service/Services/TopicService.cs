@@ -461,7 +461,7 @@ public class TopicService(
                 return OperationResult.Failure(new Error("Topic.Error", "The topic just only update by who had created it."));
             } 
 
-            if (existedTopic.Status == TopicStatus.Passed || existedTopic.Status == TopicStatus.Failed)
+            if (existedTopic.Status == TopicStatus.Approved || existedTopic.Status == TopicStatus.Rejected)
             {
                 return OperationResult.Failure(new Error("Topic.Error", "The topic can not update"));
             } 
@@ -800,8 +800,8 @@ public class TopicService(
             {
                 await (topicAppraisal.Status switch
                 {
-                    TopicAppraisalStatus.Accepted => UpdateStatusTopicAfterAppraisal(topicAppraisal.TopicId, TopicStatus.Passed, cancellationToken),
-                    TopicAppraisalStatus.Rejected => UpdateStatusTopicAfterAppraisal(topicAppraisal.TopicId, TopicStatus.Failed, cancellationToken),
+                    TopicAppraisalStatus.Accepted => UpdateStatusTopicAfterAppraisal(topicAppraisal.TopicId, TopicStatus.Approved, cancellationToken),
+                    TopicAppraisalStatus.Rejected => UpdateStatusTopicAfterAppraisal(topicAppraisal.TopicId, TopicStatus.Rejected, cancellationToken),
                     _ => throw new InvalidOperationException()
                 });
             }
@@ -834,14 +834,14 @@ public class TopicService(
                 orderBy: null,
                 cancellationToken) ?? throw new InvalidOperationException("The topic is null");
 
-            if (topic.Status == TopicStatus.Passed || topic.Status == TopicStatus.Failed)
+            if (topic.Status == TopicStatus.Approved || topic.Status == TopicStatus.Rejected)
             { 
                 throw new InvalidOperationException("The topic was already appraised");  
             }
 
             topic.Status = topicStatus;
 
-            if (topic.Status == TopicStatus.Passed)
+            if (topic.Status == TopicStatus.Approved)
             {
                 topic.Code = await GenerationTopicCode(topic.Capstone.MajorId, cancellationToken);
             }
@@ -864,7 +864,7 @@ public class TopicService(
         try
         {
             var nextTopicNumer = await topicRepository.CountAsync(
-            t => t.Status == TopicStatus.Passed,
+            t => t.Status == TopicStatus.Approved,
             cancellationToken) + 1;
 
 #pragma warning disable CA1305 // Specify IFormatProvider
@@ -953,7 +953,7 @@ public class TopicService(
             switch (request.Status) 
             {
                 case TopicAppraisalStatus.Accepted:
-                    await UpdateStatusTopicAfterAppraisal(request.TopicId, TopicStatus.Passed, cancellationToken);
+                    await UpdateStatusTopicAfterAppraisal(request.TopicId, TopicStatus.Approved, cancellationToken);
                     break;
 
                 case TopicAppraisalStatus.Considered:
@@ -969,7 +969,7 @@ public class TopicService(
                     break;
 
                 case TopicAppraisalStatus.Rejected:
-                    await UpdateStatusTopicAfterAppraisal(request.TopicId, TopicStatus.Failed, cancellationToken);
+                    await UpdateStatusTopicAfterAppraisal(request.TopicId, TopicStatus.Rejected, cancellationToken);
                     break;
 
                 default:

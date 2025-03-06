@@ -22,4 +22,7 @@ public sealed class Student : AuditableSoftDeleteEntity
     public Capstone Capstone { get; set; } = null!;
     public ICollection<GroupMember> GroupMembers { get; set; } = new List<GroupMember>();
     public BusinessArea BusinessArea { get; set; } = null!;
+    public ICollection<FucTask> FucTasks { get; set; } = new List<FucTask>();
+    public ICollection<FucTask> ReportFucTasks { get; set; } = new List<FucTask>();
+    public ICollection<WeeklyEvaluation> WeeklyEvaluations { get; set; } = new List<WeeklyEvaluation>();
 }
