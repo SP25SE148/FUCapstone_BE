@@ -11,7 +11,6 @@ public sealed class TopicConfiguration : IEntityTypeConfiguration<Topic>
     public void Configure(EntityTypeBuilder<Topic> builder)
     {
         builder.ToTable(TableNames.Topic);
-
         builder.HasKey(t => t.Id);
         builder.Property(t => t.Id).HasDefaultValue(Guid.NewGuid());
 
@@ -23,6 +22,9 @@ public sealed class TopicConfiguration : IEntityTypeConfiguration<Topic>
                 v => (TopicStatus)Enum.Parse(typeof(TopicStatus), v))
             .HasDefaultValue(TopicStatus.Pending);
 
+        builder.Property(t => t.IsAssignedToGroup)
+            .HasDefaultValue(false)
+            ;
         builder.Property(t => t.DifficultyLevel)
             .HasConversion(
                 v => v.ToString(),
