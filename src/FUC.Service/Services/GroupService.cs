@@ -9,6 +9,7 @@ using FUC.Data.Entities;
 using FUC.Data.Enums;
 using FUC.Data.Repositories;
 using FUC.Service.Abstractions;
+using FUC.Service.DTOs.CapstoneDTO;
 using FUC.Service.DTOs.GroupDTO;
 using FUC.Service.DTOs.GroupMemberDTO;
 using FUC.Service.DTOs.TopicRequestDTO;
@@ -380,4 +381,28 @@ public class GroupService(
             })
         };
     }
-}
+
+    public async Task<OperationResult<CapstoneResponse>> GetCapstoneByGroup(Guid groupId, CancellationToken cancellationToken)
+    {
+        var group = await _groupRepository.GetAsync(
+                x => x.Id == groupId,
+                include: x => x.Include(x => x.Capstone),
+                null,
+                cancellationToken);
+
+        ArgumentNullException.ThrowIfNull(group);
+
+        return mapper.Map<CapstoneResponse>(group.Capstone);
+    } 
+
+    public async Task<OperationResult<bool>> CheckStudentsInSameGroup(IList<string> studentIds, Guid groupId, CancellationToken cancellationToken)
+    {
+        var members = await _groupMemberRepository.FindAsync(
+            x => studentIds.Contains(x.StudentId) &&
+                x.GroupId == groupId &&
+                x.Status == GroupMemberStatus.Accepted,
+            cancellationToken);
+
+        return members.Count == studentIds.Count;
+    }
+ }

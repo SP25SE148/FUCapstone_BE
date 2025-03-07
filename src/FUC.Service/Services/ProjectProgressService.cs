@@ -6,6 +6,7 @@ using FUC.Data.Data;
 using FUC.Data.Entities;
 using FUC.Data.Enums;
 using FUC.Data.Repositories;
+using FUC.Service.Abstractions;
 using FUC.Service.DTOs.ProjectProgressDTO;
 using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
@@ -19,8 +20,8 @@ public class ProjectProgressService(
     IUnitOfWork<FucDbContext> unitOfWork,
     IRepository<ProjectProgress> projectProgressRepository,
     IRepository<FucTask> fucTaskRepository,
-    IRepository<Group> groupRepository,
-    IRepository<WeeklyEvaluation> weeklyEvaluationRepository
+    IRepository<WeeklyEvaluation> weeklyEvaluationRepository,
+    IGroupService groupService
     )
 {
     private const int IndexStartProgressingRow = 2;
@@ -32,13 +33,12 @@ public class ProjectProgressService(
             return OperationResult.Failure(new Error("ProjectProgress.Error", "Invalid form file"));
         }
 
-        var group = await groupRepository.GetAsync(
-                x => x.Id == request.GroupId,
-                include: x => x.Include(x => x.Capstone),
-                null,
-                cancellationToken);
+        var capstoneResult = await groupService.GetCapstoneByGroup(request.GroupId, cancellationToken);
 
-        ArgumentNullException.ThrowIfNull(group);
+        if (capstoneResult.IsFailure)
+        {
+            return OperationResult.Failure(capstoneResult.Error);
+        }
 
         try
         {
@@ -60,7 +60,7 @@ public class ProjectProgressService(
                 MeetingDate = workSheet.Cell(IndexStartProgressingRow, 1).GetValue<string>(),
             };
 
-            int durationWeeks = group.Capstone.DurationWeeks;
+            int durationWeeks = capstoneResult.Value.DurationWeeks;
             int startIndex = 2;
 
             // read the each projectProgressWeek of ProjectProgress
@@ -68,7 +68,7 @@ public class ProjectProgressService(
             {
                 var week = new ProjectProgressWeek
                 {
-                    TaskDescription = workSheet.Cell(IndexStartProgressingRow, ++startIndex).GetValue<string>(),
+                    TaskDescription = workSheet.Cell(IndexStartProgressingRow, ++startIndex).GetValue<string>() ?? "",
                     Status = ProjectProgressWeekStatus.InProgress,
                     WeekNumber = i,
                 };
@@ -92,7 +92,12 @@ public class ProjectProgressService(
 
     public async Task<OperationResult> CreateTask(CreateTaskRequest request, CancellationToken cancellationToken)
     {
-        // TODO: Check the assignee and reporter are in the same group
+        var result = await groupService.CheckStudentsInSameGroup(new List<string> { request.AssigneeId!, currentUser.UserCode }, request.GroupId, cancellationToken);
+        
+        if (!result.Value)
+        {
+            return OperationResult.Failure(new Error("ProjectProgress.Error", "Students are not the same group."));
+        } 
 
         try
         {
