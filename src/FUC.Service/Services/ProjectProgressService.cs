@@ -19,6 +19,7 @@ public class ProjectProgressService(
     ICurrentUser currentUser,
     IUnitOfWork<FucDbContext> unitOfWork,
     IRepository<ProjectProgress> projectProgressRepository,
+    IRepository<ProjectProgressWeek> projectProgressWeekRepository,
     IRepository<FucTask> fucTaskRepository,
     IRepository<WeeklyEvaluation> weeklyEvaluationRepository,
     IGroupService groupService
@@ -69,7 +70,7 @@ public class ProjectProgressService(
                 var week = new ProjectProgressWeek
                 {
                     TaskDescription = workSheet.Cell(IndexStartProgressingRow, ++startIndex).GetValue<string>() ?? "",
-                    Status = ProjectProgressWeekStatus.InProgress,
+                    Status = ProjectProgressWeekStatus.ToDo,
                     WeekNumber = i,
                 };
 
@@ -93,11 +94,11 @@ public class ProjectProgressService(
     public async Task<OperationResult> CreateTask(CreateTaskRequest request, CancellationToken cancellationToken)
     {
         var result = await groupService.CheckStudentsInSameGroup(new List<string> { request.AssigneeId!, currentUser.UserCode }, request.GroupId, cancellationToken);
-        
+
         if (!result.Value)
         {
             return OperationResult.Failure(new Error("ProjectProgress.Error", "Students are not the same group."));
-        } 
+        }
 
         try
         {
@@ -127,29 +128,57 @@ public class ProjectProgressService(
 
     public async Task<OperationResult> CreateWeeklyEvaluation(CreateWeeklyEvaluationRequest request, CancellationToken cancellationToken)
     {
-        // TODO: Check Supervisor is evaluation for 
+        var result = await groupService.CheckSupervisorWithStudentSameGroup([request.StudentId], currentUser.UserCode, request.GroupId, cancellationToken);
+
+        if (!result.Value)
+        {
+            return OperationResult.Failure(new Error("ProjectProgress.Error", "Supervisor need to evaluation your group."));
+        }
+
+        var week = await projectProgressWeekRepository.GetAsync(
+            x => x.Id == request.ProjectProgressWeekId,
+            isEnabledTracking: true,
+            null, null,
+            cancellationToken);
+
+        if (week == null)
+        {
+            return OperationResult.Failure(new Error("ProjectProgress.Error", "Evaluation weekly does not exist."));
+        }
+
+        if (week.Status == ProjectProgressWeekStatus.Done)
+        {
+            return OperationResult.Failure(new Error("ProjectProgress.Error", "Evaluation weekly was evaluated."));
+        }
 
         try
         {
+            await unitOfWork.BeginTransactionAsync(cancellationToken);
+
+            week.Status = ProjectProgressWeekStatus.Done;
+
             var evaluation = new WeeklyEvaluation
             {
                 Comments = request.Comments,
                 ContributionPercentage = request.ContributionPercentage,
-                ProjectProgressWeekId= request.ProjectProgressWeekId,
+                ProjectProgressWeekId = request.ProjectProgressWeekId,
                 Status = request.Status,
-                StudentId = request.StudentId, 
+                StudentId = request.StudentId,
                 SupervisorId = currentUser.UserCode
             };
 
             weeklyEvaluationRepository.Insert(evaluation);
 
             await unitOfWork.SaveChangesAsync(cancellationToken);
+            await unitOfWork.CommitAsync(cancellationToken);    
 
             return OperationResult.Success();
         }
-        catch(Exception ex)
+        catch (Exception ex)
         {
             logger.LogError("Create evaluation fail with error: {Message}", ex.Message);
+            await unitOfWork.RollbackAsync(cancellationToken);
+
             return OperationResult.Failure(new Error("ProjectProgress.Error", "Evaluation weekly for this student fail."));
         }
     }

@@ -36,7 +36,7 @@ def get_topics(semester_ids: List[str], capstone_id: str, campus_id: str, is_cur
                       AND "CapstoneId" = %s
                       AND "CampusId" = %s
                       AND "Id" != %s;
-                ''', (semester_ids, 'Failed', capstone_id, campus_id, exclude_topic_id))
+                ''', (semester_ids, 'Rejected', capstone_id, campus_id, exclude_topic_id))
             else:
                 # Only include "Passed" topics for past semesters
                 cursor.execute('''
@@ -46,7 +46,7 @@ def get_topics(semester_ids: List[str], capstone_id: str, campus_id: str, is_cur
                       AND "Status" = %s
                       AND "CapstoneId" = %s
                       AND "CampusId" = %s;
-                ''', (semester_ids, 'Passed', capstone_id, campus_id))
+                ''', (semester_ids, 'Approved', capstone_id, campus_id))
 
             topics = [
                 {

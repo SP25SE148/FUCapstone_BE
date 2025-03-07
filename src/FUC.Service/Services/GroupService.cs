@@ -405,4 +405,10 @@ public class GroupService(
 
         return members.Count == studentIds.Count;
     }
- }
+
+    public async Task<OperationResult<bool>> CheckSupervisorWithStudentSameGroup(IList<string> studentIds, string supervisorId, Guid groupId, CancellationToken cancellationToken)
+    {
+        // TODO: Handle when fix db
+        throw new NotImplementedException();
+    }
+}
