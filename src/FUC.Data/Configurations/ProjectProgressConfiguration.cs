@@ -13,11 +13,7 @@ public class ProjectProgressConfiguration : IEntityTypeConfiguration<ProjectProg
 
         builder.HasKey(t => t.Id);
 
-        builder.Property(t => t.Description).IsRequired();
-
         builder.Property(t => t.MeetingDate).IsRequired();
-
-        builder.Property(t => t.Slot).IsRequired();
 
         builder.HasOne(p => p.Supervisor)
             .WithMany(s => s.ProjectProgresses)

@@ -13,7 +13,7 @@ public class FucTask : AuditableSoftDeleteEntity
     public FucTaskStatus Status { get; set; }
     public Priority Priority { get; set; }
     public DateTime DueDate { get; set; }
-    public string? Attachments { get; set; }
+    public string? Comment { get; set; }
     public Guid ProjectProgressWeekId { get; set; }
 
     public Student Reporter { get; set; } = null!;
