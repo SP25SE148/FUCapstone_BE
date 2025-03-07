@@ -123,7 +123,7 @@ public class DocumentsService(ILogger<DocumentsService> logger,
 
             var key = parentTemplate is not null ? string.Join('/', parentTemplate.FileUrl, file.FileName) : file.FileName;
 
-            var keyCount = await templateDocumentRepository.CountAsync(x => x.FileUrl == key, cancellationToken);
+            var keyCount = await templateDocumentRepository.CountAsync(x => x.FileUrl.Contains(key), cancellationToken);
 
             if (keyCount > 0)
             {
@@ -142,7 +142,7 @@ public class DocumentsService(ILogger<DocumentsService> logger,
 
             var templateDocument = new TemplateDocument
             {
-                FileName = file.FileName,
+                FileName = file.FileName+$"{keyCount}",
                 FileUrl = key,
                 IsActive = true,
                 IsFile = true,
@@ -237,6 +237,8 @@ public class DocumentsService(ILogger<DocumentsService> logger,
                 templateDocumentRepository.Delete(template);
 
                 await unitOfWork.SaveChangesAsync(cancellationToken);
+                
+                return OperationResult.Success();
             }
 
             if (template.IsActive)
