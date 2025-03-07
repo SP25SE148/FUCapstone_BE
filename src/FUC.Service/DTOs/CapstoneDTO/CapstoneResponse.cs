@@ -7,5 +7,6 @@ public sealed record CapstoneResponse(
     int MinMember,
     int MaxMember,
     int ReviewCount,
+    int DurationWeeks,
     bool IsDeleted,
     DateTime? DeletedAt);

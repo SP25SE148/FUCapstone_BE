@@ -38,7 +38,7 @@ public class DocumentsController(IDocumentsService documentsService) : ApiContro
         return result.IsSuccess ? Ok(result) : HandleFailure(result);
     }
 
-    [HttpGet("template/presigned/{id}")]
+    [HttpGet("templates/presigned/{id}")]
     public async Task<IActionResult> GetTemplateDocumentPresignedUrl(string id)
     {
         var presignedUrlResult = await documentsService.PresentTemplateDocumentFilePresignedUrl(Guid.Parse(id), default);
@@ -46,7 +46,7 @@ public class DocumentsController(IDocumentsService documentsService) : ApiContro
         return presignedUrlResult.IsSuccess ? Ok(presignedUrlResult) : HandleFailure(presignedUrlResult);   
     }
 
-    [HttpDelete("template/{id}")]
+    [HttpDelete("templates/{id}")]
     [Authorize(Roles = $"{UserRoles.SuperAdmin}")]
     public async Task<IActionResult> DeleteTemplateDocument(string id)
     {
@@ -55,7 +55,7 @@ public class DocumentsController(IDocumentsService documentsService) : ApiContro
         return result.IsSuccess ? Ok(result) : HandleFailure(result);
     }
 
-    [HttpPut("template/{id}")]
+    [HttpPut("templates/{id}")]
     [Authorize(Roles = $"{UserRoles.SuperAdmin}")]
     public async Task<IActionResult> UpdateActiveStatusForTemplateDocument(string id)
     {

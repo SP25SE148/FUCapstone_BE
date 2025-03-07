@@ -1,5 +1,5 @@
-﻿using FUC.Common.Contracts;
-using FUC.Common.Shared;
+﻿using FUC.Common.Shared;
+using FUC.Service.DTOs.CapstoneDTO;
 using FUC.Service.DTOs.GroupDTO;
 using FUC.Service.DTOs.TopicRequestDTO;
 
@@ -18,4 +18,6 @@ public interface IGroupService
     Task<OperationResult> UpdateGroupStatusAsync();
     Task<OperationResult<Guid>> CreateTopicRequest(TopicRequest_Request request);
     Task<OperationResult<IEnumerable<TopicRequestResponse>>> GetTopicRequests(TopicRequestParams request);
+    Task<OperationResult<CapstoneResponse>> GetCapstoneByGroup(Guid groupId, CancellationToken cancellationToken);
+    Task<OperationResult<bool>> CheckStudentsInSameGroup(IList<string> studentIds, Guid groupId, CancellationToken cancellationToken);
 }
