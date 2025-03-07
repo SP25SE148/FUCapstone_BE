@@ -48,5 +48,10 @@ public sealed class GroupConfiguration : IEntityTypeConfiguration<Group>
             .WithOne(gm => gm.Group)
             .HasForeignKey(gm => gm.GroupId)
             .OnDelete(DeleteBehavior.Cascade);
+
+        builder.HasOne(g => g.ProjectProgress)
+            .WithOne(p => p.Group)
+            .HasForeignKey<ProjectProgress>(p => p.GroupId)
+            .OnDelete(DeleteBehavior.Cascade);
     }
 }

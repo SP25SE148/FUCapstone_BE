@@ -986,7 +986,7 @@ public class TopicService(
             logger.LogError("Fail to final appraisal topic with error {Message}", ex.Message);
             await unitOfWork.RollbackAsync(cancellationToken);
 
-            return OperationResult.Failure(new Error("Topic.Error","Fail to create appraisal topic for manager"));
+            return OperationResult.Failure(new Error("Topic.Error","Fail to create appraisal topic for manager."));
         }
     }
 

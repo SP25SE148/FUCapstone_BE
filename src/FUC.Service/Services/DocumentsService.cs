@@ -115,6 +115,7 @@ public class DocumentsService(ILogger<DocumentsService> logger,
                 });
 
                 await unitOfWork.SaveChangesAsync(cancellationToken);
+                await unitOfWork.CommitAsync(cancellationToken);
 
                 return OperationResult.Success();
             }
@@ -142,7 +143,7 @@ public class DocumentsService(ILogger<DocumentsService> logger,
 
             var templateDocument = new TemplateDocument
             {
-                FileName = file.FileName+$" ({keyCount})",
+                FileName = file.FileName + $" ({keyCount})",
                 FileUrl = key,
                 IsActive = true,
                 IsFile = true,
@@ -237,7 +238,8 @@ public class DocumentsService(ILogger<DocumentsService> logger,
                 templateDocumentRepository.Delete(template);
 
                 await unitOfWork.SaveChangesAsync(cancellationToken);
-                
+                await unitOfWork.CommitAsync(cancellationToken);
+
                 return OperationResult.Success();
             }
 

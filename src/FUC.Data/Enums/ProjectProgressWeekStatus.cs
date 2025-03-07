@@ -3,6 +3,5 @@
 public enum ProjectProgressWeekStatus
 {
     Done,
-    InProgress,
     ToDo
 }

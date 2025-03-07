@@ -19,10 +19,5 @@ public class ProjectProgressConfiguration : IEntityTypeConfiguration<ProjectProg
             .WithMany(s => s.ProjectProgresses)
             .HasForeignKey(p => p.SupervisorId)
             .OnDelete(DeleteBehavior.Restrict);
-
-        builder.HasOne(p => p.Group)
-            .WithMany(g => g.ProjectProgresses)
-            .HasForeignKey(p => p.GroupId)
-            .OnDelete(DeleteBehavior.Restrict);
     }
 }

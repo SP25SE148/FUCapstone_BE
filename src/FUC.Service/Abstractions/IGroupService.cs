@@ -20,4 +20,5 @@ public interface IGroupService
     Task<OperationResult<IEnumerable<TopicRequestResponse>>> GetTopicRequests(TopicRequestParams request);
     Task<OperationResult<CapstoneResponse>> GetCapstoneByGroup(Guid groupId, CancellationToken cancellationToken);
     Task<OperationResult<bool>> CheckStudentsInSameGroup(IList<string> studentIds, Guid groupId, CancellationToken cancellationToken);
+    Task<OperationResult<bool>> CheckSupervisorWithStudentSameGroup(IList<string> studentIds, string supervisorId, Guid groupId, CancellationToken cancellationToken);
 }
