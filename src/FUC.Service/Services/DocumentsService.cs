@@ -142,7 +142,7 @@ public class DocumentsService(ILogger<DocumentsService> logger,
 
             var templateDocument = new TemplateDocument
             {
-                FileName = file.FileName+$"{keyCount}",
+                FileName = file.FileName+$" ({keyCount})",
                 FileUrl = key,
                 IsActive = true,
                 IsFile = true,
@@ -327,6 +327,6 @@ public class DocumentsService(ILogger<DocumentsService> logger,
     {
         var result = await s3Service.DeleteFromS3(bucketName, key);
 
-        return result.HttpStatusCode == System.Net.HttpStatusCode.OK;
+        return result.HttpStatusCode == System.Net.HttpStatusCode.OK || result.HttpStatusCode == System.Net.HttpStatusCode.NoContent;
     }
 }
