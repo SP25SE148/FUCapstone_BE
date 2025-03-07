@@ -16,6 +16,8 @@ public class ProjectProgressWeekConfiguration : IEntityTypeConfiguration<Project
 
         builder.Property(t => t.WeekNumber).IsRequired();
 
+        builder.Property(t => t.TaskDescription).IsRequired();
+
         builder.Property(t => t.Status)
             .HasConversion(
                 v => v.ToString(),

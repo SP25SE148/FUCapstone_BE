@@ -45,17 +45,17 @@ public class DocumentsService(ILogger<DocumentsService> logger,
 
         // the subfolder or file of current folder
         var template = await templateDocumentRepository.GetAsync(
-            x => x.Id == templateId, 
-            cancellationToken); 
+            x => x.Id == templateId,
+            cancellationToken);
 
-        if (template == null) 
-        { 
+        if (template == null)
+        {
             return OperationResult.Failure<IList<TemplateDocumentRespone>>(new Error("Document.Error", "Template does not exist."));
         }
 
         if (template.IsFile)
         {
-            return OperationResult.Failure<IList<TemplateDocumentRespone>>(new Error("Document.Error", 
+            return OperationResult.Failure<IList<TemplateDocumentRespone>>(new Error("Document.Error",
                 "This is file you can not get subfolder from there."));
         }
 
@@ -146,7 +146,7 @@ public class DocumentsService(ILogger<DocumentsService> logger,
                 FileUrl = key,
                 IsActive = true,
                 IsFile = true,
-                ParentId =parentId
+                ParentId = parentId
             };
 
             templateDocumentRepository.Insert(templateDocument);
@@ -178,7 +178,7 @@ public class DocumentsService(ILogger<DocumentsService> logger,
 
         if (template is null)
         {
-            return OperationResult.Failure<string>(new Error("Document.Error","Template does not exist."));
+            return OperationResult.Failure<string>(new Error("Document.Error", "Template does not exist."));
         }
 
         if (!template.IsFile)
@@ -193,7 +193,7 @@ public class DocumentsService(ILogger<DocumentsService> logger,
     {
         try
         {
-           var cacheKey = string.Join("/", bucketName, key);
+            var cacheKey = string.Join("/", bucketName, key);
 
             var presignedUrl = await cacheService.GetAsync<string>(cacheKey, default);
 
@@ -218,8 +218,8 @@ public class DocumentsService(ILogger<DocumentsService> logger,
         {
             await unitOfWork.BeginTransactionAsync(cancellationToken);
 
-            var template = await templateDocumentRepository.GetAsync(x => x.Id == templateId, 
-                isEnabledTracking: true, null, null, 
+            var template = await templateDocumentRepository.GetAsync(x => x.Id == templateId,
+                isEnabledTracking: true, null, null,
                 cancellationToken);
 
             if (template is null)
@@ -227,11 +227,23 @@ public class DocumentsService(ILogger<DocumentsService> logger,
                 return OperationResult.Success();
             }
 
+            if (!template.IsFile)
+            {
+                if (await templateDocumentRepository.AnyAsync(x => x.ParentId == template.Id, cancellationToken))
+                {
+                    return OperationResult.Failure(new Error("TemplateDocument.Error", $"Fail to delete folder."));
+                }
+
+                templateDocumentRepository.Delete(template);
+
+                await unitOfWork.SaveChangesAsync(cancellationToken);
+            }
+
             if (template.IsActive)
             {
                 return OperationResult.Failure(new Error("Document.Error", "Can not delete Active file"));
             }
-            
+
             templateDocumentRepository.Delete(template);
 
             if (!await RemoveDocumentToS3(s3BucketConfiguration.FUCTemplateBucket, template.FileUrl))
@@ -265,6 +277,11 @@ public class DocumentsService(ILogger<DocumentsService> logger,
                 return OperationResult.Failure(new Error("Document.Error", "Template does not exist."));
             }
 
+            if (!template.IsFile)
+            {
+                return OperationResult.Failure(new Error("Document.Error", "Only update status for file."));
+            }
+
             if (template.IsActive)
             {
                 return OperationResult.Failure(new Error("Document.Error", "Template is already actived."));
@@ -288,14 +305,14 @@ public class DocumentsService(ILogger<DocumentsService> logger,
 
             return OperationResult.Success();
         }
-        catch(Exception ex)
+        catch (Exception ex)
         {
             logger.LogError("Fail to save with error {Messagge}", ex.Message);
             return OperationResult.Failure(new Error("Document.Error", "Fail to change active status."));
         }
     }
 
-    private async Task<bool> SaveDocumentToS3(IFormFile file , string bucketName, string key, CancellationToken cancellationToken)
+    private async Task<bool> SaveDocumentToS3(IFormFile file, string bucketName, string key, CancellationToken cancellationToken)
     {
         using var stream = file.OpenReadStream();
 

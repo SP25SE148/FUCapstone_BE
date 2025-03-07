@@ -8,6 +8,7 @@ public class ProjectProgressWeek : AuditableSoftDeleteEntity
     public Guid Id { get; set; }
     public Guid ProjectProgressId { get; set; }
     public int WeekNumber { get; set; }
+    public string TaskDescription { get; set; }
     public ProjectProgressWeekStatus Status { get; set; }
     public string? MeetingLocation { get; set; }
     public string? MeetingContent { get; set; }

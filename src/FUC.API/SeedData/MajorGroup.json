@@ -14,14 +14,16 @@
             "Name": "Software Engineering Capstone Project",
             "MinMember": 4,
             "MaxMember": 5,
-            "ReviewCount": 3
+            "ReviewCount": 3,
+            "DurationWeeks": 14
           },
           {
             "Id": "SAP490",
             "Name": "SAP Interdisciplinary Capstone Project",
             "MinMember": 3,
             "MaxMember": 5,
-            "ReviewCount": 3
+            "ReviewCount": 3,
+            "DurationWeeks": 14
           }
         ]
       },
@@ -35,7 +37,8 @@
             "Name": "Artificial Intelligence Capstone Project",
             "MinMember": 3,
             "MaxMember": 4,
-            "ReviewCount": 3
+            "ReviewCount": 3,
+            "DurationWeeks": 14
           }
         ]
       },
@@ -49,7 +52,8 @@
             "Name": "Information Assurance Capstone Project",
             "MinMember": 4,
             "MaxMember": 5,
-            "ReviewCount": 3
+            "ReviewCount": 3,
+            "DurationWeeks": 14
           }
         ]
       }
@@ -70,7 +74,8 @@
             "Name": "Graduation Thesis - International Business",
             "MinMember": 4,
             "MaxMember": 6,
-            "ReviewCount": 3
+            "ReviewCount": 3,
+            "DurationWeeks": 14
           }
         ]
       },
@@ -84,7 +89,8 @@
             "Name": "Graduation Thesis - Finance",
             "MinMember": 4,
             "MaxMember": 6,
-            "ReviewCount": 3
+            "ReviewCount": 3,
+            "DurationWeeks": 14
           }
         ]
       },
@@ -98,7 +104,8 @@
             "Name": "Graduation Thesis - Marketing",
             "MinMember": 4,
             "MaxMember": 6,
-            "ReviewCount": 3
+            "ReviewCount": 3,
+            "DurationWeeks": 14
           }
         ]
       }
@@ -119,7 +126,8 @@
             "Name": "Capstone Project Multimedia Communications",
             "MinMember": 3,
             "MaxMember": 5,
-            "ReviewCount": 3
+            "ReviewCount": 3,
+            "DurationWeeks": 14
           }
         ]
       }
