@@ -14,6 +14,7 @@ using FUC.Data.Enums;
 using FUC.Data.Repositories;
 using FUC.Service.Abstractions;
 using FUC.Service.DTOs.BusinessAreaDTO;
+using FUC.Service.DTOs.GroupDTO;
 using FUC.Service.DTOs.TopicAppraisalDTO;
 using FUC.Service.DTOs.TopicDTO;
 using FUC.Service.Extensions.Options;
@@ -36,6 +37,7 @@ public class TopicService(
     IRepository<Supervisor> supervisorRepository,
     IRepository<Capstone> capstoneRepository,
     IRepository<BusinessArea> businessRepository,
+    IRepository<Group> groupRepository,
     S3BucketConfiguration s3BucketConfiguration,
     ISemesterService semesterService,
     ICacheService cache,
@@ -57,36 +59,98 @@ public class TopicService(
             null,
             cancellationToken);
 
-        if (topic == null)
-        {
-            return OperationResult.Failure<TopicResponse>(new Error("Topic.Error", "Topic does not exist."));
-        }
-
-        return OperationResult.Success(new TopicResponse
-        {
-            Id = topic.Id.ToString(),
-            Code = topic.Code ?? "undefined",
-            MainSupervisorEmail = topic.MainSupervisor.Email,
-            MainSupervisorName = topic.MainSupervisor.FullName,
-            EnglishName = topic.EnglishName,
-            VietnameseName = topic.VietnameseName,
-            Abbreviation = topic.Abbreviation,
-            Description = topic.Description,
-            FileName = topic.FileName,
-            FileUrl = topic.FileUrl,
-            Status = topic.Status,
-            DifficultyLevel = topic.DifficultyLevel,
-            BusinessAreaName = topic.BusinessArea.Name,
-            CampusId = topic.CampusId,
-            SemesterId = topic.SemesterId,
-            CapstoneId = topic.CapstoneId,
-            CoSupervisors = topic.CoSupervisors.Select(x => new CoSupervisorDto
+        return topic == null
+            ? OperationResult.Failure<TopicResponse>(new Error("Topic.Error", "Topic does not exist."))
+            : OperationResult.Success(new TopicResponse
             {
-                SupervisorEmail = x.Supervisor.Email,
-                SupervisorName = x.Supervisor.FullName,
-            }).ToList(),
-            CreatedDate = topic.CreatedDate,
-        });
+                Id = topic.Id.ToString(),
+                Code = topic.Code ?? "undefined",
+                MainSupervisorEmail = topic.MainSupervisor.Email,
+                MainSupervisorName = topic.MainSupervisor.FullName,
+                EnglishName = topic.EnglishName,
+                VietnameseName = topic.VietnameseName,
+                Abbreviation = topic.Abbreviation,
+                Description = topic.Description,
+                FileName = topic.FileName,
+                FileUrl = topic.FileUrl,
+                Status = topic.Status.ToString(),
+                DifficultyLevel = topic.DifficultyLevel.ToString(),
+                BusinessAreaName = topic.BusinessArea.Name,
+                CampusId = topic.CampusId,
+                SemesterId = topic.SemesterId,
+                CapstoneId = topic.CapstoneId,
+                CoSupervisors = topic.CoSupervisors.Select(x => new CoSupervisorDto
+                {
+                    SupervisorEmail = x.Supervisor.Email,
+                    SupervisorName = x.Supervisor.FullName,
+                }).ToList(),
+                CreatedDate = topic.CreatedDate,
+            });
+    }
+
+    public async Task<OperationResult<PaginatedList<TopicResponse>>> GetAvailableTopicsForGroupAsync(
+        TopicForGroupParams request)
+    {
+        var currentSemester = await semesterService.GetCurrentSemesterAsync();
+        if (currentSemester.IsFailure)
+            return OperationResult.Failure<PaginatedList<TopicResponse>>(new Error("Error.GetTopicsFailed",
+                "The current semester is not existed!"));
+
+        var topics = await topicRepository.FindPaginatedAsync(
+            x =>
+                (request.MainSupervisorEmail == "all" ||
+                 x.MainSupervisor.Email == request.MainSupervisorEmail) &&
+                (string.IsNullOrEmpty(request.SearchTerm) ||
+                 x.Code != null && x.Code.Contains(request.SearchTerm.Trim()) ||
+                 x.EnglishName.Contains(request.SearchTerm.Trim()) ||
+                 x.VietnameseName.Contains(request.SearchTerm.Trim()) ||
+                 x.Abbreviation.Contains(request.SearchTerm.Trim()) ||
+                 x.Description.Contains(request.SearchTerm.Trim())) &&
+                (request.BusinessAreaId == "all" || x.BusinessAreaId == Guid.Parse(request.BusinessAreaId)) &&
+                (request.DifficultyLevel == "all" ||
+                 x.DifficultyLevel == Enum.Parse<DifficultyLevel>(request.DifficultyLevel, true)) &&
+                x.CapstoneId.Equals(currentUser.CapstoneId) &&
+                x.CampusId.Equals(currentUser.CampusId) &&
+                x.SemesterId.Equals(currentSemester.Value.Id) &&
+                !x.IsAssignedToGroup &&
+                x.Status.Equals(TopicStatus.Approved),
+            request.PageNumber,
+            request.PageSize,
+            x => x.OrderByDescending(x => x.CreatedDate),
+            x => x.AsSplitQuery()
+                .Include(x => x.MainSupervisor)
+                .Include(x => x.BusinessArea)
+                .Include(x => x.CoSupervisors)
+                .ThenInclude(c => c.Supervisor),
+            x => new TopicResponse
+            {
+                Id = x.Id.ToString(),
+                Code = x.Code!,
+                MainSupervisorEmail = x.MainSupervisor.Email,
+                MainSupervisorName = x.MainSupervisor.FullName,
+                EnglishName = x.EnglishName,
+                VietnameseName = x.VietnameseName,
+                Abbreviation = x.Abbreviation,
+                Description = x.Description,
+                FileName = x.FileName,
+                FileUrl = x.FileUrl,
+                Status = x.Status.ToString(),
+                DifficultyLevel = x.DifficultyLevel.ToString(),
+                BusinessAreaName = x.BusinessArea.Name,
+                CampusId = x.CampusId,
+                SemesterId = x.SemesterId,
+                CapstoneId = x.CapstoneId,
+                CoSupervisors = x.CoSupervisors.Select(x => new CoSupervisorDto
+                {
+                    SupervisorEmail = x.Supervisor.Email,
+                    SupervisorName = x.Supervisor.FullName,
+                }).ToList(),
+                CreatedDate = x.CreatedDate,
+            });
+
+        return topics.TotalNumberOfItems > 0
+            ? OperationResult.Success(topics)
+            : OperationResult.Failure<PaginatedList<TopicResponse>>(Error.NullValue);
     }
 
     public async Task<OperationResult<IList<TopicResponse>>> GetTopicsByManagerLevel()
@@ -113,8 +177,8 @@ public class TopicService(
                 Description = x.Description,
                 FileName = x.FileName,
                 FileUrl = x.FileUrl,
-                Status = x.Status,
-                DifficultyLevel = x.DifficultyLevel,
+                Status = x.Status.ToString(),
+                DifficultyLevel = x.DifficultyLevel.ToString(),
                 BusinessAreaName = x.BusinessArea.Name,
                 CampusId = x.CampusId,
                 SemesterId = x.SemesterId,
@@ -163,8 +227,8 @@ public class TopicService(
                 Description = x.Description,
                 FileName = x.FileName,
                 FileUrl = x.FileUrl,
-                Status = x.Status,
-                DifficultyLevel = x.DifficultyLevel,
+                Status = x.Status.ToString(),
+                DifficultyLevel = x.DifficultyLevel.ToString(),
                 BusinessAreaName = x.BusinessArea.Name,
                 CampusId = x.CampusId,
                 SemesterId = x.SemesterId,
@@ -220,8 +284,8 @@ public class TopicService(
                 Description = x.Description,
                 FileName = x.FileName,
                 FileUrl = x.FileUrl,
-                Status = x.Status,
-                DifficultyLevel = x.DifficultyLevel,
+                Status = x.Status.ToString(),
+                DifficultyLevel = x.DifficultyLevel.ToString(),
                 BusinessAreaName = x.BusinessArea.Name,
                 CampusId = x.CampusId,
                 SemesterId = x.SemesterId,
@@ -242,12 +306,9 @@ public class TopicService(
     {
         var topic = await topicRepository.GetAsync(x => x.Id == topicId, cancellationToken);
 
-        if (topic == null)
-        {
-            return OperationResult.Failure(new Error("Topic.Error", "Topic does not exist."));
-        }
-
-        return await SemanticTopic(topic, withCurrentSemester, cancellationToken);
+        return topic == null
+            ? OperationResult.Failure(new Error("Topic.Error", "Topic does not exist."))
+            : await SemanticTopic(topic, withCurrentSemester, cancellationToken);
     }
 
     private async Task<OperationResult> SemanticTopic(Topic topic, bool withCurrentSemester,
@@ -882,12 +943,9 @@ public class TopicService(
 
             var currentSemesterCode = await semesterService.GetCurrentSemesterAsync();
 
-            if (currentSemesterCode.IsFailure)
-            {
-                throw new InvalidOperationException(currentSemesterCode.Error.ToString());
-            }
-
-            return $"{currentSemesterCode.Value.Id}{majorId}{topicNumberCode}";
+            return currentSemesterCode.IsFailure
+                ? throw new InvalidOperationException(currentSemesterCode.Error.ToString())
+                : $"{currentSemesterCode.Value.Id}{majorId}{topicNumberCode}";
         }
         catch (Exception ex)
         {
@@ -981,7 +1039,7 @@ public class TopicService(
                     if (newAppraisals != null && newAppraisals.Count > 0)
                     {
                         topicAppraisalRepository.InsertRange(newAppraisals);
-                    } 
+                    }
 
                     break;
 
@@ -1006,6 +1064,11 @@ public class TopicService(
             return OperationResult.Failure(new Error("Topic.Error", "Fail to create appraisal topic for manager."));
         }
     }
+
+    // public Task<OperationResult<(TopicResponse,GroupResponse)>> GetTopicByGroupSelfId()
+    // {
+    //     var group = 
+    // }
 
     private async Task<List<(string SupervisorId, string SupervisorEmail)>>
         GetAvailableSupervisorsForSupportingTopic(List<string> coSupervisorEmails,
@@ -1045,11 +1108,8 @@ public class TopicService(
             };
         var businessAreas = await queryable.ToListAsync();
 
-        if (businessAreas.Count != 0)
-        {
-            return OperationResult.Success(businessAreas);
-        }
-
-        return OperationResult.Failure<List<BusinessAreaResponse>>(Error.NullValue);
+        return businessAreas.Count != 0
+            ? OperationResult.Success(businessAreas)
+            : OperationResult.Failure<List<BusinessAreaResponse>>(Error.NullValue);
     }
 }

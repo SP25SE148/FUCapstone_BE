@@ -14,8 +14,8 @@ public class TopicResponse
     public string Description { get; set; }
     public string FileName { get; set; }
     public string FileUrl { get; set; }
-    public TopicStatus Status { get; set; }
-    public DifficultyLevel DifficultyLevel { get; set; }
+    public string Status { get; set; }
+    public string DifficultyLevel { get; set; }
     public string BusinessAreaName { get; set; }
     public string CapstoneId { get; set; }
     public string SemesterId { get; set; }

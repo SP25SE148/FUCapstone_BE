@@ -1,6 +1,7 @@
 using FUC.Common.Shared;
 using FUC.Data.Entities;
 using FUC.Service.DTOs.BusinessAreaDTO;
+using FUC.Service.DTOs.GroupDTO;
 using FUC.Service.DTOs.TopicAppraisalDTO;
 using FUC.Service.DTOs.TopicDTO;
 using FUC.Service.DTOs.TopicRequestDTO;
@@ -12,6 +13,7 @@ public interface ITopicService
     Task<OperationResult<TopicResponse>> GetTopicById(Guid topicId, CancellationToken cancellationToken);
     Task<OperationResult<IList<TopicResponse>>> GetTopicsBySupervisor();
     Task<OperationResult<PaginatedList<TopicResponse>>> GetTopics(TopicParams request);
+    Task<OperationResult<PaginatedList<TopicResponse>>> GetAvailableTopicsForGroupAsync(TopicForGroupParams request);
     Task<OperationResult<IList<TopicResponse>>> GetTopicsByManagerLevel();
     Task<OperationResult<Guid>> CreateTopic(CreateTopicRequest request, CancellationToken cancellationToken);
     Task<OperationResult> UpdateTopic(UpdateTopicRequest request, CancellationToken cancellationToken);
@@ -28,4 +30,6 @@ public interface ITopicService
 
     Task<OperationResult> FinalSubmitAppraisalTopic(FinalAppraisalTopicRequest request,
         CancellationToken cancellationToken);
+
+    // Task<OperationResult<(TopicResponse, GroupResponse)>> GetTopicByGroupSelfId();
 }
