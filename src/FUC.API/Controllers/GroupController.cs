@@ -6,6 +6,7 @@ using FUC.Common.Shared;
 using FUC.Service.Abstractions;
 using FUC.Service.DTOs.GroupDTO;
 using FUC.Service.DTOs.GroupMemberDTO;
+using FUC.Service.DTOs.TopicRequestDTO;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -144,6 +145,30 @@ public class GroupController(
     public async Task<IActionResult> GetGroupMemberRequest()
     {
         var result = await groupMemberService.GetGroupMemberRequestByMemberId();
+        return result.IsSuccess
+            ? Ok(result)
+            : HandleFailure(result);
+    }
+
+    #endregion
+
+    #region TopicRequest
+
+    [HttpPost("create-topic-request")]
+    [Authorize(Roles = $"{UserRoles.Student}")]
+    public async Task<IActionResult> CreateTopicRequest(TopicRequest_Request request)
+    {
+        var result = await groupService.CreateTopicRequestAsync(request);
+        return result.IsSuccess
+            ? Ok(result)
+            : HandleFailure(result);
+    }
+
+    [HttpGet("get-topic-request")]
+    [Authorize(Roles = $"{UserRoles.Student}, {UserRoles.Supervisor}")]
+    public async Task<IActionResult> GetTopicRequest([FromQuery] TopicRequestParams requestParams)
+    {
+        var result = await groupService.GetTopicRequestsAsync(requestParams);
         return result.IsSuccess
             ? Ok(result)
             : HandleFailure(result);

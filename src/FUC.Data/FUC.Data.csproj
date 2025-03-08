@@ -25,4 +25,8 @@
     <ProjectReference Include="..\FUC.Common\FUC.Common.csproj" />
   </ItemGroup>
 
+    <ItemGroup>
+        <Compile Remove="Entities\SupervisorGroupAssignment.cs"/>
+    </ItemGroup>
+
 </Project>
