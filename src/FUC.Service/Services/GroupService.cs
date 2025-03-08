@@ -1,6 +1,7 @@
 ﻿using System.Linq.Expressions;
 using AutoMapper;
 using FUC.Common.Abstractions;
+using FUC.Common.Constants;
 using FUC.Common.IntegrationEventLog.Services;
 using FUC.Common.Shared;
 using FUC.Data;
@@ -15,6 +16,7 @@ using FUC.Service.DTOs.GroupMemberDTO;
 using FUC.Service.DTOs.TopicRequestDTO;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Query;
+using Microsoft.Extensions.Logging;
 
 namespace FUC.Service.Services;
 
@@ -22,6 +24,7 @@ public class GroupService(
     IUnitOfWork<FucDbContext> uow,
     ISemesterService semesterService,
     IMapper mapper,
+    ILogger<GroupService> logger,
     IIntegrationEventLogService integrationEventLogService,
     ICurrentUser currentUser,
     IRepository<GroupMember> groupMemberRepository,
@@ -282,7 +285,7 @@ public class GroupService(
     }
 
 
-    public async Task<OperationResult<Guid>> CreateTopicRequest(TopicRequest_Request request)
+    public async Task<OperationResult<Guid>> CreateTopicRequestAsync(TopicRequest_Request request)
     {
         // TODO: Check if the create topic request is requested in invalid date
 
@@ -310,23 +313,37 @@ public class GroupService(
             return OperationResult.Failure<Guid>(new Error("Error.GroupInEligible",
                 $"Group with id {groupMember.GroupId} is not {GroupStatus.InProgress.ToString()} status"));
 
+        // check if topic code of group is not null
+        if (!string.IsNullOrEmpty(groupMember.Group.TopicCode))
+            return OperationResult.Failure<Guid>(new Error("Error.CreateFailed",
+                "Can not create topic request for group already have topic code!"));
+
         if (groupMember.Group.TopicRequests.Any(tr => !tr.Status.Equals(TopicRequestStatus.Rejected)))
             return OperationResult.Failure<Guid>(new Error("Error.CreateTopicRequestFailed",
                 $"Can not create topic request while this group already have topic request is {TopicRequestStatus.UnderReview.ToString()} or {TopicRequestStatus.Accepted}"));
 
         var topic = await topicRepository.GetAsync(t => t.Id.Equals(request.TopicId), default);
+
         // check if topic is not null
         if (topic is null)
             return OperationResult.Failure<Guid>(Error.NullValue);
-        // check if topic is Passed and is not assigned to any group
-        if (!topic.Status.Equals(TopicStatus.Approved))
+
+        // check if topic's campus is the same as group's campus or if topic's capstone is different from group's capstone
+        if (!topic.CampusId.Equals(groupMember.Student.CampusId) ||
+            !topic.CapstoneId.Equals(groupMember.Group.CapstoneId))
             return OperationResult.Failure<Guid>(new Error("Error.CreateTopicRequestFailed",
                 "Error.CreateTopicRequestFailed"));
 
-        // check if topic's capstone is different from group's capstone
-        if (!topic.CapstoneId.Equals(groupMember.Group.CapstoneId))
+        // check if topic is Passed and is not assigned to any group
+        if (!topic.Status.Equals(TopicStatus.Approved) ||
+            topic.IsAssignedToGroup)
             return OperationResult.Failure<Guid>(new Error("Error.CreateTopicRequestFailed",
                 "Error.CreateTopicRequestFailed"));
+
+        // check if group was sent request to this topic before and rejected
+        if (groupMember.Group.TopicRequests.Any(tr => tr.TopicId.Equals(topic.Id)))
+            return OperationResult.Failure<Guid>(new Error("Error.CantSentTopicRequest",
+                $"Can not sent topic request with topic id {topic.Id} because its was sent before"));
 
         var topicRequest = new TopicRequest
         {
@@ -340,9 +357,101 @@ public class GroupService(
         return topicRequest.Id;
     }
 
-    public Task<OperationResult<IEnumerable<TopicRequestResponse>>> GetTopicRequests(TopicRequestParams request)
+    public async Task<OperationResult<PaginatedList<TopicRequestResponse>>> GetTopicRequestsAsync(
+        TopicRequestParams request)
     {
-        throw new NotImplementedException();
+        var topicRequests = await topicRequestRepository
+            .FindPaginatedAsync(tr =>
+                    (currentUser.Role == UserRoles.Supervisor && tr.SupervisorId == currentUser.UserCode ||
+                     currentUser.Role == UserRoles.Student && tr.CreatedBy == currentUser.Email) &&
+                    request.Status == null || tr.Status.Equals(request.Status) &&
+                    string.IsNullOrEmpty(request.SearchTerm) ||
+                    tr.Topic.Code != null && tr.Topic.Code.Contains(request.SearchTerm) ||
+                    tr.Topic.EnglishName.Contains(request.SearchTerm) ||
+                    (currentUser.Role.Equals(UserRoles.Student)
+                        ? tr.Supervisor.FullName.Contains(request.SearchTerm)
+                        : tr.Group.GroupCode.Contains(request.SearchTerm)),
+                request.PageNumber,
+                request.PageSize,
+                tr => request.OrderBy == "_asc"
+                    ? tr.OrderBy(tr => tr.CreatedDate)
+                    : tr.OrderByDescending(tr => tr.CreatedDate),
+                tr => tr.Include(tr => tr.Group)
+                    .Include(tr => tr.Topic)
+                    .Include(tr => tr.Supervisor),
+                tr => new TopicRequestResponse
+                {
+                    GroupId = tr.GroupId,
+                    TopicCode = tr.Topic.Code!,
+                    GroupCode = tr.Group.GroupCode,
+                    Status = tr.Status.ToString(),
+                    CreatedDate = tr.CreatedDate,
+                    TopicId = tr.TopicId,
+                    RequestedBy = tr.CreatedBy,
+                    SupervisorId = tr.SupervisorId,
+                    SupervisorFullName = tr.Supervisor.FullName,
+                    TopicEnglishName = tr.Topic.EnglishName
+                }
+            );
+
+
+        return topicRequests.TotalNumberOfItems < 1
+            ? OperationResult.Failure<PaginatedList<TopicRequestResponse>>(Error.NullValue)
+            : OperationResult.Success(topicRequests);
+    }
+
+    public async Task<OperationResult> UpdateTopicRequestStatusAsync(UpdateTopicRequestStatusRequest request)
+    {
+        var topicRequest = await topicRequestRepository.GetAsync(tr => tr.Id.Equals(request.TopicRequestId) &&
+                                                                       tr.SupervisorId.Equals(currentUser.UserCode),
+            true,
+            tr => tr.Include(tr => tr.Group)
+                .Include(tr => tr.Topic));
+        // check if topic request is null
+        if (topicRequest is null)
+            return OperationResult.Failure(Error.NullValue);
+
+        // check if topic request is different from UnderReview
+        if (!topicRequest.Status.Equals(TopicRequestStatus.UnderReview))
+            return OperationResult.Failure(new Error("Error.UpdateFailed",
+                $"Cant update topic request status while its different from {TopicRequestStatus.UnderReview.ToString()}"));
+        try
+        {
+            await _uow.BeginTransactionAsync();
+
+            // update topic request status
+            topicRequest.Status = request.Status;
+            // set the rest topic request status have id same with topicRequest.TopicId to Rejected   
+            if (topicRequest.Status.Equals(TopicRequestStatus.Accepted))
+            {
+                var topicRequests = await topicRequestRepository.FindAsync(tr =>
+                    tr.SupervisorId.Equals(currentUser.UserCode) &&
+                    tr.TopicId.Equals(topicRequest.TopicId) &&
+                    !tr.Id.Equals(request.TopicRequestId));
+
+                foreach (TopicRequest topRequest in topicRequests)
+                {
+                    topRequest.Status = TopicRequestStatus.Rejected;
+                    topicRequestRepository.Update(topRequest);
+                }
+
+                // assign supervisor to group
+                topicRequest.Group.TopicCode = topicRequest.Topic.Code;
+                topicRequest.Group.SupervisorId = topicRequest.Topic.MainSupervisorId;
+                topicRequestRepository.Update(topicRequest);
+            }
+
+            await _uow.CommitAsync();
+            // send noti to group leader
+
+            return OperationResult.Success();
+        }
+        catch (Exception e)
+        {
+            logger.LogError("Update topic request status failed with message: {Message}", e.Message);
+            await _uow.RollbackAsync();
+            return OperationResult.Failure(new Error("Error.UpdateFailed", "Update topic request status failed!!"));
+        }
     }
 
 
@@ -382,31 +491,34 @@ public class GroupService(
         };
     }
 
-    public async Task<OperationResult<CapstoneResponse>> GetCapstoneByGroup(Guid groupId, CancellationToken cancellationToken)
+    public async Task<OperationResult<CapstoneResponse>> GetCapstoneByGroup(Guid groupId,
+        CancellationToken cancellationToken)
     {
         var group = await _groupRepository.GetAsync(
-                x => x.Id == groupId,
-                include: x => x.Include(x => x.Capstone),
-                null,
-                cancellationToken);
+            x => x.Id == groupId,
+            include: x => x.Include(x => x.Capstone),
+            null,
+            cancellationToken);
 
         ArgumentNullException.ThrowIfNull(group);
 
         return mapper.Map<CapstoneResponse>(group.Capstone);
-    } 
+    }
 
-    public async Task<OperationResult<bool>> CheckStudentsInSameGroup(IList<string> studentIds, Guid groupId, CancellationToken cancellationToken)
+    public async Task<OperationResult<bool>> CheckStudentsInSameGroup(IList<string> studentIds, Guid groupId,
+        CancellationToken cancellationToken)
     {
         var members = await _groupMemberRepository.FindAsync(
             x => studentIds.Contains(x.StudentId) &&
-                x.GroupId == groupId &&
-                x.Status == GroupMemberStatus.Accepted,
+                 x.GroupId == groupId &&
+                 x.Status == GroupMemberStatus.Accepted,
             cancellationToken);
 
         return members.Count == studentIds.Count;
     }
 
-    public async Task<OperationResult<bool>> CheckSupervisorWithStudentSameGroup(IList<string> studentIds, string supervisorId, Guid groupId, CancellationToken cancellationToken)
+    public async Task<OperationResult<bool>> CheckSupervisorWithStudentSameGroup(IList<string> studentIds,
+        string supervisorId, Guid groupId, CancellationToken cancellationToken)
     {
         // TODO: Handle when fix db
         throw new NotImplementedException();

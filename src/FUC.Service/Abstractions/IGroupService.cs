@@ -1,6 +1,7 @@
 ﻿using FUC.Common.Shared;
 using FUC.Service.DTOs.CapstoneDTO;
 using FUC.Service.DTOs.GroupDTO;
+using FUC.Service.DTOs.TopicDTO;
 using FUC.Service.DTOs.TopicRequestDTO;
 
 namespace FUC.Service.Abstractions;
@@ -16,9 +17,14 @@ public interface IGroupService
     Task<OperationResult<GroupResponse>> GetGroupByIdAsync(Guid id);
     Task<OperationResult<GroupResponse>> GetGroupByStudentIdAsync();
     Task<OperationResult> UpdateGroupStatusAsync();
-    Task<OperationResult<Guid>> CreateTopicRequest(TopicRequest_Request request);
-    Task<OperationResult<IEnumerable<TopicRequestResponse>>> GetTopicRequests(TopicRequestParams request);
+    Task<OperationResult<Guid>> CreateTopicRequestAsync(TopicRequest_Request request);
+    Task<OperationResult<PaginatedList<TopicRequestResponse>>> GetTopicRequestsAsync(TopicRequestParams request);
+    Task<OperationResult> UpdateTopicRequestStatusAsync(UpdateTopicRequestStatusRequest request);
     Task<OperationResult<CapstoneResponse>> GetCapstoneByGroup(Guid groupId, CancellationToken cancellationToken);
-    Task<OperationResult<bool>> CheckStudentsInSameGroup(IList<string> studentIds, Guid groupId, CancellationToken cancellationToken);
-    Task<OperationResult<bool>> CheckSupervisorWithStudentSameGroup(IList<string> studentIds, string supervisorId, Guid groupId, CancellationToken cancellationToken);
+
+    Task<OperationResult<bool>> CheckStudentsInSameGroup(IList<string> studentIds, Guid groupId,
+        CancellationToken cancellationToken);
+
+    Task<OperationResult<bool>> CheckSupervisorWithStudentSameGroup(IList<string> studentIds, string supervisorId,
+        Guid groupId, CancellationToken cancellationToken);
 }
