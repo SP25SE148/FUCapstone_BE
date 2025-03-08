@@ -1,10 +1,11 @@
-﻿using FUC.Data.Enums;
+﻿using FUC.Common.Shared;
+using FUC.Data.Enums;
 
 namespace FUC.Service.DTOs.TopicRequestDTO;
 
-public sealed class TopicRequestParams
+public sealed class TopicRequestParams : PaginationParams
 {
-    public string SearchTerm { get; set; }
-    public string Status { get; set; } = "all";
-    public string OrderBy { get; set; } = "_asc";
+    public string? SearchTerm { get; set; }
+    public TopicRequestStatus? Status { get; set; }
+    public string? OrderBy { get; set; } = "_asc";
 }

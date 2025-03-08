@@ -19,7 +19,7 @@ public class Supervisor : AuditableSoftDeleteEntity
 
     public ICollection<TopicAppraisal> TopicAppraisals { get; set; } = new List<TopicAppraisal>();
     public ICollection<TopicRequest> TopicRequests { get; set; } = new List<TopicRequest>();
+    public ICollection<Group> Groups { get; set; } = new List<Group>();
     public ICollection<ProjectProgress> ProjectProgresses { get; set; } = new List<ProjectProgress>();
     public ICollection<WeeklyEvaluation> WeeklyEvaluations { get; set; } = new List<WeeklyEvaluation>();
-
 }
