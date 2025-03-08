@@ -6,6 +6,7 @@ using FUC.Common.Shared;
 using FUC.Service.Abstractions;
 using FUC.Service.DTOs.GroupDTO;
 using FUC.Service.DTOs.GroupMemberDTO;
+using FUC.Service.DTOs.TopicDTO;
 using FUC.Service.DTOs.TopicRequestDTO;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -16,6 +17,7 @@ namespace FUC.API.Controllers;
 public class GroupController(
     IGroupService groupService,
     IGroupMemberService groupMemberService,
+    ITopicService topicService,
     ICurrentUser currentUser,
     IIntegrationEventLogService integrationEventLogService) : ApiController
 {
@@ -169,6 +171,16 @@ public class GroupController(
     public async Task<IActionResult> GetTopicRequest([FromQuery] TopicRequestParams requestParams)
     {
         var result = await groupService.GetTopicRequestsAsync(requestParams);
+        return result.IsSuccess
+            ? Ok(result)
+            : HandleFailure(result);
+    }
+
+    [HttpGet("get-available-topics")]
+    [Authorize(Roles = UserRoles.Student)]
+    public async Task<IActionResult> GetAvailableTopicsForGroupAsync([FromQuery] TopicForGroupParams request)
+    {
+        var result = await topicService.GetAvailableTopicsForGroupAsync(request);
         return result.IsSuccess
             ? Ok(result)
             : HandleFailure(result);
