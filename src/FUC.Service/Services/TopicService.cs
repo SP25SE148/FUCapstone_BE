@@ -325,7 +325,7 @@ public class TopicService(
             return OperationResult.Failure<Guid>(new Error("Topic.Error", "Capstone does not exist."));
         }
 
-        if (request.CoSupervisorEmails.Any(x => x == currentUser.Email))
+        if (request.CoSupervisorEmails.Exists(x => x == currentUser.Email))
         {
             return OperationResult.Failure<Guid>(new Error("Topic.Error",
                 "The supervisor can not copporate topic himself."));
@@ -972,12 +972,16 @@ public class TopicService(
                     await UpdateStatusTopicAfterAppraisal(request.TopicId, TopicStatus.Considered, cancellationToken);
                     var appraisalSupervisors = topicAppraisals.Select(x => x.SupervisorId).Distinct();
 
-                    topicAnalysisRepository.InsertRange((IReadOnlyList<TopicAnalysis>)appraisalSupervisors.Select(s =>
-                        new TopicAppraisal
-                        {
-                            SupervisorId = s,
-                            TopicId = request.TopicId
-                        }));
+                    var newAppraisals = appraisalSupervisors.Select(s => new TopicAppraisal
+                    {
+                        SupervisorId = s,
+                        TopicId = request.TopicId
+                    }).ToList();
+
+                    if (newAppraisals != null && newAppraisals.Count > 0)
+                    {
+                        topicAppraisalRepository.InsertRange(newAppraisals);
+                    } 
 
                     break;
 
