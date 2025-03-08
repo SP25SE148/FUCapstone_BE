@@ -1,5 +1,5 @@
-﻿using Amazon.S3;
-using DocumentFormat.OpenXml.Bibliography;
+﻿using System.Text.RegularExpressions;
+using Amazon.S3;
 using FUC.Common.Abstractions;
 using FUC.Common.Shared;
 using FUC.Data;
@@ -115,7 +115,6 @@ public class DocumentsService(ILogger<DocumentsService> logger,
                 });
 
                 await unitOfWork.SaveChangesAsync(cancellationToken);
-                await unitOfWork.CommitAsync(cancellationToken);
 
                 return OperationResult.Success();
             }
@@ -124,12 +123,7 @@ public class DocumentsService(ILogger<DocumentsService> logger,
 
             var key = parentTemplate is not null ? string.Join('/', parentTemplate.FileUrl, file.FileName) : file.FileName;
 
-            var keyCount = await templateDocumentRepository.CountAsync(x => x.FileUrl.Contains(key), cancellationToken);
-
-            if (keyCount > 0)
-            {
-                key += $"({keyCount})";
-            }
+            var fileUrl = await GenerateFileName(key, cancellationToken);
 
             var activedTemplateDocument = await templateDocumentRepository
                 .GetAsync(x => x.FileUrl.StartsWith(parentTemplate != null ? parentTemplate.FileUrl : "") && x.IsActive,
@@ -143,8 +137,8 @@ public class DocumentsService(ILogger<DocumentsService> logger,
 
             var templateDocument = new TemplateDocument
             {
-                FileName = file.FileName + $" ({keyCount})",
-                FileUrl = key,
+                FileName = fileUrl.Split("/")[^1],
+                FileUrl = fileUrl,
                 IsActive = true,
                 IsFile = true,
                 ParentId = parentId
@@ -219,7 +213,8 @@ public class DocumentsService(ILogger<DocumentsService> logger,
         {
             await unitOfWork.BeginTransactionAsync(cancellationToken);
 
-            var template = await templateDocumentRepository.GetAsync(x => x.Id == templateId,
+            var template = await templateDocumentRepository.GetAsync(
+                x => x.Id == templateId,
                 isEnabledTracking: true, null, null,
                 cancellationToken);
 
@@ -230,7 +225,9 @@ public class DocumentsService(ILogger<DocumentsService> logger,
 
             if (!template.IsFile)
             {
-                if (await templateDocumentRepository.AnyAsync(x => x.ParentId == template.Id, cancellationToken))
+                if (await templateDocumentRepository.AnyAsync(
+                    x => x.ParentId == template.Id, 
+                    cancellationToken))
                 {
                     return OperationResult.Failure(new Error("TemplateDocument.Error", $"Fail to delete folder."));
                 }
@@ -272,7 +269,8 @@ public class DocumentsService(ILogger<DocumentsService> logger,
     {
         try
         {
-            var template = await templateDocumentRepository.GetAsync(x => x.Id == templateId,
+            var template = await templateDocumentRepository.GetAsync(
+                x => x.Id == templateId,
             isEnabledTracking: true, null, null,
             cancellationToken);
 
@@ -329,6 +327,36 @@ public class DocumentsService(ILogger<DocumentsService> logger,
     {
         var result = await s3Service.DeleteFromS3(bucketName, key);
 
-        return result.HttpStatusCode == System.Net.HttpStatusCode.OK || result.HttpStatusCode == System.Net.HttpStatusCode.NoContent;
+        return result.HttpStatusCode == System.Net.HttpStatusCode.OK || 
+            result.HttpStatusCode == System.Net.HttpStatusCode.NoContent;
+    }
+
+    private async Task<string> GenerateFileName(string newFileUrl, CancellationToken cancellationToken)
+    {
+        var oldFileUrls = (await templateDocumentRepository.FindAsync(
+            x => x.FileUrl.StartsWith(newFileUrl), cancellationToken))
+            .Select(f => f.FileUrl).ToList();
+
+        if (oldFileUrls == null || oldFileUrls.Count == 0)
+        {
+            return newFileUrl;
+        }
+
+        if (!oldFileUrls.Contains(newFileUrl))
+        {
+            return newFileUrl;
+        }
+
+        string pattern = $@"^{Regex.Escape(newFileUrl)}(?: \((\d+)\))?$";
+
+        var matches = oldFileUrls
+            .Select(f => Regex.Match(f, pattern))
+            .Where(m => m.Success)
+            .Select(m => m.Groups[1].Success ? int.Parse(m.Groups[1].Value) : 0)
+            .ToList();
+
+        int nextIndex = (matches.Count > 0) ? matches.Max() + 1 : 1;
+
+        return $"{newFileUrl} ({nextIndex})";
     }
 }
