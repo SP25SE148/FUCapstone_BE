@@ -1,6 +1,7 @@
 ﻿using FUC.Common.Shared;
 using FUC.Service.DTOs.CapstoneDTO;
 using FUC.Service.DTOs.GroupDTO;
+using FUC.Service.DTOs.ProjectProgressDTO;
 using FUC.Service.DTOs.TopicDTO;
 using FUC.Service.DTOs.TopicRequestDTO;
 
@@ -21,10 +22,12 @@ public interface IGroupService
     Task<OperationResult<PaginatedList<TopicRequestResponse>>> GetTopicRequestsAsync(TopicRequestParams request);
     Task<OperationResult> UpdateTopicRequestStatusAsync(UpdateTopicRequestStatusRequest request);
     Task<OperationResult<CapstoneResponse>> GetCapstoneByGroup(Guid groupId, CancellationToken cancellationToken);
-
-    Task<OperationResult<bool>> CheckStudentsInSameGroup(IList<string> studentIds, Guid groupId,
+    Task<bool> CheckStudentsInSameGroup(IList<string> studentIds, Guid groupId,
         CancellationToken cancellationToken);
-
-    Task<OperationResult<bool>> CheckSupervisorWithStudentSameGroup(IList<string> studentIds, string supervisorId,
+    Task<bool> CheckSupervisorWithStudentSameGroup(IList<string> studentIds, string supervisorId,
         Guid groupId, CancellationToken cancellationToken);
+    Task<OperationResult> ImportProjectProgressFile(ImportProjectProgressRequest request, CancellationToken cancellationToken);
+    Task<OperationResult> CreateTask(CreateTaskRequest request, CancellationToken cancellationToken);
+    Task<OperationResult> CreateWeeklyEvaluation(CreateWeeklyEvaluationRequest request, CancellationToken cancellationToken);
+    Task<OperationResult<ProjectProgressDto>> GetProjectProgressByGroup(Guid groupId, CancellationToken cancellationToken);
 }
