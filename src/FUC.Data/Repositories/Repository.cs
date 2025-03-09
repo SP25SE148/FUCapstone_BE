@@ -9,6 +9,17 @@ namespace FUC.Data.Repositories;
 public class Repository<TEntity>(DbContext dbContext) : IRepository<TEntity>
     where TEntity : Entity
 {
+    public async Task<TResult?> GetAsync<TResult>(Expression<Func<TEntity, bool>> predicate,
+        Expression<Func<TEntity, TResult>> selector,
+        Func<IQueryable<TEntity>, IIncludableQueryable<TEntity, object?>>? include = null,
+        CancellationToken cancellationToken = default)
+    {
+        return await ApplyIncludesAndOrdering(GetQueryable(), include, null)
+            .Where(predicate)
+            .Select(selector)
+            .FirstOrDefaultAsync(cancellationToken);
+    }
+
     public async Task<TEntity?> GetAsync(Expression<Func<TEntity, bool>> predicate,
         bool isEnabledTracking = false,
         Func<IQueryable<TEntity>, IIncludableQueryable<TEntity, object?>>? include = null,

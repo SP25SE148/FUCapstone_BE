@@ -38,6 +38,11 @@ public interface IRepository<TEntity> where TEntity : Entity
         Func<IQueryable<TEntity>, IOrderedQueryable<TEntity>>? orderBy = null,
         CancellationToken cancellationToken = default);
 
+    Task<TResult?> GetAsync<TResult>(Expression<Func<TEntity, bool>> predicate,
+        Expression<Func<TEntity, TResult>> selector,
+        Func<IQueryable<TEntity>, IIncludableQueryable<TEntity, object?>>? include = null,
+        CancellationToken cancellationToken = default);
+
     #endregion
 
     #region FindAsync

@@ -186,5 +186,15 @@ public class GroupController(
             : HandleFailure(result);
     }
 
+    [HttpGet("information")]
+    [Authorize(Roles = UserRoles.Student)]
+    public async Task<IActionResult> GetGroupInformationAsync()
+    {
+        var result = await topicService.GetGroupInformationByGroupSelfId();
+        return result.IsSuccess
+            ? Ok(result)
+            : HandleFailure(result);
+    }
+
     #endregion
 }
