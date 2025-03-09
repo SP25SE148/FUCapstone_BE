@@ -388,6 +388,7 @@ public class GroupService(
                     : tr.OrderByDescending(tr => tr.CreatedDate),
                 tr => new TopicRequestResponse
                 {
+                    TopicRequestId = tr.Id,
                     GroupId = tr.GroupId,
                     TopicCode = tr.Topic.Code!,
                     GroupCode = tr.Group.GroupCode,

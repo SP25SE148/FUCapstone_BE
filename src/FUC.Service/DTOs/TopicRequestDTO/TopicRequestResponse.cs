@@ -2,6 +2,7 @@
 
 public sealed class TopicRequestResponse
 {
+    public Guid TopicRequestId { get; set; }
     public string GroupCode { get; set; }
     public Guid GroupId { get; set; }
     public string SupervisorId { get; set; }
