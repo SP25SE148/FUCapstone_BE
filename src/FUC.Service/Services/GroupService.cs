@@ -363,11 +363,11 @@ public class GroupService(
         return topicRequest.Id;
     }
 
-    public async Task<OperationResult<PaginatedList<TopicRequestResponse>>> GetTopicRequestsAsync(
+    public async Task<OperationResult<List<TopicRequestResponse>>> GetTopicRequestsAsync(
         TopicRequestParams request)
     {
         var topicRequests = await topicRequestRepository
-            .FindPaginatedAsync(tr =>
+            .FindAsync(tr =>
                     (currentUser.Role == UserRoles.Supervisor && tr.SupervisorId == currentUser.UserCode ||
                      currentUser.Role == UserRoles.Student && tr.CreatedBy == currentUser.Email) &&
                     request.Status == null || tr.Status.Equals(request.Status) &&
@@ -377,14 +377,15 @@ public class GroupService(
                     (currentUser.Role.Equals(UserRoles.Student)
                         ? tr.Supervisor.FullName.Contains(request.SearchTerm)
                         : tr.Group.GroupCode.Contains(request.SearchTerm)),
-                request.PageNumber,
-                request.PageSize,
+                tr =>
+                    tr.Include(tr => tr.Group)
+                        .ThenInclude(g => g.GroupMembers.Where(gm => gm.IsLeader))
+                        .ThenInclude(gm => gm.Student)
+                        .Include(tr => tr.Topic)
+                        .Include(tr => tr.Supervisor),
                 tr => request.OrderBy == "_asc"
                     ? tr.OrderBy(tr => tr.CreatedDate)
                     : tr.OrderByDescending(tr => tr.CreatedDate),
-                tr => tr.Include(tr => tr.Group)
-                    .Include(tr => tr.Topic)
-                    .Include(tr => tr.Supervisor),
                 tr => new TopicRequestResponse
                 {
                     GroupId = tr.GroupId,
@@ -396,14 +397,15 @@ public class GroupService(
                     RequestedBy = tr.CreatedBy,
                     SupervisorId = tr.SupervisorId,
                     SupervisorFullName = tr.Supervisor.FullName,
-                    TopicEnglishName = tr.Topic.EnglishName
+                    TopicEnglishName = tr.Topic.EnglishName,
+                    LeaderFullName = tr.Group.GroupMembers.FirstOrDefault()!.Student.FullName
                 }
             );
 
 
-        return topicRequests.TotalNumberOfItems < 1
-            ? OperationResult.Failure<PaginatedList<TopicRequestResponse>>(Error.NullValue)
-            : OperationResult.Success(topicRequests);
+        return topicRequests.Count < 1
+            ? OperationResult.Failure<List<TopicRequestResponse>>(Error.NullValue)
+            : OperationResult.Success(topicRequests.ToList());
     }
 
     public async Task<OperationResult> UpdateTopicRequestStatusAsync(UpdateTopicRequestStatusRequest request)
