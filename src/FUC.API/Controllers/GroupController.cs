@@ -190,7 +190,7 @@ public class GroupController(
     [Authorize(Roles = UserRoles.Student)]
     public async Task<IActionResult> GetGroupInformationAsync()
     {
-        var result = await topicService.GetGroupInformationByGroupSelfId();
+        var result = await groupService.GetGroupInformationByGroupSelfId();
         return result.IsSuccess
             ? Ok(result)
             : HandleFailure(result);
