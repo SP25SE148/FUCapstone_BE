@@ -15,30 +15,32 @@ using Microsoft.Extensions.Logging;
 
 namespace FUC.Service.Services;
 
-public class DocumentsService(ILogger<DocumentsService> logger,
+public class DocumentsService(
+    ILogger<DocumentsService> logger,
     IUnitOfWork<FucDbContext> unitOfWork,
     IRepository<TemplateDocument> templateDocumentRepository,
     IS3Service s3Service,
     ICacheService cacheService,
     S3BucketConfiguration s3BucketConfiguration) : IDocumentsService
 {
-    public async Task<OperationResult<IList<TemplateDocumentRespone>>> GetSubTemplateDocuments(Guid? templateId, CancellationToken cancellationToken)
+    public async Task<OperationResult<IList<TemplateDocumentRespone>>> GetSubTemplateDocuments(Guid? templateId,
+        CancellationToken cancellationToken)
     {
         // get the root of folder
         if (templateId == null)
         {
             var query = from t in templateDocumentRepository.GetQueryable()
-                        where t.ParentId == null
-                        select new TemplateDocumentRespone
-                        {
-                            Id = t.Id,
-                            FileUrl = t.FileUrl,
-                            FileName = t.FileName,
-                            IsActive = t.IsActive,
-                            CreatedBy = t.CreatedBy,
-                            CreatedDate = t.CreatedDate,
-                            IsFile = t.IsFile,
-                        };
+                where t.ParentId == null
+                select new TemplateDocumentRespone
+                {
+                    Id = t.Id,
+                    FileUrl = t.FileUrl,
+                    FileName = t.FileName,
+                    IsActive = t.IsActive,
+                    CreatedBy = t.CreatedBy,
+                    CreatedDate = t.CreatedDate,
+                    IsFile = t.IsFile,
+                };
 
             return await query.ToListAsync(cancellationToken);
         }
@@ -50,7 +52,8 @@ public class DocumentsService(ILogger<DocumentsService> logger,
 
         if (template == null)
         {
-            return OperationResult.Failure<IList<TemplateDocumentRespone>>(new Error("Document.Error", "Template does not exist."));
+            return OperationResult.Failure<IList<TemplateDocumentRespone>>(new Error("Document.Error",
+                "Template does not exist."));
         }
 
         if (template.IsFile)
@@ -78,17 +81,21 @@ public class DocumentsService(ILogger<DocumentsService> logger,
         return OperationResult.Success(subfolder);
     }
 
-    public async Task<OperationResult> CreateTemplateDocument(Guid? parentId, string? folderName, IFormFile? file, CancellationToken cancellationToken)
+    public async Task<OperationResult> CreateTemplateDocument(Guid? parentId, string? folderName, IFormFile? file,
+        CancellationToken cancellationToken)
     {
         try
         {
-            var parentTemplate = parentId != null ? await templateDocumentRepository.GetAsync(
-            x => x.Id == parentId,
-            cancellationToken) : null;
+            var parentTemplate = parentId != null
+                ? await templateDocumentRepository.GetAsync(
+                    x => x.Id == parentId,
+                    cancellationToken)
+                : null;
 
             if (parentId != null && parentTemplate == null)
             {
-                return OperationResult.Failure<IList<TemplateDocumentRespone>>(new Error("Document.Error", "Template does not exist."));
+                return OperationResult.Failure<IList<TemplateDocumentRespone>>(new Error("Document.Error",
+                    "Template does not exist."));
             }
 
             if (parentTemplate != null && parentTemplate.IsFile)
@@ -102,13 +109,15 @@ public class DocumentsService(ILogger<DocumentsService> logger,
                 if (folderName is null)
                 {
                     return OperationResult.Failure<IList<TemplateDocumentRespone>>(new Error("Document.Error",
-                    "You can not create subfolder"));
+                        "You can not create subfolder"));
                 }
 
                 templateDocumentRepository.Insert(new TemplateDocument
                 {
                     FileName = folderName,
-                    FileUrl = parentTemplate is not null ? string.Join("/", parentTemplate.FileUrl, folderName) : folderName,
+                    FileUrl = parentTemplate is not null
+                        ? string.Join("/", parentTemplate.FileUrl, folderName)
+                        : folderName,
                     ParentId = parentId,
                     IsFile = false,
                     IsActive = true
@@ -121,14 +130,16 @@ public class DocumentsService(ILogger<DocumentsService> logger,
 
             await unitOfWork.BeginTransactionAsync(cancellationToken);
 
-            var key = parentTemplate is not null ? string.Join('/', parentTemplate.FileUrl, file.FileName) : file.FileName;
+            var key = parentTemplate is not null
+                ? string.Join('/', parentTemplate.FileUrl, file.FileName)
+                : file.FileName;
 
             var fileUrl = await GenerateFileName(key, cancellationToken);
 
             var activedTemplateDocument = await templateDocumentRepository
                 .GetAsync(x => x.FileUrl.StartsWith(parentTemplate != null ? parentTemplate.FileUrl : "") && x.IsActive,
-                isEnabledTracking: true, null, null,
-                cancellationToken);
+                    isEnabledTracking: true, null, null,
+                    cancellationToken);
 
             if (activedTemplateDocument is not null)
             {
@@ -167,7 +178,8 @@ public class DocumentsService(ILogger<DocumentsService> logger,
     }
 
     // View template documents
-    public async Task<OperationResult<string>> PresentTemplateDocumentFilePresignedUrl(Guid templateId, CancellationToken cancellationToken)
+    public async Task<OperationResult<string>> PresentTemplateDocumentFilePresignedUrl(Guid templateId,
+        CancellationToken cancellationToken)
     {
         var template = await templateDocumentRepository.GetAsync(x => x.Id == templateId, cancellationToken);
 
@@ -176,12 +188,9 @@ public class DocumentsService(ILogger<DocumentsService> logger,
             return OperationResult.Failure<string>(new Error("Document.Error", "Template does not exist."));
         }
 
-        if (!template.IsFile)
-        {
-            return OperationResult.Failure<string>(new Error("Document.Error", "This is folder you can not do action."));
-        }
-
-        return await PresentFilePresignedUrl(s3BucketConfiguration.FUCTemplateBucket, template.FileUrl);
+        return !template.IsFile
+            ? OperationResult.Failure<string>(new Error("Document.Error", "This is folder you can not do action."))
+            : await PresentFilePresignedUrl(s3BucketConfiguration.FUCTemplateBucket, template.FileUrl);
     }
 
     private async Task<OperationResult<string>> PresentFilePresignedUrl(string bucketName, string key)
@@ -226,8 +235,8 @@ public class DocumentsService(ILogger<DocumentsService> logger,
             if (!template.IsFile)
             {
                 if (await templateDocumentRepository.AnyAsync(
-                    x => x.ParentId == template.Id, 
-                    cancellationToken))
+                        x => x.ParentId == template.Id,
+                        cancellationToken))
                 {
                     return OperationResult.Failure(new Error("TemplateDocument.Error", $"Fail to delete folder."));
                 }
@@ -265,14 +274,15 @@ public class DocumentsService(ILogger<DocumentsService> logger,
         }
     }
 
-    public async Task<OperationResult> UpdateActiveStatusForTemplateDocument(Guid templateId, CancellationToken cancellationToken)
+    public async Task<OperationResult> UpdateActiveStatusForTemplateDocument(Guid templateId,
+        CancellationToken cancellationToken)
     {
         try
         {
             var template = await templateDocumentRepository.GetAsync(
                 x => x.Id == templateId,
-            isEnabledTracking: true, null, null,
-            cancellationToken);
+                isEnabledTracking: true, null, null,
+                cancellationToken);
 
             if (template is null)
             {
@@ -292,7 +302,7 @@ public class DocumentsService(ILogger<DocumentsService> logger,
             var prefixKey = string.Join("/", template.FileUrl.Split('/')[..^1]);
 
             var activedTemplateDocument = await templateDocumentRepository
-                    .GetAsync(x => x.FileUrl.StartsWith(prefixKey) && x.IsActive,
+                .GetAsync(x => x.FileUrl.StartsWith(prefixKey) && x.IsActive,
                     isEnabledTracking: true, null, null,
                     cancellationToken);
 
@@ -314,7 +324,8 @@ public class DocumentsService(ILogger<DocumentsService> logger,
         }
     }
 
-    private async Task<bool> SaveDocumentToS3(IFormFile file, string bucketName, string key, CancellationToken cancellationToken)
+    private async Task<bool> SaveDocumentToS3(IFormFile file, string bucketName, string key,
+        CancellationToken cancellationToken)
     {
         using var stream = file.OpenReadStream();
 
@@ -327,14 +338,14 @@ public class DocumentsService(ILogger<DocumentsService> logger,
     {
         var result = await s3Service.DeleteFromS3(bucketName, key);
 
-        return result.HttpStatusCode == System.Net.HttpStatusCode.OK || 
-            result.HttpStatusCode == System.Net.HttpStatusCode.NoContent;
+        return result.HttpStatusCode == System.Net.HttpStatusCode.OK ||
+               result.HttpStatusCode == System.Net.HttpStatusCode.NoContent;
     }
 
     private async Task<string> GenerateFileName(string newFileUrl, CancellationToken cancellationToken)
     {
         var oldFileUrls = (await templateDocumentRepository.FindAsync(
-            x => x.FileUrl.StartsWith(newFileUrl), cancellationToken))
+                x => x.FileUrl.StartsWith(newFileUrl), cancellationToken))
             .Select(f => f.FileUrl).ToList();
 
         if (oldFileUrls == null || oldFileUrls.Count == 0)
@@ -355,7 +366,7 @@ public class DocumentsService(ILogger<DocumentsService> logger,
             .Select(m => m.Groups[1].Success ? int.Parse(m.Groups[1].Value) : 0)
             .ToList();
 
-        int nextIndex = (matches.Count > 0) ? matches.Max() + 1 : 1;
+        int nextIndex = matches.Count > 0 ? matches.Max() + 1 : 1;
 
         return $"{newFileUrl} ({nextIndex})";
     }

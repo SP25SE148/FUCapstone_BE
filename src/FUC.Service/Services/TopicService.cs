@@ -15,6 +15,7 @@ using FUC.Data.Repositories;
 using FUC.Service.Abstractions;
 using FUC.Service.DTOs.BusinessAreaDTO;
 using FUC.Service.DTOs.GroupDTO;
+using FUC.Service.DTOs.GroupMemberDTO;
 using FUC.Service.DTOs.TopicAppraisalDTO;
 using FUC.Service.DTOs.TopicDTO;
 using FUC.Service.Extensions.Options;
@@ -37,7 +38,7 @@ public class TopicService(
     IRepository<Supervisor> supervisorRepository,
     IRepository<Capstone> capstoneRepository,
     IRepository<BusinessArea> businessRepository,
-    IRepository<Group> groupRepository,
+    IRepository<GroupMember> groupmemberRepository,
     S3BucketConfiguration s3BucketConfiguration,
     ISemesterService semesterService,
     ICacheService cache,
@@ -1065,10 +1066,84 @@ public class TopicService(
         }
     }
 
-    // public Task<OperationResult<(TopicResponse,GroupResponse)>> GetTopicByGroupSelfId()
-    // {
-    //     var group = 
-    // }
+    public async Task<OperationResult<(TopicResponse?, GroupResponse)>> GetGroupInformationByGroupSelfId()
+    {
+        // get group information
+        var group = await groupmemberRepository.GetAsync(gm =>
+                gm.StudentId.Equals(currentUser.UserCode) && gm.Status.Equals(GroupMemberStatus.Accepted),
+            gm => new GroupResponse
+            {
+                Id = gm.GroupId,
+                Status = gm.Group.Status.ToString(),
+                CampusName = gm.Group.Campus.Name,
+                CapstoneName = gm.Group.Capstone.Name,
+                GroupCode = gm.Group.GroupCode,
+                TopicCode = gm.Group.TopicCode,
+                MajorName = gm.Group.Major.Name,
+                SemesterName = gm.Group.Semester.Name,
+                GroupMemberList = gm.Group.GroupMembers.Select(x => new GroupMemberResponse()
+                {
+                    Id = x.Id,
+                    Status = x.Status.ToString(),
+                    StudentEmail = x.Student.Email,
+                    StudentId = x.StudentId,
+                    IsLeader = x.IsLeader,
+                    StudentFullName = x.Student.FullName,
+                    GroupId = x.GroupId,
+                    CreatedBy = x.CreatedBy,
+                    CreatedDate = x.CreatedDate
+                })
+            },
+            gm => gm.AsSplitQuery()
+                .Include(gm => gm.Student)
+                .Include(gm => gm.Group)
+                .Include(gm => gm.Group.Campus)
+                .Include(gm => gm.Group.Capstone)
+                .Include(gm => gm.Group.Semester)
+                .Include(gm => gm.Group.Major)
+                .Include(g => g.Group.GroupMembers.Where(gm => gm.Status.Equals(GroupMemberStatus.Accepted)))
+                .ThenInclude(gm => gm.Student));
+        if (group is null)
+        {
+            logger.LogError("group information is null !");
+            return OperationResult.Failure<(TopicResponse?, GroupResponse)>(Error.NullValue);
+        }
+
+        // get topic's group information
+        var topic = await topicRepository.GetAsync(t => t.Code.Equals(group.TopicCode),
+            t => new TopicResponse
+            {
+                Id = t.Id.ToString(),
+                Code = t.Code!,
+                Abbreviation = t.Abbreviation,
+                Description = t.Description,
+                FileName = t.FileName,
+                FileUrl = t.FileUrl,
+                Status = t.Status.ToString(),
+                CreatedDate = t.CreatedDate,
+                CampusId = t.CampusId,
+                CapstoneId = t.CapstoneId,
+                SemesterId = t.SemesterId,
+                DifficultyLevel = t.DifficultyLevel.ToString(),
+                BusinessAreaName = t.BusinessArea.Name,
+                EnglishName = t.EnglishName,
+                VietnameseName = t.VietnameseName,
+                MainSupervisorEmail = t.MainSupervisor.Email,
+                MainSupervisorName = t.MainSupervisor.FullName,
+                CoSupervisors = t.CoSupervisors.Select(c => new CoSupervisorDto()
+                {
+                    SupervisorEmail = c.Supervisor.Email,
+                    SupervisorName = c.Supervisor.FullName
+                }).ToList()
+            },
+            t => t.AsSplitQuery()
+                .Include(t => t.BusinessArea)
+                .Include(t => t.MainSupervisor)
+                .Include(t => t.CoSupervisors)
+                .ThenInclude(co => co.Supervisor));
+
+        return (topic, group);
+    }
 
     private async Task<List<(string SupervisorId, string SupervisorEmail)>>
         GetAvailableSupervisorsForSupportingTopic(List<string> coSupervisorEmails,
