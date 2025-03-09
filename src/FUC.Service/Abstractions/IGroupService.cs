@@ -19,7 +19,7 @@ public interface IGroupService
     Task<OperationResult<GroupResponse>> GetGroupByStudentIdAsync();
     Task<OperationResult> UpdateGroupStatusAsync();
     Task<OperationResult<Guid>> CreateTopicRequestAsync(TopicRequest_Request request);
-    Task<OperationResult<PaginatedList<TopicRequestResponse>>> GetTopicRequestsAsync(TopicRequestParams request);
+    Task<OperationResult<List<TopicRequestResponse>>> GetTopicRequestsAsync(TopicRequestParams request);
     Task<OperationResult> UpdateTopicRequestStatusAsync(UpdateTopicRequestStatusRequest request);
     Task<OperationResult<CapstoneResponse>> GetCapstoneByGroup(Guid groupId, CancellationToken cancellationToken);
 
