@@ -14,10 +14,5 @@ public class ProjectProgressConfiguration : IEntityTypeConfiguration<ProjectProg
         builder.HasKey(t => t.Id);
 
         builder.Property(t => t.MeetingDate).IsRequired();
-
-        builder.HasOne(p => p.Supervisor)
-            .WithMany(s => s.ProjectProgresses)
-            .HasForeignKey(p => p.SupervisorId)
-            .OnDelete(DeleteBehavior.Restrict);
     }
 }

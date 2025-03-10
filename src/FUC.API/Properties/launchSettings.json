@@ -8,6 +8,7 @@
         "ASPNETCORE_ENVIRONMENT": "Development",
         "TOPIC_BUCKET_NAME": "fuc-topic",
         "TEMPLATE_BUCKET_NAME": "fuc-template",
+        "EVALUATION_PROJECT_PROGRESS_KEY": "",
         "ENABLE_PROFILE": "true"
       },
       "dotnetRunMessages": true,

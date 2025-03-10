@@ -24,7 +24,8 @@ try
     var bucketConfiguration = new S3BucketConfiguration
     {
         FUCTopicBucket = Environment.GetEnvironmentVariable("TOPIC_BUCKET_NAME"),
-        FUCTemplateBucket = Environment.GetEnvironmentVariable("TEMPLATE_BUCKET_NAME")
+        FUCTemplateBucket = Environment.GetEnvironmentVariable("TEMPLATE_BUCKET_NAME"),
+        EvaluationProjectProgressKey = Environment.GetEnvironmentVariable("EVALUATION_PROJECT_PROGRESS_KEY"),
     };
 
     builder.Services.AddSingleton(bucketConfiguration);
