@@ -29,4 +29,5 @@ public interface IGroupService
     Task<OperationResult<List<EvaluationProjectProgressResponse>>> GetProgressEvaluationOfGroup(Guid groupId, CancellationToken cancellationToken);
     Task<OperationResult<byte[]>> ExportProgressEvaluationOfGroup(Guid groupId, CancellationToken cancellationToken);
     Task<OperationResult<TopicOfGroupResponse>> GetGroupInformationByGroupSelfId();
+    Task<OperationResult<List<GroupManageBySupervisorResponse>>> GetGroupsWhichMentorBySupervisor(CancellationToken cancellationToken);
 }

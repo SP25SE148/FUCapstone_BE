@@ -16,3 +16,12 @@ public sealed record GroupResponse
     
 }
 
+public sealed record GroupManageBySupervisorResponse
+{
+    public Guid GroupId { get; init; }
+    public string SemesterCode { get; init; } = string.Empty;
+    public string? TopicCode { get; init; } = string.Empty;
+    public string? GroupCode { get; init; } = string.Empty;
+    public string EnglishName { get; set; } = string.Empty;
+}
+

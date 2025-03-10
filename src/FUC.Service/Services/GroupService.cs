@@ -1,4 +1,5 @@
-﻿using System.Linq.Expressions;
+﻿using System.Collections.Generic;
+using System.Linq.Expressions;
 using Amazon.S3;
 using Amazon.S3.Model;
 using AutoMapper;
@@ -709,28 +710,28 @@ public class GroupService(
         }
     }
 
-    private static async Task<OperationResult<byte[]>> ProcessEvaluationProjectProgressTemplate(GetObjectResponse response, 
-        Topic topic, 
+    private static async Task<OperationResult<byte[]>> ProcessEvaluationProjectProgressTemplate(GetObjectResponse response,
+        Topic topic,
         List<EvaluationProjectProgressResponse> evaluations,
         CancellationToken cancellationToken)
     {
         using var memoryStream = new MemoryStream();
 
         await response.ResponseStream.CopyToAsync(memoryStream, cancellationToken);
-        
+
         memoryStream.Position = 0;
-        
+
         using var workbook = new XLWorkbook(memoryStream);
 
         var workSheet = workbook.Worksheet(1);
 
         // fill the topic information into excel file
-        workSheet.Cell(2,2).SetValue(topic.Code);
-        workSheet.Cell(3,2).SetValue($"English: {topic.EnglishName} / Vietnamese: {topic.VietnameseName}");
+        workSheet.Cell(2, 2).SetValue(topic.Code);
+        workSheet.Cell(3, 2).SetValue($"English: {topic.EnglishName} / Vietnamese: {topic.VietnameseName}");
 
         // fill the evaluation information into excel file
         int startIndex = 6;
-        for(int i = 0; i < evaluations.Count; i++)
+        for (int i = 0; i < evaluations.Count; i++)
         {
             // fill the students information into excel file
             workSheet.Cell(startIndex + i, 1).SetValue(evaluations[i].StudentCode);
@@ -744,7 +745,7 @@ public class GroupService(
                 workSheet.Cell(startIndex + i, 4 + item.WeekNumber).SetValue(item.ContributionPercentage);
             }
         }
-        
+
         using var outputStream = new MemoryStream();
         workbook.SaveAs(outputStream);
         return outputStream.ToArray();  // Return modified file as byte array
@@ -1014,7 +1015,7 @@ public class GroupService(
     }
 
     private async Task<bool> CheckStudentsInSameGroup(IList<string> studentIds, Guid groupId,
-   
+
         CancellationToken cancellationToken)
     {
         var members = await groupMemberRepository.FindAsync(
@@ -1111,5 +1112,44 @@ public class GroupService(
                 .ThenInclude(co => co.Supervisor));
 
         return new TopicOfGroupResponse(topic, group);
+    }
+
+    public async Task<OperationResult<List<GroupManageBySupervisorResponse>>> GetGroupsWhichMentorBySupervisor(CancellationToken cancellationToken)
+    {
+        string supervisorId = currentUser.UserCode;
+
+        var currentSemester = await semesterService.GetCurrentSemesterAsync();
+
+        if (currentSemester.IsFailure)
+            return OperationResult.Failure<List<GroupManageBySupervisorResponse>>(currentSemester.Error);
+
+        var groups = await groupRepository.FindAsync(
+            x => x.SupervisorId == supervisorId &&
+            x.Status == GroupStatus.InProgress &&
+            x.SemesterId == currentSemester.Value.Id,
+            cancellationToken);
+
+        if (groups == null || groups.Count == 0)
+            ArgumentNullException.ThrowIfNull(groups);
+
+        var tasks = groups.Select(async g =>
+        {
+            var topic = await topicRepository.GetAsync(
+                x => x.Code == g.GroupCode,
+                cancellationToken);
+
+            ArgumentNullException.ThrowIfNull(topic);
+
+            return new GroupManageBySupervisorResponse
+            {
+                GroupId = g.Id,
+                GroupCode = g.GroupCode,
+                EnglishName = topic.EnglishName,
+                TopicCode = topic.Code,
+                SemesterCode = g.SemesterId
+            };
+        });
+
+        return (await Task.WhenAll(tasks)).OrderBy(x => x.GroupCode).ToList();
     }
 }

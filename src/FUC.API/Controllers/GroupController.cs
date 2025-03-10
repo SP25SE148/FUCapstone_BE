@@ -285,5 +285,14 @@ public class GroupController(
                    HandleFailure(result);
     }
 
+    [Authorize(Roles = UserRoles.Supervisor)]
+    [HttpGet("manage")]
+    public async Task<IActionResult> GetGroupManageBySupervisor()
+    {
+        var result = await groupService.GetGroupsWhichMentorBySupervisor(default);
+
+        return result.IsSuccess ? Ok(result) : HandleFailure(result);
+    }
+
     #endregion ProjectProgress
 }
