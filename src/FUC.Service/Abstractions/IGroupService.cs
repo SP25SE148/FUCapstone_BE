@@ -28,4 +28,5 @@ public interface IGroupService
     Task<OperationResult<ProjectProgressDto>> GetProjectProgressByGroup(Guid groupId, CancellationToken cancellationToken);
     Task<OperationResult<List<EvaluationProjectProgressResponse>>> GetProgressEvaluationOfGroup(Guid groupId, CancellationToken cancellationToken);
     Task<OperationResult<byte[]>> ExportProgressEvaluationOfGroup(Guid groupId, CancellationToken cancellationToken);
+    Task<OperationResult<TopicOfGroupResponse>> GetGroupInformationByGroupSelfId();
 }
