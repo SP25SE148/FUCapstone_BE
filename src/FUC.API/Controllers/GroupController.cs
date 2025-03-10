@@ -6,6 +6,7 @@ using FUC.Common.Shared;
 using FUC.Service.Abstractions;
 using FUC.Service.DTOs.GroupDTO;
 using FUC.Service.DTOs.GroupMemberDTO;
+using FUC.Service.DTOs.ProjectProgressDTO;
 using FUC.Service.DTOs.TopicDTO;
 using FUC.Service.DTOs.TopicRequestDTO;
 using Microsoft.AspNetCore.Authorization;
@@ -197,4 +198,92 @@ public class GroupController(
     }
 
     #endregion
+
+    #region ProjectProgress
+    [Authorize(Roles = $"{UserRoles.Supervisor},{UserRoles.Student}")]
+    [HttpGet("{groupId}/progress")]
+    public async Task<IActionResult> GetProjectProgressOfGroup(Guid groupId)
+    {
+        var result = await groupService.GetProjectProgressByGroup(groupId, default);
+
+        return result.IsSuccess ? Ok(result) : HandleFailure(result);
+    }
+
+    [Authorize(Roles = UserRoles.Supervisor)]
+    [HttpPost("progress/import")]
+    public async Task<IActionResult> ImportProjectProgress(ImportProjectProgressRequest request)
+    {
+        var result = await groupService.ImportProjectProgressFile(request, default);
+
+        return result.IsSuccess ? Ok(result) : HandleFailure(result);
+    }
+
+    [Authorize(Roles = UserRoles.Student)]
+    [HttpPost("progress/tasks")]
+    public async Task<IActionResult> CreateProjectProgressTask(CreateTaskRequest request)
+    {
+        var result = await groupService.CreateTask(request, default);
+
+        return result.IsSuccess ? Ok(result) : HandleFailure(result);
+    }
+
+    [Authorize(Roles = $"{UserRoles.Student},{UserRoles.Supervisor}")]
+    [HttpGet("progress/tasks")]
+    public async Task<IActionResult> GetProjectProgressTasks([FromBody] Guid projectProgressId)
+    {
+        var result = await groupService.GetTasks(projectProgressId, default);
+
+        return result.IsSuccess ? Ok(result) : HandleFailure(result);
+    }
+
+    [Authorize(Roles = $"{UserRoles.Student},{UserRoles.Supervisor}")]
+    [HttpGet("progress/tasks/{taskId}")]
+    public async Task<IActionResult> GetProjectProgressTaskDetail(Guid taskId)
+    {
+        var result = await groupService.GetTasksDetail(taskId, default);
+
+        return result.IsSuccess ? Ok(result) : HandleFailure(result);
+    }
+
+    [Authorize(Roles = UserRoles.Student)]
+    [HttpPut("progress/tasks")]
+    public async Task<IActionResult> UpdateProjectProgressTask([FromBody] UpdateTaskRequest request)
+    {
+        var result = await groupService.UpdateTask(request, default);
+
+        return result.IsSuccess ? Ok(result) : HandleFailure(result);
+    }
+
+
+    [Authorize(Roles = UserRoles.Supervisor)]
+    [HttpPost("progress/week/evaluation")]
+    public async Task<IActionResult> EvaluationWeeklyProgress([FromBody] CreateWeeklyEvaluationRequest request)
+    {
+        var result = await groupService.CreateWeeklyEvaluation(request, default);
+
+        return result.IsSuccess ? Ok(result) : HandleFailure(result);
+    }
+
+    [Authorize(Roles = UserRoles.Supervisor)]
+    [HttpGet("progress/week/evaluation/{groupId}")]
+    public async Task<IActionResult> GetEvaluationWeeklyProgress(Guid groupId)
+    {
+        var result = await groupService.GetProgressEvaluationOfGroup(groupId, default);
+
+        return result.IsSuccess ? Ok(result) : HandleFailure(result);
+    }
+
+    [Authorize(Roles = UserRoles.Supervisor)]
+    [HttpGet("progress/week/evaluation/{groupId}/excel")]
+    public async Task<IActionResult> GetEvaluationWeeklyProgressFile(Guid groupId)
+    {
+        var result = await groupService.ExportProgressEvaluationOfGroup(groupId, default);
+
+        return result.IsSuccess ? File(result.Value,
+                   "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+                   "Evaluation_Project_Progress.xlsx") : 
+                   HandleFailure(result);
+    }
+
+    #endregion ProjectProgress
 }

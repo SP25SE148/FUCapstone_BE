@@ -33,9 +33,9 @@ public class FucTaskConfiguration : IEntityTypeConfiguration<FucTask>
 
         builder.Property(t => t.DueDate).IsRequired();
 
-        builder.HasOne(t => t.ProjectProgressWeek)
+        builder.HasOne(t => t.ProjectProgress)
             .WithMany(p => p.FucTasks)
-            .HasForeignKey(p => p.ProjectProgressWeekId)  
+            .HasForeignKey(p => p.ProjectProgressId)  
             .OnDelete(DeleteBehavior.Restrict);
 
         builder.HasOne(t => t.Assignee)

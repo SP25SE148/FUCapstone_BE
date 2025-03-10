@@ -8,17 +8,17 @@ public class FucTask : AuditableSoftDeleteEntity
     public string KeyTask { get; set; }
     public string Description { get; set; }
     public string Summary { get; set; }
-    public string AssigneeId { get; set; } // studentId
-    public string ReporterId { get; set; } // studentId
+    public string AssigneeId { get; set; } // who to do task
+    public string ReporterId { get; set; } // who assign task for member
     public FucTaskStatus Status { get; set; }
     public Priority Priority { get; set; }
     public DateTime DueDate { get; set; }
     public string? Comment { get; set; }
-    public Guid ProjectProgressWeekId { get; set; }
+    public Guid ProjectProgressId { get; set; }
 
     public Student Reporter { get; set; } = null!;
     public Student Assignee { get; set; } = null!;
-    public ProjectProgressWeek ProjectProgressWeek { get; set; }
+    public ProjectProgress ProjectProgress { get; set; } = null!;
     public ICollection<FucTaskHistory> FucTaskHistories { get; set; }
 }
 

@@ -3,9 +3,9 @@ using FUC.Data.Entities;
 using FUC.Data.Enums;
 using FUC.Service.DTOs.CampusDTO;
 using FUC.Service.DTOs.CapstoneDTO;
-using FUC.Service.DTOs.GroupDTO;
 using FUC.Service.DTOs.MajorDTO;
 using FUC.Service.DTOs.MajorGroupDTO;
+using FUC.Service.DTOs.ProjectProgressDTO;
 using FUC.Service.DTOs.SemesterDTO;
 using FUC.Service.DTOs.StudentDTO;
 using FUC.Service.DTOs.SupervisorDTO;
@@ -53,6 +53,10 @@ public class ServiceProfiles : Profile
             .ForMember(dest => dest.BusinessAreaId, opt => opt.Condition(src => src.BusinessAreaId != null))
             .ForMember(dest => dest.BusinessAreaId, opt => opt.MapFrom((src, dest) =>
                 src.BusinessAreaId != null ? Guid.Parse(src.BusinessAreaId) : dest.BusinessAreaId))
-            .ForAllMembers(opt => opt.Condition((src, dest, srcMember) => srcMember != null)); 
+            .ForAllMembers(opt => opt.Condition((src, dest, srcMember) => srcMember != null));
+
+        CreateMap<UpdateTaskRequest, FucTask>()
+            .ForMember(dest => dest.Id, opt => opt.MapFrom(src => src.TaskId))
+            .ForAllMembers(opt => opt.Condition((src, dest, srcMember) => srcMember != null));
     }
 }
