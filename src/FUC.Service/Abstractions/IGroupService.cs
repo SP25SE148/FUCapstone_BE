@@ -19,14 +19,6 @@ public interface IGroupService
     Task<OperationResult<List<TopicRequestResponse>>> GetTopicRequestsAsync(TopicRequestParams request);
     Task<OperationResult> UpdateTopicRequestStatusAsync(UpdateTopicRequestStatusRequest request);
 
-    Task<bool> CheckStudentsInSameGroup(IList<string> studentIds, Guid groupId,
-        CancellationToken cancellationToken);
-
-    Task<OperationResult<GroupResponse>> GetGroupInformationByGroupSelfId();
-
-    Task<bool> CheckSupervisorWithStudentSameGroup(IList<string> studentIds, string supervisorId,
-        Guid groupId, CancellationToken cancellationToken);
-
     Task<OperationResult> ImportProjectProgressFile(ImportProjectProgressRequest request,
         CancellationToken cancellationToken);
 

@@ -32,7 +32,6 @@ public class GroupService(
     IUnitOfWork<FucDbContext> uow,
     ISemesterService semesterService,
     IMapper mapper,
-    ITopicService topicService,
     ILogger<GroupService> logger,
     IIntegrationEventLogService integrationEventLogService,
     ICurrentUser currentUser,
