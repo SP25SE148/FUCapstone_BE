@@ -3,7 +3,6 @@ using FUC.Data.Abstractions.Entities;
 
 namespace FUC.Data.Entities;
 
-
 public sealed class Major : AuditableSoftDeleteEntity
 {
     public string Id { get; set; } // Major code
@@ -16,5 +15,5 @@ public sealed class Major : AuditableSoftDeleteEntity
     public ICollection<Student> Students { get; set; } = new List<Student>();
     public ICollection<Supervisor> Supervisors { get; set; } = new List<Supervisor>();
     public ICollection<Group> Groups { get; set; } = new List<Group>();
-
+    public ICollection<ReviewCalendar> ReviewCalendars { get; set; } = new List<ReviewCalendar>();
 }

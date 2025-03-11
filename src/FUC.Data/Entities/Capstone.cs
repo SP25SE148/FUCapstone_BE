@@ -2,7 +2,7 @@
 
 namespace FUC.Data.Entities;
 
-public sealed class Capstone : AuditableSoftDeleteEntity 
+public sealed class Capstone : AuditableSoftDeleteEntity
 {
     public string Id { get; set; } // capstone code 
     public string MajorId { get; set; }
@@ -11,10 +11,11 @@ public sealed class Capstone : AuditableSoftDeleteEntity
     public int MaxMember { get; set; }
     public int ReviewCount { get; set; }
     public int DurationWeeks { get; set; }
-   
+
     public Major Major { get; set; } = null!;
     public ICollection<Group> Groups { get; set; } = new List<Group>();
     public ICollection<Student> Students { get; set; } = new List<Student>();
 
     public ICollection<Topic> Topics { get; set; } = new List<Topic>();
+    public ICollection<ReviewCriteria> reviewCriterias { get; set; } = new List<ReviewCriteria>();
 }

@@ -12,9 +12,10 @@ public sealed class Campus : AuditableSoftDeleteEntity
     public string Phone { get; set; } = string.Empty;
     public string Email { get; set; } = string.Empty;
 
-    public  ICollection<Group> Groups { get; set; } = new List<Group>();
-    public  ICollection<Student> Students { get; set; } = new List<Student>();
-    public  ICollection<Supervisor> Supervisors { get; set; } = new List<Supervisor>();
+    public ICollection<Group> Groups { get; set; } = new List<Group>();
+    public ICollection<Student> Students { get; set; } = new List<Student>();
+    public ICollection<Supervisor> Supervisors { get; set; } = new List<Supervisor>();
+    public ICollection<ReviewCalendar> ReviewCalendars { get; set; } = new List<ReviewCalendar>();
 
     public ICollection<Topic> Topics { get; set; } = new List<Topic>();
 }

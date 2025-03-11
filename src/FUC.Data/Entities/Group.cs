@@ -24,5 +24,6 @@ public sealed class Group : AuditableSoftDeleteEntity
     public Supervisor Supervisor { get; set; } = null!;
     public ICollection<GroupMember> GroupMembers { get; set; } = new List<GroupMember>();
     public ICollection<TopicRequest> TopicRequests { get; set; } = new List<TopicRequest>();
+    public ICollection<ReviewCalendar> ReviewCalendars { get; set; } = new List<ReviewCalendar>();
     public ProjectProgress ProjectProgress { get; set; } = null!;
 }
