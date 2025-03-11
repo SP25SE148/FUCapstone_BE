@@ -1135,7 +1135,7 @@ public class GroupService(
         var tasks = groups.Select(async g =>
         {
             var topic = await topicRepository.GetAsync(
-                x => x.Code == g.GroupCode,
+                x => x.Code == g.TopicCode,
                 cancellationToken);
 
             ArgumentNullException.ThrowIfNull(topic);
