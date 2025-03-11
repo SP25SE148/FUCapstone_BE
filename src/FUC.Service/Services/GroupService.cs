@@ -1,7 +1,4 @@
-﻿using System.Collections.Generic;
-using System.Linq.Expressions;
-using Amazon.S3;
-using Amazon.S3.Model;
+﻿using System.Linq.Expressions;
 using AutoMapper;
 using ClosedXML.Excel;
 using FUC.Common.Abstractions;
@@ -14,13 +11,12 @@ using FUC.Data.Entities;
 using FUC.Data.Enums;
 using FUC.Data.Repositories;
 using FUC.Service.Abstractions;
+using FUC.Service.DTOs.CapstoneDTO;
 using FUC.Service.DTOs.GroupDTO;
 using FUC.Service.DTOs.GroupMemberDTO;
 using FUC.Service.DTOs.ProjectProgressDTO;
 using FUC.Service.DTOs.TopicDTO;
 using FUC.Service.DTOs.TopicRequestDTO;
-using FUC.Service.Extensions.Options;
-using MassTransit.Initializers;
 using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Query;
@@ -38,15 +34,14 @@ public class GroupService(
     IRepository<GroupMember> groupMemberRepository,
     IRepository<Topic> topicRepository,
     IRepository<TopicRequest> topicRequestRepository,
-    IRepository<ProjectProgressWeek> projectProgressWeekRepository,
     IRepository<ProjectProgress> projectProgressRepository,
+    IRepository<ProjectProgressWeek> projectProgressWeekRepository,
     IRepository<FucTask> fucTaskRepository,
     IRepository<WeeklyEvaluation> weeklyEvaluationRepository,
     IRepository<Student> studentRepository,
     IRepository<Group> groupRepository,
-    ICapstoneService capstoneService,
-    IS3Service s3Service,
-    S3BucketConfiguration s3BucketConfiguration) : IGroupService
+    ITopicService topicService,
+    ICapstoneService capstoneService) : IGroupService
 {
     private const int IndexStartProgressingRow = 2;
 
@@ -98,7 +93,6 @@ public class GroupService(
             IsLeader = true,
             Status = GroupMemberStatus.Accepted
         });
-
         var groupMembers = await groupMemberRepository.FindAsync(gm => gm.StudentId == currentUser.UserCode);
         if (groupMembers.Count > 0)
         {
@@ -119,9 +113,13 @@ public class GroupService(
             CreateIncludeForGroupResponse(),
             g => g.OrderBy(group => group.CreatedDate),
             CreateSelectorForGroupResponse());
+        foreach (var group in groups)
+        {
+            group.TopicResponse = await topicService.GetTopicByTopicCode(group.TopicCode);
+        }
 
         return groups.Count > 0
-            ? OperationResult.Success<IEnumerable<GroupResponse>>(groups)
+            ? groups
             : OperationResult.Failure<IEnumerable<GroupResponse>>(Error.NullValue);
     }
 
@@ -133,9 +131,13 @@ public class GroupService(
             g => g.OrderBy(group => group.CreatedDate),
             CreateSelectorForGroupResponse()
         );
+        foreach (var group in groups)
+        {
+            group.TopicResponse = await topicService.GetTopicByTopicCode(group.TopicCode);
+        }
 
         return groups.Count > 0
-            ? OperationResult.Success<IEnumerable<GroupResponse>>(groups)
+            ? groups.ToList()
             : OperationResult.Failure<IEnumerable<GroupResponse>>(Error.NullValue);
     }
 
@@ -146,9 +148,13 @@ public class GroupService(
             CreateIncludeForGroupResponse(),
             g => g.OrderBy(group => group.CreatedDate),
             CreateSelectorForGroupResponse());
+        foreach (var group in groups)
+        {
+            group.TopicResponse = await topicService.GetTopicByTopicCode(group.TopicCode);
+        }
 
         return groups.Count > 0
-            ? OperationResult.Success<IEnumerable<GroupResponse>>(groups)
+            ? groups.ToList()
             : OperationResult.Failure<IEnumerable<GroupResponse>>(Error.NullValue);
     }
 
@@ -159,9 +165,13 @@ public class GroupService(
             CreateIncludeForGroupResponse(),
             g => g.OrderBy(group => group.CreatedDate),
             CreateSelectorForGroupResponse());
+        foreach (var group in groups)
+        {
+            group.TopicResponse = await topicService.GetTopicByTopicCode(group.TopicCode);
+        }
 
         return groups.Count > 0
-            ? OperationResult.Success<IEnumerable<GroupResponse>>(groups)
+            ? groups.ToList()
             : OperationResult.Failure<IEnumerable<GroupResponse>>(Error.NullValue);
     }
 
@@ -172,9 +182,13 @@ public class GroupService(
             CreateIncludeForGroupResponse(),
             g => g.OrderBy(group => group.CreatedDate),
             CreateSelectorForGroupResponse());
+        foreach (var group in groups)
+        {
+            group.TopicResponse = await topicService.GetTopicByTopicCode(group.TopicCode);
+        }
 
         return groups.Count > 0
-            ? OperationResult.Success<IEnumerable<GroupResponse>>(groups)
+            ? groups.ToList()
             : OperationResult.Failure<IEnumerable<GroupResponse>>(Error.NullValue);
     }
 
@@ -184,54 +198,10 @@ public class GroupService(
             CreateIncludeForGroupResponse(),
             g => g.OrderBy(group => group.CreatedDate),
             CreateSelectorForGroupResponse())).FirstOrDefault();
-        return group is null
-            ? OperationResult.Failure<GroupResponse>(Error.NullValue)
-            : OperationResult.Success(group);
-    }
-
-    public async Task<OperationResult<GroupResponse>> GetGroupByStudentIdAsync()
-    {
-        // check student have been in group
-        var groupMember = await groupMemberRepository.GetAsync(
-            gm => gm.StudentId == currentUser.UserCode && gm.Status.Equals(GroupMemberStatus.Accepted),
-            default);
-        if (groupMember is null)
-            return OperationResult.Failure<GroupResponse>(Error.NullValue);
-
-        var group = await groupRepository.GetAsync(g => g.Id == groupMember.GroupId,
-            true,
-            CreateIncludeForGroupResponse());
         if (group is null)
-        {
             return OperationResult.Failure<GroupResponse>(Error.NullValue);
-        }
-
-        var groupMembers = group.GroupMembers.Where(gm => gm.Status.Equals(GroupMemberStatus.Accepted) ||
-                                                          gm.Status.Equals(GroupMemberStatus.UnderReview)).ToList();
-        group.GroupMembers = groupMembers;
-
-        var groupResponse = new GroupResponse
-        {
-            Id = group.Id,
-            Status = group.Status.ToString(),
-            GroupCode = group.GroupCode,
-            CampusName = group.Campus.Name,
-            CapstoneName = group.Capstone.Name,
-            MajorName = group.Major.Name,
-            SemesterName = group.Semester.Name,
-            TopicCode = group.TopicCode,
-            GroupMemberList = group.GroupMembers.Select(gm => new GroupMemberResponse
-            {
-                Id = gm.Id,
-                StudentId = gm.StudentId,
-                StudentFullName = gm.Student.FullName,
-                IsLeader = gm.IsLeader,
-                Status = gm.Status.ToString(),
-                GroupId = gm.GroupId,
-                StudentEmail = gm.Student.Email
-            })
-        };
-        return OperationResult.Success(groupResponse);
+        group.TopicResponse = await topicService.GetTopicByTopicCode(group.TopicCode);
+        return group;
     }
 
     public async Task<OperationResult> UpdateGroupStatusAsync()
@@ -275,13 +245,13 @@ public class GroupService(
             {
                 if (groupCodeList.Count < 1)
                 {
-                    group.GroupCode = $"G{group.SemesterId}{group.MajorId}{random.Next(1, 9999)}";
+                    group.GroupCode = $"{group.SemesterId}{group.MajorId}{random.Next(1, 9999)}";
                 }
                 else
                 {
                     do
                     {
-                        group.GroupCode = $"G{group.SemesterId}{group.MajorId}{random.Next(1, 9999)}";
+                        group.GroupCode = $"{group.SemesterId}{group.MajorId}{random.Next(1, 9999)}";
                     } while (groupCodeList.Exists(x => x == group.GroupCode));
                 }
             }
@@ -296,6 +266,7 @@ public class GroupService(
             return OperationResult.Failure(new Error("Error.UpdateFailed", "can not update group status"));
         }
     }
+
 
     public async Task<OperationResult<Guid>> CreateTopicRequestAsync(TopicRequest_Request request)
     {
@@ -469,6 +440,7 @@ public class GroupService(
         }
     }
 
+
     private static Func<IQueryable<Group>, IIncludableQueryable<Group, object>> CreateIncludeForGroupResponse()
     {
         return g =>
@@ -500,9 +472,37 @@ public class GroupService(
                 IsLeader = gm.IsLeader,
                 Status = gm.Status.ToString(),
                 GroupId = gm.GroupId,
+                CreatedBy = gm.CreatedBy,
+                CreatedDate = gm.CreatedDate,
                 StudentEmail = gm.Student.Email
             })
         };
+    }
+
+    public async Task<OperationResult<CapstoneResponse>> GetCapstoneByGroup(Guid groupId,
+        CancellationToken cancellationToken)
+    {
+        var group = await groupRepository.GetAsync(
+            x => x.Id == groupId,
+            include: x => x.Include(x => x.Capstone),
+            null,
+            cancellationToken);
+
+        ArgumentNullException.ThrowIfNull(group);
+
+        return mapper.Map<CapstoneResponse>(group.Capstone);
+    }
+
+    public async Task<bool> CheckStudentsInSameGroup(IList<string> studentIds, Guid groupId,
+        CancellationToken cancellationToken)
+    {
+        var members = await groupMemberRepository.FindAsync(
+            x => studentIds.Contains(x.StudentId) &&
+                 x.GroupId == groupId &&
+                 x.Status == GroupMemberStatus.Accepted,
+            cancellationToken);
+
+        return members.Count == studentIds.Count;
     }
 
     public async Task<OperationResult> ImportProjectProgressFile(ImportProjectProgressRequest request,
@@ -513,17 +513,12 @@ public class GroupService(
             return OperationResult.Failure(new Error("ProjectProgress.Error", "Invalid form file"));
         }
 
-        var group = await groupRepository.GetAsync(
-            x => x.Id == request.GroupId,
-            include: x => x.Include(g => g.Capstone),
-            orderBy: null,
-            cancellationToken);
+        var capstoneResult = await GetCapstoneByGroup(request.GroupId, cancellationToken);
 
-        if (group == null)
-            return OperationResult.Failure(Error.NullValue);
-
-        if (group.SupervisorId != currentUser.UserCode)
-            return OperationResult.Failure(new Error("ProjectProgress.Error", $"Supervisor {currentUser.UserCode} are not mentor this group."));
+        if (capstoneResult.IsFailure)
+        {
+            return OperationResult.Failure(capstoneResult.Error);
+        }
 
         try
         {
@@ -540,10 +535,12 @@ public class GroupService(
 
             var projectProgress = new ProjectProgress
             {
+                GroupId = request.GroupId,
+                SupervisorId = currentUser.UserCode,
                 MeetingDate = workSheet.Cell(IndexStartProgressingRow, 1).GetValue<string>(),
             };
 
-            int durationWeeks = group.Capstone.DurationWeeks;
+            int durationWeeks = capstoneResult.Value.DurationWeeks;
             int startIndex = 2;
 
             // read the each projectProgressWeek of ProjectProgress
@@ -559,15 +556,7 @@ public class GroupService(
                 projectProgress.ProjectProgressWeeks.Add(week);
             }
 
-            group.ProjectProgress = projectProgress;
-            groupRepository.Update(group);
-
             await uow.SaveChangesAsync(cancellationToken);
-
-            // TODO: send reminderTask into process service
-
-            // TODO: send the notification for relative people
-
             await uow.CommitAsync(cancellationToken);
 
             return OperationResult.Success();
@@ -583,28 +572,17 @@ public class GroupService(
 
     public async Task<OperationResult> CreateTask(CreateTaskRequest request, CancellationToken cancellationToken)
     {
-        var progress = await projectProgressRepository.GetAsync(
-            x => x.Id == request.ProjectProgressId,
-            cancellationToken);
-
-        if (progress == null)
-            return OperationResult.Failure(Error.NullValue);
-
-        var result = await CheckStudentsInSameGroup(
-            new List<string> { request.AssigneeId!, currentUser.UserCode },
-            progress.GroupId,
-            cancellationToken);
+        var result = await CheckStudentsInSameGroup(new List<string> { request.AssigneeId!, currentUser.UserCode },
+            request.GroupId, cancellationToken);
 
         if (!result)
         {
             return OperationResult.Failure(new Error("ProjectProgress.Error", "Students are not the same group."));
         }
 
-        await uow.BeginTransactionAsync(cancellationToken);
-
         try
         {
-            progress.FucTasks.Add(new FucTask
+            fucTaskRepository.Insert(new FucTask
             {
                 KeyTask = request.KeyTask,
                 Priority = request.Priority,
@@ -613,216 +591,47 @@ public class GroupService(
                 ReporterId = currentUser.UserCode,
                 Description = request.Description,
                 DueDate = request.DueDate,
+                ProjectProgressWeekId = request.ProjectProgressWeekId
             });
 
             await uow.SaveChangesAsync(cancellationToken);
 
-            // TODO: Send notification
-
-            // TODO: send reminderTask 
-
-            await uow.CommitAsync(cancellationToken);
-
             return OperationResult.Success();
         }
         catch (Exception ex)
         {
             logger.LogError("Create Task with error: {Message}", ex.Message);
-            await uow.RollbackAsync(cancellationToken);
 
             return OperationResult.Failure(new Error("ProjectProgress.Error", "Create task fail"));
         }
     }
 
-    public async Task<OperationResult> UpdateTask(UpdateTaskRequest request, CancellationToken cancellationToken)
-    {
-        var task = await fucTaskRepository.GetAsync(
-            x => x.Id == request.TaskId,
-            cancellationToken);
-
-        if (task == null)
-            return OperationResult.Failure(Error.NullValue);
-
-        if (currentUser.UserCode != task.AssigneeId && currentUser.UserCode != task.ReporterId)
-        {
-            return OperationResult.Failure(new Error("ProjectProgress.Error", "You can update the task which is not belong to you."));
-        }
-
-        await uow.BeginTransactionAsync(cancellationToken);
-
-        try
-        {
-            mapper.Map(request, task);
-
-            fucTaskRepository.Update(task);
-
-            await uow.SaveChangesAsync(cancellationToken);
-
-            // TODO: Send notification
-
-            // TODO: add task history
-
-            await uow.CommitAsync(cancellationToken);
-
-            return OperationResult.Success();
-        }
-        catch (Exception ex)
-        {
-            logger.LogError("Create Task with error: {Message}", ex.Message);
-            await uow.RollbackAsync(cancellationToken);
-
-            return OperationResult.Failure(new Error("ProjectProgress.Error", "Create task fail"));
-        }
-    }
-
-    public async Task<OperationResult<byte[]>> ExportProgressEvaluationOfGroup(Guid groupId, CancellationToken cancellationToken)
-    {
-        var group = await groupRepository.GetAsync(x => x.Id == groupId, cancellationToken);
-
-        ArgumentNullException.ThrowIfNull(group);
-
-        var topic = await topicRepository.GetAsync(
-            x => x.Code == group.TopicCode,
-            cancellationToken);
-
-        ArgumentNullException.ThrowIfNull(topic);
-
-        var result = await GetProgressEvaluationOfGroup(groupId, cancellationToken);
-
-        if (result.IsFailure)
-            return OperationResult.Failure<byte[]>(result.Error);
-
-        // get file format to process overide for export to supervisor
-        try
-        {
-            var response = await s3Service.GetFromS3(s3BucketConfiguration.FUCTemplateBucket, s3BucketConfiguration.EvaluationProjectProgressKey);
-
-            if (response == null || response.HttpStatusCode != System.Net.HttpStatusCode.OK)
-                throw new AmazonS3Exception("Fail to get template in S3");
-
-            return await ProcessEvaluationProjectProgressTemplate(response, topic, result.Value, cancellationToken);
-        }
-        catch (AmazonS3Exception ex)
-        {
-            logger.LogWarning("Something run not expectation with error: {Message}", ex.Message);
-
-            return OperationResult.Failure<byte[]>(new Error("ProjectProgress.Error", "Progress run fail."));
-        }
-    }
-
-    private static async Task<OperationResult<byte[]>> ProcessEvaluationProjectProgressTemplate(GetObjectResponse response,
-        Topic topic,
-        List<EvaluationProjectProgressResponse> evaluations,
+    public async Task<OperationResult> CreateWeeklyEvaluation(CreateWeeklyEvaluationRequest request,
         CancellationToken cancellationToken)
     {
-        using var memoryStream = new MemoryStream();
+        var result = await CheckSupervisorWithStudentSameGroup([request.StudentId], currentUser.UserCode,
+            request.GroupId, cancellationToken);
 
-        await response.ResponseStream.CopyToAsync(memoryStream, cancellationToken);
-
-        memoryStream.Position = 0;
-
-        using var workbook = new XLWorkbook(memoryStream);
-
-        var workSheet = workbook.Worksheet(1);
-
-        // fill the topic information into excel file
-        workSheet.Cell(2, 2).SetValue(topic.Code);
-        workSheet.Cell(3, 2).SetValue($"English: {topic.EnglishName} / Vietnamese: {topic.VietnameseName}");
-
-        // fill the evaluation information into excel file
-        int startIndex = 6;
-        for (int i = 0; i < evaluations.Count; i++)
+        if (!result)
         {
-            // fill the students information into excel file
-            workSheet.Cell(startIndex + i, 1).SetValue(evaluations[i].StudentCode);
-            workSheet.Cell(startIndex + i, 2).SetValue(evaluations[i].StudentName);
-            workSheet.Cell(startIndex + i, 3).SetValue(evaluations[i].StudentRole);
-            workSheet.Cell(startIndex + i, 4).SetValue(evaluations[i].AverageContributionPercentage);
-
-            // fill the evaluations for student in file
-            foreach (var item in evaluations[i].EvaluationWeeks)
-            {
-                workSheet.Cell(startIndex + i, 4 + item.WeekNumber).SetValue(item.ContributionPercentage);
-            }
+            return OperationResult.Failure(new Error("ProjectProgress.Error",
+                "Supervisor need to evaluation your group."));
         }
 
-        using var outputStream = new MemoryStream();
-        workbook.SaveAs(outputStream);
-        return outputStream.ToArray();  // Return modified file as byte array
-    }
-
-    public async Task<OperationResult<List<EvaluationProjectProgressResponse>>> GetProgressEvaluationOfGroup(Guid groupId, CancellationToken cancellationToken)
-    {
-        if (await CheckSupervisorInGroup(currentUser.UserCode, groupId, cancellationToken))
-            return OperationResult.Failure<List<EvaluationProjectProgressResponse>>(new Error("ProjectProgress.Error", "This supervisor do not have permission."));
-
-        IList<(string, string, bool)> studentsInGroup = await groupMemberRepository.FindAsync(
-            x => x.GroupId == groupId &&
-            x.Status == GroupMemberStatus.Accepted,
-            include: x => x.Include(x => x.Student),
-            orderBy: null,
-            selector: s => new ValueTuple<string, string, bool>(s.StudentId, s.Student.FullName, s.IsLeader),
-            cancellationToken);
-
-        if (studentsInGroup.Count == 0)
-            return OperationResult.Failure<List<EvaluationProjectProgressResponse>>(Error.NullValue);
-
-        var tasks = studentsInGroup.Select(async s =>
-        {
-            var weekEvaluations = await weeklyEvaluationRepository.FindAsync(
-                x => x.StudentId == s.Item1,
-                include: x => x.Include(x => x.ProjectProgressWeek),
-                orderBy: null,
-                cancellationToken);
-
-            if (weekEvaluations == null || weekEvaluations.Count == 0)
-                ArgumentNullException.ThrowIfNull(weekEvaluations);
-
-            var evaluationWeeks = weekEvaluations.Select(e => new EvaluationWeekResponse
-            {
-                WeekNumber = e.ProjectProgressWeek.WeekNumber,
-                ContributionPercentage = e.ContributionPercentage,
-                Comments = e.Comments,
-                MeetingContent = e.ProjectProgressWeek.MeetingContent ?? "",
-                TaskDescription = e.ProjectProgressWeek.TaskDescription,
-            }).OrderBy(x => x.WeekNumber).ToList();
-
-            return new EvaluationProjectProgressResponse
-            {
-                StudentCode = s.Item1,
-                StudentName = s.Item2,
-                StudentRole = s.Item3 ? "leader" : "member",
-                EvaluationWeeks = evaluationWeeks,
-                AverageContributionPercentage = evaluationWeeks.Sum(x => x.ContributionPercentage) / evaluationWeeks.Count
-            };
-        });
-
-        return (await Task.WhenAll(tasks)).ToList();
-    }
-
-    public async Task<OperationResult> CreateWeeklyEvaluation(CreateWeeklyEvaluationRequest request, CancellationToken cancellationToken)
-    {
         var week = await projectProgressWeekRepository.GetAsync(
-            x => x.Id == request.ProjectProgressWeekId, cancellationToken);
+            x => x.Id == request.ProjectProgressWeekId,
+            isEnabledTracking: true,
+            null, null,
+            cancellationToken);
 
         if (week == null)
         {
-            return OperationResult.Failure(new Error("ProjectProgress.Error", "Week can not evaluation."));
+            return OperationResult.Failure(new Error("ProjectProgress.Error", "Evaluation weekly does not exist."));
         }
 
-        var progress = await projectProgressRepository.GetAsync(
-            x => x.Id == week.ProjectProgressId,
-            cancellationToken);
-
-        if (progress == null)
-            return OperationResult.Failure(Error.NullValue);
-
-        if (!await CheckSupervisorAndStudentAreSameGroup([request.StudentId],
-            currentUser.UserCode,
-            progress.GroupId,
-            cancellationToken))
+        if (week.Status == ProjectProgressWeekStatus.Done)
         {
-            return OperationResult.Failure(new Error("ProjectProgress.Error", "Supervisor need to evaluation your group."));
+            return OperationResult.Failure(new Error("ProjectProgress.Error", "Evaluation weekly was evaluated."));
         }
 
         try
@@ -838,6 +647,7 @@ public class GroupService(
                 ProjectProgressWeekId = request.ProjectProgressWeekId,
                 Status = request.Status,
                 StudentId = request.StudentId,
+                SupervisorId = currentUser.UserCode
             };
 
             weeklyEvaluationRepository.Insert(evaluation);
@@ -857,83 +667,9 @@ public class GroupService(
         }
     }
 
-    public async Task<OperationResult<List<FucTaskResponse>>> GetTasks(Guid projectProgressId, CancellationToken cancellationToken)
-    {
-        var progress = await projectProgressRepository.GetAsync(
-            x => x.Id == projectProgressId,
-            cancellationToken);
-
-        if (progress == null)
-            return OperationResult.Failure<List<FucTaskResponse>>(Error.NullValue);
-
-        if (!await CheckTheUserIsValid(progress.GroupId, cancellationToken))
-            return OperationResult.Failure<List<FucTaskResponse>>(new Error("ProjectProgress.Error", "The user can not view tasks"));
-
-        var tasks = await fucTaskRepository.FindAsync(
-            x => x.ProjectProgressId == projectProgressId,
-            cancellationToken);
-
-        return tasks.Select(t => new FucTaskResponse
-        {
-            Id = t.Id,
-            KeyTask = t.KeyTask,
-            AssigneeId = t.AssigneeId,
-            ReporterId = t.ReporterId,
-            DueDate = t.DueDate,
-            Priority = t.Priority,
-            Status = t.Status,
-            Summary = t.Summary,
-            CreatedDate = t.CreatedDate,
-        }).ToList();
-    }
-
-    public async Task<OperationResult<FucTaskDetailResponse>> GetTasksDetail(Guid taskId, CancellationToken cancellationToken)
-    {
-        var task = await fucTaskRepository.GetAsync(
-            x => x.Id == taskId,
-            include: x => x.AsSingleQuery()
-                .Include(x => x.Assignee)
-                .Include(x => x.Reporter)
-                .Include(x => x.FucTaskHistories),
-            orderBy: x => x.OrderByDescending(x => x.CreatedDate),
-            cancellationToken);
-
-        if (task == null)
-            return OperationResult.Failure<FucTaskDetailResponse>(Error.NullValue);
-
-        return new FucTaskDetailResponse
-        {
-            Id = taskId,
-            KeyTask = task.KeyTask,
-            Description = task.Description,
-            Summary = task.Summary,
-            AssigneeId = task.AssigneeId,
-            AssigneeName = task.Assignee.FullName,
-            ReporterId = task.ReporterId,
-            ReporterName = task.Reporter.FullName,
-            Status = task.Status,
-            Priority = task.Priority,
-            DueDate = task.DueDate,
-            Comment = task.Comment,
-            ProjectProgressId = task.ProjectProgressId,
-            FucTaskHistories = task.FucTaskHistories.Select(h => new FucTaskHistoryDto
-            {
-                Id = h.Id,
-                Content = h.Content,
-                TaskId = h.TaskId,
-                CreatedDate = h.CreatedDate,
-            }).ToList(),
-            CreatedDate = task.CreatedDate,
-            LastUpdatedDate = task.UpdatedDate
-        };
-    }
-
     public async Task<OperationResult<ProjectProgressDto>> GetProjectProgressByGroup(Guid groupId,
         CancellationToken cancellationToken)
     {
-        if (!await CheckTheUserIsValid(groupId, cancellationToken))
-            return OperationResult.Failure<ProjectProgressDto>(new Error("ProjectProgress.Error", "You can not go other group."));
-
         var projectProgress = await projectProgressRepository.GetAsync(
             x => x.GroupId == groupId,
             include: x => x.Include(w => w.ProjectProgressWeeks),
@@ -941,29 +677,26 @@ public class GroupService(
             cancellationToken
         );
 
-        if (projectProgress == null)
-        {
-            return OperationResult.Failure<ProjectProgressDto>(new Error("ProjectProgress.Error",
-                "Project Progress does not exist."));
-        }
-
-        return new ProjectProgressDto
-        {
-            Id = projectProgress.Id,
-            MeetingDate = projectProgress.MeetingDate,
-            ProjectProgressWeeks = projectProgress
-                .ProjectProgressWeeks
-                .OrderBy(p => p.WeekNumber)
-                .Select(p => new ProjectProgressWeekDto
-                {
-                    Id = p.Id,
-                    WeekNumber = p.WeekNumber,
-                    MeetingContent = p.MeetingContent,
-                    MeetingLocation = p.MeetingLocation,
-                    Status = p.Status,
-                    TaskDescription = p.TaskDescription,
-                }).ToList(),
-        };
+        return projectProgress == null
+            ? OperationResult.Failure<ProjectProgressDto>(new Error("ProjectProgress.Error",
+                "Project Progress does not exist."))
+            : (OperationResult<ProjectProgressDto>)new ProjectProgressDto
+            {
+                Id = projectProgress.Id,
+                MeetingDate = projectProgress.MeetingDate,
+                ProjectProgressWeeks = projectProgress
+                    .ProjectProgressWeeks
+                    .OrderBy(p => p.WeekNumber)
+                    .Select(p => new ProjectProgressWeekDto
+                    {
+                        Id = p.Id,
+                        WeekNumber = p.WeekNumber,
+                        MeetingContent = p.MeetingContent,
+                        MeetingLocation = p.MeetingLocation,
+                        Status = p.Status,
+                        TaskDescription = p.TaskDescription,
+                    }).ToList(),
+            };
     }
 
     private static bool IsValidFile(IFormFile file)
@@ -972,70 +705,19 @@ public class GroupService(
                file.FileName.EndsWith(".xlsx", StringComparison.OrdinalIgnoreCase);
     }
 
-    private async Task<bool> CheckSupervisorAndStudentAreSameGroup(
-        IList<string> studentIds,
-        string supervisorId,
-        Guid groupId,
-        CancellationToken cancellationToken = default)
+    public async Task<bool> CheckSupervisorWithStudentSameGroup(IList<string> studentIds,
+        string supervisorId, Guid groupId, CancellationToken cancellationToken)
     {
-        if (studentIds is null || studentIds.Count == 0)
-        {
-            throw new InvalidOperationException();
-        }
-
-        var group = await groupRepository.GetAsync(
-            x => x.Id == groupId &&
-            (supervisorId == null || x.SupervisorId == supervisorId),
-            include: x => x.Include(x => x.GroupMembers
-                .Where(x => studentIds.Contains(x.StudentId)
-                    && x.Status == GroupMemberStatus.Accepted)),
-            orderBy: null,
-            cancellationToken);
-
-        if (group == null ||
-            group.GroupMembers.Count == 0)
-        {
-            return false;
-        }
-
-        return group.GroupMembers.Count == studentIds.Count;
+        throw new NotImplementedException();
     }
 
-    private async Task<bool> CheckSupervisorInGroup(
-        string supervisorId,
-        Guid groupId,
+    public async Task<bool> IsThisWeekBelongToProgressOfGroup(Guid weekId, Guid groupId,
         CancellationToken cancellationToken)
     {
-        var group = await groupRepository.GetAsync(
-            x => x.Id == groupId &&
-            x.SupervisorId == supervisorId,
-            cancellationToken);
-
-        return group != null;
+        throw new NotImplementedException();
     }
 
-    private async Task<bool> CheckStudentsInSameGroup(IList<string> studentIds, Guid groupId,
-
-        CancellationToken cancellationToken)
-    {
-        var members = await groupMemberRepository.FindAsync(
-            x => studentIds.Contains(x.StudentId) &&
-                 x.GroupId == groupId &&
-                 x.Status == GroupMemberStatus.Accepted,
-            cancellationToken);
-
-        return members.Count == studentIds.Count;
-    }
-
-    private async Task<bool> CheckTheUserIsValid(Guid groupId, CancellationToken cancellationToken)
-    {
-        return currentUser.Role == UserRoles.Supervisor ?
-            await CheckSupervisorInGroup(currentUser.UserCode, groupId, cancellationToken) :
-                currentUser.Role == UserRoles.Student &&
-                await CheckStudentsInSameGroup([currentUser.UserCode], groupId, cancellationToken);
-    }
-
-    public async Task<OperationResult<TopicOfGroupResponse>> GetGroupInformationByGroupSelfId()
+    public async Task<OperationResult<GroupResponse>> GetGroupInformationByGroupSelfId()
     {
         // get group information
         var group = await groupMemberRepository.GetAsync(gm =>
@@ -1075,81 +757,12 @@ public class GroupService(
         if (group is null)
         {
             logger.LogError("group information is null !");
-            return OperationResult.Failure<TopicOfGroupResponse>(Error.NullValue);
+            return OperationResult.Failure<GroupResponse>(Error.NullValue);
         }
 
         // get topic's group information
-        var topic = await topicRepository.GetAsync(t => t.Code.Equals(group.TopicCode),
-            t => new TopicResponse
-            {
-                Id = t.Id.ToString(),
-                Code = t.Code ?? "undefined",
-                Abbreviation = t.Abbreviation,
-                Description = t.Description,
-                FileName = t.FileName,
-                FileUrl = t.FileUrl,
-                Status = t.Status.ToString(),
-                CreatedDate = t.CreatedDate,
-                CampusId = t.CampusId,
-                CapstoneId = t.CapstoneId,
-                SemesterId = t.SemesterId,
-                DifficultyLevel = t.DifficultyLevel.ToString(),
-                BusinessAreaName = t.BusinessArea.Name,
-                EnglishName = t.EnglishName,
-                VietnameseName = t.VietnameseName,
-                MainSupervisorEmail = t.MainSupervisor.Email,
-                MainSupervisorName = t.MainSupervisor.FullName,
-                CoSupervisors = t.CoSupervisors.Select(c => new CoSupervisorDto()
-                {
-                    SupervisorEmail = c.Supervisor.Email,
-                    SupervisorName = c.Supervisor.FullName
-                }).ToList()
-            },
-            t => t.AsSplitQuery()
-                .Include(t => t.BusinessArea)
-                .Include(t => t.MainSupervisor)
-                .Include(t => t.CoSupervisors)
-                .ThenInclude(co => co.Supervisor));
+        group.TopicResponse = await topicService.GetTopicByTopicCode(group.TopicCode);
 
-        return new TopicOfGroupResponse(topic, group);
-    }
-
-    public async Task<OperationResult<List<GroupManageBySupervisorResponse>>> GetGroupsWhichMentorBySupervisor(CancellationToken cancellationToken)
-    {
-        string supervisorId = currentUser.UserCode;
-
-        var currentSemester = await semesterService.GetCurrentSemesterAsync();
-
-        if (currentSemester.IsFailure)
-            return OperationResult.Failure<List<GroupManageBySupervisorResponse>>(currentSemester.Error);
-
-        var groups = await groupRepository.FindAsync(
-            x => x.SupervisorId == supervisorId &&
-            x.Status == GroupStatus.InProgress &&
-            x.SemesterId == currentSemester.Value.Id,
-            cancellationToken);
-
-        if (groups == null || groups.Count == 0)
-            ArgumentNullException.ThrowIfNull(groups);
-
-        var tasks = groups.Select(async g =>
-        {
-            var topic = await topicRepository.GetAsync(
-                x => x.Code == g.TopicCode,
-                cancellationToken);
-
-            ArgumentNullException.ThrowIfNull(topic);
-
-            return new GroupManageBySupervisorResponse
-            {
-                GroupId = g.Id,
-                GroupCode = g.GroupCode,
-                EnglishName = topic.EnglishName,
-                TopicCode = topic.Code,
-                SemesterCode = g.SemesterId
-            };
-        });
-
-        return (await Task.WhenAll(tasks)).OrderBy(x => x.GroupCode).ToList();
+        return group;
     }
 }

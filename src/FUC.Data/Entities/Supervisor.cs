@@ -22,4 +22,5 @@ public class Supervisor : AuditableSoftDeleteEntity
     public ICollection<Group> Groups { get; set; } = new List<Group>();
     public ICollection<ProjectProgress> ProjectProgresses { get; set; } = new List<ProjectProgress>();
     public ICollection<WeeklyEvaluation> WeeklyEvaluations { get; set; } = new List<WeeklyEvaluation>();
+    public ICollection<Reviewer> Reviewers { get; set; } = new List<Reviewer>();
 }

@@ -22,6 +22,7 @@ public interface ITopicService
     Task<OperationResult<List<TopicStatisticResponse>>> GetTopicAnalysises(Guid topicId,
         CancellationToken cancellationToken);
 
+    Task<TopicResponse?> GetTopicByTopicCode(string? topicCode);
     Task<OperationResult> SemanticTopic(Guid topicId, bool withCurrentSemester, CancellationToken cancellationToken);
     Task<OperationResult<string>> PresentTopicPresignedUrl(Guid topicId, CancellationToken cancellationToken);
     Task<OperationResult> CreateTopicAppraisal(IReadOnlyList<string> supervisorEmail);

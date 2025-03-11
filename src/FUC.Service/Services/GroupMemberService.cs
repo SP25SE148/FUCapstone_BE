@@ -86,7 +86,8 @@ public class GroupMemberService(
                 predicate: s => s.Email.ToLower().Equals(memberEmail.ToLower()) &&
                                 s.IsEligible &&
                                 !s.Status.Equals(StudentStatus.Passed) &&
-                                !s.IsDeleted,
+                                !s.IsDeleted &&
+                                s.BusinessAreaId != null,
                 include: s => s.Include(s => s.GroupMembers),
                 orderBy: default,
                 cancellationToken: default);
