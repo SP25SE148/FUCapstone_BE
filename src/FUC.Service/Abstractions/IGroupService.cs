@@ -15,7 +15,7 @@ public interface IGroupService
     Task<OperationResult<IEnumerable<GroupResponse>>> GetAllGroupByCampusIdAsync(string campusId);
     Task<OperationResult<GroupResponse>> GetGroupByIdAsync(Guid id);
     Task<OperationResult> UpdateGroupStatusAsync();
-    Task<OperationResult<Guid>> CreateTopicRequestAsync(TopicRequest_Request request);
+    Task<OperationResult<Guid>> CreateTopicRequestAsync(TopicRequest_Request request, CancellationToken cancellationToken);
     Task<OperationResult<List<TopicRequestResponse>>> GetTopicRequestsAsync(TopicRequestParams request);
     Task<OperationResult> UpdateTopicRequestStatusAsync(UpdateTopicRequestStatusRequest request);
 

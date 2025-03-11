@@ -150,7 +150,7 @@ public class GroupController(
     [Authorize(Roles = $"{UserRoles.Student}")]
     public async Task<IActionResult> CreateTopicRequest(TopicRequest_Request request)
     {
-        var result = await groupService.CreateTopicRequestAsync(request);
+        var result = await groupService.CreateTopicRequestAsync(request, default);
         return result.IsSuccess
             ? Ok(result)
             : HandleFailure(result);

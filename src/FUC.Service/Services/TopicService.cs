@@ -14,8 +14,6 @@ using FUC.Data.Enums;
 using FUC.Data.Repositories;
 using FUC.Service.Abstractions;
 using FUC.Service.DTOs.BusinessAreaDTO;
-using FUC.Service.DTOs.GroupDTO;
-using FUC.Service.DTOs.GroupMemberDTO;
 using FUC.Service.DTOs.TopicAppraisalDTO;
 using FUC.Service.DTOs.TopicDTO;
 using FUC.Service.Extensions.Options;
@@ -45,6 +43,22 @@ public class TopicService(
     TopicAppraisalFilterFactory topicAppraisalFilterFactory) : ITopicService
 {
     private const int MaxTopicsForCoSupervisors = 3;
+
+    public async Task<OperationResult<Topic>> GetTopicEntityById(Guid topicId, CancellationToken cancellationToken)
+    {
+        var topic = await topicRepository
+            .GetAsync(t => t.Id == topicId, cancellationToken);
+
+        return topic ?? OperationResult.Failure<Topic>(Error.NullValue);
+    }
+
+    public async Task<OperationResult<Topic>> GetTopicByCode(string topicCode, CancellationToken cancellationToken)
+    {
+        var topic = await topicRepository
+            .GetAsync(t => t.Code == topicCode, cancellationToken);
+
+        return topic ?? OperationResult.Failure<Topic>(Error.NullValue);
+    }
 
     public async Task<OperationResult<TopicResponse>> GetTopicById(Guid topicId, CancellationToken cancellationToken)
     {

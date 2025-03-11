@@ -1,5 +1,4 @@
-﻿using System.Collections.Generic;
-using System.Linq.Expressions;
+﻿using System.Linq.Expressions;
 using Amazon.S3;
 using Amazon.S3.Model;
 using AutoMapper;
@@ -17,7 +16,6 @@ using FUC.Service.Abstractions;
 using FUC.Service.DTOs.GroupDTO;
 using FUC.Service.DTOs.GroupMemberDTO;
 using FUC.Service.DTOs.ProjectProgressDTO;
-using FUC.Service.DTOs.TopicDTO;
 using FUC.Service.DTOs.TopicRequestDTO;
 using FUC.Service.Extensions.Options;
 using MassTransit.Initializers;
@@ -36,7 +34,6 @@ public class GroupService(
     IIntegrationEventLogService integrationEventLogService,
     ICurrentUser currentUser,
     IRepository<GroupMember> groupMemberRepository,
-    IRepository<Topic> topicRepository,
     IRepository<TopicRequest> topicRequestRepository,
     IRepository<ProjectProgressWeek> projectProgressWeekRepository,
     IRepository<ProjectProgress> projectProgressRepository,
@@ -274,7 +271,7 @@ public class GroupService(
     }
 
 
-    public async Task<OperationResult<Guid>> CreateTopicRequestAsync(TopicRequest_Request request)
+    public async Task<OperationResult<Guid>> CreateTopicRequestAsync(TopicRequest_Request request, CancellationToken cancellationToken)
     {
         // TODO: Check if the create topic request is requested in invalid date
 
@@ -286,7 +283,8 @@ public class GroupService(
                 gm => gm.Include(gm => gm.Group)
                     .ThenInclude(g => g.TopicRequests)
                     .Include(gm => gm.Student),
-                default
+                default,
+                cancellationToken
             );
         // check if group member is null
         if (groupMember is null)
@@ -311,11 +309,13 @@ public class GroupService(
             return OperationResult.Failure<Guid>(new Error("Error.CreateTopicRequestFailed",
                 $"Can not create topic request while this group already have topic request is {TopicRequestStatus.UnderReview.ToString()} or {TopicRequestStatus.Accepted}"));
 
-        var topic = await topicRepository.GetAsync(t => t.Id.Equals(request.TopicId), default);
+        var topicResult = await topicService.GetTopicEntityById(request.TopicId, cancellationToken);
 
         // check if topic is not null
-        if (topic is null)
+        if (topicResult.IsFailure)
             return OperationResult.Failure<Guid>(Error.NullValue);
+
+        var topic = topicResult.Value;
 
         // check if topic's campus is the same as group's campus or if topic's capstone is different from group's capstone
         if (topic.CampusId != groupMember.Student.CampusId ||
@@ -342,7 +342,8 @@ public class GroupService(
             TopicId = topic.Id
         };
         topicRequestRepository.Insert(topicRequest);
-        await uow.SaveChangesAsync();
+        await uow.SaveChangesAsync(cancellationToken);
+
         return topicRequest.Id;
     }
 
@@ -661,15 +662,15 @@ public class GroupService(
     public async Task<OperationResult<byte[]>> ExportProgressEvaluationOfGroup(Guid groupId,
         CancellationToken cancellationToken)
     {
-        var group = await groupRepository.GetAsync(x => x.Id == groupId, cancellationToken);
+        var group = await groupRepository.GetAsync(x => x.Id == groupId && !string.IsNullOrEmpty(x.TopicCode), cancellationToken);
 
         ArgumentNullException.ThrowIfNull(group);
 
-        var topic = await topicRepository.GetAsync(
-            x => x.Code == group.TopicCode,
+        var topicResult = await topicService.GetTopicByCode(group.TopicCode!,
             cancellationToken);
 
-        ArgumentNullException.ThrowIfNull(topic);
+        if (topicResult.IsFailure)
+            return OperationResult.Failure<byte[]>(topicResult.Error);
 
         var result = await GetProgressEvaluationOfGroup(groupId, cancellationToken);
 
@@ -684,7 +685,7 @@ public class GroupService(
 
             return response == null || response.HttpStatusCode != System.Net.HttpStatusCode.OK
                 ? throw new AmazonS3Exception("Fail to get template in S3")
-                : await ProcessEvaluationProjectProgressTemplate(response, topic, result.Value, cancellationToken);
+                : await ProcessEvaluationProjectProgressTemplate(response, topicResult.Value, result.Value, cancellationToken);
         }
         catch (AmazonS3Exception ex)
         {
@@ -1083,18 +1084,18 @@ public class GroupService(
 
         var tasks = groups.Select(async g =>
         {
-            var topic = await topicRepository.GetAsync(
-                x => x.Code == g.TopicCode,
-                cancellationToken);
+            var topicResult = await topicService
+            .GetTopicByCode(g.TopicCode!, cancellationToken);
 
-            ArgumentNullException.ThrowIfNull(topic);
+            if (topicResult.IsFailure)
+                throw new ArgumentNullException(topicResult.Error);
 
             return new GroupManageBySupervisorResponse
             {
                 GroupId = g.Id,
                 GroupCode = g.GroupCode,
-                EnglishName = topic.EnglishName,
-                TopicCode = topic.Code,
+                EnglishName = topicResult.Value.EnglishName,
+                TopicCode = topicResult.Value.Code,
                 SemesterCode = g.SemesterId
             };
         });

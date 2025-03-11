@@ -31,4 +31,6 @@ public interface ITopicService
 
     Task<OperationResult> FinalSubmitAppraisalTopic(FinalAppraisalTopicRequest request,
         CancellationToken cancellationToken);
+    Task<OperationResult<Topic>> GetTopicEntityById(Guid topicId, CancellationToken cancellationToken);
+    Task<OperationResult<Topic>> GetTopicByCode(string topicCode, CancellationToken cancellationToken);
 }
