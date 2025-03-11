@@ -301,6 +301,42 @@ public class TopicService(
         return OperationResult.Success(topics);
     }
 
+    public async Task<TopicResponse?> GetTopicByTopicCode(string? topicCode)
+    {
+        var topic = await topicRepository.GetAsync(t => t.Code.Equals(topicCode),
+            t => new TopicResponse
+            {
+                Id = t.Id.ToString(),
+                Code = t.Code ?? "undefined",
+                Abbreviation = t.Abbreviation,
+                Description = t.Description,
+                FileName = t.FileName,
+                FileUrl = t.FileUrl,
+                Status = t.Status.ToString(),
+                CreatedDate = t.CreatedDate,
+                CampusId = t.CampusId,
+                CapstoneId = t.CapstoneId,
+                SemesterId = t.SemesterId,
+                DifficultyLevel = t.DifficultyLevel.ToString(),
+                BusinessAreaName = t.BusinessArea.Name,
+                EnglishName = t.EnglishName,
+                VietnameseName = t.VietnameseName,
+                MainSupervisorEmail = t.MainSupervisor.Email,
+                MainSupervisorName = t.MainSupervisor.FullName,
+                CoSupervisors = t.CoSupervisors.Select(c => new CoSupervisorDto()
+                {
+                    SupervisorEmail = c.Supervisor.Email,
+                    SupervisorName = c.Supervisor.FullName
+                }).ToList()
+            },
+            t => t.AsSplitQuery()
+                .Include(t => t.BusinessArea)
+                .Include(t => t.MainSupervisor)
+                .Include(t => t.CoSupervisors)
+                .ThenInclude(co => co.Supervisor));
+        return topic;
+    }
+
     public async Task<OperationResult> SemanticTopic(Guid topicId, bool withCurrentSemester,
         CancellationToken cancellationToken)
     {

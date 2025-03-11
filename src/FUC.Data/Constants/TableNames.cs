@@ -18,10 +18,12 @@ internal static class TableNames
     internal const string TopicAppraisal = nameof(TopicAppraisal);
     internal const string TopicAnalysis = nameof(TopicAnalysis);
     internal const string TopicRequest = nameof(TopicRequest);
-    internal const string SupervisorGroupAssignment = nameof(SupervisorGroupAssignment);
     internal const string FucTaskHistory = nameof(FucTaskHistory);
     internal const string FucTask = nameof(FucTask);
     internal const string ProjectProgress = nameof(ProjectProgress);
     internal const string ProjectProgressWeek = nameof(ProjectProgressWeek);
     internal const string WeeklyEvaluation = nameof(WeeklyEvaluation);
+    internal const string ReviewCalendar = nameof(ReviewCalendar);
+    internal const string ReviewCriteria = nameof(ReviewCriteria);
+    internal const string Reviewer = nameof(Reviewer);
 }
