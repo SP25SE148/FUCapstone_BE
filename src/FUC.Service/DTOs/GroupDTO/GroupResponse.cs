@@ -16,3 +16,13 @@ public sealed record GroupResponse
     public IEnumerable<GroupMemberResponse> GroupMemberList { get; init; } = new List<GroupMemberResponse>();
     public TopicResponse? TopicResponse { get; set; }
 }
+
+public sealed record GroupManageBySupervisorResponse
+{
+    public Guid GroupId { get; init; }
+    public string SemesterCode { get; init; } = string.Empty;
+    public string? TopicCode { get; init; } = string.Empty;
+    public string? GroupCode { get; init; } = string.Empty;
+    public string EnglishName { get; set; } = string.Empty;
+}
+

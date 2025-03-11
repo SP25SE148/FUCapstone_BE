@@ -28,11 +28,6 @@ public class WeeklyEvaluationConfiguration : IEntityTypeConfiguration<WeeklyEval
             .HasForeignKey(w => w.StudentId)
             .OnDelete(DeleteBehavior.Restrict);
 
-        builder.HasOne(w => w.Supervisor)
-            .WithMany(s => s.WeeklyEvaluations)
-            .HasForeignKey(w => w.SupervisorId)
-            .OnDelete(DeleteBehavior.Restrict);
-
         builder.HasOne(w => w.ProjectProgressWeek)
             .WithMany(s => s.WeeklyEvaluations)
             .HasForeignKey(w => w.ProjectProgressWeekId)
