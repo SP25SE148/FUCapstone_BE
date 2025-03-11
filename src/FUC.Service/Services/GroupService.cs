@@ -40,6 +40,7 @@ public class GroupService(
     IRepository<WeeklyEvaluation> weeklyEvaluationRepository,
     IRepository<Student> studentRepository,
     IRepository<Group> groupRepository,
+    ITopicService topicService,
     ICapstoneService capstoneService) : IGroupService
 {
     private const int IndexStartProgressingRow = 2;
@@ -112,9 +113,13 @@ public class GroupService(
             CreateIncludeForGroupResponse(),
             g => g.OrderBy(group => group.CreatedDate),
             CreateSelectorForGroupResponse());
+        foreach (var group in groups)
+        {
+            group.TopicResponse = await topicService.GetTopicByTopicCode(group.TopicCode);
+        }
 
         return groups.Count > 0
-            ? OperationResult.Success<IEnumerable<GroupResponse>>(groups)
+            ? groups
             : OperationResult.Failure<IEnumerable<GroupResponse>>(Error.NullValue);
     }
 
@@ -126,9 +131,13 @@ public class GroupService(
             g => g.OrderBy(group => group.CreatedDate),
             CreateSelectorForGroupResponse()
         );
+        foreach (var group in groups)
+        {
+            group.TopicResponse = await topicService.GetTopicByTopicCode(group.TopicCode);
+        }
 
         return groups.Count > 0
-            ? OperationResult.Success<IEnumerable<GroupResponse>>(groups)
+            ? groups.ToList()
             : OperationResult.Failure<IEnumerable<GroupResponse>>(Error.NullValue);
     }
 
@@ -139,9 +148,13 @@ public class GroupService(
             CreateIncludeForGroupResponse(),
             g => g.OrderBy(group => group.CreatedDate),
             CreateSelectorForGroupResponse());
+        foreach (var group in groups)
+        {
+            group.TopicResponse = await topicService.GetTopicByTopicCode(group.TopicCode);
+        }
 
         return groups.Count > 0
-            ? OperationResult.Success<IEnumerable<GroupResponse>>(groups)
+            ? groups.ToList()
             : OperationResult.Failure<IEnumerable<GroupResponse>>(Error.NullValue);
     }
 
@@ -152,9 +165,13 @@ public class GroupService(
             CreateIncludeForGroupResponse(),
             g => g.OrderBy(group => group.CreatedDate),
             CreateSelectorForGroupResponse());
+        foreach (var group in groups)
+        {
+            group.TopicResponse = await topicService.GetTopicByTopicCode(group.TopicCode);
+        }
 
         return groups.Count > 0
-            ? OperationResult.Success<IEnumerable<GroupResponse>>(groups)
+            ? groups.ToList()
             : OperationResult.Failure<IEnumerable<GroupResponse>>(Error.NullValue);
     }
 
@@ -165,9 +182,13 @@ public class GroupService(
             CreateIncludeForGroupResponse(),
             g => g.OrderBy(group => group.CreatedDate),
             CreateSelectorForGroupResponse());
+        foreach (var group in groups)
+        {
+            group.TopicResponse = await topicService.GetTopicByTopicCode(group.TopicCode);
+        }
 
         return groups.Count > 0
-            ? OperationResult.Success<IEnumerable<GroupResponse>>(groups)
+            ? groups.ToList()
             : OperationResult.Failure<IEnumerable<GroupResponse>>(Error.NullValue);
     }
 
@@ -177,54 +198,10 @@ public class GroupService(
             CreateIncludeForGroupResponse(),
             g => g.OrderBy(group => group.CreatedDate),
             CreateSelectorForGroupResponse())).FirstOrDefault();
-        return group is null
-            ? OperationResult.Failure<GroupResponse>(Error.NullValue)
-            : OperationResult.Success(group);
-    }
-
-    public async Task<OperationResult<GroupResponse>> GetGroupByStudentIdAsync()
-    {
-        // check student have been in group
-        var groupMember = await groupMemberRepository.GetAsync(
-            gm => gm.StudentId == currentUser.UserCode && gm.Status.Equals(GroupMemberStatus.Accepted),
-            default);
-        if (groupMember is null)
-            return OperationResult.Failure<GroupResponse>(Error.NullValue);
-
-        var group = await groupRepository.GetAsync(g => g.Id == groupMember.GroupId,
-            true,
-            CreateIncludeForGroupResponse());
         if (group is null)
-        {
             return OperationResult.Failure<GroupResponse>(Error.NullValue);
-        }
-
-        var groupMembers = group.GroupMembers.Where(gm => gm.Status.Equals(GroupMemberStatus.Accepted) ||
-                                                          gm.Status.Equals(GroupMemberStatus.UnderReview)).ToList();
-        group.GroupMembers = groupMembers;
-
-        var groupResponse = new GroupResponse
-        {
-            Id = group.Id,
-            Status = group.Status.ToString(),
-            GroupCode = group.GroupCode,
-            CampusName = group.Campus.Name,
-            CapstoneName = group.Capstone.Name,
-            MajorName = group.Major.Name,
-            SemesterName = group.Semester.Name,
-            TopicCode = group.TopicCode,
-            GroupMemberList = group.GroupMembers.Select(gm => new GroupMemberResponse
-            {
-                Id = gm.Id,
-                StudentId = gm.StudentId,
-                StudentFullName = gm.Student.FullName,
-                IsLeader = gm.IsLeader,
-                Status = gm.Status.ToString(),
-                GroupId = gm.GroupId,
-                StudentEmail = gm.Student.Email
-            })
-        };
-        return OperationResult.Success(groupResponse);
+        group.TopicResponse = await topicService.GetTopicByTopicCode(group.TopicCode);
+        return group;
     }
 
     public async Task<OperationResult> UpdateGroupStatusAsync()
@@ -495,6 +472,8 @@ public class GroupService(
                 IsLeader = gm.IsLeader,
                 Status = gm.Status.ToString(),
                 GroupId = gm.GroupId,
+                CreatedBy = gm.CreatedBy,
+                CreatedDate = gm.CreatedDate,
                 StudentEmail = gm.Student.Email
             })
         };
@@ -698,29 +677,26 @@ public class GroupService(
             cancellationToken
         );
 
-        if (projectProgress == null)
-        {
-            return OperationResult.Failure<ProjectProgressDto>(new Error("ProjectProgress.Error",
-                "Project Progress does not exist."));
-        }
-
-        return new ProjectProgressDto
-        {
-            Id = projectProgress.Id,
-            MeetingDate = projectProgress.MeetingDate,
-            ProjectProgressWeeks = projectProgress
-                .ProjectProgressWeeks
-                .OrderBy(p => p.WeekNumber)
-                .Select(p => new ProjectProgressWeekDto
-                {
-                    Id = p.Id,
-                    WeekNumber = p.WeekNumber,
-                    MeetingContent = p.MeetingContent,
-                    MeetingLocation = p.MeetingLocation,
-                    Status = p.Status,
-                    TaskDescription = p.TaskDescription,
-                }).ToList(),
-        };
+        return projectProgress == null
+            ? OperationResult.Failure<ProjectProgressDto>(new Error("ProjectProgress.Error",
+                "Project Progress does not exist."))
+            : (OperationResult<ProjectProgressDto>)new ProjectProgressDto
+            {
+                Id = projectProgress.Id,
+                MeetingDate = projectProgress.MeetingDate,
+                ProjectProgressWeeks = projectProgress
+                    .ProjectProgressWeeks
+                    .OrderBy(p => p.WeekNumber)
+                    .Select(p => new ProjectProgressWeekDto
+                    {
+                        Id = p.Id,
+                        WeekNumber = p.WeekNumber,
+                        MeetingContent = p.MeetingContent,
+                        MeetingLocation = p.MeetingLocation,
+                        Status = p.Status,
+                        TaskDescription = p.TaskDescription,
+                    }).ToList(),
+            };
     }
 
     private static bool IsValidFile(IFormFile file)
@@ -741,7 +717,7 @@ public class GroupService(
         throw new NotImplementedException();
     }
 
-    public async Task<OperationResult<TopicOfGroupResponse>> GetGroupInformationByGroupSelfId()
+    public async Task<OperationResult<GroupResponse>> GetGroupInformationByGroupSelfId()
     {
         // get group information
         var group = await groupMemberRepository.GetAsync(gm =>
@@ -781,42 +757,12 @@ public class GroupService(
         if (group is null)
         {
             logger.LogError("group information is null !");
-            return OperationResult.Failure<TopicOfGroupResponse>(Error.NullValue);
+            return OperationResult.Failure<GroupResponse>(Error.NullValue);
         }
 
         // get topic's group information
-        var topic = await topicRepository.GetAsync(t => t.Code.Equals(group.TopicCode),
-            t => new TopicResponse
-            {
-                Id = t.Id.ToString(),
-                Code = t.Code ?? "undefined",
-                Abbreviation = t.Abbreviation,
-                Description = t.Description,
-                FileName = t.FileName,
-                FileUrl = t.FileUrl,
-                Status = t.Status.ToString(),
-                CreatedDate = t.CreatedDate,
-                CampusId = t.CampusId,
-                CapstoneId = t.CapstoneId,
-                SemesterId = t.SemesterId,
-                DifficultyLevel = t.DifficultyLevel.ToString(),
-                BusinessAreaName = t.BusinessArea.Name,
-                EnglishName = t.EnglishName,
-                VietnameseName = t.VietnameseName,
-                MainSupervisorEmail = t.MainSupervisor.Email,
-                MainSupervisorName = t.MainSupervisor.FullName,
-                CoSupervisors = t.CoSupervisors.Select(c => new CoSupervisorDto()
-                {
-                    SupervisorEmail = c.Supervisor.Email,
-                    SupervisorName = c.Supervisor.FullName
-                }).ToList()
-            },
-            t => t.AsSplitQuery()
-                .Include(t => t.BusinessArea)
-                .Include(t => t.MainSupervisor)
-                .Include(t => t.CoSupervisors)
-                .ThenInclude(co => co.Supervisor));
+        group.TopicResponse = await topicService.GetTopicByTopicCode(group.TopicCode);
 
-        return new TopicOfGroupResponse(topic, group);
+        return group;
     }
 }

@@ -45,21 +45,11 @@ public class GroupController(
             : HandleFailure(result);
     }
 
-    [HttpGet("get-by-student-id")]
-    [Authorize(Roles = UserRoles.Student)]
-    public async Task<IActionResult> GetGroupInfoByStudentId()
-    {
-        var result = await groupService.GetGroupByStudentIdAsync();
-        return result.IsSuccess
-            ? Ok(result)
-            : HandleFailure(result);
-    }
-
     [HttpGet]
     [Authorize(Roles = UserRoles.SuperAdmin)]
     public async Task<IActionResult> GetGroups()
     {
-        OperationResult<IEnumerable<GroupResponse>> result = await groupService.GetAllGroupAsync();
+        var result = await groupService.GetAllGroupAsync();
         return !result.IsFailure
             ? Ok(result)
             : HandleFailure(result);
@@ -69,8 +59,7 @@ public class GroupController(
     [Authorize(Roles = $"{UserRoles.SuperAdmin},{UserRoles.Admin},{UserRoles.Manager}")]
     public async Task<IActionResult> GetGroupsBySemesterId(string semesterId)
     {
-        OperationResult<IEnumerable<GroupResponse>>
-            result = await groupService.GetAllGroupBySemesterIdAsync(semesterId);
+        var result = await groupService.GetAllGroupBySemesterIdAsync(semesterId);
         return result.IsSuccess
             ? Ok(result)
             : HandleFailure(result);
@@ -80,7 +69,7 @@ public class GroupController(
     [Authorize(Roles = $"{UserRoles.SuperAdmin},{UserRoles.Admin},{UserRoles.Manager}")]
     public async Task<IActionResult> GetGroupsByMajorId(string majorId)
     {
-        OperationResult<IEnumerable<GroupResponse>> result = await groupService.GetAllGroupByMajorIdAsync(majorId);
+        var result = await groupService.GetAllGroupByMajorIdAsync(majorId);
         return result.IsSuccess
             ? Ok(result)
             : HandleFailure(result);
@@ -90,7 +79,7 @@ public class GroupController(
     [Authorize(Roles = $"{UserRoles.SuperAdmin},{UserRoles.Admin},{UserRoles.Manager}")]
     public async Task<IActionResult> GetGroupsByCampusId(string capstoneId)
     {
-        OperationResult<IEnumerable<GroupResponse>>
+        var
             result = await groupService.GetAllGroupByCapstoneIdAsync(capstoneId);
         return result.IsSuccess
             ? Ok(result)
@@ -101,7 +90,7 @@ public class GroupController(
     [HttpGet("{id}")]
     public async Task<IActionResult> GetGroupByIdAsync(Guid id)
     {
-        OperationResult<GroupResponse> result = await groupService.GetGroupByIdAsync(id);
+        var result = await groupService.GetGroupByIdAsync(id);
         return result.IsSuccess
             ? Ok(result)
             : HandleFailure(result);
@@ -111,7 +100,7 @@ public class GroupController(
     [Authorize(Roles = UserRoles.SuperAdmin)]
     public async Task<IActionResult> GetGroupByCampusIdAsync(string campusId)
     {
-        OperationResult<IEnumerable<GroupResponse>> result = await groupService.GetAllGroupByCampusIdAsync(campusId);
+        var result = await groupService.GetAllGroupByCampusIdAsync(campusId);
         return result.IsSuccess
             ? Ok(result)
             : HandleFailure(result);

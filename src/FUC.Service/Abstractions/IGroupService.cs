@@ -16,7 +16,6 @@ public interface IGroupService
     Task<OperationResult<IEnumerable<GroupResponse>>> GetAllGroupByCapstoneIdAsync(string capstoneId);
     Task<OperationResult<IEnumerable<GroupResponse>>> GetAllGroupByCampusIdAsync(string campusId);
     Task<OperationResult<GroupResponse>> GetGroupByIdAsync(Guid id);
-    Task<OperationResult<GroupResponse>> GetGroupByStudentIdAsync();
     Task<OperationResult> UpdateGroupStatusAsync();
     Task<OperationResult<Guid>> CreateTopicRequestAsync(TopicRequest_Request request);
     Task<OperationResult<List<TopicRequestResponse>>> GetTopicRequestsAsync(TopicRequestParams request);
@@ -26,7 +25,7 @@ public interface IGroupService
     Task<bool> CheckStudentsInSameGroup(IList<string> studentIds, Guid groupId,
         CancellationToken cancellationToken);
 
-    Task<OperationResult<TopicOfGroupResponse>> GetGroupInformationByGroupSelfId();
+    Task<OperationResult<GroupResponse>> GetGroupInformationByGroupSelfId();
 
     Task<bool> CheckSupervisorWithStudentSameGroup(IList<string> studentIds, string supervisorId,
         Guid groupId, CancellationToken cancellationToken);
