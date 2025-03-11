@@ -25,3 +25,4 @@ public sealed record GroupManageBySupervisorResponse
     public string? GroupCode { get; init; } = string.Empty;
     public string EnglishName { get; set; } = string.Empty;
 }
+

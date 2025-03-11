@@ -45,6 +45,7 @@ public class GroupService(
     IRepository<WeeklyEvaluation> weeklyEvaluationRepository,
     IRepository<Student> studentRepository,
     IRepository<Group> groupRepository,
+    ITopicService topicService,
     ICapstoneService capstoneService,
     IS3Service s3Service,
     S3BucketConfiguration s3BucketConfiguration) : IGroupService
@@ -1059,7 +1060,6 @@ public class GroupService(
 
         // get topic's group information
         group.TopicResponse = await topicService.GetTopicByTopicCode(group.TopicCode);
-
         return group;
     }
 
