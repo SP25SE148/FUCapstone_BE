@@ -534,7 +534,7 @@ public class GroupService(
             {
                 var week = new ProjectProgressWeek
                 {
-                    TaskDescription = workSheet.Cell(IndexStartProgressingRow, ++startIndex).GetValue<string>() ?? "",
+                    TaskDescription = workSheet.Cell(IndexStartProgressingRow, startIndex++).GetValue<string>() ?? "",
                     Status = ProjectProgressWeekStatus.ToDo,
                     WeekNumber = i,
                 };

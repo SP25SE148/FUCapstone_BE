@@ -16,7 +16,6 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 using FUC.Data.Data;
 using FUC.Common.IntegrationEventLog;
-using FUC.Service.Filters;
 
 namespace FUC.Service.Extensions;
 
@@ -63,7 +62,6 @@ public static class ServiceCollectionExtensions
         services.AddScoped<ISupervisorService, SupervisorService>();
         services.AddScoped<ITopicService, TopicService>();
         services.AddScoped<IDocumentsService, DocumentsService>();
-        services.AddScoped<TopicAppraisalFilterFactory>();
         // Add EventLogService
         services.AddEventConsumerConfiguration(configuration);
         services.AddIntegrationEventLogService<FucDbContext>();
