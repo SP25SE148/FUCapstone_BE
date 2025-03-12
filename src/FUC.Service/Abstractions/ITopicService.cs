@@ -28,9 +28,6 @@ public interface ITopicService
     Task<OperationResult> CreateTopicAppraisal(IReadOnlyList<string> supervisorEmail);
     Task<OperationResult<List<TopicAppraisalResponse>>> GetTopicAppraisalByUserId(TopicAppraisalBaseRequest request);
     Task<OperationResult> AppraisalTopic(AppraisalTopicRequest request, CancellationToken cancellationToken);
-
-    Task<OperationResult> FinalSubmitAppraisalTopic(FinalAppraisalTopicRequest request,
-        CancellationToken cancellationToken);
     Task<OperationResult<Topic>> GetTopicEntityById(Guid topicId, CancellationToken cancellationToken);
     Task<OperationResult<Topic>> GetTopicByCode(string topicCode, CancellationToken cancellationToken);
 }

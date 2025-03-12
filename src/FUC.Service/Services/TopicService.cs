@@ -17,7 +17,6 @@ using FUC.Service.DTOs.BusinessAreaDTO;
 using FUC.Service.DTOs.TopicAppraisalDTO;
 using FUC.Service.DTOs.TopicDTO;
 using FUC.Service.Extensions.Options;
-using FUC.Service.Filters;
 using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
@@ -39,8 +38,7 @@ public class TopicService(
     S3BucketConfiguration s3BucketConfiguration,
     ISemesterService semesterService,
     ICacheService cache,
-    IIntegrationEventLogService integrationEventLogService,
-    TopicAppraisalFilterFactory topicAppraisalFilterFactory) : ITopicService
+    IIntegrationEventLogService integrationEventLogService) : ITopicService
 {
     private const int MaxTopicsForCoSupervisors = 3;
 
@@ -208,7 +206,6 @@ public class TopicService(
                     AppraisalComment = x.AppraisalComment,
                     AppraisalContent = x.AppraisalContent,
                     AppraisalDate = x.AppraisalDate,
-                    ManagerId = x.ManagerId,
                     SupervisorId = x.SupervisorId,
                     Status = x.Status,
                     TopicAppraisalId = x.Id,
@@ -734,11 +731,11 @@ public class TopicService(
         }
 
         var supervisorIdList = await (from s in supervisorRepository.GetQueryable()
-            where supervisorEmail.Contains(s.Email) &&
-                  s.IsAvailable &&
-                  s.MajorId.Equals(currentUser.MajorId) &&
-                  s.CampusId.Equals(currentUser.CampusId)
-            select s.Id).ToListAsync();
+                                      where supervisorEmail.Contains(s.Email) &&
+                                            s.IsAvailable &&
+                                            s.MajorId.Equals(currentUser.MajorId) &&
+                                            s.CampusId.Equals(currentUser.CampusId)
+                                      select s.Id).ToListAsync();
         //check if supervisor list is null or empty!
         if (supervisorIdList.Count < 1)
         {
@@ -813,10 +810,8 @@ public class TopicService(
     {
         var query = topicAppraisalRepository.GetQueryable();
 
-        ITopicAppraisalFilterStrategy filterStrategy =
-            topicAppraisalFilterFactory.GetStrategy(request, currentUser.Role);
-
-        query = filterStrategy.ApplyFilter(query, currentUser.UserCode).Include(ta => ta.Topic);
+        query = query.Where(ta => ta.SupervisorId == currentUser.UserCode)
+            .Include(ta => ta.Topic);
 
         if (!string.IsNullOrEmpty(request.SearchTerm))
         {
@@ -856,7 +851,6 @@ public class TopicService(
             AppraisalComment = ta.AppraisalComment,
             AppraisalContent = ta.AppraisalContent,
             AppraisalDate = ta.AppraisalDate,
-            ManagerId = ta.ManagerId,
             TopicId = ta.TopicId,
             TopicEnglishName = ta.Topic.EnglishName
         }).ToListAsync();
@@ -924,10 +918,22 @@ public class TopicService(
                     _ => throw new InvalidOperationException()
                 });
             }
-            else if (otherTopicAppraisals.All(x => x.AppraisalDate is not null &&
-                                                   x.Status != TopicAppraisalStatus.Pending))
+            else if (otherTopicAppraisals.All(x => x.AppraisalDate is not null && x.Status != TopicAppraisalStatus.Pending))
             {
-                // TODO: Send notification for manager, with the supervisor's opinions are not the same or all are consider
+                // TODO: Send notification for re-assign because the supervisor's opinions are not the same or all are consider
+                await UpdateStatusTopicAfterAppraisal(topicAppraisal.TopicId, TopicStatus.Considered, cancellationToken);
+                var appraisalSupervisors = otherTopicAppraisals.Select(x => x.SupervisorId).Distinct();
+
+                var newAppraisals = appraisalSupervisors.Select(s => new TopicAppraisal
+                {
+                    SupervisorId = s,
+                    TopicId = topicAppraisal.TopicId
+                }).ToList();
+
+                if (newAppraisals != null && newAppraisals.Count > 0)
+                {
+                    topicAppraisalRepository.InsertRange(newAppraisals);
+                }
             }
 
             await unitOfWork.CommitAsync(cancellationToken);
@@ -963,7 +969,7 @@ public class TopicService(
 
             if (topic.Status == TopicStatus.Approved)
             {
-                topic.Code = await GenerationTopicCode(topic.Capstone.MajorId, cancellationToken);
+                topic.Code = await GenerationTopicCode(topic.CampusId, topic.Capstone.MajorId, topic.CapstoneId, cancellationToken);
             }
 
             topicRepository.Update(topic);
@@ -979,23 +985,27 @@ public class TopicService(
         }
     }
 
-    private async Task<string> GenerationTopicCode(string majorId, CancellationToken cancellationToken)
+    private async Task<string> GenerationTopicCode(string campusId, string majorId, string capstoneId, CancellationToken cancellationToken)
     {
         try
         {
+            var currentSemesterCode = await semesterService.GetCurrentSemesterAsync();
+
+            if (currentSemesterCode.IsFailure)
+                throw new InvalidOperationException(currentSemesterCode.Error.ToString());
+
             var nextTopicNumer = await topicRepository.CountAsync(
-                t => t.Status == TopicStatus.Approved,
+                t => t.Status == TopicStatus.Approved &&
+                t.SemesterId == currentSemesterCode.Value.Id &&
+                t.CampusId == campusId &&
+                t.CapstoneId == capstoneId,
                 cancellationToken) + 1;
 
 #pragma warning disable CA1305 // Specify IFormatProvider
             var topicNumberCode = nextTopicNumer.ToString($"D{Math.Max(3, nextTopicNumer.ToString().Length)}");
 #pragma warning restore CA1305 // Specify IFormatProvider
 
-            var currentSemesterCode = await semesterService.GetCurrentSemesterAsync();
-
-            return currentSemesterCode.IsFailure
-                ? throw new InvalidOperationException(currentSemesterCode.Error.ToString())
-                : $"{currentSemesterCode.Value.Id}{majorId}{topicNumberCode}";
+            return $"{currentSemesterCode.Value.Id}{majorId}{topicNumberCode}";
         }
         catch (Exception ex)
         {
@@ -1028,93 +1038,6 @@ public class TopicService(
         }
     }
 
-    public async Task<OperationResult> FinalSubmitAppraisalTopic(FinalAppraisalTopicRequest request,
-        CancellationToken cancellationToken)
-    {
-        try
-        {
-            if (request.Status == TopicAppraisalStatus.Pending)
-            {
-                return OperationResult.Failure(new Error("TopicAppraisal.Error", "This appraisal is already Pending."));
-            }
-
-            var topicAppraisals = await topicAppraisalRepository.FindAsync(
-                predicate: x => x.TopicId == request.TopicId &&
-                                x.SupervisorId != null &&
-                                x.ManagerId == null,
-                cancellationToken);
-
-            if (topicAppraisals == null || topicAppraisals.Count == 0)
-            {
-                return OperationResult.Failure(new Error("Topic.Error",
-                    "Topic appraisals of supervisors does not exist."));
-            }
-
-            // check if any pending appraisal
-            if (topicAppraisals.Any(x => x.AppraisalDate is null))
-            {
-                OperationResult.Failure(new Error("Topic.Error",
-                    "Final appraisal topic can done with some supervisor's reviews is not done."));
-            }
-
-            await unitOfWork.BeginTransactionAsync(cancellationToken);
-
-            //create appraisal topic of manager
-            topicAppraisalRepository.Insert(new TopicAppraisal
-            {
-                Status = request.Status,
-                TopicId = request.TopicId,
-                AppraisalComment = request.AppraisalComment,
-                AppraisalContent = request.AppraisalContent,
-                AppraisalDate = DateTime.UtcNow,
-                ManagerId = currentUser.UserCode,
-            });
-
-            switch (request.Status)
-            {
-                case TopicAppraisalStatus.Accepted:
-                    await UpdateStatusTopicAfterAppraisal(request.TopicId, TopicStatus.Approved, cancellationToken);
-                    break;
-
-                case TopicAppraisalStatus.Considered:
-                    await UpdateStatusTopicAfterAppraisal(request.TopicId, TopicStatus.Considered, cancellationToken);
-                    var appraisalSupervisors = topicAppraisals.Select(x => x.SupervisorId).Distinct();
-
-                    var newAppraisals = appraisalSupervisors.Select(s => new TopicAppraisal
-                    {
-                        SupervisorId = s,
-                        TopicId = request.TopicId
-                    }).ToList();
-
-                    if (newAppraisals != null && newAppraisals.Count > 0)
-                    {
-                        topicAppraisalRepository.InsertRange(newAppraisals);
-                    }
-
-                    break;
-
-                case TopicAppraisalStatus.Rejected:
-                    await UpdateStatusTopicAfterAppraisal(request.TopicId, TopicStatus.Rejected, cancellationToken);
-                    break;
-
-                default:
-                    throw new InvalidOperationException();
-            }
-
-            await unitOfWork.SaveChangesAsync(cancellationToken);
-            await unitOfWork.CommitAsync(cancellationToken);
-
-            return OperationResult.Success();
-        }
-        catch (Exception ex)
-        {
-            logger.LogError("Fail to final appraisal topic with error {Message}", ex.Message);
-            await unitOfWork.RollbackAsync(cancellationToken);
-
-            return OperationResult.Failure(new Error("Topic.Error", "Fail to create appraisal topic for manager."));
-        }
-    }
-
     private async Task<List<(string SupervisorId, string SupervisorEmail)>>
         GetAvailableSupervisorsForSupportingTopic(List<string> coSupervisorEmails,
             CancellationToken cancellationToken)
@@ -1122,9 +1045,9 @@ public class TopicService(
         var result = new List<(string, string)>();
 
         var query = from s in supervisorRepository.GetQueryable()
-            where coSupervisorEmails.Contains(s.Email) &&
-                  s.CoSupervisors.Count < MaxTopicsForCoSupervisors
-            select new { s.Id, s.Email };
+                    where coSupervisorEmails.Contains(s.Email) &&
+                          s.CoSupervisors.Count < MaxTopicsForCoSupervisors
+                    select new { s.Id, s.Email };
 
         (await query.ToListAsync(cancellationToken))
             .ForEach(s => result.Add((s.Id.ToString(), s.Email)));
@@ -1145,12 +1068,12 @@ public class TopicService(
     public async Task<OperationResult<List<BusinessAreaResponse>>> GetAllBusinessAreas()
     {
         var queryable = from ba in businessRepository.GetQueryable()
-            select new BusinessAreaResponse
-            {
-                Id = ba.Id,
-                Description = ba.Description,
-                Name = ba.Name
-            };
+                        select new BusinessAreaResponse
+                        {
+                            Id = ba.Id,
+                            Description = ba.Description,
+                            Name = ba.Name
+                        };
         var businessAreas = await queryable.ToListAsync();
 
         return businessAreas.Count != 0
