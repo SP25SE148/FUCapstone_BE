@@ -23,6 +23,8 @@ public class DocumentsService(
     ICacheService cacheService,
     S3BucketConfiguration s3BucketConfiguration) : IDocumentsService
 {
+    private const long MaxZipFileSize = 50 * 1024 * 1024; // 50MB
+
     public async Task<OperationResult<IList<TemplateDocumentRespone>>> GetSubTemplateDocuments(Guid? templateId,
         CancellationToken cancellationToken)
     {
@@ -370,4 +372,56 @@ public class DocumentsService(
 
         return $"{newFileUrl} ({nextIndex})";
     }
+
+    public async Task<OperationResult> CreateGroupDocument(IFormFile file, string key, CancellationToken cancellationToken)
+    {
+        if (!IsValidFile(file))
+            return OperationResult.Failure(new Error("Document.Error", "File is null."));
+
+        if (file.Length > MaxZipFileSize)
+            return OperationResult.Failure(new Error("Document.Error", "File size exceeds the 50MB limit."));
+
+        if (!await IsZipFileAsync(file))
+            return OperationResult.Failure(new Error("Document.Error", "File size exceeds the 50MB limit."));
+
+        var result = await SaveDocumentToS3(file, s3BucketConfiguration.FUCGroupDocumentBucket, key, cancellationToken);
+
+        return result ? OperationResult.Success() : OperationResult.Failure(new Error("Document.Error", "Fail to upload documents."));
+    }
+
+    public async Task<OperationResult<string>> PresentDocumentFilePresignedUrl(string groupKey)
+    {
+        var result = await PresentFilePresignedUrl(s3BucketConfiguration.FUCGroupDocumentBucket, groupKey);
+
+        return result.IsFailure
+            ? OperationResult.Failure<string>(new Error("Document.Error", "This is folder you can not do action."))
+            : result.Value;
+    }
+
+    private static bool IsValidFile(IFormFile file)
+    {
+        return file != null && file.Length > 0;
+    }
+
+    private async Task<bool> IsZipFileAsync(IFormFile file)
+    {
+        // Check MIME type (less reliable but useful as a first check)
+        var allowedMimeTypes = new[] { "application/zip", "application/x-zip-compressed" };
+        if (!allowedMimeTypes.Contains(file.ContentType.ToLower()))
+            return false;
+
+        // Read first 4 bytes in a more efficient way
+        byte[] header = new byte[4];
+        using var stream = file.OpenReadStream();
+
+        int bytesRead = await stream.ReadAsync(header.AsMemory(0, 4));
+        if (bytesRead < 4)
+            return false; // Invalid ZIP file
+
+        // Reset stream position so the same stream can be reused for uploading
+        stream.Position = 0;
+
+        return header.SequenceEqual(new byte[] { 0x50, 0x4B, 0x03, 0x04 }); // ZIP signature
+    }
+
 }

@@ -4,5 +4,6 @@ public class S3BucketConfiguration
 {
     public string FUCTopicBucket { get; set; }
     public string FUCTemplateBucket { get; set; }
+    public string FUCGroupDocumentBucket { get; set; }
     public string EvaluationProjectProgressKey { get; set; }
 }
