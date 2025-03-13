@@ -260,17 +260,16 @@ public class GroupService(
 
             if (group.Status.Equals(GroupStatus.InProgress))
             {
-                if (groupCodeList.Count < 1)
-                {
-                    group.GroupCode = $"{group.SemesterId}{group.MajorId}{random.Next(1, 9999)}";
-                }
-                else
-                {
-                    do
-                    {
-                        group.GroupCode = $"{group.SemesterId}{group.MajorId}{random.Next(1, 9999)}";
-                    } while (groupCodeList.Exists(x => x == group.GroupCode));
-                }
+                var currentSemesterCode = await semesterService.GetCurrentSemesterAsync();
+                var nextGroupNumber = await groupRepository.CountAsync(
+                    g => g.Status == GroupStatus.InProgress &&
+                         g.SemesterId == currentSemesterCode.Value.Id &&
+                         g.CampusId == group.CampusId &&
+                         g.CapstoneId == group.CapstoneId) + 1;
+
+                var groupMemberCode = nextGroupNumber.ToString($"D{Math.Max(3, nextGroupNumber.ToString().Length)}");
+
+                group.GroupCode = $"G{group.SemesterId}{group.MajorId}{groupMemberCode}";
             }
 
             await uow.CommitAsync();
@@ -1071,7 +1070,8 @@ public class GroupService(
 
         var group = await groupMemberRepository.GetAsync(gm =>
                 gm.StudentId.Equals(currentUser.UserCode) &&
-                gm.Status.Equals(GroupMemberStatus.Accepted),
+                gm.Status.Equals(GroupMemberStatus.Accepted) &&
+                gm.Status.Equals(GroupMemberStatus.UnderReview),
             gm => new GroupResponse
             {
                 Id = gm.GroupId,

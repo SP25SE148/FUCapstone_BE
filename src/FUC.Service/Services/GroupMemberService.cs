@@ -265,7 +265,7 @@ public class GroupMemberService(
         if (groupMembers.Count < 1)
             return OperationResult.Failure<GroupMemberRequestResponse>(Error.NullValue);
 
-        groupMemberRequestResponse.GroupMemberRequested = groupMembers.Where(gm => !gm.IsLeader).Select(
+        groupMemberRequestResponse.GroupMemberRequested = groupMembers.Where(gm => gm.IsLeader == false).Select(
             x => new GroupMemberResponse()
             {
                 Id = x.Id,
@@ -297,9 +297,6 @@ public class GroupMemberService(
                         CreatedDate = x.CreatedDate,
                         CreatedBy = x.CreatedBy
                     });
-            if (groupMembersRequestOfLeader.Count < 1)
-                return OperationResult.Failure<GroupMemberRequestResponse>(Error.NullValue);
-
             groupMemberRequestResponse.GroupMemberRequestSentByLeader = groupMembersRequestOfLeader.ToList();
         }
 
