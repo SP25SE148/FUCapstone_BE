@@ -15,8 +15,7 @@ public sealed class TopicConfiguration : IEntityTypeConfiguration<Topic>
         builder.Property(t => t.Id).HasDefaultValue(Guid.NewGuid());
 
         builder.HasIndex(t => t.Code)
-            .IsUnique()
-            .HasFilter("Code IS NOT NULL");;
+            .IsUnique();
 
         builder.Property(t => t.FileUrl).IsRequired();
         builder.Property(t => t.FileName).IsRequired();
