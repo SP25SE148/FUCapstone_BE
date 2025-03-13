@@ -195,7 +195,8 @@ public class GroupService(
             : OperationResult.Failure<IEnumerable<GroupResponse>>(Error.NullValue);
     }
 
-    public async Task<OperationResult<IEnumerable<GroupResponse>>> GetPendingGroupsForStudentJoin(CancellationToken cancellationToken)
+    public async Task<OperationResult<IEnumerable<GroupResponse>>> GetPendingGroupsForStudentJoin(
+        CancellationToken cancellationToken)
     {
         var capstoneResult = await capstoneService.GetCapstoneByIdAsync(currentUser.CapstoneId);
 
@@ -204,12 +205,12 @@ public class GroupService(
 
         var groups = await groupRepository.FindAsync(
             g => g.CampusId == currentUser.CampusId &&
-            g.MajorId == currentUser.MajorId &&
-            g.CapstoneId == currentUser.CapstoneId &&
-            g.Status == GroupStatus.Pending && 
-            g.GroupMembers.Count(
-                x => x.Status == GroupMemberStatus.Accepted || 
-                x.Status == GroupMemberStatus.UnderReview) <= capstoneResult.Value.MaxMember,
+                 g.MajorId == currentUser.MajorId &&
+                 g.CapstoneId == currentUser.CapstoneId &&
+                 g.Status == GroupStatus.Pending &&
+                 g.GroupMembers.Count(
+                     x => x.Status == GroupMemberStatus.Accepted ||
+                          x.Status == GroupMemberStatus.UnderReview) <= capstoneResult.Value.MaxMember,
             include: g => g.Include(g => g.GroupMembers)
                 .ThenInclude(gm => gm.Student),
             orderBy: x => x.OrderBy(g => g.GroupCode),
@@ -837,7 +838,7 @@ public class GroupService(
         var progress = await projectProgressRepository.GetAsync(
             predicate: x => x.Id == request.ProjectProgressId,
             include: x => x.Include(x => x.ProjectProgressWeeks
-                                .Where(w => w.Id == request.ProjectProgressWeekId)),
+                .Where(w => w.Id == request.ProjectProgressWeekId)),
             orderBy: null,
             cancellationToken);
 
@@ -849,7 +850,8 @@ public class GroupService(
             return OperationResult.Failure(new Error("ProjectProgress.Error", "Week can not evaluation."));
         }
 
-        if (!await CheckSupervisorAndStudentAreSameGroup(request.EvaluationRequestForStudents.Select(x => x.StudentId).ToList(),
+        if (!await CheckSupervisorAndStudentAreSameGroup(
+                request.EvaluationRequestForStudents.Select(x => x.StudentId).ToList(),
                 currentUser.UserCode,
                 progress.GroupId,
                 checkAllStudents: true,
@@ -1112,7 +1114,7 @@ public class GroupService(
 
         var group = await groupMemberRepository.GetAsync(gm =>
                 gm.StudentId.Equals(currentUser.UserCode) &&
-                gm.Status.Equals(GroupMemberStatus.Accepted) &&
+                gm.Status.Equals(GroupMemberStatus.Accepted) ||
                 gm.Status.Equals(GroupMemberStatus.UnderReview),
             gm => new GroupResponse
             {
@@ -1180,17 +1182,16 @@ public class GroupService(
             var topicResult = await topicService
                 .GetTopicByCode(g.TopicCode!, cancellationToken);
 
-            if (topicResult.IsFailure)
-                throw new ArgumentNullException(topicResult.Error);
-
-            return new GroupManageBySupervisorResponse
-            {
-                GroupId = g.Id,
-                GroupCode = g.GroupCode,
-                EnglishName = topicResult.Value.EnglishName,
-                TopicCode = topicResult.Value.Code,
-                SemesterCode = g.SemesterId
-            };
+            return topicResult.IsFailure
+                ? throw new ArgumentNullException(topicResult.Error)
+                : new GroupManageBySupervisorResponse
+                {
+                    GroupId = g.Id,
+                    GroupCode = g.GroupCode,
+                    EnglishName = topicResult.Value.EnglishName,
+                    TopicCode = topicResult.Value.Code,
+                    SemesterCode = g.SemesterId
+                };
         });
 
         return (await Task.WhenAll(tasks)).OrderBy(x => x.GroupCode).ToList();
