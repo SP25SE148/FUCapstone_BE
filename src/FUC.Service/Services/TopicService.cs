@@ -712,94 +712,93 @@ public class TopicService(
         return OperationResult.Success(result);
     }
 
-    public async Task<OperationResult> CreateTopicAppraisal(IReadOnlyList<string> supervisorEmail)
+    public async Task<OperationResult> AssignTopicAppraisalForAvailableSupervisors(IReadOnlyList<string> supervisorEmail)
     {
-        //TODO: Check the valid date to assign supervisors to topics (TimeCongig table)
+        // TODO: Check the valid date to assign supervisors to topics (TimeConfig table)
 
         var currentSemester = await semesterService.GetCurrentSemesterAsync();
         if (currentSemester.IsFailure)
         {
-            logger.LogError("The current semester is inactive !");
-            return OperationResult.Failure(new Error("Error.CurrentSemesterIsNull", " Current semester is inactive !"));
+            logger.LogError("The current semester is inactive!");
+            return OperationResult.Failure(new Error("Error.CurrentSemesterIsNull", "Current semester is inactive!"));
         }
 
         if (supervisorEmail.Count < TopicAppraisalRequirement.SupervisorAppraisalMinimum)
         {
-            logger.LogError("The Supervisor Appraisal size is invalid !");
+            logger.LogError("The Supervisor Appraisal size is invalid!");
             return OperationResult.Failure(new Error("Error.InvalidSupervisorAppraisalSize",
-                $"The Supervisor appraisal must be greater than {TopicAppraisalRequirement.SupervisorAppraisalMinimum}"));
+                $"The Supervisor appraisal must be at least {TopicAppraisalRequirement.SupervisorAppraisalMinimum}"));
         }
 
         var supervisorIdList = await (from s in supervisorRepository.GetQueryable()
                                       where supervisorEmail.Contains(s.Email) &&
                                             s.IsAvailable &&
-                                            s.MajorId.Equals(currentUser.MajorId) &&
-                                            s.CampusId.Equals(currentUser.CampusId)
+                                            s.MajorId == currentUser.MajorId &&
+                                            s.CampusId == currentUser.CampusId
                                       select s.Id).ToListAsync();
-        //check if supervisor list is null or empty!
-        if (supervisorIdList.Count < 1)
+
+        if (supervisorIdList.Count == 0)
         {
-            logger.LogError("Supervisors was not found !");
+            logger.LogError("Supervisors were not found!");
             return OperationResult.Failure(Error.NullValue);
         }
 
         IList<Topic> topicList = await topicRepository
-            .FindAsync(t => t.Status.Equals(TopicStatus.Pending) &&
-                            t.CampusId.Equals(currentUser.CampusId) &&
-                            t.SemesterId.Equals(currentSemester.Value.Id),
-                t => t
-                    .Include(t => t.MainSupervisor)
-                    .Include(t => t.CoSupervisors)
-                    .Include(t => t.Capstone)
-                    .Include(t => t.TopicAppraisals));
+            .FindAsync(t => t.Status == TopicStatus.Pending &&
+                            t.CampusId == currentUser.CampusId &&
+                            t.SemesterId == currentSemester.Value.Id,
+                t => t.Include(t => t.MainSupervisor)
+                      .Include(t => t.CoSupervisors)
+                      .Include(t => t.Capstone));
 
-        // get topic list based on current manager major
-        topicList = topicList.Where(t => t.Capstone.MajorId.Equals(currentUser.MajorId) &&
-                                         (t.TopicAppraisals.Count == 0 || t.TopicAppraisals == null)).ToList();
+        topicList = topicList
+            .Where(t => t.Capstone.MajorId == currentUser.MajorId &&
+                        (t.TopicAppraisals == null || t.TopicAppraisals.Count == 0))
+            .ToList();
 
-        // check if topics list is null or empty!
-        if (topicList.Count < 1)
+        if (!topicList.Any())
         {
-            logger.LogError($"Topics with status Pending was not found !");
+            logger.LogError("No pending topics found!");
             return OperationResult.Failure(Error.NullValue);
         }
 
-        // Shuffle the supervisor id list 
+        // Shuffle topics and supervisors to ensure fairness
         var rand = new Random();
-        var shuffledSupervisorIdList = supervisorIdList.OrderBy(_ => rand.Next()).ToList();
-        int index = 0;
-        int supervisorCount = shuffledSupervisorIdList.Count;
+        topicList = topicList.OrderBy(_ => rand.Next()).ToList();
+        supervisorIdList = supervisorIdList.OrderBy(_ => rand.Next()).ToList();
 
-        foreach (Topic topic in topicList)
+        // Track supervisor assignments count
+        var supervisorAssignments = supervisorIdList.ToDictionary(s => s, _ => 0);
+        var topicAppraisalList = new List<TopicAppraisal>();
+
+        int supervisorIndex = 0;
+        var assignedSupervisors = new HashSet<string>();
+
+        foreach (var topic in topicList)
         {
-            var selectedSupervisorIdList = new List<string>();
-            index = 0;
-            while (selectedSupervisorIdList.Count < 2)
+            assignedSupervisors.Clear();
+
+            while (assignedSupervisors.Count < 2 && supervisorAssignments.Count > 0)
             {
-                if (index >= supervisorCount)
+                var supervisorId = supervisorIdList[supervisorIndex];
+
+                if (supervisorId != topic.MainSupervisorId && !assignedSupervisors.Contains(supervisorId))
                 {
-                    break;
+                    assignedSupervisors.Add(supervisorId);
+                    supervisorAssignments[supervisorId]++;
                 }
 
-                string selectedSupervisorId = shuffledSupervisorIdList[index++]!;
-
-                if (!string.IsNullOrEmpty(selectedSupervisorId) &&
-                    !selectedSupervisorId.Equals(topic.MainSupervisorId) &&
-                    !selectedSupervisorIdList.Contains(selectedSupervisorId))
-                {
-                    selectedSupervisorIdList.Add(selectedSupervisorId);
-                }
+                supervisorIndex = (supervisorIndex + 1) % supervisorIdList.Count;
             }
 
-            var topicAppraisalList = selectedSupervisorIdList.Select(s => new TopicAppraisal
+            topicAppraisalList.AddRange(assignedSupervisors.Select(s => new TopicAppraisal
             {
-                SupervisorId = s.ToString(),
+                SupervisorId = s,
                 TopicId = topic.Id
-            }).ToList();
-
-            topicAppraisalRepository.InsertRange(topicAppraisalList);
+            }));
         }
 
+        topicAppraisalRepository.InsertRange(topicAppraisalList);
         await unitOfWork.SaveChangesAsync();
 
         return OperationResult.Success();

@@ -957,6 +957,34 @@ public class GroupService(
             };
     }
 
+    public async Task<OperationResult> UpdateProjectProgressWeek(UpdateProjectProgressWeekRequest request, CancellationToken cancellationToken)
+    {
+        try
+        {
+            var week = await projectProgressWeekRepository.GetAsync(
+            x => x.Id == request.ProjectProgressWeekId,
+            cancellationToken);
+
+            if (week is null || week.Status == ProjectProgressWeekStatus.Done)
+                return OperationResult.Failure(new Error("ProjectProgress.Error", "Update this week fail"));
+
+            mapper.Map(request, week);
+
+            projectProgressWeekRepository.Update(week);
+
+            await uow.SaveChangesAsync(cancellationToken);
+
+            return OperationResult.Success();
+        }
+        catch (Exception ex)
+        {
+            logger.LogError("Update projectProgressWeek fail with error: {Message}", ex.Message);
+
+            return OperationResult.Failure(new Error("ProjectProgress.Error",
+                "Update ProjectProgressWeek fail."));
+        }
+    }
+
     private static bool IsValidFile(IFormFile file)
     {
         return file != null && file.Length > 0 &&
