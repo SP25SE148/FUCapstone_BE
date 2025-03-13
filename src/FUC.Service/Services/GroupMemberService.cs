@@ -83,6 +83,8 @@ public class GroupMemberService(
             // check if member is eligible to send join group request
             Student? member = await _studentRepository.GetAsync(
                 predicate: s => s.Email.ToLower().Equals(memberEmail.ToLower()) &&
+                                s.CampusId == leader.CampusId &&
+                                s.CapstoneId == leader.CapstoneId &&
                                 s.IsEligible &&
                                 !s.Status.Equals(StudentStatus.Passed) &&
                                 !s.IsDeleted,
@@ -150,9 +152,9 @@ public class GroupMemberService(
         // check if member have been in group before
         bool memberHaveBeenInGroupBefore = memberRequests.Any(gm => gm.Status.Equals(GroupMemberStatus.Accepted));
 
-        if (memberHaveBeenInGroupBefore)
+        if (memberHaveBeenInGroupBefore && !request.Status.Equals(GroupMemberStatus.LeftGroup))
             return OperationResult.Failure(new Error("Error.JoinedGroup",
-                $"The member with id {currentUser.UserCode} have been in gruop before!!!"));
+                $"The member with id {currentUser.UserCode} have been in group before!!!"));
 
         // get group member request that the member want to update status 
         GroupMember? groupMember =
@@ -206,25 +208,25 @@ public class GroupMemberService(
                         $"Can not left group from the other status different {GroupMemberStatus.Accepted.ToString()} status"));
                 if (!groupMember.IsLeader)
                 {
-                    groupMember.Status = request.Status;
-                    break;
+                    return OperationResult.Failure(new Error("Error.UpdateFailed",
+                        "Can not left group while member is not a leader"));
                 }
 
-                // check if new leader is null
-                var newLeader = await _groupMemberRepository.GetAsync(s => s.GroupId.Equals(groupMember.GroupId) &&
-                                                                           s.StudentId.ToLower()
-                                                                               .Equals(request.NewLeaderId.ToLower()) &&
-                                                                           s.IsLeader == false &&
-                                                                           s.Status.Equals(GroupMemberStatus.Accepted),
+                // auto change another group member status to left group and then noti to members
+                var groupMembers = await _groupMemberRepository.FindAsync(
+                    gm => gm.GroupId == groupMember.GroupId && gm.Status == GroupMemberStatus.Accepted,
+                    null,
                     true);
-                if (newLeader is null)
-                    return OperationResult.Failure(new Error("Error.NotFound",
-                        $"Can not found new leader with id {request.NewLeaderId} !!"));
+                if (groupMembers.Count > 0)
+                {
+                    foreach (GroupMember member in groupMembers)
+                    {
+                        member.Status = GroupMemberStatus.LeftGroup;
+                        _groupMemberRepository.Update(member);
+                    }
+                }
 
-                groupMember.Status = request.Status;
-                newLeader.IsLeader = true;
                 _groupMemberRepository.Update(groupMember);
-                _groupMemberRepository.Update(newLeader);
                 break;
             case GroupMemberStatus.Cancelled:
                 var groupMemberLeader = await _groupMemberRepository.GetAsync(
@@ -242,6 +244,7 @@ public class GroupMemberService(
                     $"Can not update status with group member id {groupMember.Id}!!"));
         }
 
+        // TODO: Send noti to member
         _integrationEventLogService.SendEvent(new GroupMemberStatusUpdateMessage
         {
             AttemptTime = 1,
