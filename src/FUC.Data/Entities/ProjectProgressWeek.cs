@@ -12,6 +12,7 @@ public class ProjectProgressWeek : AuditableSoftDeleteEntity
     public ProjectProgressWeekStatus Status { get; set; }
     public string? MeetingLocation { get; set; }
     public string? MeetingContent { get; set; }
+    public string? ProgressWeekSummary { get; set; }
 
     public ProjectProgress ProjectProgress { get; set; } = null!;
     public ICollection<FucTask> FucTasks { get; set; } = new List<FucTask>();

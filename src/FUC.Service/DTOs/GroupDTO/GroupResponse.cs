@@ -14,7 +14,7 @@ public sealed record GroupResponse
     public string? GroupCode { get; init; } = string.Empty;
     public string Status { get; init; } = string.Empty;
     public IEnumerable<GroupMemberResponse> GroupMemberList { get; set; } = new List<GroupMemberResponse>();
-    public TopicResponse? TopicResponse { get; set; }
+    public TopicResponse? TopicResponse { get; set; } = null!;
 }
 
 public sealed record GroupManageBySupervisorResponse

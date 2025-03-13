@@ -272,6 +272,15 @@ public class GroupController(
         return result.IsSuccess ? Ok(result) : HandleFailure(result);
     }
 
+    [Authorize(Roles = UserRoles.Student)]
+    [HttpPost("progress/week/summary")]
+    public async Task<IActionResult> CreateSummaryWeeklyProgress(SummaryProjectProgressWeekRequest request)
+    {
+        var result = await groupService.SummaryProjectProgressWeek(request, default);
+
+        return result.IsSuccess ? Ok(result) : HandleFailure(result);
+    }
+
     [Authorize(Roles = UserRoles.Supervisor)]
     [HttpGet("progress/week/evaluation/{groupId}/excel")]
     public async Task<IActionResult> GetEvaluationWeeklyProgressFile(Guid groupId)

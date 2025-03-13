@@ -493,11 +493,7 @@ public class GroupService(
     {
         return g =>
             g.Include(g => g.GroupMembers)
-                .ThenInclude(gm => gm.Student)
-                .Include(g => g.Major)
-                .Include(g => g.Semester)
-                .Include(g => g.Capstone)
-                .Include(g => g.Campus);
+                .ThenInclude(gm => gm.Student);
     }
 
     private static Expression<Func<Group, GroupResponse>> CreateSelectorForGroupResponse()
@@ -660,12 +656,23 @@ public class GroupService(
 
     public async Task<OperationResult> UpdateTask(UpdateTaskRequest request, CancellationToken cancellationToken)
     {
-        var task = await fucTaskRepository.GetAsync(
-            x => x.Id == request.TaskId,
-            cancellationToken);
+        var progress = await projectProgressRepository.GetAsync(
+                x => x.Id == request.ProjectProgressId,
+                include: x => x.Include(x => x.FucTasks.Where(t => t.Id == request.TaskId)),
+                orderBy: null,
+                cancellationToken
+            );
+
+        if (progress is null)
+            return OperationResult.Failure(Error.NullValue);
+
+        var task = progress.FucTasks.Single();
 
         if (task == null)
             return OperationResult.Failure(Error.NullValue);
+
+        if (!await CheckStudentsInSameGroup([currentUser.UserCode], progress.GroupId, cancellationToken))
+            return OperationResult.Failure(new Error("ProjectProgress.Error", "You can not update this task."));
 
         if (currentUser.UserCode != task.AssigneeId && currentUser.UserCode != task.ReporterId)
         {
@@ -892,6 +899,37 @@ public class GroupService(
         }
     }
 
+    public async Task<OperationResult> SummaryProjectProgressWeek(SummaryProjectProgressWeekRequest request, CancellationToken cancellationToken)
+    {
+        try
+        {
+            var progress = await projectProgressRepository.GetAsync(
+            x => x.Id == request.ProjectProgressId,
+            include: x => x.Include(w => w.ProjectProgressWeeks
+                    .Where(w => w.Id == request.ProjectProgressWeekId)),
+            orderBy: null,
+            cancellationToken);
+
+            if (progress == null || progress.ProjectProgressWeeks.Single() == null)
+                return OperationResult.Failure(Error.NullValue);
+
+            if (!await CheckStudentIsLeader(currentUser.UserCode, progress.GroupId, cancellationToken))
+                return OperationResult.Failure(new Error("ProjectProgres.Error", "You can not summary this week."));
+
+            mapper.Map(request, progress.ProjectProgressWeeks.Single());
+
+            await uow.SaveChangesAsync(cancellationToken);
+
+            return OperationResult.Success();
+        }
+        catch (Exception ex)
+        {
+            logger.LogError("Update summary for week {WeekId} fail with error {Message}", request.ProjectProgressWeekId, ex.Message);
+
+            return OperationResult.Failure(new Error("ProjectProgres.Error", "Fail to summary this week."));
+        }
+    }
+
     public async Task<OperationResult<List<FucTaskResponse>>> GetTasks(Guid projectProgressId,
         CancellationToken cancellationToken)
     {
@@ -997,6 +1035,7 @@ public class GroupService(
                         MeetingLocation = p.MeetingLocation,
                         Status = p.Status,
                         TaskDescription = p.TaskDescription,
+                        Summary = p.ProgressWeekSummary
                     }).ToList(),
             };
     }
@@ -1106,6 +1145,18 @@ public class GroupService(
             ? await CheckSupervisorInGroup(currentUser.UserCode, groupId, cancellationToken)
             : currentUser.Role == UserRoles.Student &&
               await CheckStudentsInSameGroup([currentUser.UserCode], groupId, cancellationToken);
+    }
+
+    private async Task<bool> CheckStudentIsLeader(string studentId, Guid groupId, CancellationToken cancellationToken)
+    {
+        var leader = await groupMemberRepository.GetAsync(
+            x => x.StudentId == studentId &&
+                 x.GroupId == groupId &&
+                 x.Status == GroupMemberStatus.Accepted &&
+                 x.IsLeader,
+            cancellationToken);
+
+        return leader != null;
     }
 
     public async Task<OperationResult<GroupResponse>> GetGroupInformationByGroupSelfId()

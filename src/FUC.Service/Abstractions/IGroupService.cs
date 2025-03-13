@@ -30,7 +30,7 @@ public interface IGroupService
 
     Task<OperationResult> CreateWeeklyEvaluations(CreateWeeklyEvaluationRequest request,
         CancellationToken cancellationToken);
-
+    Task<OperationResult> SummaryProjectProgressWeek(SummaryProjectProgressWeekRequest request, CancellationToken cancellationToken);
     Task<OperationResult<ProjectProgressDto>> GetProjectProgressByGroup(Guid groupId,
         CancellationToken cancellationToken);
 
