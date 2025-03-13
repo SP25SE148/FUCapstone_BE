@@ -11,7 +11,7 @@ public sealed class Group : AuditableSoftDeleteEntity
     public string CampusId { get; set; }
     public string? SupervisorId { get; set; }
     public string CapstoneId { get; set; }
-
+    public float GPA { get; set; } // calculate from members gpa
     public string? TopicCode { get; set; }
     public string GroupCode { get; set; } = string.Empty;
     public GroupStatus Status { get; set; }
