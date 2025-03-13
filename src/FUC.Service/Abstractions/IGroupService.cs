@@ -13,6 +13,7 @@ public interface IGroupService
     Task<OperationResult<IEnumerable<GroupResponse>>> GetAllGroupByMajorIdAsync(string majorId);
     Task<OperationResult<IEnumerable<GroupResponse>>> GetAllGroupByCapstoneIdAsync(string capstoneId);
     Task<OperationResult<IEnumerable<GroupResponse>>> GetAllGroupByCampusIdAsync(string campusId);
+    Task<OperationResult<IEnumerable<GroupResponse>>> GetPendingGroupsForStudentJoin(CancellationToken cancellationToken);
     Task<OperationResult<GroupResponse>> GetGroupByIdAsync(Guid id);
     Task<OperationResult> UpdateGroupStatusAsync();
     Task<OperationResult<Guid>> CreateTopicRequestAsync(TopicRequest_Request request, CancellationToken cancellationToken);
@@ -27,7 +28,7 @@ public interface IGroupService
     Task<OperationResult<List<FucTaskResponse>>> GetTasks(Guid projectProgressId, CancellationToken cancellationToken);
     Task<OperationResult<FucTaskDetailResponse>> GetTasksDetail(Guid taskId, CancellationToken cancellationToken);
 
-    Task<OperationResult> CreateWeeklyEvaluation(CreateWeeklyEvaluationRequest request,
+    Task<OperationResult> CreateWeeklyEvaluations(CreateWeeklyEvaluationRequest request,
         CancellationToken cancellationToken);
 
     Task<OperationResult<ProjectProgressDto>> GetProjectProgressByGroup(Guid groupId,

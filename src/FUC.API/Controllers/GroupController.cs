@@ -4,7 +4,6 @@ using FUC.Common.Constants;
 using FUC.Common.IntegrationEventLog.Services;
 using FUC.Common.Shared;
 using FUC.Service.Abstractions;
-using FUC.Service.DTOs.GroupDTO;
 using FUC.Service.DTOs.GroupMemberDTO;
 using FUC.Service.DTOs.ProjectProgressDTO;
 using FUC.Service.DTOs.TopicDTO;
@@ -87,6 +86,16 @@ public class GroupController(
             : HandleFailure(result);
     }
 
+    [HttpGet("pending")]
+    [Authorize(Roles = $"{UserRoles.Student}")]
+    public async Task<IActionResult> GetPendingGroupsForStudentJoin()
+    {
+        var result = await groupService.GetPendingGroupsForStudentJoin(default);
+
+        return result.IsSuccess
+            ? Ok(result)
+            : HandleFailure(result);
+    }
 
     [HttpGet("{id}")]
     public async Task<IActionResult> GetGroupByIdAsync(Guid id)
@@ -245,10 +254,10 @@ public class GroupController(
 
 
     [Authorize(Roles = UserRoles.Supervisor)]
-    [HttpPost("progress/week/evaluation")]
-    public async Task<IActionResult> EvaluationWeeklyProgress([FromBody] CreateWeeklyEvaluationRequest request)
+    [HttpPost("progress/week/evaluations")]
+    public async Task<IActionResult> EvaluationsWeeklyProgress([FromBody] CreateWeeklyEvaluationRequest request)
     {
-        var result = await groupService.CreateWeeklyEvaluation(request, default);
+        var result = await groupService.CreateWeeklyEvaluations(request, default);
 
         return result.IsSuccess ? Ok(result) : HandleFailure(result);
     }
