@@ -122,9 +122,9 @@ public class GroupController(
 
     [Authorize(Roles = nameof(UserRoles.Student))]
     [HttpPost("add-member")]
-    public async Task<IActionResult> AddMemberIntoGroupAsync(CreateGroupMemberRequest request)
+    public async Task<IActionResult> AddMemberIntoGroupAsync(CreateGroupMemberByLeaderRequest request)
     {
-        OperationResult<Guid> result = await groupMemberService.CreateBulkGroupMemberAsync(request);
+        OperationResult<Guid> result = await groupMemberService.CreateGroupMemberByLeaderAsync(request);
         return result.IsSuccess
             ? Ok(result)
             : HandleFailure(result);
@@ -198,6 +198,7 @@ public class GroupController(
     #endregion
 
     #region ProjectProgress
+
     [Authorize(Roles = $"{UserRoles.Supervisor},{UserRoles.Student}")]
     [HttpGet("{groupId}/progress")]
     public async Task<IActionResult> GetProjectProgressOfGroup(Guid groupId)
@@ -277,10 +278,11 @@ public class GroupController(
     {
         var result = await groupService.ExportProgressEvaluationOfGroup(groupId, default);
 
-        return result.IsSuccess ? File(result.Value,
-                   "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-                   "Evaluation_Project_Progress.xlsx") : 
-                   HandleFailure(result);
+        return result.IsSuccess
+            ? File(result.Value,
+                "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+                "Evaluation_Project_Progress.xlsx")
+            : HandleFailure(result);
     }
 
     [Authorize(Roles = UserRoles.Supervisor)]

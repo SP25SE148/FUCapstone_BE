@@ -3,7 +3,6 @@ using FUC.Data.Enums;
 
 namespace FUC.Data.Entities;
 
-
 public sealed class Student : AuditableSoftDeleteEntity
 {
     public string Id { get; set; }
@@ -13,7 +12,7 @@ public sealed class Student : AuditableSoftDeleteEntity
     public string CampusId { get; set; }
     public Guid? BusinessAreaId { get; set; }
     public string Email { get; set; }
-    public float Mark { get; set; }
+    public float GPA { get; set; }
     public bool IsEligible { get; set; }
     public StudentStatus Status { get; set; }
 
