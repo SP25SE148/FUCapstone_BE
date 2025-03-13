@@ -64,10 +64,12 @@ public class GroupMemberService(
         Guid groupIdOfLeader = leader.GroupMembers.FirstOrDefault(s => s.IsLeader)!.GroupId;
         int numOfMembers = (await _groupMemberRepository.FindAsync(
             gm => gm.GroupId.Equals(groupIdOfLeader) &&
-                  gm.Status.Equals(GroupMemberStatus.Accepted))).Count();
+                  gm.Status.Equals(GroupMemberStatus.Accepted) &&
+                  gm.Status.Equals(GroupMemberStatus.UnderReview))).Count;
         // Check if the team size is invalid 
         if (request.MemberEmailList.Count > leader.Capstone.MaxMember - numOfMembers)
-            return OperationResult.Failure<Guid>(new Error("Error.TeamSizeInvalid", "The team size is invalid"));
+            return OperationResult.Failure<Guid>(new Error("Error.MemberRequestSizeInvalid",
+                "The member request size is invalid"));
 
         var groupMemberNotification = new List<GroupMemberNotification>();
         Guid groupId = leader.GroupMembers.FirstOrDefault(s => s.IsLeader)!.GroupId;
@@ -173,11 +175,6 @@ public class GroupMemberService(
         // get the member quantities in group  
         int groupMemberQuantities = (await _groupMemberRepository.FindAsync(gm =>
             gm.GroupId == request.GroupId && gm.Status.Equals(GroupMemberStatus.Accepted))).Count;
-
-        // check if group member quantity is full
-        if (groupMemberQuantities >= groupMember.Group.Capstone.MaxMember)
-            return OperationResult.Failure(new Error("Error.ExceedGroupSlot",
-                $"The group with id {request.GroupId} is full of member"));
 
         await _uow.BeginTransactionAsync();
 
