@@ -1,4 +1,5 @@
 ﻿using AutoMapper;
+using FUC.Common.Abstractions;
 using FUC.Common.Shared;
 using FUC.Data;
 using FUC.Data.Data;
@@ -11,35 +12,38 @@ using Microsoft.EntityFrameworkCore.Query;
 
 namespace FUC.Service.Services;
 
-public sealed class StudentService(IMapper mapper, IUnitOfWork<FucDbContext> uow) : IStudentService
-{
-    private readonly IUnitOfWork<FucDbContext> _uow = uow ?? throw new ArgumentNullException(nameof(uow));
-
-    private readonly IRepository<Student> _studentRepository = uow.GetRepository<Student>() ?? throw new ArgumentNullException(nameof(uow));
-        private readonly IMapper _mapper = mapper ?? throw new ArgumentNullException(nameof(mapper));
-    
-    public async Task<OperationResult<IEnumerable<StudentResponseDTO>>> GetAllStudentAsync()
+public sealed class StudentService(IMapper mapper, 
+    ICurrentUser currentUser,
+    IRepository<Student> studentRepository,
+    IUnitOfWork<FucDbContext> uow) : IStudentService
+{    
+    public async Task<OperationResult<IEnumerable<StudentResponseDTO>>> GetAllStudentAsync(CancellationToken cancellationToken)
     {
-        List<Student> students = await _studentRepository
-            .GetAllAsync(CreateIncludeForStudentResponse());
+        var students = await studentRepository.FindAsync(
+            x => (currentUser.CampusId == "all" || x.CampusId == currentUser.CampusId) &&
+            (currentUser.MajorId == "all" || x.MajorId == currentUser.MajorId) &&
+            (currentUser.CapstoneId == "all" || x.CapstoneId == currentUser.CapstoneId),
+            CreateIncludeForStudentResponse(),
+            x => x.OrderBy(x => x.Id),
+            cancellationToken);
         return students.Count > 0
-            ? OperationResult.Success(_mapper.Map<IEnumerable<StudentResponseDTO>>(students))
+            ? OperationResult.Success(mapper.Map<IEnumerable<StudentResponseDTO>>(students))
             : OperationResult.Failure<IEnumerable<StudentResponseDTO>>(Error.NullValue);
     }
 
     public async Task<OperationResult<StudentResponseDTO>> GetStudentByIdAsync(string id)
     {
-        Student? student = await _studentRepository.GetAsync(s => s.Id.ToLower().Equals(id.ToLower()),
+        Student? student = await studentRepository.GetAsync(s => s.Id.ToLower().Equals(id.ToLower()),
                 true,
                 CreateIncludeForStudentResponse());
         return student is not null
-            ? _mapper.Map<StudentResponseDTO>(student)
+            ? mapper.Map<StudentResponseDTO>(student)
             : OperationResult.Failure<StudentResponseDTO>(Error.NullValue);
     }
 
     public async Task<OperationResult> UpdateStudentInformation(UpdateStudentRequest request, string studentId)
     {
-        var student = await _studentRepository.GetAsync(s => s.Id.ToLower().Equals(studentId.ToLower()),
+        var student = await studentRepository.GetAsync(s => s.Id.ToLower().Equals(studentId.ToLower()),
             true,
             CreateIncludeForStudentResponse());
         
@@ -50,14 +54,14 @@ public sealed class StudentService(IMapper mapper, IUnitOfWork<FucDbContext> uow
         // update student info
         student.BusinessAreaId = request.BusinessAreaId;
         student.Mark = request.Mark;
-        _studentRepository.Update(student);
+        studentRepository.Update(student);
         
-        await _uow.SaveChangesAsync();
+        await uow.SaveChangesAsync();
         
         return OperationResult.Success();
     }
 
-    private static Func<IQueryable<Student>, IIncludableQueryable<Student, object>> CreateIncludeForStudentResponse()
+    private static Func<IQueryable<Student>, IIncludableQueryable<Student, object?>> CreateIncludeForStudentResponse()
     {
         return s => s
             .Include(s => s.Major)

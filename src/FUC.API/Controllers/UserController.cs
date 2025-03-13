@@ -23,7 +23,7 @@ public sealed class UserController(
     [Authorize(Roles = $"{UserRoles.SuperAdmin}, {UserRoles.Admin}, {UserRoles.Manager}")]
     public async Task<IActionResult> GetAllStudentAsync()
     {
-        OperationResult<IEnumerable<StudentResponseDTO>> result = await studentService.GetAllStudentAsync();
+        OperationResult<IEnumerable<StudentResponseDTO>> result = await studentService.GetAllStudentAsync(default);
         return result.IsSuccess
             ? Ok(result)
             : HandleFailure(result);
@@ -33,7 +33,7 @@ public sealed class UserController(
     [Authorize(Roles = $"{UserRoles.SuperAdmin}, {UserRoles.Admin}, {UserRoles.Manager}")]
     public async Task<IActionResult> GetAllSupervisorAsync()
     {
-        OperationResult<IEnumerable<SupervisorResponseDTO>> result = await supervisorService.GetAllSupervisorAsync();
+        OperationResult<IEnumerable<SupervisorResponseDTO>> result = await supervisorService.GetAllSupervisorAsync(default);
         return result.IsSuccess
             ? Ok(result)
             : HandleFailure(result);

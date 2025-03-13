@@ -1,4 +1,5 @@
 ﻿using AutoMapper;
+using FUC.Common.Abstractions;
 using FUC.Common.Shared;
 using FUC.Data;
 using FUC.Data.Data;
@@ -10,21 +11,24 @@ using Microsoft.EntityFrameworkCore;
 
 namespace FUC.Service.Services;
 
-public sealed class SupervisorService(IMapper mapper, IUnitOfWork<FucDbContext> uow) : ISupervisorService
+public sealed class SupervisorService(IMapper mapper, 
+    ICurrentUser currentUser,
+    IRepository<Supervisor> supervisorRepository,
+    IUnitOfWork<FucDbContext> uow) : ISupervisorService
 {
-    private readonly IUnitOfWork<FucDbContext> _uow = uow ?? throw new ArgumentNullException(nameof(uow));
-
-    private readonly IRepository<Supervisor> _SupervisorRepository = uow.GetRepository<Supervisor>() ?? throw new ArgumentNullException(nameof(uow));
-    private readonly IMapper _mapper = mapper ?? throw new ArgumentNullException(nameof(mapper));
-
-    public async Task<OperationResult<IEnumerable<SupervisorResponseDTO>>> GetAllSupervisorAsync()
+    public async Task<OperationResult<IEnumerable<SupervisorResponseDTO>>> GetAllSupervisorAsync(CancellationToken cancellationToken)
     {
-        List<Supervisor> supervisors = await _SupervisorRepository.GetAllAsync(
+        var supervisors = await supervisorRepository.FindAsync(
+            x => (currentUser.CampusId == "all" || x.CampusId == currentUser.CampusId) &&
+            (currentUser.MajorId == "all" || x.MajorId == currentUser.MajorId),
             s => s
                 .Include(s => s.Major)
-                .Include(s => s.Campus));
+                .Include(s => s.Campus),
+            null,
+            cancellationToken);
+
         return supervisors.Count > 0
-            ? OperationResult.Success(_mapper.Map<IEnumerable<SupervisorResponseDTO>>(supervisors))
+            ? OperationResult.Success(mapper.Map<IEnumerable<SupervisorResponseDTO>>(supervisors))
             : OperationResult.Failure<IEnumerable<SupervisorResponseDTO>>(Error.NullValue); 
     }
 }
