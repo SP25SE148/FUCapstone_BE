@@ -195,6 +195,32 @@ public class GroupService(
             : OperationResult.Failure<IEnumerable<GroupResponse>>(Error.NullValue);
     }
 
+    public async Task<OperationResult<IEnumerable<GroupResponse>>> GetPendingGroupsForStudentJoin(CancellationToken cancellationToken)
+    {
+        var capstoneResult = await capstoneService.GetCapstoneByIdAsync(currentUser.CapstoneId);
+
+        if (capstoneResult.IsFailure)
+            return OperationResult.Failure<IEnumerable<GroupResponse>>(capstoneResult.Error);
+
+        var groups = await groupRepository.FindAsync(
+            g => g.CampusId == currentUser.CampusId &&
+            g.MajorId == currentUser.MajorId &&
+            g.CapstoneId == currentUser.CapstoneId &&
+            g.Status == GroupStatus.Pending && 
+            g.GroupMembers.Count(
+                x => x.Status == GroupMemberStatus.Accepted || 
+                x.Status == GroupMemberStatus.UnderReview) <= capstoneResult.Value.MaxMember,
+            include: g => g.Include(g => g.GroupMembers)
+                .ThenInclude(gm => gm.Student),
+            orderBy: x => x.OrderBy(g => g.GroupCode),
+            CreateSelectorForGroupResponse(),
+            cancellationToken);
+
+        return groups.Count > 0
+            ? groups.ToList()
+            : OperationResult.Failure<IEnumerable<GroupResponse>>(Error.NullValue);
+    }
+
     public async Task<OperationResult<GroupResponse>> GetGroupByIdAsync(Guid id)
     {
         var group = (await groupRepository.FindAsync(g => g.Id == id,
@@ -805,27 +831,28 @@ public class GroupService(
         return (await Task.WhenAll(tasks)).ToList();
     }
 
-    public async Task<OperationResult> CreateWeeklyEvaluation(CreateWeeklyEvaluationRequest request,
+    public async Task<OperationResult> CreateWeeklyEvaluations(CreateWeeklyEvaluationRequest request,
         CancellationToken cancellationToken)
     {
-        var week = await projectProgressWeekRepository.GetAsync(
-            x => x.Id == request.ProjectProgressWeekId, cancellationToken);
-
-        if (week == null)
-        {
-            return OperationResult.Failure(new Error("ProjectProgress.Error", "Week can not evaluation."));
-        }
-
         var progress = await projectProgressRepository.GetAsync(
-            x => x.Id == week.ProjectProgressId,
+            predicate: x => x.Id == request.ProjectProgressId,
+            include: x => x.Include(x => x.ProjectProgressWeeks
+                                .Where(w => w.Id == request.ProjectProgressWeekId)),
+            orderBy: null,
             cancellationToken);
 
         if (progress == null)
             return OperationResult.Failure(Error.NullValue);
 
-        if (!await CheckSupervisorAndStudentAreSameGroup([request.StudentId],
+        if (progress.ProjectProgressWeeks.Count == 0)
+        {
+            return OperationResult.Failure(new Error("ProjectProgress.Error", "Week can not evaluation."));
+        }
+
+        if (!await CheckSupervisorAndStudentAreSameGroup(request.EvaluationRequestForStudents.Select(x => x.StudentId).ToList(),
                 currentUser.UserCode,
                 progress.GroupId,
+                checkAllStudents: true,
                 cancellationToken))
         {
             return OperationResult.Failure(new Error("ProjectProgress.Error",
@@ -836,20 +863,19 @@ public class GroupService(
         {
             await uow.BeginTransactionAsync(cancellationToken);
 
-            week.Status = ProjectProgressWeekStatus.Done;
+            progress.ProjectProgressWeeks.Single().Status = ProjectProgressWeekStatus.Done;
 
-            var evaluation = new WeeklyEvaluation
+            request.EvaluationRequestForStudents.ForEach(e =>
             {
-                Comments = request.Comments,
-                ContributionPercentage = request.ContributionPercentage,
-                ProjectProgressWeekId = request.ProjectProgressWeekId,
-                Status = request.Status,
-                StudentId = request.StudentId,
-            };
+                progress.ProjectProgressWeeks.Single().WeeklyEvaluations.Add(new WeeklyEvaluation
+                {
+                    Comments = e.Comments,
+                    ContributionPercentage = e.ContributionPercentage,
+                    Status = e.Status,
+                    StudentId = e.StudentId,
+                });
+            });
 
-            weeklyEvaluationRepository.Insert(evaluation);
-
-            await uow.SaveChangesAsync(cancellationToken);
             await uow.CommitAsync(cancellationToken);
 
             return OperationResult.Success();
@@ -1009,9 +1035,10 @@ public class GroupService(
     }
 
     private async Task<bool> CheckSupervisorAndStudentAreSameGroup(
-        IList<string> studentIds,
+        List<string> studentIds,
         string supervisorId,
         Guid groupId,
+        bool checkAllStudents = false,
         CancellationToken cancellationToken = default)
     {
         if (studentIds is null || studentIds.Count == 0)
@@ -1028,7 +1055,22 @@ public class GroupService(
             orderBy: null,
             cancellationToken);
 
-        return group != null && group.GroupMembers.Count != 0 && group.GroupMembers.Count == studentIds.Count;
+        if (group is null)
+            return false;
+
+        if (checkAllStudents)
+        {
+            var capstoneResult = await capstoneService.GetCapstoneByIdAsync(group.CapstoneId);
+
+            if (capstoneResult.IsFailure)
+                throw new InvalidOperationException();
+
+            if (group.GroupMembers.Count < capstoneResult.Value.MinMember ||
+                group.GroupMembers.Count > capstoneResult.Value.MaxMember)
+                return false;
+        }
+
+        return group.GroupMembers.Count == studentIds.Count;
     }
 
     private async Task<bool> CheckSupervisorInGroup(
