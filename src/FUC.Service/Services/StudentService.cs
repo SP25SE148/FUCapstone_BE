@@ -12,17 +12,19 @@ using Microsoft.EntityFrameworkCore.Query;
 
 namespace FUC.Service.Services;
 
-public sealed class StudentService(IMapper mapper, 
+public sealed class StudentService(
+    IMapper mapper,
     ICurrentUser currentUser,
     IRepository<Student> studentRepository,
     IUnitOfWork<FucDbContext> uow) : IStudentService
-{    
-    public async Task<OperationResult<IEnumerable<StudentResponseDTO>>> GetAllStudentAsync(CancellationToken cancellationToken)
+{
+    public async Task<OperationResult<IEnumerable<StudentResponseDTO>>> GetAllStudentAsync(
+        CancellationToken cancellationToken)
     {
         var students = await studentRepository.FindAsync(
             x => (currentUser.CampusId == "all" || x.CampusId == currentUser.CampusId) &&
-            (currentUser.MajorId == "all" || x.MajorId == currentUser.MajorId) &&
-            (currentUser.CapstoneId == "all" || x.CapstoneId == currentUser.CapstoneId),
+                 (currentUser.MajorId == "all" || x.MajorId == currentUser.MajorId) &&
+                 (currentUser.CapstoneId == "all" || x.CapstoneId == currentUser.CapstoneId),
             CreateIncludeForStudentResponse(),
             x => x.OrderBy(x => x.Id),
             cancellationToken);
@@ -34,8 +36,8 @@ public sealed class StudentService(IMapper mapper,
     public async Task<OperationResult<StudentResponseDTO>> GetStudentByIdAsync(string id)
     {
         Student? student = await studentRepository.GetAsync(s => s.Id.ToLower().Equals(id.ToLower()),
-                true,
-                CreateIncludeForStudentResponse());
+            true,
+            CreateIncludeForStudentResponse());
         return student is not null
             ? mapper.Map<StudentResponseDTO>(student)
             : OperationResult.Failure<StudentResponseDTO>(Error.NullValue);
@@ -46,18 +48,19 @@ public sealed class StudentService(IMapper mapper,
         var student = await studentRepository.GetAsync(s => s.Id.ToLower().Equals(studentId.ToLower()),
             true,
             CreateIncludeForStudentResponse());
-        
+
         // check if student is null
-        if(student is null)
-            return OperationResult.Failure(new Error("Error.NotFound", $"Student with id {studentId} is not found !!!"));
+        if (student is null)
+            return OperationResult.Failure(new Error("Error.NotFound",
+                $"Student with id {studentId} is not found !!!"));
 
         // update student info
         student.BusinessAreaId = request.BusinessAreaId;
-        student.Mark = request.Mark;
+        student.GPA = request.GPA;
         studentRepository.Update(student);
-        
+
         await uow.SaveChangesAsync();
-        
+
         return OperationResult.Success();
     }
 
