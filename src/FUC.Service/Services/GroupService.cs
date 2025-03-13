@@ -232,13 +232,27 @@ public class GroupService(
 
         try
         {
-            group.Status = group.GroupMembers.Where(gm => gm.Status.Equals(GroupMemberStatus.Accepted)).ToList().Count <
-                           capstone.Value.MinMember ||
-                           group.GroupMembers.Where(gm => gm.Status.Equals(GroupMemberStatus.Accepted)).ToList().Count >
-                           capstone.Value.MaxMember
-                ? GroupStatus.Rejected
-                : GroupStatus.InProgress;
+            await uow.BeginTransactionAsync();
+            if (group.GroupMembers.Where(gm => gm.Status.Equals(GroupMemberStatus.Accepted)).ToList().Count <
+                capstone.Value.MinMember ||
+                group.GroupMembers.Where(gm => gm.Status.Equals(GroupMemberStatus.Accepted)).ToList().Count >
+                capstone.Value.MaxMember)
+                // TODO: Send Noti to leader group
+                return OperationResult.Failure(new Error("Error.InvalidTeamSize",
+                    $"Group {group.Id} have invalid team size !"));
 
+            group.Status = GroupStatus.InProgress;
+            var groupMembersPending = await groupMemberRepository.FindAsync(
+                gm => gm.GroupId == groupId && gm.Status == GroupMemberStatus.UnderReview,
+                null, true);
+            if (groupMembersPending.Count > 0)
+            {
+                foreach (GroupMember groupMember in groupMembersPending)
+                {
+                    groupMember.Status = GroupMemberStatus.Cancelled;
+                    groupMemberRepository.Update(groupMember);
+                }
+            }
 
             var groupCodeList = (await groupRepository.FindAsync(g => string.IsNullOrEmpty(g.GroupCode)))
                 .Select(g => g.GroupCode).ToList();
@@ -259,7 +273,7 @@ public class GroupService(
                 }
             }
 
-            await uow.SaveChangesAsync();
+            await uow.CommitAsync();
             //TODO: send notification to leader
             return OperationResult.Success();
         }
@@ -271,7 +285,8 @@ public class GroupService(
     }
 
 
-    public async Task<OperationResult<Guid>> CreateTopicRequestAsync(TopicRequest_Request request, CancellationToken cancellationToken)
+    public async Task<OperationResult<Guid>> CreateTopicRequestAsync(TopicRequest_Request request,
+        CancellationToken cancellationToken)
     {
         // TODO: Check if the create topic request is requested in invalid date
 
@@ -662,7 +677,8 @@ public class GroupService(
     public async Task<OperationResult<byte[]>> ExportProgressEvaluationOfGroup(Guid groupId,
         CancellationToken cancellationToken)
     {
-        var group = await groupRepository.GetAsync(x => x.Id == groupId && !string.IsNullOrEmpty(x.TopicCode), cancellationToken);
+        var group = await groupRepository.GetAsync(x => x.Id == groupId && !string.IsNullOrEmpty(x.TopicCode),
+            cancellationToken);
 
         ArgumentNullException.ThrowIfNull(group);
 
@@ -685,7 +701,8 @@ public class GroupService(
 
             return response == null || response.HttpStatusCode != System.Net.HttpStatusCode.OK
                 ? throw new AmazonS3Exception("Fail to get template in S3")
-                : await ProcessEvaluationProjectProgressTemplate(response, topicResult.Value, result.Value, cancellationToken);
+                : await ProcessEvaluationProjectProgressTemplate(response, topicResult.Value, result.Value,
+                    cancellationToken);
         }
         catch (AmazonS3Exception ex)
         {
@@ -957,13 +974,14 @@ public class GroupService(
             };
     }
 
-    public async Task<OperationResult> UpdateProjectProgressWeek(UpdateProjectProgressWeekRequest request, CancellationToken cancellationToken)
+    public async Task<OperationResult> UpdateProjectProgressWeek(UpdateProjectProgressWeekRequest request,
+        CancellationToken cancellationToken)
     {
         try
         {
             var week = await projectProgressWeekRepository.GetAsync(
-            x => x.Id == request.ProjectProgressWeekId,
-            cancellationToken);
+                x => x.Id == request.ProjectProgressWeekId,
+                cancellationToken);
 
             if (week is null || week.Status == ProjectProgressWeekStatus.Done)
                 return OperationResult.Failure(new Error("ProjectProgress.Error", "Update this week fail"));
@@ -1050,8 +1068,10 @@ public class GroupService(
     public async Task<OperationResult<GroupResponse>> GetGroupInformationByGroupSelfId()
     {
         // get group information
+
         var group = await groupMemberRepository.GetAsync(gm =>
-                gm.StudentId.Equals(currentUser.UserCode) && gm.Status.Equals(GroupMemberStatus.Accepted),
+                gm.StudentId.Equals(currentUser.UserCode) &&
+                gm.Status.Equals(GroupMemberStatus.Accepted),
             gm => new GroupResponse
             {
                 Id = gm.GroupId,
@@ -1061,31 +1081,34 @@ public class GroupService(
                 GroupCode = gm.Group.GroupCode,
                 TopicCode = gm.Group.TopicCode,
                 MajorName = gm.Group.MajorId,
-                SemesterName = gm.Group.SemesterId,
-                GroupMemberList = gm.Group.GroupMembers.Select(x => new GroupMemberResponse()
-                {
-                    Id = x.Id,
-                    Status = x.Status.ToString(),
-                    StudentEmail = x.Student.Email,
-                    StudentId = x.StudentId,
-                    IsLeader = x.IsLeader,
-                    StudentFullName = x.Student.FullName,
-                    GroupId = x.GroupId,
-                    CreatedBy = x.CreatedBy,
-                    CreatedDate = x.CreatedDate
-                })
+                SemesterName = gm.Group.SemesterId
             },
             gm => gm.AsSplitQuery()
                 .Include(gm => gm.Student)
-                .Include(gm => gm.Group)
-                .Include(g => g.Group.GroupMembers.Where(gm => gm.Status.Equals(GroupMemberStatus.Accepted)))
-                .ThenInclude(gm => gm.Student));
+                .Include(gm => gm.Group));
+
         if (group is null)
         {
             logger.LogError("group information is null !");
             return OperationResult.Failure<GroupResponse>(Error.NullValue);
         }
 
+        group.GroupMemberList = await groupMemberRepository.FindAsync(gm =>
+                gm.Status == GroupMemberStatus.Accepted && gm.GroupId == group.Id,
+            include: gm => gm.Include(gm => gm.Student),
+            orderBy: gm => gm.OrderBy(gm => gm.CreatedDate),
+            selector: gm => new GroupMemberResponse()
+            {
+                Id = gm.Id,
+                Status = gm.Status.ToString(),
+                StudentEmail = gm.Student.Email,
+                StudentId = gm.StudentId,
+                IsLeader = gm.IsLeader,
+                StudentFullName = gm.Student.FullName,
+                GroupId = gm.GroupId,
+                CreatedBy = gm.CreatedBy,
+                CreatedDate = gm.CreatedDate
+            });
         // get topic's group information
         group.TopicResponse = await topicService.GetTopicByTopicCode(group.TopicCode);
         return group;
@@ -1113,7 +1136,7 @@ public class GroupService(
         var tasks = groups.Select(async g =>
         {
             var topicResult = await topicService
-            .GetTopicByCode(g.TopicCode!, cancellationToken);
+                .GetTopicByCode(g.TopicCode!, cancellationToken);
 
             if (topicResult.IsFailure)
                 throw new ArgumentNullException(topicResult.Error);

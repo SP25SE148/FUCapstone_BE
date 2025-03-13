@@ -62,10 +62,9 @@ public class GroupMemberService(
 
         // get number of members group's leader
         Guid groupIdOfLeader = leader.GroupMembers.FirstOrDefault(s => s.IsLeader)!.GroupId;
-        int numOfMembers = (await _groupMemberRepository
-            .FindAsync(gm => gm.GroupId.Equals(groupIdOfLeader) &&
-                             gm.Status.Equals(GroupMemberStatus.Accepted))).Count;
-
+        int numOfMembers = (await _groupMemberRepository.FindAsync(
+            gm => gm.GroupId.Equals(groupIdOfLeader) &&
+                  gm.Status.Equals(GroupMemberStatus.Accepted))).Count();
         // Check if the team size is invalid 
         if (request.MemberEmailList.Count > leader.Capstone.MaxMember - numOfMembers)
             return OperationResult.Failure<Guid>(new Error("Error.TeamSizeInvalid", "The team size is invalid"));
@@ -86,8 +85,7 @@ public class GroupMemberService(
                 predicate: s => s.Email.ToLower().Equals(memberEmail.ToLower()) &&
                                 s.IsEligible &&
                                 !s.Status.Equals(StudentStatus.Passed) &&
-                                !s.IsDeleted &&
-                                s.BusinessAreaId != null,
+                                !s.IsDeleted,
                 include: s => s.Include(s => s.GroupMembers),
                 orderBy: default,
                 cancellationToken: default);
@@ -306,5 +304,15 @@ public class GroupMemberService(
         }
 
         return OperationResult.Success(groupMemberRequestResponse);
+    }
+
+    public async Task<OperationResult<IEnumerable<GroupMember>>> GetGroupMemberByGroupId(Guid groupId)
+    {
+        var groupMembers = await _groupMemberRepository.FindAsync(
+            gm => gm.GroupId == groupId,
+            null, true);
+        return groupMembers.Count > 0
+            ? groupMembers.ToList()
+            : OperationResult.Failure<IEnumerable<GroupMember>>(Error.NullValue);
     }
 }
