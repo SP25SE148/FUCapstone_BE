@@ -4,6 +4,7 @@ namespace FUC.Service.DTOs.ProjectProgressDTO;
 
 public class UpdateTaskRequest
 {
+    public Guid ProjectProgressId { get; set; }
     public Guid TaskId { get; set; }
     public string? KeyTask { get; set; }
     public string? Description { get; set; }

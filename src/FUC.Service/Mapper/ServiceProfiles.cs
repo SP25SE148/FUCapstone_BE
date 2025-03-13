@@ -62,5 +62,9 @@ public class ServiceProfiles : Profile
         CreateMap<UpdateProjectProgressWeekRequest, ProjectProgressWeek>()
             .ForMember(dest => dest.Id, opt => opt.MapFrom(src => src.ProjectProgressWeekId))
             .ForAllMembers(opt => opt.Condition((src, dest, srcMember) => srcMember != null));
+
+        CreateMap<SummaryProjectProgressWeekRequest, ProjectProgressWeek>()
+            .ForMember(dest => dest.Id, opt => opt.MapFrom(src => src.ProjectProgressWeekId))
+            .ForMember(dest => dest.ProgressWeekSummary, opt => opt.MapFrom(src => src.Summary));
     }
 }
