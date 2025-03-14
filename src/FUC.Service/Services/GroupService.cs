@@ -825,7 +825,7 @@ public class GroupService(
                             ContributionPercentage = e.ContributionPercentage,
                             Comments = e.Comments,
                             MeetingContent = e.ProjectProgressWeek.MeetingContent ?? "",
-                            TaskDescription = e.ProjectProgressWeek.TaskDescription,
+                            Summary = e.ProjectProgressWeek.ProgressWeekSummary,
                         }).OrderBy(x => x.WeekNumber).ToList()
                     };
 
@@ -858,6 +858,7 @@ public class GroupService(
     {
         var progress = await projectProgressRepository.GetAsync(
             predicate: x => x.Id == request.ProjectProgressId,
+            isEnabledTracking: true,
             include: x => x.Include(x => x.ProjectProgressWeeks
                 .Where(w => w.Id == request.ProjectProgressWeekId)),
             orderBy: null,
@@ -866,7 +867,7 @@ public class GroupService(
         if (progress == null)
             return OperationResult.Failure(Error.NullValue);
 
-        if (progress.ProjectProgressWeeks.Count == 0)
+        if (progress.ProjectProgressWeeks.Count == 0 || progress.ProjectProgressWeeks.Single().Status == ProjectProgressWeekStatus.Done)
         {
             return OperationResult.Failure(new Error("ProjectProgress.Error", "Week can not evaluation."));
         }
