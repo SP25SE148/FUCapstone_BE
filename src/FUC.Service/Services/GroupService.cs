@@ -1,4 +1,5 @@
-﻿using System.Linq.Expressions;
+﻿using System.Linq;
+using System.Linq.Expressions;
 using Amazon.S3;
 using Amazon.S3.Model;
 using AutoMapper;
@@ -605,6 +606,8 @@ public class GroupService(
     {
         var progress = await projectProgressRepository.GetAsync(
             x => x.Id == request.ProjectProgressId,
+            include: x => x.Include(x => x.FucTasks),
+            orderBy: null,
             cancellationToken);
 
         if (progress == null)
@@ -624,6 +627,9 @@ public class GroupService(
 
         try
         {
+            if (progress.FucTasks.Any(x => x.KeyTask == request.KeyTask))
+                return OperationResult.Failure(new Error("ProjectProgress.Error", "The key task was already taken."));
+
             progress.FucTasks.Add(new FucTask
             {
                 KeyTask = request.KeyTask,
@@ -652,7 +658,7 @@ public class GroupService(
             logger.LogError("Create Task with error: {Message}", ex.Message);
             await uow.RollbackAsync(cancellationToken);
 
-            return OperationResult.Failure(new Error("ProjectProgress.Error", "Create task fail"));
+            return OperationResult.Failure(new Error("ProjectProgress.Error", "Create task fail."));
         }
     }
 
@@ -807,45 +813,44 @@ public class GroupService(
         if (studentsInGroup.Count == 0)
             return OperationResult.Failure<List<EvaluationProjectProgressResponse>>(Error.NullValue);
 
-        var weeklyEvaluationsForGroup = await weeklyEvaluationRepository.FindAsync(
-                x => studentsInGroup.Select(x => x.Item1).ToList().Contains(x.StudentId),
-                cancellationToken);
+        var query = from eva in weeklyEvaluationRepository.GetQueryable()
+                    where studentsInGroup.Select(x => x.Item1).ToList().Contains(eva.StudentId)
+                    group eva by eva.StudentId into g
+                    select new
+                    {
+                        StudentId = g.Key,
+                        Evaluations = g.Select(e => new EvaluationWeekResponse
+                        {
+                            WeekNumber = e.ProjectProgressWeek.WeekNumber,
+                            ContributionPercentage = e.ContributionPercentage,
+                            Comments = e.Comments,
+                            MeetingContent = e.ProjectProgressWeek.MeetingContent ?? "",
+                            TaskDescription = e.ProjectProgressWeek.TaskDescription,
+                        }).OrderBy(x => x.WeekNumber).ToList()
+                    };
+
+        var weeklyEvaluationsForGroup = await query.ToListAsync(cancellationToken);
 
         if (weeklyEvaluationsForGroup.Count == 0)
             return OperationResult.Failure<List<EvaluationProjectProgressResponse>>(Error.NullValue);
 
-        var tasks = studentsInGroup.Select(async s =>
-        {
-            var weekEvaluations = await weeklyEvaluationRepository.FindAsync(
-                x => x.StudentId == s.Item1,
-                include: x => x.Include(x => x.ProjectProgressWeek),
-                orderBy: null,
-                cancellationToken);
+        var result = from student in studentsInGroup
+                     join evaluation in weeklyEvaluationsForGroup
+                     on student.Item1 equals evaluation.StudentId into evalGroup
+                     from eval in evalGroup.DefaultIfEmpty()
+                     let evaluations = eval?.Evaluations ?? new List<EvaluationWeekResponse>() 
+                     let evaluationsCount = evaluations.Count
+                     select new EvaluationProjectProgressResponse
+                     {
+                         StudentCode = student.Item1,
+                         StudentName = student.Item2,
+                         StudentRole = student.Item3 ? "leader" : "member",
+                         EvaluationWeeks = evaluations, 
+                         AverageContributionPercentage = evaluationsCount == 0 ? 0 :
+                            evaluations.Sum(x => x.ContributionPercentage) / evaluationsCount 
+                     };
 
-            if (weekEvaluations == null || weekEvaluations.Count == 0)
-                ArgumentNullException.ThrowIfNull(weekEvaluations);
-
-            var evaluationWeeks = weekEvaluations.Select(e => new EvaluationWeekResponse
-            {
-                WeekNumber = e.ProjectProgressWeek.WeekNumber,
-                ContributionPercentage = e.ContributionPercentage,
-                Comments = e.Comments,
-                MeetingContent = e.ProjectProgressWeek.MeetingContent ?? "",
-                TaskDescription = e.ProjectProgressWeek.TaskDescription,
-            }).OrderBy(x => x.WeekNumber).ToList();
-
-            return new EvaluationProjectProgressResponse
-            {
-                StudentCode = s.Item1,
-                StudentName = s.Item2,
-                StudentRole = s.Item3 ? "leader" : "member",
-                EvaluationWeeks = evaluationWeeks,
-                AverageContributionPercentage =
-                    evaluationWeeks.Sum(x => x.ContributionPercentage) / evaluationWeeks.Count
-            };
-        });
-
-        return (await Task.WhenAll(tasks)).ToList();
+        return result.ToList();
     }
 
     public async Task<OperationResult> CreateWeeklyEvaluations(CreateWeeklyEvaluationRequest request,
