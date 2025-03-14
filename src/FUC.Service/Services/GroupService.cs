@@ -790,7 +790,7 @@ public class GroupService(
     public async Task<OperationResult<List<EvaluationProjectProgressResponse>>> GetProgressEvaluationOfGroup(
         Guid groupId, CancellationToken cancellationToken)
     {
-        if (await CheckSupervisorInGroup(currentUser.UserCode, groupId, cancellationToken))
+        if (!await CheckSupervisorInGroup(currentUser.UserCode, groupId, cancellationToken))
             return OperationResult.Failure<List<EvaluationProjectProgressResponse>>(new Error("ProjectProgress.Error",
                 "This supervisor do not have permission."));
 
