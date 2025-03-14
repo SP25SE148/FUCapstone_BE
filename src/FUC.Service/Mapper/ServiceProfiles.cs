@@ -40,7 +40,9 @@ public class ServiceProfiles : Profile
             .ForMember(s => s.CampusName, opt => opt.MapFrom(s => s.Campus.Name))
             .ForMember(s => s.Status, opt => opt.MapFrom(s => s.Status.ToString()))
             .ForMember(s => s.BusinessArea, opt => opt.MapFrom(s => s.BusinessArea.Name))
-            .ForMember(s => s.IsHaveBeenJoinGroup, opt => opt.MapFrom(s => s.GroupMembers.Any(gm => gm.Status.Equals(GroupMemberStatus.Accepted))));
+            .ForMember(s => s.Gpa, opt => opt.MapFrom(s => s.GPA))
+            .ForMember(s => s.IsHaveBeenJoinGroup,
+                opt => opt.MapFrom(s => s.GroupMembers.Any(gm => gm.Status.Equals(GroupMemberStatus.Accepted))));
 
 
         // Supervisor mapping
