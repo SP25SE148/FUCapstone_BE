@@ -210,7 +210,7 @@ public class GroupController(
 
     [Authorize(Roles = UserRoles.Supervisor)]
     [HttpPost("progress/import")]
-    public async Task<IActionResult> ImportProjectProgress(ImportProjectProgressRequest request)
+    public async Task<IActionResult> ImportProjectProgress([FromForm] ImportProjectProgressRequest request)
     {
         var result = await groupService.ImportProjectProgressFile(request, default);
 
@@ -219,7 +219,7 @@ public class GroupController(
 
     [Authorize(Roles = UserRoles.Student)]
     [HttpPost("progress/tasks")]
-    public async Task<IActionResult> CreateProjectProgressTask(CreateTaskRequest request)
+    public async Task<IActionResult> CreateProjectProgressTask([FromBody] CreateTaskRequest request)
     {
         var result = await groupService.CreateTask(request, default);
 

@@ -807,6 +807,13 @@ public class GroupService(
         if (studentsInGroup.Count == 0)
             return OperationResult.Failure<List<EvaluationProjectProgressResponse>>(Error.NullValue);
 
+        var weeklyEvaluationsForGroup = await weeklyEvaluationRepository.FindAsync(
+                x => studentsInGroup.Select(x => x.Item1).ToList().Contains(x.StudentId),
+                cancellationToken);
+
+        if (weeklyEvaluationsForGroup.Count == 0)
+            return OperationResult.Failure<List<EvaluationProjectProgressResponse>>(Error.NullValue);
+
         var tasks = studentsInGroup.Select(async s =>
         {
             var weekEvaluations = await weeklyEvaluationRepository.FindAsync(
