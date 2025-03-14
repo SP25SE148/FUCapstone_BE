@@ -826,6 +826,7 @@ public class GroupService(
                             Comments = e.Comments,
                             MeetingContent = e.ProjectProgressWeek.MeetingContent ?? "",
                             Summary = e.ProjectProgressWeek.ProgressWeekSummary,
+                            Status = e.Status.ToString()
                         }).OrderBy(x => x.WeekNumber).ToList()
                     };
 

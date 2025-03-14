@@ -1,4 +1,6 @@
-﻿namespace FUC.Service.DTOs.ProjectProgressDTO;
+﻿using FUC.Data.Enums;
+
+namespace FUC.Service.DTOs.ProjectProgressDTO;
 
 public class EvaluationProjectProgressResponse
 {
@@ -16,5 +18,6 @@ public class EvaluationWeekResponse
     public string? Summary { get; set; }
     public string? MeetingContent { get; set; }
     public string? Comments { get; set; }
+    public string Status { get; set; }
 }
 
