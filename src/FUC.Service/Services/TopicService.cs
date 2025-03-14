@@ -41,6 +41,7 @@ public class TopicService(
     IIntegrationEventLogService integrationEventLogService) : ITopicService
 {
     private const int MaxTopicsForCoSupervisors = 3;
+    private const int MaxTopicAppraisalsForTopic = 2;
 
     public async Task<OperationResult<Topic>> GetTopicEntityById(Guid topicId, CancellationToken cancellationToken)
     {
@@ -746,8 +747,9 @@ public class TopicService(
         IList<Topic> topicList = await topicRepository
             .FindAsync(t => t.Status == TopicStatus.Pending &&
                             t.CampusId == currentUser.CampusId &&
+                            t.CapstoneId == currentUser.CapstoneId &&
                             t.SemesterId == currentSemester.Value.Id,
-                t => t.Include(t => t.MainSupervisor)
+                t => t.Include(t => t.TopicAppraisals)
                       .Include(t => t.CoSupervisors)
                       .Include(t => t.Capstone));
 
@@ -771,24 +773,24 @@ public class TopicService(
         var supervisorAssignments = supervisorIdList.ToDictionary(s => s, _ => 0);
         var topicAppraisalList = new List<TopicAppraisal>();
 
-        int supervisorIndex = 0;
-        var assignedSupervisors = new HashSet<string>();
-
         foreach (var topic in topicList)
         {
-            assignedSupervisors.Clear();
+            var assignedSupervisors = new HashSet<string>();
 
-            while (assignedSupervisors.Count < 2 && supervisorAssignments.Count > 0)
+            while (assignedSupervisors.Count < MaxTopicAppraisalsForTopic)
             {
-                var supervisorId = supervisorIdList[supervisorIndex];
+                var availableSupervisors = supervisorAssignments
+                    .Where(s => s.Key != topic.MainSupervisorId && !assignedSupervisors.Contains(s.Key))
+                    .OrderBy(s => s.Value) // Pick the least assigned
+                    .ToList();
 
-                if (supervisorId != topic.MainSupervisorId && !assignedSupervisors.Contains(supervisorId))
-                {
-                    assignedSupervisors.Add(supervisorId);
-                    supervisorAssignments[supervisorId]++;
-                }
+                if (availableSupervisors.Count == 0)
+                    break; // No more available supervisors
 
-                supervisorIndex = (supervisorIndex + 1) % supervisorIdList.Count;
+                var supervisorId = availableSupervisors[0].Key;
+
+                assignedSupervisors.Add(supervisorId);
+                supervisorAssignments[supervisorId]++;
             }
 
             topicAppraisalList.AddRange(assignedSupervisors.Select(s => new TopicAppraisal
@@ -802,6 +804,64 @@ public class TopicService(
         await unitOfWork.SaveChangesAsync();
 
         return OperationResult.Success();
+    }
+
+    public async Task<OperationResult> AssignSupervisorForAppraisalTopic(AssignSupervisorAppraisalTopicRequest request, CancellationToken cancellationToken)
+    {
+        try
+        {
+            var currentSemester = await semesterService.GetCurrentSemesterAsync();
+
+            if (currentSemester.IsFailure)
+                return OperationResult.Failure(currentSemester.Error);
+
+            var topic = await topicRepository.GetAsync(x => x.Id == request.TopicId,
+                    include: x => x.Include(x => x.TopicAppraisals)
+                            .Include(x => x.Capstone),
+                    orderBy: null,
+                    cancellationToken);
+
+            if (topic == null || topic.Status != TopicStatus.Pending)
+                return OperationResult.Failure(Error.NullValue);
+
+            if (topic.MainSupervisorId == request.SupervisorId)
+                return OperationResult.Failure(new Error("Topic.Error", "Can not assign this supervisor for his/her topic."));
+
+            if (topic.SemesterId != currentSemester.Value.Id ||
+                topic.CampusId != currentUser.CampusId ||
+                topic.CapstoneId != currentUser.CapstoneId)
+            {
+                return OperationResult.Failure(new Error("Topic.Error", "You can not assign this topic."));
+            }
+
+            var assignedSupvisor = await supervisorRepository.GetAsync(
+                x => x.Id == request.SupervisorId &&
+                x.IsAvailable,
+                cancellationToken);
+
+            if (assignedSupvisor is null)
+                return OperationResult.Failure(Error.NullValue);
+
+            if (topic.CampusId != assignedSupvisor.CampusId || topic.Capstone.MajorId != currentUser.MajorId)
+            {
+                return OperationResult.Failure(new Error("Topic.Error", "You can not assign this superviosr for topic."));
+            }
+
+            topic.TopicAppraisals.Add(new TopicAppraisal
+            {
+                SupervisorId = request.SupervisorId
+            });
+
+            await unitOfWork.SaveChangesAsync(cancellationToken);
+
+            return OperationResult.Success();
+        }
+        catch (Exception ex)
+        {
+            logger.LogError("Fail to assign appraisal for topic {Id} with error {Message}", request.TopicId, ex.Message);
+
+            return OperationResult.Failure(new Error("Topic.Error", "Fail to assign topic appraisal."));
+        }
     }
 
     public async Task<OperationResult<List<TopicAppraisalResponse>>> GetTopicAppraisalByUserId(

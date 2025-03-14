@@ -1,10 +1,8 @@
 using FUC.Common.Shared;
 using FUC.Data.Entities;
 using FUC.Service.DTOs.BusinessAreaDTO;
-using FUC.Service.DTOs.GroupDTO;
 using FUC.Service.DTOs.TopicAppraisalDTO;
 using FUC.Service.DTOs.TopicDTO;
-using FUC.Service.DTOs.TopicRequestDTO;
 
 namespace FUC.Service.Abstractions;
 
@@ -26,6 +24,7 @@ public interface ITopicService
     Task<OperationResult> SemanticTopic(Guid topicId, bool withCurrentSemester, CancellationToken cancellationToken);
     Task<OperationResult<string>> PresentTopicPresignedUrl(Guid topicId, CancellationToken cancellationToken);
     Task<OperationResult> AssignTopicAppraisalForAvailableSupervisors(IReadOnlyList<string> supervisorEmail);
+    Task<OperationResult> AssignSupervisorForAppraisalTopic(AssignSupervisorAppraisalTopicRequest request, CancellationToken cancellationToken);
     Task<OperationResult<List<TopicAppraisalResponse>>> GetTopicAppraisalByUserId(TopicAppraisalBaseRequest request);
     Task<OperationResult> AppraisalTopic(AppraisalTopicRequest request, CancellationToken cancellationToken);
     Task<OperationResult<Topic>> GetTopicEntityById(Guid topicId, CancellationToken cancellationToken);
