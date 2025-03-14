@@ -635,6 +635,8 @@ public class GroupService(
                 DueDate = request.DueDate,
             });
 
+            projectProgressRepository.Update(progress);
+
             await uow.SaveChangesAsync(cancellationToken);
 
             // TODO: Send notification
@@ -686,7 +688,7 @@ public class GroupService(
         {
             mapper.Map(request, task);
 
-            fucTaskRepository.Update(task);
+            projectProgressRepository.Update(progress);
 
             await uow.SaveChangesAsync(cancellationToken);
 
@@ -919,6 +921,8 @@ public class GroupService(
                 return OperationResult.Failure(new Error("ProjectProgres.Error", "You can not summary this week."));
 
             mapper.Map(request, progress.ProjectProgressWeeks.Single());
+
+            projectProgressRepository.Update(progress);
 
             await uow.SaveChangesAsync(cancellationToken);
 
