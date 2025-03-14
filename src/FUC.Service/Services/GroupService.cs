@@ -885,6 +885,8 @@ public class GroupService(
                 });
             });
 
+            projectProgressRepository.Update(progress);
+
             await uow.CommitAsync(cancellationToken);
 
             return OperationResult.Success();
