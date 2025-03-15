@@ -9,7 +9,6 @@ public class CreateTaskRequest
     public string Summary { get; set; }
     public required string AssigneeId { get; set; }
     public required Guid ProjectProgressId { get; set; }
-    public FucTaskStatus Status { get; set; }
     public Priority Priority { get; set; }
     public DateTime DueDate { get; set; } 
 }

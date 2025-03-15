@@ -640,6 +640,7 @@ public class GroupService(
                 ReporterId = currentUser.UserCode,
                 Description = request.Description,
                 DueDate = request.DueDate,
+                Summary = request.Summary,
             });
 
             projectProgressRepository.Update(progress);
