@@ -2,6 +2,7 @@
 
 public class UpdateProjectProgressWeekRequest
 {
+    public Guid ProjectProgressId { get; set; }
     public Guid ProjectProgressWeekId { get; set; }
     public string TaskDescription { get; set; }
     public string? MeetingLocation { get; set; }

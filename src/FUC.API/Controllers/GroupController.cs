@@ -217,6 +217,15 @@ public class GroupController(
         return result.IsSuccess ? Ok(result) : HandleFailure(result);
     }
 
+    [Authorize(Roles = UserRoles.Supervisor)]
+    [HttpPut("progress/week")]
+    public async Task<IActionResult> UpdateProjectProgress([FromBody] UpdateProjectProgressWeekRequest request)
+    {
+        var result = await groupService.UpdateProjectProgressWeek(request, default);
+
+        return result.IsSuccess ? Ok(result) : HandleFailure(result);
+    }
+
     [Authorize(Roles = UserRoles.Student)]
     [HttpPost("progress/tasks")]
     public async Task<IActionResult> CreateProjectProgressTask([FromBody] CreateTaskRequest request)

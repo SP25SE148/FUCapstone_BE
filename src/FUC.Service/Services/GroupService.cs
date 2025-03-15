@@ -606,6 +606,7 @@ public class GroupService(
     {
         var progress = await projectProgressRepository.GetAsync(
             x => x.Id == request.ProjectProgressId,
+            isEnabledTracking: true,
             include: x => x.Include(x => x.FucTasks),
             orderBy: null,
             cancellationToken);
@@ -666,6 +667,7 @@ public class GroupService(
     {
         var progress = await projectProgressRepository.GetAsync(
                 x => x.Id == request.ProjectProgressId,
+                isEnabledTracking: true,
                 include: x => x.Include(x => x.FucTasks.Where(t => t.Id == request.TaskId)),
                 orderBy: null,
                 cancellationToken
@@ -1065,16 +1067,27 @@ public class GroupService(
     {
         try
         {
-            var week = await projectProgressWeekRepository.GetAsync(
-                x => x.Id == request.ProjectProgressWeekId,
-                cancellationToken);
+            var progress = await projectProgressRepository.GetAsync(
+            x => x.Id == request.ProjectProgressId,
+            isEnabledTracking: true,
+            include: x => x.Include(w => w.ProjectProgressWeeks
+                    .Where(w => w.Id == request.ProjectProgressWeekId)),
+            orderBy: null,
+            cancellationToken);
 
-            if (week is null || week.Status == ProjectProgressWeekStatus.Done)
-                return OperationResult.Failure(new Error("ProjectProgress.Error", "Update this week fail"));
+            if (progress == null || progress.ProjectProgressWeeks.Single() == null)
+                return OperationResult.Failure(Error.NullValue);
 
-            mapper.Map(request, week);
+            if (!await CheckSupervisorInGroup(currentUser.UserCode, progress.GroupId, cancellationToken))
+                return OperationResult.Failure(new Error("ProjectProgres.Error", "You can not update this week."));
 
-            projectProgressWeekRepository.Update(week);
+
+            if (progress.ProjectProgressWeeks.Single().Status == ProjectProgressWeekStatus.Done)
+                return OperationResult.Failure(new Error("ProjectProgress.Error", "This week is already evaluation."));
+
+            mapper.Map(request, progress.ProjectProgressWeeks.Single());
+
+            projectProgressRepository.Update(progress);
 
             await uow.SaveChangesAsync(cancellationToken);
 

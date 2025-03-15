@@ -14,6 +14,10 @@ public class FucTaskConfiguration : IEntityTypeConfiguration<FucTask>
 
         builder.HasKey(t => t.Id);
 
+        builder.Property(t => t.AssigneeId).IsRequired();
+
+        builder.Property(t => t.ReporterId).IsRequired();
+
         builder.Property(t => t.KeyTask).IsRequired();
 
         builder.Property(t => t.Description).IsRequired();

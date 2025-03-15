@@ -42,4 +42,6 @@ public interface IGroupService
 
     Task<OperationResult<List<GroupManageBySupervisorResponse>>> GetGroupsWhichMentorBySupervisor(
         CancellationToken cancellationToken);
+    Task<OperationResult> UpdateProjectProgressWeek(UpdateProjectProgressWeekRequest request,
+        CancellationToken cancellationToken);
 }
