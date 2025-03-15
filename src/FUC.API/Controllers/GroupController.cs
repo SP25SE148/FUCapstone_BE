@@ -255,8 +255,8 @@ public class GroupController(
     }
 
     [Authorize(Roles = $"{UserRoles.Student},{UserRoles.Supervisor}")]
-    [HttpGet("progress/tasks")]
-    public async Task<IActionResult> GetProjectProgressTasks([FromBody] Guid projectProgressId)
+    [HttpGet("progress/{projectProgressId}/tasks")]
+    public async Task<IActionResult> GetProjectProgressTasks(Guid projectProgressId)
     {
         var result = await groupService.GetTasks(projectProgressId, default);
 
