@@ -130,6 +130,25 @@ public class GroupController(
             : HandleFailure(result);
     }
 
+    [HttpPost("join-group-request")]
+    [Authorize(Roles = UserRoles.Student)]
+    public async Task<IActionResult> CreateJoinGroupRequestAsync([FromBody] CreateJoinGroupRequestByMember request)
+    {
+        var result = await groupMemberService.CreateJoinGroupRequestByMemberAsync(request);
+        return result.IsSuccess
+            ? Ok(result)
+            : HandleFailure(result);
+    }
+
+    [HttpPut("update-join-group-request")]
+    [Authorize(Roles = UserRoles.Student)]
+    public async Task<IActionResult> UpdateJoinGroupRequestAsync([FromBody] UpdateJoinGroupRequest request)
+    {
+        var result = await groupMemberService.UpdateJoinGroupRequestAsync(request);
+        return result.IsSuccess
+            ? Ok(result)
+            : HandleFailure(result);
+    }
 
     [Authorize(Roles = nameof(UserRoles.Student))]
     [HttpPut("update-group-member-status")]

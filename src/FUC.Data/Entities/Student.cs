@@ -24,4 +24,5 @@ public sealed class Student : AuditableSoftDeleteEntity
     public ICollection<FucTask> FucTasks { get; set; } = new List<FucTask>();
     public ICollection<FucTask> ReportFucTasks { get; set; } = new List<FucTask>();
     public ICollection<WeeklyEvaluation> WeeklyEvaluations { get; set; } = new List<WeeklyEvaluation>();
+    public ICollection<JoinGroupRequest> JoinGroupRequests { get; set; } = new List<JoinGroupRequest>();
 }

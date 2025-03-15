@@ -12,8 +12,8 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace FUC.Data.Migrations
 {
     [DbContext(typeof(FucDbContext))]
-    [Migration("20250315042238_init")]
-    partial class init
+    [Migration("20250315065508_Dbv0.0.1")]
+    partial class Dbv001
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -58,7 +58,7 @@ namespace FUC.Data.Migrations
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uuid")
-                        .HasDefaultValue(new Guid("031ed978-8640-4b1e-9243-8adf5f270463"));
+                        .HasDefaultValue(new Guid("9c397397-a4c8-4d4f-9d7a-d339a096aaee"));
 
                     b.Property<string>("CreatedBy")
                         .IsRequired()
@@ -193,7 +193,7 @@ namespace FUC.Data.Migrations
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uuid")
-                        .HasDefaultValue(new Guid("cee8843b-cfe0-4f85-a802-854f81ff68cf"));
+                        .HasDefaultValue(new Guid("7f5a4819-623d-42ed-a100-77f0392a9f0c"));
 
                     b.Property<string>("CreatedBy")
                         .IsRequired()
@@ -348,7 +348,7 @@ namespace FUC.Data.Migrations
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uuid")
-                        .HasDefaultValue(new Guid("2486f677-a0f9-4831-ac64-c1829973e18f"));
+                        .HasDefaultValue(new Guid("ed4028ff-9e34-471b-b06c-65fb34626439"));
 
                     b.Property<string>("CampusId")
                         .IsRequired()
@@ -424,7 +424,7 @@ namespace FUC.Data.Migrations
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uuid")
-                        .HasDefaultValue(new Guid("d98ce047-ebfc-4206-8f92-8ba6795d4875"));
+                        .HasDefaultValue(new Guid("7c799444-b152-4421-9897-3f819d86ee4f"));
 
                     b.Property<string>("CreatedBy")
                         .IsRequired()
@@ -437,9 +437,6 @@ namespace FUC.Data.Migrations
                         .HasColumnType("uuid");
 
                     b.Property<bool>("IsLeader")
-                        .HasColumnType("boolean");
-
-                    b.Property<bool>("IsRequestFromLeader")
                         .HasColumnType("boolean");
 
                     b.Property<string>("Status")
@@ -465,6 +462,47 @@ namespace FUC.Data.Migrations
                     b.HasIndex("StudentId");
 
                     b.ToTable("GroupMember", (string)null);
+                });
+
+            modelBuilder.Entity("FUC.Data.Entities.JoinGroupRequest", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("CreatedBy")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<DateTime>("CreatedDate")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid>("GroupId")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("text")
+                        .HasDefaultValue("Pending");
+
+                    b.Property<string>("StudentId")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("UpdatedBy")
+                        .HasColumnType("text");
+
+                    b.Property<DateTime?>("UpdatedDate")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("GroupId");
+
+                    b.HasIndex("StudentId");
+
+                    b.ToTable("JoinGroupRequest", (string)null);
                 });
 
             modelBuilder.Entity("FUC.Data.Entities.Major", b =>
@@ -650,7 +688,7 @@ namespace FUC.Data.Migrations
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uuid")
-                        .HasDefaultValue(new Guid("1d98f87c-c5a5-4f69-ae8e-2cfd75484242"));
+                        .HasDefaultValue(new Guid("3db9fa72-923a-42cf-a50a-190d690080dd"));
 
                     b.Property<int>("Attempt")
                         .HasColumnType("integer");
@@ -723,7 +761,7 @@ namespace FUC.Data.Migrations
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uuid")
-                        .HasDefaultValue(new Guid("a9ed3992-fd93-4c41-ba95-2810cf7b4f98"));
+                        .HasDefaultValue(new Guid("fce23178-8659-4f4e-a119-16df23d995dd"));
 
                     b.Property<int>("Attempt")
                         .HasColumnType("integer");
@@ -783,7 +821,7 @@ namespace FUC.Data.Migrations
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uuid")
-                        .HasDefaultValue(new Guid("53e1b876-24bd-40eb-b674-df24c789041f"));
+                        .HasDefaultValue(new Guid("cd85e567-aa41-4b83-aec1-e3711bfc7f19"));
 
                     b.Property<string>("Comment")
                         .HasMaxLength(1000)
@@ -1003,7 +1041,7 @@ namespace FUC.Data.Migrations
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uuid")
-                        .HasDefaultValue(new Guid("a2ef7fe5-ab0d-4aa9-ba2a-bdf570b78bcc"));
+                        .HasDefaultValue(new Guid("3b7d2259-83c2-48ef-a0ce-e016976c3578"));
 
                     b.Property<string>("CreatedBy")
                         .IsRequired()
@@ -1045,7 +1083,7 @@ namespace FUC.Data.Migrations
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uuid")
-                        .HasDefaultValue(new Guid("ba8ca0c8-77e6-4dbc-ae9e-1c757b3dae65"));
+                        .HasDefaultValue(new Guid("8de19ea5-1539-4d49-98c0-8b2cf635d7b5"));
 
                     b.Property<string>("Abbreviation")
                         .IsRequired()
@@ -1150,7 +1188,7 @@ namespace FUC.Data.Migrations
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uuid")
-                        .HasDefaultValue(new Guid("f76dd3a9-e39d-44c3-80c4-74e4627b879d"));
+                        .HasDefaultValue(new Guid("8c0b3995-851c-43ac-85aa-088197aa81e6"));
 
                     b.Property<string>("AnalysisResult")
                         .IsRequired()
@@ -1159,7 +1197,7 @@ namespace FUC.Data.Migrations
                     b.Property<DateTime>("CreatedDate")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("timestamp with time zone")
-                        .HasDefaultValue(new DateTime(2025, 3, 15, 4, 22, 37, 949, DateTimeKind.Utc).AddTicks(7350));
+                        .HasDefaultValue(new DateTime(2025, 3, 15, 6, 55, 7, 665, DateTimeKind.Utc).AddTicks(398));
 
                     b.Property<string>("ProcessedBy")
                         .IsRequired()
@@ -1180,7 +1218,7 @@ namespace FUC.Data.Migrations
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uuid")
-                        .HasDefaultValue(new Guid("f3ff1a5f-fcbe-4223-9916-88232fd4d7a7"));
+                        .HasDefaultValue(new Guid("eb095e82-d177-434c-aed5-17a5302ff9ad"));
 
                     b.Property<string>("AppraisalComment")
                         .HasColumnType("text");
@@ -1231,7 +1269,7 @@ namespace FUC.Data.Migrations
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uuid")
-                        .HasDefaultValue(new Guid("c9377423-6f72-45e8-a486-54a5dd19b8d5"));
+                        .HasDefaultValue(new Guid("3065de35-d87d-498a-8bf2-0e7a680e5f09"));
 
                     b.Property<string>("CreatedBy")
                         .IsRequired()
@@ -1460,6 +1498,25 @@ namespace FUC.Data.Migrations
 
                     b.HasOne("FUC.Data.Entities.Student", "Student")
                         .WithMany("GroupMembers")
+                        .HasForeignKey("StudentId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("Group");
+
+                    b.Navigation("Student");
+                });
+
+            modelBuilder.Entity("FUC.Data.Entities.JoinGroupRequest", b =>
+                {
+                    b.HasOne("FUC.Data.Entities.Group", "Group")
+                        .WithMany("JoinGroupRequests")
+                        .HasForeignKey("GroupId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("FUC.Data.Entities.Student", "Student")
+                        .WithMany("JoinGroupRequests")
                         .HasForeignKey("StudentId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
@@ -1795,6 +1852,8 @@ namespace FUC.Data.Migrations
                 {
                     b.Navigation("GroupMembers");
 
+                    b.Navigation("JoinGroupRequests");
+
                     b.Navigation("ProjectProgress")
                         .IsRequired();
 
@@ -1854,6 +1913,8 @@ namespace FUC.Data.Migrations
                     b.Navigation("FucTasks");
 
                     b.Navigation("GroupMembers");
+
+                    b.Navigation("JoinGroupRequests");
 
                     b.Navigation("ReportFucTasks");
 

@@ -1,4 +1,5 @@
 ﻿using AutoMapper;
+using FluentValidation.Validators;
 using FUC.Common.Shared;
 using FUC.Data;
 using FUC.Data.Data;
@@ -12,16 +13,19 @@ namespace FUC.Service.Services;
 public sealed class CapstoneService(IUnitOfWork<FucDbContext> uow, IMapper mapper) : ICapstoneService
 {
     private readonly IUnitOfWork<FucDbContext> _uow = uow ?? throw new ArgumentNullException(nameof(uow));
-    private readonly IRepository<Capstone> _capstoneRepository = uow.GetRepository<Capstone>() ?? throw new ArgumentNullException(nameof(uow));
+
+    private readonly IRepository<Capstone> _capstoneRepository =
+        uow.GetRepository<Capstone>() ?? throw new ArgumentNullException(nameof(uow));
+
     private readonly IMapper _mapper = mapper ?? throw new ArgumentNullException(nameof(mapper));
 
     public async Task<OperationResult<string>> CreateCapstoneAsync(CreateCapstoneRequest request)
     {
         // Check if Capstone code exists
         Capstone? existingCapstone = await _capstoneRepository.GetAsync(c =>
-            c.Id.Equals(request.Id),
+                c.Id.Equals(request.Id),
             cancellationToken: default);
-        
+
         if (existingCapstone is not null)
             return OperationResult.Failure<string>(new Error("Error.DuplicateValue", "The capstone id is duplicate!"));
 
@@ -106,5 +110,11 @@ public sealed class CapstoneService(IUnitOfWork<FucDbContext> uow, IMapper mappe
         _capstoneRepository.Update(capstone);
         await _uow.SaveChangesAsync();
         return OperationResult.Success();
+    }
+
+    public async Task<OperationResult<int>> GetMaxMemberByCapstoneId(string capstoneId)
+    {
+        var capstone = await _capstoneRepository.GetAsync(c => c.Id.Equals(capstoneId), default);
+        return capstone?.MaxMember ?? OperationResult.Failure<int>(Error.NullValue);
     }
 }
