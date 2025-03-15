@@ -212,7 +212,7 @@ public class GroupService(
                  g.GroupMembers.Count(
                      x => x.Status == GroupMemberStatus.Accepted ||
                           x.Status == GroupMemberStatus.UnderReview) <= capstoneResult.Value.MaxMember,
-            include: g => g.Include(g => g.GroupMembers)
+            include: g => g.Include(g => g.GroupMembers.Where(s => s.Status == GroupMemberStatus.Accepted))
                 .ThenInclude(gm => gm.Student),
             orderBy: x => x.OrderBy(g => g.GroupCode),
             CreateSelectorForGroupResponse(),
@@ -311,7 +311,6 @@ public class GroupService(
         }
     }
 
-
     public async Task<OperationResult<Guid>> CreateTopicRequestAsync(TopicRequest_Request request,
         CancellationToken cancellationToken)
     {
@@ -404,7 +403,8 @@ public class GroupService(
                         ? tr.Supervisor.FullName.Contains(request.SearchTerm)
                         : tr.Group.GroupCode.Contains(request.SearchTerm)),
                 tr =>
-                    tr.Include(tr => tr.Group)
+                    tr.AsSplitQuery()
+                        .Include(tr => tr.Group)
                         .ThenInclude(g => g.GroupMembers.Where(gm => gm.IsLeader))
                         .ThenInclude(gm => gm.Student)
                         .Include(tr => tr.Topic)
@@ -489,7 +489,6 @@ public class GroupService(
         }
     }
 
-
     private static Func<IQueryable<Group>, IIncludableQueryable<Group, object>> CreateIncludeForGroupResponse()
     {
         return g =>
@@ -509,6 +508,7 @@ public class GroupService(
             MajorName = x.MajorId,
             SemesterName = x.SemesterId,
             TopicCode = x.TopicCode,
+            AverageGPA = x.GroupMembers.Sum(x => x.Student.GPA) / x.GroupMembers.Count(x => x.Status == GroupMemberStatus.Accepted),
             GroupMemberList = x.GroupMembers.Select(gm => new GroupMemberResponse
             {
                 Id = gm.Id,
@@ -519,11 +519,11 @@ public class GroupService(
                 GroupId = gm.GroupId,
                 CreatedBy = gm.CreatedBy,
                 CreatedDate = gm.CreatedDate,
-                StudentEmail = gm.Student.Email
-            })
+                StudentEmail = gm.Student.Email,
+                GPA = gm.Student.GPA,
+            }) 
         };
     }
-
 
     public async Task<OperationResult> ImportProjectProgressFile(ImportProjectProgressRequest request,
         CancellationToken cancellationToken)

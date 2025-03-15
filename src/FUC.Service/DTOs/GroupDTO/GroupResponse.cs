@@ -12,6 +12,7 @@ public sealed record GroupResponse
     public string CampusName { get; init; } = string.Empty;
     public string? TopicCode { get; init; } = "undefined";
     public string? GroupCode { get; init; } = string.Empty;
+    public float AverageGPA { get; set; }
     public string Status { get; init; } = string.Empty;
     public IEnumerable<GroupMemberResponse> GroupMemberList { get; set; } = new List<GroupMemberResponse>();
     public TopicResponse? TopicResponse { get; set; } = null!;
