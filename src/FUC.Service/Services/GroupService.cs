@@ -498,30 +498,36 @@ public class GroupService(
 
     private static Expression<Func<Group, GroupResponse>> CreateSelectorForGroupResponse()
     {
-        return x => new GroupResponse
+        return g => new GroupResponse
         {
-            Id = x.Id,
-            Status = x.Status.ToString(),
-            GroupCode = x.GroupCode,
-            CampusName = x.CampusId,
-            CapstoneName = x.CapstoneId,
-            MajorName = x.MajorId,
-            SemesterName = x.SemesterId,
-            TopicCode = x.TopicCode,
-            AverageGPA = x.GroupMembers.Sum(x => x.Student.GPA) / x.GroupMembers.Count(x => x.Status == GroupMemberStatus.Accepted),
-            GroupMemberList = x.GroupMembers.Select(gm => new GroupMemberResponse
+            Id = g.Id,
+            Status = g.Status.ToString(),
+            GroupCode = g.GroupCode,
+            CampusName = g.CampusId,
+            CapstoneName = g.CapstoneId,
+            MajorName = g.MajorId,
+            SemesterName = g.SemesterId,
+            TopicCode = g.TopicCode,
+            AverageGPA = g.GroupMembers.Any(m => m.Status == GroupMemberStatus.Accepted)
+                ? g.GroupMembers.Where(m => m.Status == GroupMemberStatus.Accepted)
+                               .Select(m => m.Student.GPA)
+                               .Average()
+                : 0, // Prevent division by zero
+            GroupMemberList = g.GroupMembers
+                .Where(m => m.Status == GroupMemberStatus.Accepted)
+                .Select(m => new GroupMemberResponse
             {
-                Id = gm.Id,
-                StudentId = gm.StudentId,
-                StudentFullName = gm.Student.FullName,
-                IsLeader = gm.IsLeader,
-                Status = gm.Status.ToString(),
-                GroupId = gm.GroupId,
-                CreatedBy = gm.CreatedBy,
-                CreatedDate = gm.CreatedDate,
-                StudentEmail = gm.Student.Email,
-                GPA = gm.Student.GPA,
-            }) 
+                Id = m.Id,
+                StudentId = m.StudentId,
+                StudentFullName = m.Student.FullName,
+                IsLeader = m.IsLeader,
+                Status = m.Status.ToString(),
+                GroupId = m.GroupId,
+                CreatedBy = m.CreatedBy,
+                CreatedDate = m.CreatedDate,
+                StudentEmail = m.Student.Email,
+                GPA = m.Student.GPA,
+            })
         };
     }
 
