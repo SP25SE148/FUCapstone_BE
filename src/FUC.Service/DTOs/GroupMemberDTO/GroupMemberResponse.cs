@@ -10,8 +10,7 @@ public sealed class GroupMemberResponse
     public string StudentEmail { get; set; }
     public string StudentFullName { get; set; }
     public float GPA { get; set; }
-    public bool IsLeader { get; set; }
-    public bool IsRequestFromLeader { get; set; }
+    public bool IsLeader { get; set; } = false;
     public string CreatedBy { get; set; }
     public DateTime CreatedDate { get; set; }
     public string Status { get; set; }

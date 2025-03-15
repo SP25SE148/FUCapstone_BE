@@ -14,4 +14,5 @@ public interface ICapstoneService
     Task<OperationResult<IEnumerable<CapstoneResponse>>> GetAllActiveCapstonesAsync();
     Task<OperationResult<CapstoneResponse>> GetCapstoneByIdAsync(string capstoneId);
     Task<OperationResult> DeleteCapstoneAsync(string capstoneId);
+    Task<OperationResult<int>> GetMaxMemberByCapstoneId(string capstoneId);
 }
