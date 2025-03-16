@@ -11,6 +11,7 @@ using FUC.Data.Enums;
 using FUC.Data.Repositories;
 using FUC.Service.Abstractions;
 using FUC.Service.DTOs.GroupMemberDTO;
+using FUC.Service.Infrastructure;
 using MassTransit.Serialization;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
@@ -437,109 +438,6 @@ public class GroupMemberService(
         }
     }
 
-    public async Task<OperationResult> UpdateJoinGroupRequestAsync(UpdateJoinGroupRequest request)
-    {
-        var joinGroupRequest = await joinGroupRequestRepository.GetAsync(
-            jr => jr.Id == request.Id,
-            true,
-            include: jr => jr
-                .Include(jr => jr.Student)
-                .Include(jr => jr.Group)
-                .ThenInclude(g => g.GroupMembers));
-
-        if (joinGroupRequest is null)
-            return OperationResult.Failure(Error.NullValue);
-
-        var group = joinGroupRequest.Group;
-        var student = joinGroupRequest.Student;
-
-        // check join group request status is not pending
-        if (joinGroupRequest.Status != JoinGroupRequestStatus.Pending)
-            return OperationResult.Failure(new Error("Error.UpdateFailed",
-                $"status of join group request with id {joinGroupRequest.Id} is not pending"));
-
-        // check if current user is leader of this group
-        var leader = group.GroupMembers.FirstOrDefault(gm =>
-            gm.StudentId.Equals(currentUser.UserCode) && gm.IsLeader);
-        if (leader is null)
-            return OperationResult.Failure(new Error("Error.UpdateFailed",
-                $"Student with id {currentUser.UserCode} is in eligible to update join group request with id {joinGroupRequest.Id}"));
-
-
-        var maxMember = await capstoneService.GetMaxMemberByCapstoneId(student.CapstoneId);
-        if (maxMember.IsFailure)
-            return OperationResult.Failure(new Error("Error.UpdateFailed", "Can not get max member"))
-                ;
-        if (group.GroupMembers.Count(gm => gm.Status == GroupMemberStatus.Accepted) >= maxMember.Value)
-            return OperationResult.Failure(new Error("Error.UpdateFailed",
-                $"The group with id {group.Id} have full member"));
-
-        try
-        {
-            // update join group request status
-            await _uow.BeginTransactionAsync();
-
-            switch (request.Status)
-            {
-                case JoinGroupRequestStatus.Approved:
-                    joinGroupRequest.Status = JoinGroupRequestStatus.Approved;
-
-                    _groupMemberRepository.Insert(new GroupMember
-                    {
-                        GroupId = group.Id,
-                        StudentId = student.Id,
-                        Status = GroupMemberStatus.Accepted,
-                        IsLeader = false
-                    });
-                    // check team size of group after approve join group request
-                    if (group.GroupMembers.Count(gm => gm.Status == GroupMemberStatus.Accepted) + 1 >=
-                        maxMember.Value)
-                    {
-                        // change all member status of group to cancelled
-                        var membersToCancel = group.GroupMembers.Where(gm =>
-                            gm.Status == GroupMemberStatus.UnderReview).ToList();
-                        foreach (var groupMember in membersToCancel)
-                        {
-                            groupMember.Status = GroupMemberStatus.Cancelled;
-                            _groupMemberRepository.Update(groupMember);
-                        }
-
-                        // change all join group request status to rejected
-                        var joinGroupRequestsToReject = await joinGroupRequestRepository.FindAsync(
-                            gm => gm.GroupId == group.Id &&
-                                  gm.Status == JoinGroupRequestStatus.Pending &&
-                                  gm.Id != joinGroupRequest.Id,
-                            null,
-                            true);
-                        if (joinGroupRequestsToReject.Count > 0)
-                        {
-                            foreach (var jg in joinGroupRequestsToReject)
-                            {
-                                jg.Status = JoinGroupRequestStatus.Rejected;
-                                joinGroupRequestRepository.Update(jg);
-                            }
-                        }
-                    }
-
-                    break;
-                case JoinGroupRequestStatus.Rejected:
-                    joinGroupRequest.Status = JoinGroupRequestStatus.Rejected;
-                    break;
-                default:
-                    return OperationResult.Failure(new Error("Error.UpdateFailed",
-                        "Can not update join group request status"));
-            }
-
-            await _uow.CommitAsync();
-            return OperationResult.Success();
-        }
-        catch (Exception e)
-        {
-            logger.LogError("Can not update join group status with message: {Message}", e.Message);
-            return OperationResult.Failure(new Error("Error.UpdateFailed", "Can not update join group request status"));
-        }
-    }
-
 
     public async Task<OperationResult<IEnumerable<GroupMember>>> GetGroupMemberByGroupId(Guid groupId)
     {
@@ -570,5 +468,177 @@ public class GroupMemberService(
             CreatedDate = x.CreatedDate,
             CreatedBy = x.CreatedBy
         };
+    }
+
+    public async Task<OperationResult> UpdateJoinGroupRequestAsync(UpdateJoinGroupRequest request)
+    {
+        var joinGroupRequest = await joinGroupRequestRepository.GetAsync(
+            jr => jr.Id == request.Id,
+            true,
+            include: jr => jr
+                .Include(jr => jr.Student)
+                .Include(jr => jr.Group)
+                .ThenInclude(g => g.GroupMembers));
+
+        if (joinGroupRequest is null)
+            return OperationResult.Failure(Error.NullValue);
+
+        var group = joinGroupRequest.Group;
+        var student = joinGroupRequest.Student;
+
+
+        // check join group request status is not pending
+        if (IsJoinGroupRequestStatusPending(joinGroupRequest))
+            return OperationResult.Failure(new Error("Error.UpdateFailed",
+                $"status of join group request with id {joinGroupRequest.Id} is not pending"));
+
+
+        // check if current user is leader of this group
+        var isLeader = IsCurrentUserGroupLeader(group);
+
+        // check if leader is update join group status and group is full
+        var maxMember = await capstoneService.GetMaxMemberByCapstoneId(student.CapstoneId);
+        if (maxMember.IsFailure)
+            return OperationResult.Failure(new Error("Error.UpdateFailed", "Can not get max member"));
+
+        if (isLeader && IsGroupFull(group, maxMember.Value))
+            return OperationResult.Failure(new Error("Error.UpdateFailed",
+                $"The group with id {group.Id} have full member"));
+
+        try
+        {
+            // update join group request status
+            await UpdateJoinGroupRequestStatus(joinGroupRequest, request, group, student, maxMember.Value, isLeader);
+            return OperationResult.Success();
+        }
+        catch (Exception e)
+        {
+            logger.LogError("Can not update join group status with message: {Message}", e.Message);
+            return OperationResult.Failure(new Error("Error.UpdateFailed", "Can not update join group request status"));
+        }
+    }
+
+
+    private bool IsCurrentUserGroupLeader(Group group)
+    {
+        var leader = group.GroupMembers.FirstOrDefault(gm =>
+            gm.StudentId.Equals(currentUser.UserCode) &&
+            gm.IsLeader);
+        return leader != null;
+    }
+
+
+    private bool IsJoinGroupRequestStatusPending(JoinGroupRequest joinGroupRequest)
+    {
+        return joinGroupRequest.Status != JoinGroupRequestStatus.Pending;
+    }
+
+    private bool IsGroupFull(Group group, int maxMember)
+    {
+        return group.GroupMembers.Count(gm => gm.Status == GroupMemberStatus.Accepted) >= maxMember;
+    }
+
+
+    private async Task UpdateJoinGroupRequestStatus(
+        JoinGroupRequest joinGroupRequest,
+        UpdateJoinGroupRequest request,
+        Group group,
+        Student student,
+        int maxMember,
+        bool isLeader)
+    {
+        await _uow.BeginTransactionAsync();
+
+        switch (request.Status)
+        {
+            case JoinGroupRequestStatus.Approved when isLeader:
+                await ApproveJoinGroupRequest(joinGroupRequest, request, group, student, maxMember);
+                break;
+            case JoinGroupRequestStatus.Rejected when isLeader:
+                await RejectOrCancelJoinGroupRequest(joinGroupRequest, JoinGroupRequestStatus.Rejected);
+                break;
+            case JoinGroupRequestStatus.Cancelled when !isLeader:
+                if (!IsCurrentJoinGroupRequestCorrect(joinGroupRequest))
+                    throw new Exception("Can not update join group request status");
+                await RejectOrCancelJoinGroupRequest(joinGroupRequest, JoinGroupRequestStatus.Cancelled);
+                break;
+            default:
+                throw new Exception("Can not update join group request status");
+        }
+
+        await _uow.CommitAsync();
+    }
+
+    private bool IsCurrentJoinGroupRequestCorrect(JoinGroupRequest joinGroupRequest)
+    {
+        return joinGroupRequest.StudentId.Equals(currentUser.UserCode);
+    }
+
+    private async Task ApproveJoinGroupRequest(
+        JoinGroupRequest joinGroupRequest,
+        UpdateJoinGroupRequest request,
+        Group group,
+        Student student,
+        int maxMember)
+    {
+        joinGroupRequest.Status = JoinGroupRequestStatus.Approved;
+
+        _groupMemberRepository.Insert(new GroupMember
+        {
+            GroupId = group.Id,
+            StudentId = student.Id,
+            Status = GroupMemberStatus.Accepted,
+            IsLeader = false
+        });
+
+        if (IsGroupFullAfterApprove(group, maxMember))
+        {
+            await CancelPendingInviteMemberRequests(group);
+            await RejectOtherPendingJoinGroupRequests(group, request.Id);
+        }
+    }
+
+    private async Task RejectOrCancelJoinGroupRequest(
+        JoinGroupRequest joinGroupRequest,
+        JoinGroupRequestStatus status)
+    {
+        joinGroupRequest.Status = status;
+    }
+
+    private bool IsGroupFullAfterApprove(
+        Group group,
+        int maxMember)
+    {
+        return group.GroupMembers.Count(gm => gm.Status == GroupMemberStatus.Accepted) + 1 >= maxMember;
+    }
+
+    private async Task CancelPendingInviteMemberRequests(Group group)
+    {
+        var membersToCancel = group.GroupMembers.Where(gm => gm.Status == GroupMemberStatus.UnderReview).ToList();
+        foreach (var groupMember in membersToCancel)
+        {
+            groupMember.Status = GroupMemberStatus.Cancelled;
+            _groupMemberRepository.Update(groupMember);
+        }
+    }
+
+    private async Task RejectOtherPendingJoinGroupRequests(
+        Group group,
+        Guid requestId)
+    {
+        var joinGroupRequestsToReject = await joinGroupRequestRepository.FindAsync(
+            gm => gm.GroupId == group.Id &&
+                  gm.Status == JoinGroupRequestStatus.Pending &&
+                  gm.Id != requestId,
+            null,
+            true);
+        if (joinGroupRequestsToReject.Count > 0)
+        {
+            foreach (var jg in joinGroupRequestsToReject)
+            {
+                jg.Status = JoinGroupRequestStatus.Rejected;
+                joinGroupRequestRepository.Update(jg);
+            }
+        }
     }
 }
