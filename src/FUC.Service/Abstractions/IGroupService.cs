@@ -23,7 +23,7 @@ public interface IGroupService
     Task<OperationResult<Guid>> CreateTopicRequestAsync(TopicRequest_Request request,
         CancellationToken cancellationToken);
 
-    Task<OperationResult<Dictionary<Guid, List<TopicRequestResponse>>>> GetTopicRequestsAsync(
+    Task<OperationResult<Dictionary<string, List<TopicRequestResponse>>>> GetTopicRequestsAsync(
         TopicRequestParams request);
 
     Task<OperationResult> UpdateTopicRequestStatusAsync(UpdateTopicRequestStatusRequest request);

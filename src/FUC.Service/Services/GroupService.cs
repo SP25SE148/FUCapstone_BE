@@ -389,10 +389,10 @@ public class GroupService(
         return topicRequest.Id;
     }
 
-    public async Task<OperationResult<Dictionary<Guid, List<TopicRequestResponse>>>> GetTopicRequestsAsync(
+    public async Task<OperationResult<Dictionary<string, List<TopicRequestResponse>>>> GetTopicRequestsAsync(
         TopicRequestParams request)
     {
-        var topicRequests = await topicRequestRepository
+        var topicRequests = (await topicRequestRepository
             .FindAsync(tr =>
                     (currentUser.Role == UserRoles.Supervisor && tr.SupervisorId == currentUser.UserCode ||
                      currentUser.Role == UserRoles.Student && tr.CreatedBy == currentUser.Email) &&
@@ -428,11 +428,11 @@ public class GroupService(
                     LeaderFullName = tr.Group.GroupMembers.FirstOrDefault()!.Student.FullName,
                     Gpa = tr.Group.GPA
                 }
-            );
-
-        var groupedTopicRequests = topicRequests.GroupBy(tr => tr.TopicId).ToDictionary(g => g.Key, g => g.ToList());
+            )).GroupBy(tr => tr.TopicId);
+        var groupedTopicRequests =
+            topicRequests.ToDictionary(tr => tr.Select(tr => tr.TopicEnglishName).First(), tr => tr.ToList());
         return groupedTopicRequests.Count < 1
-            ? OperationResult.Failure<Dictionary<Guid, List<TopicRequestResponse>>>(Error.NullValue)
+            ? OperationResult.Failure<Dictionary<string, List<TopicRequestResponse>>>(Error.NullValue)
             : OperationResult.Success(groupedTopicRequests);
     }
 
