@@ -998,11 +998,13 @@ public class GroupService(
         {
             Id = t.Id,
             KeyTask = t.KeyTask,
+            Description = t.Description,
             AssigneeId = t.AssigneeId,
             ReporterId = t.ReporterId,
             DueDate = t.DueDate,
             Priority = t.Priority,
             Status = t.Status,
+            Comment = t.Comment,
             Summary = t.Summary,
             CreatedDate = t.CreatedDate,
         }).ToList();
