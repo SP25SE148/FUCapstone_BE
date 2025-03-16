@@ -7,5 +7,4 @@ public sealed class TopicRequestParams : PaginationParams
 {
     public string? SearchTerm { get; set; }
     public TopicRequestStatus? Status { get; set; }
-    public string? OrderBy { get; set; } = "_asc";
 }

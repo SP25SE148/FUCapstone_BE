@@ -13,11 +13,19 @@ public interface IGroupService
     Task<OperationResult<IEnumerable<GroupResponse>>> GetAllGroupByMajorIdAsync(string majorId);
     Task<OperationResult<IEnumerable<GroupResponse>>> GetAllGroupByCapstoneIdAsync(string capstoneId);
     Task<OperationResult<IEnumerable<GroupResponse>>> GetAllGroupByCampusIdAsync(string campusId);
-    Task<OperationResult<IEnumerable<GroupResponse>>> GetPendingGroupsForStudentJoin(CancellationToken cancellationToken);
+
+    Task<OperationResult<IEnumerable<GroupResponse>>> GetPendingGroupsForStudentJoin(
+        CancellationToken cancellationToken);
+
     Task<OperationResult<GroupResponse>> GetGroupByIdAsync(Guid id);
     Task<OperationResult> UpdateGroupStatusAsync();
-    Task<OperationResult<Guid>> CreateTopicRequestAsync(TopicRequest_Request request, CancellationToken cancellationToken);
-    Task<OperationResult<List<TopicRequestResponse>>> GetTopicRequestsAsync(TopicRequestParams request);
+
+    Task<OperationResult<Guid>> CreateTopicRequestAsync(TopicRequest_Request request,
+        CancellationToken cancellationToken);
+
+    Task<OperationResult<Dictionary<Guid, List<TopicRequestResponse>>>> GetTopicRequestsAsync(
+        TopicRequestParams request);
+
     Task<OperationResult> UpdateTopicRequestStatusAsync(UpdateTopicRequestStatusRequest request);
 
     Task<OperationResult> ImportProjectProgressFile(ImportProjectProgressRequest request,
@@ -30,7 +38,10 @@ public interface IGroupService
 
     Task<OperationResult> CreateWeeklyEvaluations(CreateWeeklyEvaluationRequest request,
         CancellationToken cancellationToken);
-    Task<OperationResult> SummaryProjectProgressWeek(SummaryProjectProgressWeekRequest request, CancellationToken cancellationToken);
+
+    Task<OperationResult> SummaryProjectProgressWeek(SummaryProjectProgressWeekRequest request,
+        CancellationToken cancellationToken);
+
     Task<OperationResult<ProjectProgressDto>> GetProjectProgressByGroup(Guid groupId,
         CancellationToken cancellationToken);
 
@@ -42,6 +53,7 @@ public interface IGroupService
 
     Task<OperationResult<List<GroupManageBySupervisorResponse>>> GetGroupsWhichMentorBySupervisor(
         CancellationToken cancellationToken);
+
     Task<OperationResult> UpdateProjectProgressWeek(UpdateProjectProgressWeekRequest request,
         CancellationToken cancellationToken);
 }
