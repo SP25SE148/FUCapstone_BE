@@ -389,10 +389,10 @@ public class GroupService(
         return topicRequest.Id;
     }
 
-    public async Task<OperationResult<List<TopicRequestResponse>>> GetTopicRequestsAsync(
+    public async Task<OperationResult<Dictionary<string, List<TopicRequestResponse>>>> GetTopicRequestsAsync(
         TopicRequestParams request)
     {
-        var topicRequests = await topicRequestRepository
+        var topicRequests = (await topicRequestRepository
             .FindAsync(tr =>
                     (currentUser.Role == UserRoles.Supervisor && tr.SupervisorId == currentUser.UserCode ||
                      currentUser.Role == UserRoles.Student && tr.CreatedBy == currentUser.Email) &&
@@ -410,9 +410,8 @@ public class GroupService(
                         .ThenInclude(gm => gm.Student)
                         .Include(tr => tr.Topic)
                         .Include(tr => tr.Supervisor),
-                tr => request.OrderBy == "_asc"
-                    ? tr.OrderBy(tr => tr.CreatedDate)
-                    : tr.OrderByDescending(tr => tr.CreatedDate),
+                tr =>
+                    tr.OrderBy(tr => tr.Group.GPA),
                 tr => new TopicRequestResponse
                 {
                     TopicRequestId = tr.Id,
@@ -426,14 +425,16 @@ public class GroupService(
                     SupervisorId = tr.SupervisorId,
                     SupervisorFullName = tr.Supervisor.FullName,
                     TopicEnglishName = tr.Topic.EnglishName,
-                    LeaderFullName = tr.Group.GroupMembers.FirstOrDefault()!.Student.FullName
+                    LeaderFullName = tr.Group.GroupMembers.FirstOrDefault()!.Student.FullName,
+                    Gpa = tr.Group.GPA
                 }
-            );
+            )).GroupBy(tr => tr.TopicId);
 
-
-        return topicRequests.Count < 1
-            ? OperationResult.Failure<List<TopicRequestResponse>>(Error.NullValue)
-            : OperationResult.Success(topicRequests.ToList());
+        var groupedTopicRequests =
+            topicRequests.ToDictionary(tr => tr.Select(tr => tr.TopicEnglishName).First(), tr => tr.ToList());
+        return groupedTopicRequests.Count < 1
+            ? OperationResult.Failure<Dictionary<string, List<TopicRequestResponse>>>(Error.NullValue)
+            : OperationResult.Success(groupedTopicRequests);
     }
 
     public async Task<OperationResult> UpdateTopicRequestStatusAsync(UpdateTopicRequestStatusRequest request)
@@ -511,24 +512,24 @@ public class GroupService(
             TopicCode = g.TopicCode,
             AverageGPA = g.GroupMembers.Any(m => m.Status == GroupMemberStatus.Accepted)
                 ? g.GroupMembers.Where(m => m.Status == GroupMemberStatus.Accepted)
-                               .Select(m => m.Student.GPA)
-                               .Average()
+                    .Select(m => m.Student.GPA)
+                    .Average()
                 : 0, // Prevent division by zero
             GroupMemberList = g.GroupMembers
                 .Where(m => m.Status == GroupMemberStatus.Accepted)
                 .Select(m => new GroupMemberResponse
-            {
-                Id = m.Id,
-                StudentId = m.StudentId,
-                StudentFullName = m.Student.FullName,
-                IsLeader = m.IsLeader,
-                Status = m.Status.ToString(),
-                GroupId = m.GroupId,
-                CreatedBy = m.CreatedBy,
-                CreatedDate = m.CreatedDate,
-                StudentEmail = m.Student.Email,
-                GPA = m.Student.GPA,
-            })
+                {
+                    Id = m.Id,
+                    StudentId = m.StudentId,
+                    StudentFullName = m.Student.FullName,
+                    IsLeader = m.IsLeader,
+                    Status = m.Status.ToString(),
+                    GroupId = m.GroupId,
+                    CreatedBy = m.CreatedBy,
+                    CreatedDate = m.CreatedDate,
+                    StudentEmail = m.Student.Email,
+                    GPA = m.Student.GPA,
+                })
         };
     }
 
@@ -674,12 +675,12 @@ public class GroupService(
     public async Task<OperationResult> UpdateTask(UpdateTaskRequest request, CancellationToken cancellationToken)
     {
         var progress = await projectProgressRepository.GetAsync(
-                x => x.Id == request.ProjectProgressId,
-                isEnabledTracking: true,
-                include: x => x.Include(x => x.FucTasks.Where(t => t.Id == request.TaskId)),
-                orderBy: null,
-                cancellationToken
-            );
+            x => x.Id == request.ProjectProgressId,
+            isEnabledTracking: true,
+            include: x => x.Include(x => x.FucTasks.Where(t => t.Id == request.TaskId)),
+            orderBy: null,
+            cancellationToken
+        );
 
         if (progress is null)
             return OperationResult.Failure(Error.NullValue);
@@ -714,14 +715,16 @@ public class GroupService(
 
             projectProgressRepository.Update(progress);
 
-            foreach(var h in changes)
+            foreach (var h in changes)
             {
                 task.FucTaskHistories.Add(new FucTaskHistory
                 {
-                    Content = h.Key == nameof(request.Comment) ? request.Comment! : $"{currentUser.UserCode} changed {h.Key} from {h.Value.OldValue} to {h.Value.NewValue}.",
+                    Content = h.Key == nameof(request.Comment)
+                        ? request.Comment!
+                        : $"{currentUser.UserCode} changed {h.Key} from {h.Value.OldValue} to {h.Value.NewValue}.",
                 });
-            } 
-       
+            }
+
             await uow.SaveChangesAsync(cancellationToken);
 
             // TODO: Send notification
@@ -840,21 +843,22 @@ public class GroupService(
             return OperationResult.Failure<List<EvaluationProjectProgressResponse>>(Error.NullValue);
 
         var query = from eva in weeklyEvaluationRepository.GetQueryable()
-                    where studentsInGroup.Select(x => x.Item1).ToList().Contains(eva.StudentId)
-                    group eva by eva.StudentId into g
-                    select new
-                    {
-                        StudentId = g.Key,
-                        Evaluations = g.Select(e => new EvaluationWeekResponse
-                        {
-                            WeekNumber = e.ProjectProgressWeek.WeekNumber,
-                            ContributionPercentage = e.ContributionPercentage,
-                            Comments = e.Comments,
-                            MeetingContent = e.ProjectProgressWeek.MeetingContent ?? "",
-                            Summary = e.ProjectProgressWeek.ProgressWeekSummary,
-                            Status = e.Status.ToString()
-                        }).OrderBy(x => x.WeekNumber).ToList()
-                    };
+            where studentsInGroup.Select(x => x.Item1).ToList().Contains(eva.StudentId)
+            group eva by eva.StudentId
+            into g
+            select new
+            {
+                StudentId = g.Key,
+                Evaluations = g.Select(e => new EvaluationWeekResponse
+                {
+                    WeekNumber = e.ProjectProgressWeek.WeekNumber,
+                    ContributionPercentage = e.ContributionPercentage,
+                    Comments = e.Comments,
+                    MeetingContent = e.ProjectProgressWeek.MeetingContent ?? "",
+                    Summary = e.ProjectProgressWeek.ProgressWeekSummary,
+                    Status = e.Status.ToString()
+                }).OrderBy(x => x.WeekNumber).ToList()
+            };
 
         var weeklyEvaluationsForGroup = await query.ToListAsync(cancellationToken);
 
@@ -862,20 +866,21 @@ public class GroupService(
             return OperationResult.Failure<List<EvaluationProjectProgressResponse>>(Error.NullValue);
 
         var result = from student in studentsInGroup
-                     join evaluation in weeklyEvaluationsForGroup
-                     on student.Item1 equals evaluation.StudentId into evalGroup
-                     from eval in evalGroup.DefaultIfEmpty()
-                     let evaluations = eval?.Evaluations ?? new List<EvaluationWeekResponse>() 
-                     let evaluationsCount = evaluations.Count
-                     select new EvaluationProjectProgressResponse
-                     {
-                         StudentCode = student.Item1,
-                         StudentName = student.Item2,
-                         StudentRole = student.Item3 ? "leader" : "member",
-                         EvaluationWeeks = evaluations, 
-                         AverageContributionPercentage = evaluationsCount == 0 ? 0 :
-                            evaluations.Sum(x => x.ContributionPercentage) / evaluationsCount 
-                     };
+            join evaluation in weeklyEvaluationsForGroup
+                on student.Item1 equals evaluation.StudentId into evalGroup
+            from eval in evalGroup.DefaultIfEmpty()
+            let evaluations = eval?.Evaluations ?? new List<EvaluationWeekResponse>()
+            let evaluationsCount = evaluations.Count
+            select new EvaluationProjectProgressResponse
+            {
+                StudentCode = student.Item1,
+                StudentName = student.Item2,
+                StudentRole = student.Item3 ? "leader" : "member",
+                EvaluationWeeks = evaluations,
+                AverageContributionPercentage = evaluationsCount == 0
+                    ? 0
+                    : evaluations.Sum(x => x.ContributionPercentage) / evaluationsCount
+            };
 
         return result.ToList();
     }
@@ -894,7 +899,8 @@ public class GroupService(
         if (progress == null)
             return OperationResult.Failure(Error.NullValue);
 
-        if (progress.ProjectProgressWeeks.Count == 0 || progress.ProjectProgressWeeks.Single().Status == ProjectProgressWeekStatus.Done)
+        if (progress.ProjectProgressWeeks.Count == 0 ||
+            progress.ProjectProgressWeeks.Single().Status == ProjectProgressWeekStatus.Done)
         {
             return OperationResult.Failure(new Error("ProjectProgress.Error", "Week can not evaluation."));
         }
@@ -943,16 +949,17 @@ public class GroupService(
         }
     }
 
-    public async Task<OperationResult> SummaryProjectProgressWeek(SummaryProjectProgressWeekRequest request, CancellationToken cancellationToken)
+    public async Task<OperationResult> SummaryProjectProgressWeek(SummaryProjectProgressWeekRequest request,
+        CancellationToken cancellationToken)
     {
         try
         {
             var progress = await projectProgressRepository.GetAsync(
-            x => x.Id == request.ProjectProgressId,
-            include: x => x.Include(w => w.ProjectProgressWeeks
+                x => x.Id == request.ProjectProgressId,
+                include: x => x.Include(w => w.ProjectProgressWeeks
                     .Where(w => w.Id == request.ProjectProgressWeekId)),
-            orderBy: null,
-            cancellationToken);
+                orderBy: null,
+                cancellationToken);
 
             if (progress == null || progress.ProjectProgressWeeks.Single() == null)
                 return OperationResult.Failure(Error.NullValue);
@@ -970,7 +977,8 @@ public class GroupService(
         }
         catch (Exception ex)
         {
-            logger.LogError("Update summary for week {WeekId} fail with error {Message}", request.ProjectProgressWeekId, ex.Message);
+            logger.LogError("Update summary for week {WeekId} fail with error {Message}", request.ProjectProgressWeekId,
+                ex.Message);
 
             return OperationResult.Failure(new Error("ProjectProgres.Error", "Fail to summary this week."));
         }
@@ -1094,12 +1102,12 @@ public class GroupService(
         try
         {
             var progress = await projectProgressRepository.GetAsync(
-            x => x.Id == request.ProjectProgressId,
-            isEnabledTracking: true,
-            include: x => x.Include(w => w.ProjectProgressWeeks
+                x => x.Id == request.ProjectProgressId,
+                isEnabledTracking: true,
+                include: x => x.Include(w => w.ProjectProgressWeeks
                     .Where(w => w.Id == request.ProjectProgressWeekId)),
-            orderBy: null,
-            cancellationToken);
+                orderBy: null,
+                cancellationToken);
 
             if (progress == null || progress.ProjectProgressWeeks.Single() == null)
                 return OperationResult.Failure(Error.NullValue);
