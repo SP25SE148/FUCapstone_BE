@@ -52,9 +52,6 @@ public class ServiceProfiles : Profile
 
         CreateMap<UpdateTopicRequest, Topic>()
             .ForMember(dest => dest.Id, opt => opt.MapFrom(src => src.TopicId))
-            .ForMember(dest => dest.BusinessAreaId, opt => opt.Condition(src => src.BusinessAreaId != null))
-            .ForMember(dest => dest.BusinessAreaId, opt => opt.MapFrom((src, dest) =>
-                src.BusinessAreaId != null ? Guid.Parse(src.BusinessAreaId) : dest.BusinessAreaId))
             .ForAllMembers(opt => opt.Condition((src, dest, srcMember) => srcMember != null));
 
         CreateMap<UpdateTaskRequest, FucTask>()

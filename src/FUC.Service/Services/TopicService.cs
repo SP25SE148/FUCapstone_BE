@@ -37,6 +37,7 @@ public class TopicService(
     IRepository<BusinessArea> businessRepository,
     S3BucketConfiguration s3BucketConfiguration,
     ISemesterService semesterService,
+    IGroupService groupService,
     ICacheService cache,
     IIntegrationEventLogService integrationEventLogService) : ITopicService
 {
@@ -109,6 +110,8 @@ public class TopicService(
             return OperationResult.Failure<PaginatedList<TopicResponse>>(new Error("Error.GetTopicsFailed",
                 "The current semester is not existed!"));
 
+        var averageGpa = await groupService.GetAverageGPAOfGroupByStudent(currentUser.UserCode, default);
+
         var topics = await topicRepository.FindPaginatedAsync(
             x =>
                 (request.MainSupervisorEmail == "all" ||
@@ -122,14 +125,16 @@ public class TopicService(
                 (request.BusinessAreaId == "all" || x.BusinessAreaId == Guid.Parse(request.BusinessAreaId)) &&
                 (request.DifficultyLevel == "all" ||
                  x.DifficultyLevel == Enum.Parse<DifficultyLevel>(request.DifficultyLevel, true)) &&
-                x.CapstoneId.Equals(currentUser.CapstoneId) &&
-                x.CampusId.Equals(currentUser.CampusId) &&
-                x.SemesterId.Equals(currentSemester.Value.Id) &&
+                x.CapstoneId == currentUser.CapstoneId &&
+                x.CampusId == currentUser.CampusId &&
+                x.SemesterId == currentSemester.Value.Id &&
                 !x.IsAssignedToGroup &&
                 x.Status.Equals(TopicStatus.Approved),
             request.PageNumber,
             request.PageSize,
-            x => x.OrderByDescending(x => x.CreatedDate),
+            x => x.OrderByDescending(x => x.CreatedDate)
+                  .OrderBy(x => GetDifficultyByGPA(averageGpa))
+                    .ThenBy(x => x.Abbreviation),
             x => x.AsSplitQuery()
                 .Include(x => x.MainSupervisor)
                 .Include(x => x.BusinessArea)
@@ -164,6 +169,15 @@ public class TopicService(
         return topics.TotalNumberOfItems > 0
             ? OperationResult.Success(topics)
             : OperationResult.Failure<PaginatedList<TopicResponse>>(Error.NullValue);
+    }
+
+    private static DifficultyLevel GetDifficultyByGPA(double gpa)
+    {
+        if (gpa >= 8)
+            return DifficultyLevel.Hard;
+        if (gpa >= 6)
+            return DifficultyLevel.Medium;
+        return DifficultyLevel.Easy;
     }
 
     public async Task<OperationResult<IList<TopicResponse>>> GetTopicsByManagerLevel()
@@ -535,14 +549,6 @@ public class TopicService(
             return OperationResult.Failure<Guid>(new Error("Topic.Error", "Supervisor is not available."));
         }
 
-        if (request.BusinessAreaId != null &&
-            !await businessRepository.AnyAsync(b => b.Id == Guid.Parse(request.BusinessAreaId),
-                cancellationToken))
-        {
-            logger.LogError("Update Topic fail with error: {BusinessArea} does not exist", request.BusinessAreaId);
-            return OperationResult.Failure<Guid>(new Error("Topic.Error", "BusinessArea does not exist."));
-        }
-
         if (string.IsNullOrEmpty(request.Description) && request.File != null ||
             !string.IsNullOrEmpty(request.Description) && request.File == null)
         {
@@ -816,10 +822,11 @@ public class TopicService(
                 return OperationResult.Failure(currentSemester.Error);
 
             var topic = await topicRepository.GetAsync(x => x.Id == request.TopicId,
-                    include: x => x.Include(x => x.TopicAppraisals)
-                            .Include(x => x.Capstone),
-                    orderBy: null,
-                    cancellationToken);
+                isEnabledTracking: true,
+                include: x => x.Include(x => x.TopicAppraisals)
+                    .Include(x => x.Capstone),
+                orderBy: null,
+                cancellationToken);
 
             if (topic == null || topic.Status != TopicStatus.Pending)
                 return OperationResult.Failure(Error.NullValue);
@@ -851,6 +858,8 @@ public class TopicService(
             {
                 SupervisorId = request.SupervisorId
             });
+
+            topicRepository.Update(topic);
 
             await unitOfWork.SaveChangesAsync(cancellationToken);
 
