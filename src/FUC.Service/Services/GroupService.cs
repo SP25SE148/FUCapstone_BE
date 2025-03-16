@@ -429,7 +429,6 @@ public class GroupService(
                     Gpa = tr.Group.GPA
                 }
             )).GroupBy(tr => tr.TopicId);
-
         var groupedTopicRequests =
             topicRequests.ToDictionary(tr => tr.Select(tr => tr.TopicEnglishName).First(), tr => tr.ToList());
         return groupedTopicRequests.Count < 1
