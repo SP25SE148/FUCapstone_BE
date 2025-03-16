@@ -19,6 +19,7 @@ using FUC.Service.DTOs.GroupMemberDTO;
 using FUC.Service.DTOs.ProjectProgressDTO;
 using FUC.Service.DTOs.TopicRequestDTO;
 using FUC.Service.Extensions.Options;
+using FUC.Service.Helpers;
 using MassTransit.Initializers;
 using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
@@ -621,7 +622,7 @@ public class GroupService(
             return OperationResult.Failure(Error.NullValue);
 
         var result = await CheckStudentsInSameGroup(
-            new List<string> { request.AssigneeId!, currentUser.UserCode },
+            new List<string> { request.AssigneeId, currentUser.UserCode },
             progress.GroupId,
             cancellationToken);
 
@@ -630,12 +631,12 @@ public class GroupService(
             return OperationResult.Failure(new Error("ProjectProgress.Error", "Students are not the same group."));
         }
 
-        await uow.BeginTransactionAsync(cancellationToken);
-
         try
         {
             if (progress.FucTasks.Any(x => x.KeyTask == request.KeyTask))
                 return OperationResult.Failure(new Error("ProjectProgress.Error", "The key task was already taken."));
+
+            await uow.BeginTransactionAsync(cancellationToken);
 
             progress.FucTasks.Add(new FucTask
             {
@@ -688,6 +689,9 @@ public class GroupService(
         if (task == null)
             return OperationResult.Failure(Error.NullValue);
 
+        if (task.Status == FucTaskStatus.Done)
+            return OperationResult.Failure(new Error("ProjectProgress.Error", "This task was already done."));
+
         if (!await CheckStudentsInSameGroup([currentUser.UserCode], progress.GroupId, cancellationToken))
             return OperationResult.Failure(new Error("ProjectProgress.Error", "You can not update this task."));
 
@@ -697,14 +701,27 @@ public class GroupService(
                 "You can update the task which is not belong to you."));
         }
 
-        await uow.BeginTransactionAsync(cancellationToken);
+        var changes = TrackingTaskHistory.GetChangedProperties(request, task);
+
+        if (changes.Count == 0)
+            return OperationResult.Success();
 
         try
         {
+            await uow.BeginTransactionAsync(cancellationToken);
+
             mapper.Map(request, task);
 
             projectProgressRepository.Update(progress);
 
+            foreach(var h in changes)
+            {
+                task.FucTaskHistories.Add(new FucTaskHistory
+                {
+                    Content = h.Key == nameof(request.Comment) ? request.Comment! : $"{currentUser.UserCode} changed {h.Key} from {h.Value.OldValue} to {h.Value.NewValue}.",
+                });
+            } 
+       
             await uow.SaveChangesAsync(cancellationToken);
 
             // TODO: Send notification
@@ -1167,9 +1184,11 @@ public class GroupService(
         return group != null;
     }
 
-    private async Task<bool> CheckStudentsInSameGroup(IList<string> studentIds, Guid groupId,
+    private async Task<bool> CheckStudentsInSameGroup(List<string> studentIds, Guid groupId,
         CancellationToken cancellationToken)
     {
+        studentIds = studentIds.Distinct().ToList();
+
         var members = await groupMemberRepository.FindAsync(
             x => studentIds.Contains(x.StudentId) &&
                  x.GroupId == groupId &&
