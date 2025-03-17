@@ -1,4 +1,5 @@
 ﻿using FUC.Common.Shared;
+using FUC.Data.Entities;
 using FUC.Service.DTOs.GroupDTO;
 using FUC.Service.DTOs.ProjectProgressDTO;
 using FUC.Service.DTOs.TopicRequestDTO;
@@ -31,8 +32,8 @@ public interface IGroupService
     Task<OperationResult> ImportProjectProgressFile(ImportProjectProgressRequest request,
         CancellationToken cancellationToken);
 
-    Task<OperationResult> CreateTask(CreateTaskRequest request, CancellationToken cancellationToken);
-    Task<OperationResult> UpdateTask(UpdateTaskRequest request, CancellationToken cancellationToken);
+    Task<OperationResult<FucTask>> CreateTask(CreateTaskRequest request, CancellationToken cancellationToken);
+    Task<OperationResult<FucTask>> UpdateTask(UpdateTaskRequest request, CancellationToken cancellationToken);
     Task<OperationResult<List<FucTaskResponse>>> GetTasks(Guid projectProgressId, CancellationToken cancellationToken);
     Task<OperationResult<FucTaskDetailResponse>> GetTasksDetail(Guid taskId, CancellationToken cancellationToken);
 

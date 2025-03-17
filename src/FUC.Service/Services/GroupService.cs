@@ -608,7 +608,7 @@ public class GroupService(
         }
     }
 
-    public async Task<OperationResult> CreateTask(CreateTaskRequest request, CancellationToken cancellationToken)
+    public async Task<OperationResult<FucTask>> CreateTask(CreateTaskRequest request, CancellationToken cancellationToken)
     {
         var progress = await projectProgressRepository.GetAsync(
             x => x.Id == request.ProjectProgressId,
@@ -618,7 +618,7 @@ public class GroupService(
             cancellationToken);
 
         if (progress == null)
-            return OperationResult.Failure(Error.NullValue);
+            return OperationResult.Failure<FucTask>(Error.NullValue);
 
         var result = await CheckStudentsInSameGroup(
             new List<string> { request.AssigneeId, currentUser.UserCode },
@@ -627,17 +627,17 @@ public class GroupService(
 
         if (!result)
         {
-            return OperationResult.Failure(new Error("ProjectProgress.Error", "Students are not the same group."));
+            return OperationResult.Failure<FucTask>(new Error("ProjectProgress.Error", "Students are not the same group."));
         }
 
         try
         {
             if (progress.FucTasks.Any(x => x.KeyTask == request.KeyTask))
-                return OperationResult.Failure(new Error("ProjectProgress.Error", "The key task was already taken."));
+                return OperationResult.Failure<FucTask>(new Error("ProjectProgress.Error", "The key task was already taken."));
 
             await uow.BeginTransactionAsync(cancellationToken);
 
-            progress.FucTasks.Add(new FucTask
+            var newTask = new FucTask
             {
                 KeyTask = request.KeyTask,
                 Priority = request.Priority,
@@ -647,7 +647,9 @@ public class GroupService(
                 Description = request.Description,
                 DueDate = request.DueDate,
                 Summary = request.Summary,
-            });
+            };
+
+            progress.FucTasks.Add(newTask);
 
             projectProgressRepository.Update(progress);
 
@@ -659,18 +661,18 @@ public class GroupService(
 
             await uow.CommitAsync(cancellationToken);
 
-            return OperationResult.Success();
+            return OperationResult.Success(newTask);
         }
         catch (Exception ex)
         {
             logger.LogError("Create Task with error: {Message}", ex.Message);
             await uow.RollbackAsync(cancellationToken);
 
-            return OperationResult.Failure(new Error("ProjectProgress.Error", "Create task fail."));
+            return OperationResult.Failure<FucTask>(new Error("ProjectProgress.Error", "Create task fail."));
         }
     }
 
-    public async Task<OperationResult> UpdateTask(UpdateTaskRequest request, CancellationToken cancellationToken)
+    public async Task<OperationResult<FucTask>> UpdateTask(UpdateTaskRequest request, CancellationToken cancellationToken)
     {
         var progress = await projectProgressRepository.GetAsync(
             x => x.Id == request.ProjectProgressId,
@@ -681,29 +683,29 @@ public class GroupService(
         );
 
         if (progress is null)
-            return OperationResult.Failure(Error.NullValue);
+            return OperationResult.Failure<FucTask>(Error.NullValue);
 
         var task = progress.FucTasks.Single();
 
         if (task == null)
-            return OperationResult.Failure(Error.NullValue);
+            return OperationResult.Failure<FucTask>(Error.NullValue);
 
         if (task.Status == FucTaskStatus.Done)
-            return OperationResult.Failure(new Error("ProjectProgress.Error", "This task was already done."));
+            return OperationResult.Failure<FucTask>(new Error("ProjectProgress.Error", "This task was already done."));
 
         if (!await CheckStudentsInSameGroup([currentUser.UserCode], progress.GroupId, cancellationToken))
-            return OperationResult.Failure(new Error("ProjectProgress.Error", "You can not update this task."));
+            return OperationResult.Failure<FucTask>(new Error("ProjectProgress.Error", "You can not update this task."));
 
         if (currentUser.UserCode != task.AssigneeId && currentUser.UserCode != task.ReporterId)
         {
-            return OperationResult.Failure(new Error("ProjectProgress.Error",
+            return OperationResult.Failure<FucTask>(new Error("ProjectProgress.Error",
                 "You can update the task which is not belong to you."));
         }
 
         var changes = TrackingTaskHistory.GetChangedProperties(request, task);
 
         if (changes.Count == 0)
-            return OperationResult.Success();
+            return OperationResult.Success(task);
 
         try
         {
@@ -731,14 +733,14 @@ public class GroupService(
 
             await uow.CommitAsync(cancellationToken);
 
-            return OperationResult.Success();
+            return OperationResult.Success(task);
         }
         catch (Exception ex)
         {
             logger.LogError("Create Task with error: {Message}", ex.Message);
             await uow.RollbackAsync(cancellationToken);
 
-            return OperationResult.Failure(new Error("ProjectProgress.Error", "Create task fail"));
+            return OperationResult.Failure<FucTask>(new Error("ProjectProgress.Error", "Create task fail"));
         }
     }
 
