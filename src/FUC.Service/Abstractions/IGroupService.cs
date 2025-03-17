@@ -56,5 +56,4 @@ public interface IGroupService
 
     Task<OperationResult> UpdateProjectProgressWeek(UpdateProjectProgressWeekRequest request,
         CancellationToken cancellationToken);
-    Task<float> GetAverageGPAOfGroupByStudent(string studentId, CancellationToken cancellationToken);
 }

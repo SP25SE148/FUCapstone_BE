@@ -37,7 +37,7 @@ public class TopicService(
     IRepository<BusinessArea> businessRepository,
     S3BucketConfiguration s3BucketConfiguration,
     ISemesterService semesterService,
-    IGroupService groupService,
+    IRepository<GroupMember> groupMemberRepository,
     ICacheService cache,
     IIntegrationEventLogService integrationEventLogService) : ITopicService
 {
@@ -110,7 +110,7 @@ public class TopicService(
             return OperationResult.Failure<PaginatedList<TopicForStudentResponse>>(new Error("Error.GetTopicsFailed",
                 "The current semester is not existed!"));
 
-        var averageGpa = await groupService.GetAverageGPAOfGroupByStudent(currentUser.UserCode, default);
+        var averageGpa = await GetAverageGPAOfGroupByStudent(currentUser.UserCode, default);
 
         var topics = await topicRepository.FindPaginatedAsync(
             x =>
@@ -1148,5 +1148,18 @@ public class TopicService(
         return businessAreas.Count != 0
             ? OperationResult.Success(businessAreas)
             : OperationResult.Failure<List<BusinessAreaResponse>>(Error.NullValue);
+    }
+
+    private async Task<float> GetAverageGPAOfGroupByStudent(string studentId, CancellationToken cancellationToken)
+    {
+        var groupMember = await groupMemberRepository.GetAsync(
+            x => x.StudentId == studentId && x.Status == GroupMemberStatus.Accepted,
+            include: x => x.Include(x => x.Group),
+            orderBy: null,
+            cancellationToken);
+
+        ArgumentNullException.ThrowIfNull(groupMember);
+
+        return groupMember.Group.GPA;
     }
 }

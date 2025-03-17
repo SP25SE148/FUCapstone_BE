@@ -1315,17 +1315,4 @@ public class GroupService(
 
         return (await Task.WhenAll(tasks)).OrderBy(x => x.GroupCode).ToList();
     }
-
-    public async Task<float> GetAverageGPAOfGroupByStudent(string studentId, CancellationToken cancellationToken)
-    {
-        var groupMember = await groupMemberRepository.GetAsync(
-            x => x.StudentId == studentId && x.Status == GroupMemberStatus.Accepted,
-            include: x => x.Include(x => x.Group),
-            orderBy: null,
-            cancellationToken);
-
-        ArgumentNullException.ThrowIfNull(groupMember);
-
-        return groupMember.Group.GPA;
-    }
 }
