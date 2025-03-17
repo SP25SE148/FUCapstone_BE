@@ -5,6 +5,7 @@ using AutoMapper;
 using ClosedXML.Excel;
 using FUC.Common.Abstractions;
 using FUC.Common.Constants;
+using FUC.Common.Contracts;
 using FUC.Common.IntegrationEventLog.Services;
 using FUC.Common.Shared;
 using FUC.Data;
@@ -314,78 +315,100 @@ public class GroupService(
     public async Task<OperationResult<Guid>> CreateTopicRequestAsync(TopicRequest_Request request,
         CancellationToken cancellationToken)
     {
-        // TODO: Check if the create topic request is requested in invalid date
-
-        var groupMember = await groupMemberRepository
-            .GetAsync(
-                gm => gm.GroupId.Equals(request.GroupId) &&
-                      gm.StudentId == currentUser.UserCode &&
-                      gm.IsLeader,
-                gm => gm.Include(gm => gm.Group)
-                    .ThenInclude(g => g.TopicRequests)
-                    .Include(gm => gm.Student),
-                default,
-                cancellationToken
-            );
-        // check if group member is null
-        if (groupMember is null)
-            return OperationResult.Failure<Guid>(Error.NullValue);
-
-        // check if the group is from current semester
-        if (groupMember.Group.IsDeleted)
-            return OperationResult.Failure<Guid>(new Error("Error.InvalidGroup",
-                $"The group with Id {request.GroupId} is not in current semester"));
-
-        // check if group status is different from InProgress
-        if (!groupMember.Group.Status.Equals(GroupStatus.InProgress))
-            return OperationResult.Failure<Guid>(new Error("Error.GroupInEligible",
-                $"Group with id {groupMember.GroupId} is not {GroupStatus.InProgress.ToString()} status"));
-
-        // check if topic code of group is not null
-        if (!string.IsNullOrEmpty(groupMember.Group.TopicCode))
-            return OperationResult.Failure<Guid>(new Error("Error.CreateFailed",
-                "Can not create topic request for group already have topic code!"));
-
-        if (groupMember.Group.TopicRequests.Any(tr => !tr.Status.Equals(TopicRequestStatus.Rejected)))
-            return OperationResult.Failure<Guid>(new Error("Error.CreateTopicRequestFailed",
-                $"Can not create topic request while this group already have topic request is {TopicRequestStatus.UnderReview.ToString()} or {TopicRequestStatus.Accepted}"));
-
-        var topicResult = await topicService.GetTopicEntityById(request.TopicId, cancellationToken);
-
-        // check if topic is not null
-        if (topicResult.IsFailure)
-            return OperationResult.Failure<Guid>(Error.NullValue);
-
-        var topic = topicResult.Value;
-
-        // check if topic's campus is the same as group's campus or if topic's capstone is different from group's capstone
-        if (topic.CampusId != groupMember.Student.CampusId ||
-            topic.CapstoneId != groupMember.Group.CapstoneId)
-            return OperationResult.Failure<Guid>(new Error("Error.CreateTopicRequestFailed",
-                "Error.CreateTopicRequestFailed"));
-
-        // check if topic is Passed and is not assigned to any group
-        if (!topic.Status.Equals(TopicStatus.Approved) ||
-            topic.IsAssignedToGroup)
-            return OperationResult.Failure<Guid>(new Error("Error.CreateTopicRequestFailed",
-                "Error.CreateTopicRequestFailed"));
-
-        // check if group was sent request to this topic before and rejected
-        if (groupMember.Group.TopicRequests.Any(tr => tr.TopicId.Equals(topic.Id)))
-            return OperationResult.Failure<Guid>(new Error("Error.CantSentTopicRequest",
-                $"Can not sent topic request with topic id {topic.Id} because its was sent before"));
-
-        var topicRequest = new TopicRequest
+        try
         {
-            Id = Guid.NewGuid(),
-            SupervisorId = topic.MainSupervisorId,
-            GroupId = groupMember.GroupId,
-            TopicId = topic.Id
-        };
-        topicRequestRepository.Insert(topicRequest);
-        await uow.SaveChangesAsync(cancellationToken);
+            // TODO: Check if the create topic request is requested in invalid date
 
-        return topicRequest.Id;
+            var groupMember = await groupMemberRepository
+                .GetAsync(
+                    gm => gm.GroupId.Equals(request.GroupId) &&
+                          gm.StudentId == currentUser.UserCode &&
+                          gm.IsLeader,
+                    gm => gm.Include(gm => gm.Group)
+                        .ThenInclude(g => g.TopicRequests)
+                        .Include(gm => gm.Student),
+                    default,
+                    cancellationToken
+                );
+            // check if group member is null
+            if (groupMember is null)
+                return OperationResult.Failure<Guid>(Error.NullValue);
+
+            // check if the group is from current semester
+            if (groupMember.Group.IsDeleted)
+                return OperationResult.Failure<Guid>(new Error("Error.InvalidGroup",
+                    $"The group with Id {request.GroupId} is not in current semester"));
+
+            // check if group status is different from InProgress
+            if (!groupMember.Group.Status.Equals(GroupStatus.InProgress))
+                return OperationResult.Failure<Guid>(new Error("Error.GroupInEligible",
+                    $"Group with id {groupMember.GroupId} is not {GroupStatus.InProgress.ToString()} status"));
+
+            // check if topic code of group is not null
+            if (!string.IsNullOrEmpty(groupMember.Group.TopicCode))
+                return OperationResult.Failure<Guid>(new Error("Error.CreateFailed",
+                    "Can not create topic request for group already have topic code!"));
+
+            if (groupMember.Group.TopicRequests.Any(tr => !tr.Status.Equals(TopicRequestStatus.Rejected)))
+                return OperationResult.Failure<Guid>(new Error("Error.CreateTopicRequestFailed",
+                    $"Can not create topic request while this group already have topic request is {TopicRequestStatus.UnderReview.ToString()} or {TopicRequestStatus.Accepted}"));
+
+            var topicResult = await topicService.GetTopicEntityById(request.TopicId, cancellationToken);
+
+            // check if topic is not null
+            if (topicResult.IsFailure)
+                return OperationResult.Failure<Guid>(Error.NullValue);
+
+            var topic = topicResult.Value;
+
+            // check if topic's campus is the same as group's campus or if topic's capstone is different from group's capstone
+            if (topic.CampusId != groupMember.Student.CampusId ||
+                topic.CapstoneId != groupMember.Group.CapstoneId)
+                return OperationResult.Failure<Guid>(new Error("Error.CreateTopicRequestFailed",
+                    "Error.CreateTopicRequestFailed"));
+
+            // check if topic is Passed and is not assigned to any group
+            if (!topic.Status.Equals(TopicStatus.Approved) ||
+                topic.IsAssignedToGroup)
+                return OperationResult.Failure<Guid>(new Error("Error.CreateTopicRequestFailed",
+                    "Error.CreateTopicRequestFailed"));
+
+            // check if group was sent request to this topic before and rejected
+            if (groupMember.Group.TopicRequests.Any(tr => tr.TopicId.Equals(topic.Id)))
+                return OperationResult.Failure<Guid>(new Error("Error.CantSentTopicRequest",
+                    $"Can not sent topic request with topic id {topic.Id} because its was sent before"));
+
+            await uow.BeginTransactionAsync(cancellationToken);
+
+            var topicRequest = new TopicRequest
+            {
+                Id = Guid.NewGuid(),
+                SupervisorId = topic.MainSupervisorId,
+                GroupId = groupMember.GroupId,
+                TopicId = topic.Id
+            };
+            topicRequestRepository.Insert(topicRequest);
+            await uow.SaveChangesAsync(cancellationToken);
+
+            integrationEventLogService.SendEvent(new ExpirationRequestEvent 
+            {
+                RequestId = topic.Id,
+                RequestType = nameof(TopicRequest),
+                ExpirationDuration = TimeSpan.FromHours(24)
+            });
+
+            await uow.CommitAsync(cancellationToken);
+
+            return topicRequest.Id;
+        }
+        catch (Exception ex)
+        {
+            logger.LogError("Fail to create topic request with error {Message}", ex.Message);
+
+            await uow.RollbackAsync(cancellationToken);
+
+            return OperationResult.Failure<Guid>(new Error("Error.CantSentTopicRequest", "Fail to sent request to regist topic."));
+        }
     }
 
     public async Task<OperationResult<Dictionary<string, List<TopicRequestResponse>>>> GetTopicRequestsAsync(
@@ -682,46 +705,40 @@ public class GroupService(
             cancellationToken
         );
 
-        if (progress is null)
+        if (progress is null || progress.FucTasks.Single() is null)
             return OperationResult.Failure<UpdateFucTaskResponse>(Error.NullValue);
 
-        var task = progress.FucTasks.Single();
-
-        if (task == null)
-            return OperationResult.Failure<UpdateFucTaskResponse>(Error.NullValue);
-
-        if (task.Status == FucTaskStatus.Done)
+        if (progress.FucTasks.Single().Status == FucTaskStatus.Done)
             return OperationResult.Failure<UpdateFucTaskResponse>(new Error("ProjectProgress.Error", "This task was already done."));
 
         if (!await CheckStudentsInSameGroup([currentUser.UserCode], progress.GroupId, cancellationToken))
             return OperationResult.Failure<UpdateFucTaskResponse>(new Error("ProjectProgress.Error", "You can not update this task."));
 
-        if (currentUser.UserCode != task.AssigneeId && currentUser.UserCode != task.ReporterId)
+        if (currentUser.UserCode != progress.FucTasks.Single().AssigneeId && 
+            currentUser.UserCode != progress.FucTasks.Single().ReporterId)
         {
             return OperationResult.Failure<UpdateFucTaskResponse>(new Error("ProjectProgress.Error",
                 "You can update the task which is not belong to you."));
         }
 
-        var changes = TrackingTaskHistory.GetChangedProperties(request, task);
+        var changes = TrackingTaskHistory.GetChangedProperties(request, progress.FucTasks.Single());
 
         if (changes.Count == 0)
             return OperationResult.Success(new UpdateFucTaskResponse
             {
-                FucTaskId = task.Id,
-                ProjectProgressId = task.ProjectProgressId
+                FucTaskId = progress.FucTasks.Single().Id,
+                ProjectProgressId = progress.FucTasks.Single().ProjectProgressId
             });
 
         try
         {
             await uow.BeginTransactionAsync(cancellationToken);
 
-            mapper.Map(request, task);
-
-            projectProgressRepository.Update(progress);
+            mapper.Map(request, progress.FucTasks.Single());
 
             foreach (var h in changes)
             {
-                task.FucTaskHistories.Add(new FucTaskHistory
+                progress.FucTasks.Single().FucTaskHistories.Add(new FucTaskHistory
                 {
                     Content = h.Key == nameof(request.Comment)
                         ? request.Comment!
@@ -729,26 +746,26 @@ public class GroupService(
                 });
             }
 
+            projectProgressRepository.Update(progress);
+
             await uow.SaveChangesAsync(cancellationToken);
 
             // TODO: Send notification
-
-            // TODO: add task history
 
             await uow.CommitAsync(cancellationToken);
 
             return OperationResult.Success(new UpdateFucTaskResponse
             {
-                FucTaskId = task.Id,
-                ProjectProgressId = task.ProjectProgressId
+                FucTaskId = progress.FucTasks.Single().Id,
+                ProjectProgressId = progress.FucTasks.Single().ProjectProgressId
             });
         }
         catch (Exception ex)
         {
-            logger.LogError("Create Task with error: {Message}", ex.Message);
+            logger.LogError("Update Task with error: {Message}", ex.Message);
             await uow.RollbackAsync(cancellationToken);
 
-            return OperationResult.Failure<UpdateFucTaskResponse>(new Error("ProjectProgress.Error", "Create task fail"));
+            return OperationResult.Failure<UpdateFucTaskResponse>(new Error("ProjectProgress.Error", "Update task fail"));
         }
     }
 

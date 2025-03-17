@@ -8,46 +8,73 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
 #nullable disable
 
-namespace FUC.Processor.Data.Migrations
+namespace FUC.Processor.Data.Migrations;
+
+[DbContext(typeof(ProcessorDbContext))]
+partial class ProcessorDbContextModelSnapshot : ModelSnapshot
 {
-    [DbContext(typeof(ProcessorDbContext))]
-    partial class ProcessorDbContextModelSnapshot : ModelSnapshot
+    protected override void BuildModel(ModelBuilder modelBuilder)
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
-        {
 #pragma warning disable 612, 618
-            modelBuilder
-                .HasAnnotation("ProductVersion", "8.0.10")
-                .HasAnnotation("Relational:MaxIdentifierLength", 63);
+        modelBuilder
+            .HasAnnotation("ProductVersion", "8.0.10")
+            .HasAnnotation("Relational:MaxIdentifierLength", 63);
 
-            NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
+        NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
 
-            modelBuilder.Entity("FUC.Processor.Models.Reminder", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid");
+        modelBuilder.Entity("FUC.Common.IntegrationEventLog.IntegrationEventLog", b =>
+            {
+                b.Property<Guid>("Id")
+                    .ValueGeneratedOnAdd()
+                    .HasColumnType("uuid");
 
-                    b.Property<string>("Content")
-                        .IsRequired()
-                        .HasColumnType("text");
+                b.Property<string>("Content")
+                    .IsRequired()
+                    .HasColumnType("text");
 
-                    b.Property<DateTime>("RemindDate")
-                        .HasColumnType("timestamp with time zone");
+                b.Property<string>("Error")
+                    .HasColumnType("text");
 
-                    b.Property<string>("RemindFor")
-                        .IsRequired()
-                        .HasColumnType("text");
+                b.Property<DateTime>("OccurredOnUtc")
+                    .HasColumnType("timestamp with time zone");
 
-                    b.Property<string>("ReminderType")
-                        .IsRequired()
-                        .HasColumnType("text");
+                b.Property<DateTime?>("ProcessedOnUtc")
+                    .HasColumnType("timestamp with time zone");
 
-                    b.HasKey("Id");
+                b.Property<string>("Type")
+                    .IsRequired()
+                    .HasColumnType("text");
 
-                    b.ToTable("Reminders", (string)null);
-                });
+                b.HasKey("Id");
+
+                b.ToTable("IntegrationEventLogs", (string)null);
+            });
+
+        modelBuilder.Entity("FUC.Processor.Models.Reminder", b =>
+            {
+                b.Property<Guid>("Id")
+                    .ValueGeneratedOnAdd()
+                    .HasColumnType("uuid");
+
+                b.Property<string>("Content")
+                    .IsRequired()
+                    .HasColumnType("text");
+
+                b.Property<DateTime>("RemindDate")
+                    .HasColumnType("timestamp with time zone");
+
+                b.Property<string>("RemindFor")
+                    .IsRequired()
+                    .HasColumnType("text");
+
+                b.Property<string>("ReminderType")
+                    .IsRequired()
+                    .HasColumnType("text");
+
+                b.HasKey("Id");
+
+                b.ToTable("Reminders", (string)null);
+            });
 #pragma warning restore 612, 618
-        }
     }
 }

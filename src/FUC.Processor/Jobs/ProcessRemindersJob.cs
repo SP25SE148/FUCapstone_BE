@@ -1,4 +1,7 @@
-﻿using FUC.Processor.Data;
+﻿using System.Collections.Concurrent;
+using FUC.Common.Contracts;
+using FUC.Common.IntegrationEventLog.Services;
+using FUC.Processor.Data;
 using FUC.Processor.Models;
 using Microsoft.EntityFrameworkCore;
 using Quartz;
@@ -9,22 +12,28 @@ public class ProcessRemindersJob : IJob
 {
     private readonly ProcessorDbContext _processorDbContext;
     private readonly ILogger<ProcessRemindersJob> _logger;
+    private readonly IIntegrationEventLogService _integrationEventLogService;
 
-    public ProcessRemindersJob(ProcessorDbContext processorDbContext, ILogger<ProcessRemindersJob> logger)
+    public ProcessRemindersJob(ILogger<ProcessRemindersJob> logger,
+        ProcessorDbContext processorDbContext,
+        IIntegrationEventLogService integrationEventLogService)
     {
-        _processorDbContext = processorDbContext;   
-        _logger = logger;   
+        _processorDbContext = processorDbContext;
+        _integrationEventLogService = integrationEventLogService;
+        _logger = logger;
     }
 
     public async Task Execute(IJobExecutionContext context)
     {
         _logger.LogInformation("--> Starting execute the ReminderJob at {Date}.", DateTime.Now);
 
+        await _processorDbContext.Database.BeginTransactionAsync(context.CancellationToken);
+
         var reminders = await _processorDbContext.Reminders.FromSqlRaw(
             $"""
             SELECT * 
             FROM "Reminders"
-            WHERE RemindDate IN (CURRENT_DATE, CURRENT_DATE + INTERVAL 1 DAY);
+            WHERE DATE("RemindDate") = CURRENT_DATE;
             """
             ).ToListAsync(context.CancellationToken);
 
@@ -32,26 +41,79 @@ public class ProcessRemindersJob : IJob
         {
             _logger.LogInformation("No reminders to process.");
             return;
-        } 
+        }
 
-        var reminderTasks = reminders.Select(x => ProcessReminderAsync(x));
+        var reminderedQueue = new ConcurrentQueue<Guid>();
+
+        var reminderTasks = reminders.Select(x => ProcessReminderAsync(x,
+            reminderedQueue,
+            context.CancellationToken));
 
         await Task.WhenAll(reminderTasks);
 
-        _logger.LogInformation("Completed processing all reminders.");
+        if (!reminderedQueue.IsEmpty)
+        {
+            var deleteReminders = """
+                DELETE FROM "Reminders" WHERE "Id" = ANY(@ids);
+                """;
 
-        _logger.LogInformation("{Number} reminders", reminders.Count);
+            await _processorDbContext.Database.ExecuteSqlRawAsync(deleteReminders, reminderedQueue.ToArray());
+        }
+
+        await _processorDbContext.Database.CommitTransactionAsync(context.CancellationToken);
+
+        _logger.LogInformation("Completed processing {Count} reminders.", reminderedQueue.Count);
     }
 
-    private async Task ProcessReminderAsync(Reminder reminder)
+    private async Task ProcessReminderAsync(Reminder reminder,
+        ConcurrentQueue<Guid> reminderedQueue,
+        CancellationToken cancellationToken)
     {
         _logger.LogInformation("Processing reminder ID: {Id}, Type: {Type}", reminder.Id, reminder.ReminderType);
 
-        switch (reminder.ReminderType)
+        try
         {
-            default:
-                _logger.LogWarning("Unsupported RemindType: {Type}", reminder.ReminderType);
-                break;
+            if (reminder.RemindDate > DateTime.Now)
+                return;
+
+            switch (reminder.ReminderType)
+            {
+                case "TopicRequest":
+                    _integrationEventLogService.SendEvent(new TopicRequestExpirationEvent
+                    {
+                        TopicRequestId = Guid.Parse(reminder.RemindFor)
+                    });
+
+                    break;
+
+                case "JoinGroupRequest":
+                    _integrationEventLogService.SendEvent(new JoinGroupRequestExpirationEvent
+                    {
+                        JoinGroupRequestId = Guid.Parse(reminder.RemindFor)
+                    });
+
+                    break;
+
+                case "GroupMember":
+                    _integrationEventLogService.SendEvent(new GroupMemberExpirationEvent
+                    {
+                        GroupMemberId = Guid.Parse(reminder.RemindFor)
+                    });
+
+                    break;
+
+                default:
+                    _logger.LogWarning("Unsupported RemindType: {Type}", reminder.ReminderType);
+                    break;
+            }
+
+            await _processorDbContext.SaveChangesAsync(cancellationToken);
+
+            reminderedQueue.Enqueue(reminder.Id);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogWarning("Reminder {Id} was processed fail. {Error}", reminder.Id, ex.Message);
         }
     }
 }

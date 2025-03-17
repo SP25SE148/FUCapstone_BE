@@ -25,10 +25,10 @@ public static class TrackingTaskHistory
             changes[nameof(request.Status)] = (existingTask.Status, request.Status);
 
         if (request.Priority.HasValue && request.Priority != existingTask.Priority)
-            changes[nameof(request.Comment)] = ("", request.Comment);
+            changes[nameof(request.Priority)] = (existingTask.Priority, request.Priority);
 
         if (!string.IsNullOrEmpty(request.Comment))
-            changes[nameof(request.Priority)] = (existingTask.Priority, request.Priority);
+            changes[nameof(request.Comment)] = ("", request.Comment);
 
         if (request.DueDate.HasValue && request.DueDate != existingTask.DueDate)
             changes[nameof(request.DueDate)] = (existingTask.DueDate, request.DueDate);

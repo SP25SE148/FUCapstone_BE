@@ -1,4 +1,5 @@
 ﻿using FUC.Common.Cache;
+using FUC.Common.IntegrationEventLog;
 using FUC.Common.IntegrationEventLog.BackgroundJobs;
 using FUC.Common.Options;
 using FUC.Processor.Abstractions;
@@ -64,6 +65,10 @@ public static class ServiceCollectionExtensions
         services.AddSingleton<UsersTracker>();
 
         services.AddCacheConfiguration(configuration);
+
+        // DI IntegrationEventLog
+        services.AddEventConsumerConfiguration(configuration);
+        services.AddIntegrationEventLogService<ProcessorDbContext>();
 
         return services;
     }
@@ -155,8 +160,9 @@ public static class ServiceCollectionExtensions
                 .AddJob(typeof(ProcessRemindersJob), reminderJobKey)
                 .AddTrigger(trigger => 
                     trigger.ForJob(reminderJobKey)
-                        .WithIdentity($"{nameof(ProcessRemindersJob)}_Trigger")
-                        .WithCronSchedule("0 0 7 * * ?"));
+                        .WithSimpleSchedule(schedule =>
+                                schedule.WithInterval(TimeSpan.FromMinutes(1)) // Run every 10 sec
+                                        .RepeatForever()));
         });
 
         // Register Quartz Hosted Service

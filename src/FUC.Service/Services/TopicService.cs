@@ -964,7 +964,6 @@ public class TopicService(
 
             var otherTopicAppraisals = await topicAppraisalRepository.FindAsync(
                 x => x.TopicId == topicAppraisal.TopicId &&
-                     x.CreatedDate == topicAppraisal.CreatedDate &&
                      x.Id != topicAppraisal.Id,
                 cancellationToken);
 

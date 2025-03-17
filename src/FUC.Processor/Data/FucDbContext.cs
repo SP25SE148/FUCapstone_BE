@@ -13,4 +13,10 @@ public class FucDbContext : DbContext, IIntegrationDbContext
 
     public DbSet<IntegrationEventLog> IntegrationEventLogs { get; set; }
     public DbSet<TopicAnalysis> TopicAnalysis { get; set; }
+    protected override void OnModelCreating(ModelBuilder modelBuilder)
+    {
+        base.OnModelCreating(modelBuilder);
+        modelBuilder.ApplyConfigurationsFromAssembly(typeof(FUC.Data.Data.FucDbContext).Assembly);
+        modelBuilder.UseIntegrationEventLogs();
+    }
 }
