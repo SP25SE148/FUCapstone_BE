@@ -32,8 +32,8 @@ public interface IGroupService
     Task<OperationResult> ImportProjectProgressFile(ImportProjectProgressRequest request,
         CancellationToken cancellationToken);
 
-    Task<OperationResult<FucTask>> CreateTask(CreateTaskRequest request, CancellationToken cancellationToken);
-    Task<OperationResult<FucTask>> UpdateTask(UpdateTaskRequest request, CancellationToken cancellationToken);
+    Task<OperationResult<FucTaskResponse>> CreateTask(CreateTaskRequest request, CancellationToken cancellationToken);
+    Task<OperationResult<UpdateFucTaskResponse>> UpdateTask(UpdateTaskRequest request, CancellationToken cancellationToken);
     Task<OperationResult<List<FucTaskResponse>>> GetTasks(Guid projectProgressId, CancellationToken cancellationToken);
     Task<OperationResult<FucTaskDetailResponse>> GetTasksDetail(Guid taskId, CancellationToken cancellationToken);
 

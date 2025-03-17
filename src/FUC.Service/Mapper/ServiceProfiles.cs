@@ -65,5 +65,9 @@ public class ServiceProfiles : Profile
         CreateMap<SummaryProjectProgressWeekRequest, ProjectProgressWeek>()
             .ForMember(dest => dest.Id, opt => opt.MapFrom(src => src.ProjectProgressWeekId))
             .ForMember(dest => dest.ProgressWeekSummary, opt => opt.MapFrom(src => src.Summary));
+
+        CreateMap<FucTask, FucTaskResponse>();
+
+        CreateMap<FucTaskHistory, FucTaskHistoryDto>();
     }
 }
