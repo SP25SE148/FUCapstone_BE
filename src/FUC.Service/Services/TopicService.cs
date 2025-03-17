@@ -102,12 +102,12 @@ public class TopicService(
             });
     }
 
-    public async Task<OperationResult<PaginatedList<TopicResponse>>> GetAvailableTopicsForGroupAsync(
+    public async Task<OperationResult<PaginatedList<TopicForStudentResponse>>> GetAvailableTopicsForGroupAsync(
         TopicForGroupParams request)
     {
         var currentSemester = await semesterService.GetCurrentSemesterAsync();
         if (currentSemester.IsFailure)
-            return OperationResult.Failure<PaginatedList<TopicResponse>>(new Error("Error.GetTopicsFailed",
+            return OperationResult.Failure<PaginatedList<TopicForStudentResponse>>(new Error("Error.GetTopicsFailed",
                 "The current semester is not existed!"));
 
         var averageGpa = await groupService.GetAverageGPAOfGroupByStudent(currentUser.UserCode, default);
@@ -140,7 +140,7 @@ public class TopicService(
                 .Include(x => x.BusinessArea)
                 .Include(x => x.CoSupervisors)
                 .ThenInclude(c => c.Supervisor),
-            x => new TopicResponse
+            x => new TopicForStudentResponse
             {
                 Id = x.Id.ToString(),
                 Code = x.Code!,
@@ -164,11 +164,12 @@ public class TopicService(
                     SupervisorName = x.Supervisor.FullName,
                 }).ToList(),
                 CreatedDate = x.CreatedDate,
+                NumberOfTopicRequest = x.TopicRequests.Count(x => x.Status == TopicRequestStatus.UnderReview),
             });
 
         return topics.TotalNumberOfItems > 0
             ? OperationResult.Success(topics)
-            : OperationResult.Failure<PaginatedList<TopicResponse>>(Error.NullValue);
+            : OperationResult.Failure<PaginatedList<TopicForStudentResponse>>(Error.NullValue);
     }
 
     private static DifficultyLevel GetDifficultyByGPA(double gpa)

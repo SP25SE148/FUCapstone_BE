@@ -11,7 +11,7 @@ public interface ITopicService
     Task<OperationResult<TopicResponse>> GetTopicById(Guid topicId, CancellationToken cancellationToken);
     Task<OperationResult<IList<TopicResponse>>> GetTopicsBySupervisor();
     Task<OperationResult<PaginatedList<TopicResponse>>> GetTopics(TopicParams request);
-    Task<OperationResult<PaginatedList<TopicResponse>>> GetAvailableTopicsForGroupAsync(TopicForGroupParams request);
+    Task<OperationResult<PaginatedList<TopicForStudentResponse>>> GetAvailableTopicsForGroupAsync(TopicForGroupParams request);
     Task<OperationResult<IList<TopicResponse>>> GetTopicsByManagerLevel();
     Task<OperationResult<Guid>> CreateTopic(CreateTopicRequest request, CancellationToken cancellationToken);
     Task<OperationResult> UpdateTopic(UpdateTopicRequest request, CancellationToken cancellationToken);

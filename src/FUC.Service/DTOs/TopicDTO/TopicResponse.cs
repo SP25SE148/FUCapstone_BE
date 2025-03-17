@@ -42,3 +42,8 @@ public sealed class TopicAppraisalDto
     public TopicAppraisalStatus Status { get; set; }
     public DateTime? AppraisalDate { get; set; }
 }
+
+public class TopicForStudentResponse : TopicResponse
+{
+    public int NumberOfTopicRequest { get; set; }
+}
