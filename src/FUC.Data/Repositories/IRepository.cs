@@ -39,7 +39,7 @@ public interface IRepository<TEntity> where TEntity : Entity
         CancellationToken cancellationToken = default);
 
     Task<TResult?> GetAsync<TResult>(Expression<Func<TEntity, bool>> predicate,
-        Expression<Func<TEntity, TResult>> selector,
+        Expression<Func<TEntity, TResult>>? selector = null,
         Func<IQueryable<TEntity>, IIncludableQueryable<TEntity, object?>>? include = null,
         CancellationToken cancellationToken = default);
 

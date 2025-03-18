@@ -5,5 +5,8 @@ namespace FUC.Service.Abstractions;
 
 public interface ISupervisorService
 {
-    Task<OperationResult<IEnumerable<SupervisorResponseDTO>>> GetAllSupervisorAsync(CancellationToken cancellationToken);
+    Task<OperationResult<IEnumerable<SupervisorResponseDTO>>>
+        GetAllSupervisorAsync(CancellationToken cancellationToken);
+
+    Task<OperationResult<SupervisorResponseDTO>> GetSupervisorByIdAsync(string id);
 }

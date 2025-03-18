@@ -6,6 +6,7 @@ public class TopicResponse
 {
     public string Id { get; set; }
     public string Code { get; set; }
+    public string MainSupervisorId { get; set; }
     public string MainSupervisorName { get; set; }
     public string MainSupervisorEmail { get; set; }
     public string EnglishName { get; set; }

@@ -72,8 +72,8 @@ public class GroupMemberService(
         Guid groupIdOfLeader = leader.GroupMembers.FirstOrDefault(s => s.IsLeader)!.GroupId;
         int numOfMembers = (await _groupMemberRepository.FindAsync(
             gm => gm.GroupId.Equals(groupIdOfLeader) &&
-                  gm.Status.Equals(GroupMemberStatus.Accepted) ||
-                  gm.Status.Equals(GroupMemberStatus.UnderReview))).Count;
+                  (gm.Status.Equals(GroupMemberStatus.Accepted) ||
+                   gm.Status.Equals(GroupMemberStatus.UnderReview)))).Count;
         // Check if the team size is invalid 
         if (numOfMembers + 1 > leader.Capstone.MaxMember)
             return OperationResult.Failure<Guid>(new Error("Error.MemberRequestSizeInvalid",

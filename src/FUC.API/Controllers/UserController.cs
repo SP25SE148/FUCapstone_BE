@@ -33,7 +33,8 @@ public sealed class UserController(
     [Authorize(Roles = $"{UserRoles.SuperAdmin}, {UserRoles.Admin}, {UserRoles.Manager}")]
     public async Task<IActionResult> GetAllSupervisorAsync()
     {
-        OperationResult<IEnumerable<SupervisorResponseDTO>> result = await supervisorService.GetAllSupervisorAsync(default);
+        OperationResult<IEnumerable<SupervisorResponseDTO>> result =
+            await supervisorService.GetAllSupervisorAsync(default);
         return result.IsSuccess
             ? Ok(result)
             : HandleFailure(result);
@@ -63,6 +64,15 @@ public sealed class UserController(
     public async Task<IActionResult> UpdateTopicRequestAsync([FromBody] UpdateTopicRequestStatusRequest request)
     {
         var result = await groupService.UpdateTopicRequestStatusAsync(request);
+        return result.IsSuccess
+            ? Ok(result)
+            : HandleFailure(result);
+    }
+
+    [HttpPost("import-review")]
+    public async Task<IActionResult> ImportReviewAsync(IFormFile file)
+    {
+        var result = await groupService.ImportReviewCalendar(file);
         return result.IsSuccess
             ? Ok(result)
             : HandleFailure(result);

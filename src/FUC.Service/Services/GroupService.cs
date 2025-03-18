@@ -1,8 +1,11 @@
 ﻿using System.Linq.Expressions;
+using System.Runtime.InteropServices.JavaScript;
+using System.Text.RegularExpressions;
 using Amazon.S3;
 using Amazon.S3.Model;
 using AutoMapper;
 using ClosedXML.Excel;
+using DocumentFormat.OpenXml.Office2010.ExcelAc;
 using FUC.Common.Abstractions;
 using FUC.Common.Constants;
 using FUC.Common.Contracts;
@@ -17,6 +20,7 @@ using FUC.Service.Abstractions;
 using FUC.Service.DTOs.GroupDTO;
 using FUC.Service.DTOs.GroupMemberDTO;
 using FUC.Service.DTOs.ProjectProgressDTO;
+using FUC.Service.DTOs.TopicDTO;
 using FUC.Service.DTOs.TopicRequestDTO;
 using FUC.Service.Extensions.Options;
 using FUC.Service.Helpers;
@@ -25,6 +29,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Query;
 using Microsoft.Extensions.Logging;
+using Group = FUC.Data.Entities.Group;
 
 namespace FUC.Service.Services;
 
@@ -38,12 +43,14 @@ public class GroupService(
     IRepository<GroupMember> groupMemberRepository,
     IRepository<TopicRequest> topicRequestRepository,
     IRepository<ProjectProgressWeek> projectProgressWeekRepository,
+    ISupervisorService supervisorService,
     IRepository<ProjectProgress> projectProgressRepository,
     IRepository<FucTask> fucTaskRepository,
     IRepository<WeeklyEvaluation> weeklyEvaluationRepository,
     IRepository<Student> studentRepository,
     IRepository<Group> groupRepository,
     ITopicService topicService,
+    IRepository<ReviewCalendar> reviewCalendarRepository,
     ICapstoneService capstoneService,
     IS3Service s3Service,
     S3BucketConfiguration s3BucketConfiguration) : IGroupService
@@ -236,6 +243,18 @@ public class GroupService(
         return group;
     }
 
+    public async Task<OperationResult<GroupResponse>> GetGroupByGroupCodeAsync(string groupCode)
+    {
+        var groupResponse = await groupRepository.GetAsync(
+            g => g.GroupCode == groupCode,
+            CreateSelectorForGroupResponse(),
+            CreateIncludeForGroupResponse());
+
+        return groupResponse != null
+            ? OperationResult.Success(groupResponse)
+            : OperationResult.Failure<GroupResponse>(Error.NullValue);
+    }
+
     public async Task<OperationResult> UpdateGroupStatusAsync()
     {
         var capstone = await capstoneService.GetCapstoneByIdAsync(currentUser.CapstoneId);
@@ -390,7 +409,7 @@ public class GroupService(
             topicRequestRepository.Insert(topicRequest);
             await uow.SaveChangesAsync(cancellationToken);
 
-            integrationEventLogService.SendEvent(new ExpirationRequestEvent 
+            integrationEventLogService.SendEvent(new ExpirationRequestEvent
             {
                 RequestId = topic.Id,
                 RequestType = nameof(TopicRequest),
@@ -407,7 +426,8 @@ public class GroupService(
 
             await uow.RollbackAsync(cancellationToken);
 
-            return OperationResult.Failure<Guid>(new Error("Error.CantSentTopicRequest", "Fail to sent request to regist topic."));
+            return OperationResult.Failure<Guid>(new Error("Error.CantSentTopicRequest",
+                "Fail to sent request to regist topic."));
         }
     }
 
@@ -631,7 +651,8 @@ public class GroupService(
         }
     }
 
-    public async Task<OperationResult<FucTaskResponse>> CreateTask(CreateTaskRequest request, CancellationToken cancellationToken)
+    public async Task<OperationResult<FucTaskResponse>> CreateTask(CreateTaskRequest request,
+        CancellationToken cancellationToken)
     {
         var progress = await projectProgressRepository.GetAsync(
             x => x.Id == request.ProjectProgressId,
@@ -650,13 +671,15 @@ public class GroupService(
 
         if (!result)
         {
-            return OperationResult.Failure<FucTaskResponse>(new Error("ProjectProgress.Error", "Students are not the same group."));
+            return OperationResult.Failure<FucTaskResponse>(new Error("ProjectProgress.Error",
+                "Students are not the same group."));
         }
 
         try
         {
             if (progress.FucTasks.Any(x => x.KeyTask == request.KeyTask))
-                return OperationResult.Failure<FucTaskResponse>(new Error("ProjectProgress.Error", "The key task was already taken."));
+                return OperationResult.Failure<FucTaskResponse>(new Error("ProjectProgress.Error",
+                    "The key task was already taken."));
 
             await uow.BeginTransactionAsync(cancellationToken);
 
@@ -695,7 +718,8 @@ public class GroupService(
         }
     }
 
-    public async Task<OperationResult<UpdateFucTaskResponse>> UpdateTask(UpdateTaskRequest request, CancellationToken cancellationToken)
+    public async Task<OperationResult<UpdateFucTaskResponse>> UpdateTask(UpdateTaskRequest request,
+        CancellationToken cancellationToken)
     {
         var progress = await projectProgressRepository.GetAsync(
             x => x.Id == request.ProjectProgressId,
@@ -710,12 +734,14 @@ public class GroupService(
             return OperationResult.Failure<UpdateFucTaskResponse>(Error.NullValue);
 
         if (progress.FucTasks.Single().Status == FucTaskStatus.Done)
-            return OperationResult.Failure<UpdateFucTaskResponse>(new Error("ProjectProgress.Error", "This task was already done."));
+            return OperationResult.Failure<UpdateFucTaskResponse>(new Error("ProjectProgress.Error",
+                "This task was already done."));
 
         if (!await CheckStudentsInSameGroup([currentUser.UserCode], progress.GroupId, cancellationToken))
-            return OperationResult.Failure<UpdateFucTaskResponse>(new Error("ProjectProgress.Error", "You can not update this task."));
+            return OperationResult.Failure<UpdateFucTaskResponse>(new Error("ProjectProgress.Error",
+                "You can not update this task."));
 
-        if (currentUser.UserCode != progress.FucTasks.Single().AssigneeId && 
+        if (currentUser.UserCode != progress.FucTasks.Single().AssigneeId &&
             currentUser.UserCode != progress.FucTasks.Single().ReporterId)
         {
             return OperationResult.Failure<UpdateFucTaskResponse>(new Error("ProjectProgress.Error",
@@ -766,7 +792,8 @@ public class GroupService(
             logger.LogError("Update Task with error: {Message}", ex.Message);
             await uow.RollbackAsync(cancellationToken);
 
-            return OperationResult.Failure<UpdateFucTaskResponse>(new Error("ProjectProgress.Error", "Update task fail"));
+            return OperationResult.Failure<UpdateFucTaskResponse>(
+                new Error("ProjectProgress.Error", "Update task fail"));
         }
     }
 
@@ -1159,6 +1186,145 @@ public class GroupService(
             return OperationResult.Failure(new Error("ProjectProgress.Error",
                 "Update ProjectProgressWeek fail."));
         }
+    }
+
+    public async Task<OperationResult> ImportReviewCalendar(IFormFile file)
+    {
+        // check if file is valid
+        if (!IsValidFile(file))
+            return OperationResult.Failure(new Error("Error.ImportFailed", "Invalid file"));
+        // get current semester 
+        var currentSemester = await semesterService.GetCurrentSemesterAsync();
+        if (currentSemester.IsFailure)
+            return OperationResult.Failure(new Error("Error.SemesterIsNotGoingOn",
+                "The current semester is not going on"));
+
+        try
+        {
+            var reviewCalendars = await ParseReviewCalendarsFromFile(file, currentSemester.Value.Id);
+            reviewCalendarRepository.InsertRange(reviewCalendars);
+            await uow.SaveChangesAsync();
+            return OperationResult.Success();
+        }
+        catch (Exception e)
+        {
+            logger.LogError("import review failed with message: {Message}", e.Message);
+            return OperationResult.Failure(new Error("Error.ImportFailed", "import review failed"));
+        }
+    }
+
+    private async Task<List<ReviewCalendar>> ParseReviewCalendarsFromFile(IFormFile file, string currentSemester)
+    {
+        var stream = new MemoryStream();
+        await file.CopyToAsync(stream);
+        using var wb = new XLWorkbook(stream);
+        IXLWorksheet workSheet = wb.Worksheet(1);
+
+        var reviewCalendars = new List<ReviewCalendar>();
+        var attempt = GetAttemptNumberFromFile(file);
+
+        foreach (var row in workSheet.Rows().Skip(3))
+        {
+            var groupCode = row.Cell(2).GetValue<string>();
+            var topicCode = row.Cell(3).GetValue<string>();
+            var group = await GetGroupByGroupCodeAsync(row.Cell(2).GetValue<string>());
+            var topic = await topicService.GetTopicByTopicCode(row.Cell(3).GetValue<string>());
+
+            if (group.IsFailure ||
+                group.Value.SemesterName != currentSemester ||
+                group.Value.CampusName != currentUser.CampusId ||
+                group.Value.MajorName != currentUser.MajorId ||
+                topic == null ||
+                topic.Code != group.Value.TopicCode)
+            {
+                logger.LogError("import review failed");
+                return new List<ReviewCalendar>();
+            }
+
+            var reviewersCalendarDetail = await GetReviewCalendarDetailsFromRow(row, workSheet);
+            var reviewCalendar =
+                CreateReviewCalendar(group.Value, topic, attempt, currentSemester, reviewersCalendarDetail);
+            reviewCalendars.Add(reviewCalendar);
+        }
+
+        return reviewCalendars;
+    }
+
+    private static int GetAttemptNumberFromFile(IFormFile file)
+    {
+        var fileName = file.FileName;
+        var match = Regex.Match(fileName, @"Review (\d+)");
+        return !match.Success
+            ? throw new Exception("Invalid file name format")
+            : int.Parse(match.Groups[1].Value);
+    }
+
+    private async Task<ReviewCalendarDetail> GetReviewCalendarDetailsFromRow(IXLRow row, IXLWorksheet workSheet)
+    {
+        var reviewers = new List<string>();
+        int reviewerCol = 9;
+        for (; reviewerCol < row.Cells().Count(); reviewerCol++)
+        {
+            var isReviewerColumn = workSheet.Cell(3, reviewerCol).GetValue<string>().Contains("Reviewer");
+            if (!isReviewerColumn)
+                break;
+
+            var reviewerCode = row.Cell(reviewerCol).GetValue<string>();
+            var reviewer = await supervisorService.GetSupervisorByIdAsync(reviewerCode);
+            if (reviewer.IsFailure)
+            {
+                logger.LogError("import review failed with message: reviewer with code: {ReviewerCode} is not found!",
+                    reviewerCode);
+                return new ReviewCalendarDetail();
+            }
+
+            reviewers.Add(reviewerCode);
+        }
+
+        var reviewDate = row.Cell(reviewerCol++).GetValue<string>();
+        var slot = row.Cell(reviewerCol++).GetValue<string>();
+        var room = row.Cell(reviewerCol).GetValue<string>();
+
+        if (string.IsNullOrEmpty(reviewDate) || string.IsNullOrEmpty(slot) || string.IsNullOrEmpty(room))
+        {
+            logger.LogError("import review failed with message: review date, slot or room is empty!");
+            throw new Exception("Invalid review details");
+        }
+
+        return new ReviewCalendarDetail()
+        {
+            ReviewersId = reviewers,
+            Date = DateTime.SpecifyKind(DateTime.Parse(reviewDate), DateTimeKind.Utc),
+            Slot = int.Parse(slot),
+            Room = room
+        };
+    }
+
+    private ReviewCalendar CreateReviewCalendar(GroupResponse group, TopicResponse topic, int attempt,
+        string currentSemester, ReviewCalendarDetail reviewDetail)
+    {
+        var reviewCalendar = new ReviewCalendar
+        {
+            Id = Guid.NewGuid(),
+            TopicId = Guid.Parse(topic.Id),
+            GroupId = group.Id,
+            MajorId = currentUser.MajorId,
+            CampusId = currentUser.CampusId,
+            SemesterId = currentSemester,
+            Attempt = attempt,
+            Slot = reviewDetail.Slot,
+            Room = reviewDetail.Room,
+            Date = reviewDetail.Date
+        };
+
+        reviewCalendar.Reviewers = reviewDetail.ReviewersId.Select(r => new Reviewer
+        {
+            Id = Guid.NewGuid(),
+            ReviewCalenderId = reviewCalendar.Id,
+            SupervisorId = r // r is supervisor id
+        }).ToList();
+
+        return reviewCalendar;
     }
 
     private static bool IsValidFile(IFormFile file)

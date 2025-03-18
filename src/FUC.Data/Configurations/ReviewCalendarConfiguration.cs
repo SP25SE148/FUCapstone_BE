@@ -33,6 +33,7 @@ public sealed class ReviewCalendarConfiguration : IEntityTypeConfiguration<Revie
 
         builder.Property(rc => rc.Status)
             .IsRequired()
+            .HasDefaultValue(ReviewCalendarStatus.Pending)
             .HasConversion(
                 v => v.ToString(),
                 v => (ReviewCalendarStatus)Enum.Parse(typeof(ReviewCalendarStatus), v));
