@@ -264,32 +264,33 @@ public class GroupMemberService(
     {
         var groupMemberRequestResponse = new GroupMemberRequestResponse();
 
-        IList<GroupMember> groupMembers = await _groupMemberRepository.FindAsync(
-            gm => gm.StudentId.Equals(currentUser.UserCode),
-            gm => gm.Include(gm => gm.Student),
-            x => x.OrderBy(x => x.CreatedDate));
-
-
-        groupMemberRequestResponse.GroupMemberRequested = groupMembers.Where(gm => !gm.IsLeader).Select(
-            x => new GroupMemberResponse()
+        var groupMembers = await (from gm in _groupMemberRepository.GetQueryable()
+            where gm.StudentId.Equals(currentUser.UserCode)
+            join s in _studentRepository.GetQueryable() on gm.CreatedBy equals s.Email
+            orderby s.GPA, gm.CreatedDate
+            select new GroupMemberResponse
             {
-                Id = x.Id,
-                Status = x.Status.ToString(),
-                GroupId = x.GroupId,
-                StudentId = x.StudentId,
-                StudentFullName = x.Student.FullName,
-                StudentEmail = x.Student.Email,
-                IsLeader = x.IsLeader,
-                CreatedDate = x.CreatedDate,
-                CreatedBy = x.CreatedBy,
-                GPA = x.Student.GPA
-            }).ToList();
+                Id = gm.Id,
+                Status = gm.Status.ToString(),
+                GroupId = gm.GroupId,
+                StudentId = s.Id,
+                StudentFullName = s.FullName,
+                StudentEmail = s.Email,
+                IsLeader = gm.IsLeader,
+                CreatedDate = gm.CreatedDate,
+                CreatedBy = gm.CreatedBy,
+                GPA = s.GPA
+            }).ToListAsync();
+
+
+        groupMemberRequestResponse.GroupMemberRequested = groupMembers.Where(gm => !gm.IsLeader).ToList();
+
         var leaderGroup = groupMembers.FirstOrDefault(gm => gm.IsLeader);
         if (leaderGroup != null)
         {
             IList<GroupMemberResponse> groupMembersRequestOfLeader =
                 await _groupMemberRepository.FindAsync(
-                    gm => gm.CreatedBy.Equals(leaderGroup.Student.Email) &&
+                    gm => gm.CreatedBy.Equals(leaderGroup.CreatedBy) &&
                           !gm.IsLeader,
                     gm => gm.Include(gm => gm.Student),
                     x => x.OrderBy(x => x.CreatedDate),
