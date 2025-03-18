@@ -1052,6 +1052,9 @@ public class GroupService(
 
         var tasks = await fucTaskRepository.FindAsync(
             x => x.ProjectProgressId == projectProgressId,
+            include: x => x.Include(x => x.Assignee)
+                        .Include(x => x.Reporter),
+            orderBy: x => x.OrderByDescending(x => x.CreatedDate),
             cancellationToken);
 
         return tasks.Select(t => new FucTaskResponse
@@ -1066,6 +1069,8 @@ public class GroupService(
             Status = t.Status,
             Summary = t.Summary,
             CreatedDate = t.CreatedDate,
+            AssigneeName = t.Assignee.FullName,
+            ReporterName = t.Reporter.FullName,
         }).ToList();
     }
 
