@@ -1,11 +1,9 @@
 ﻿using System.Linq.Expressions;
-using System.Runtime.InteropServices.JavaScript;
 using System.Text.RegularExpressions;
 using Amazon.S3;
 using Amazon.S3.Model;
 using AutoMapper;
 using ClosedXML.Excel;
-using DocumentFormat.OpenXml.Office2010.ExcelAc;
 using FUC.Common.Abstractions;
 using FUC.Common.Constants;
 using FUC.Common.Contracts;
@@ -413,7 +411,7 @@ public class GroupService(
             {
                 RequestId = topic.Id,
                 RequestType = nameof(TopicRequest),
-                ExpirationDuration = TimeSpan.FromHours(24)
+                ExpirationDuration = TimeSpan.FromMinutes(5)
             });
 
             await uow.CommitAsync(cancellationToken);
