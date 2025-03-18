@@ -14,12 +14,20 @@ public class ReviewCalendar : AuditableSoftDeleteEntity
     public int Attempt { get; set; }
     public int Slot { get; set; }
     public string Room { get; set; }
+    public DateTime Date { get; set; }
     public ReviewCalendarStatus Status { get; set; }
-
     public Topic Topic { get; set; } = null!;
     public Group Group { get; set; } = null!;
     public Major Major { get; set; } = null!;
     public Campus Campus { get; set; } = null!;
     public Semester Semester { get; set; } = null!;
     public ICollection<Reviewer> Reviewers { get; set; } = new List<Reviewer>();
+}
+
+public sealed class ReviewCalendarDetail()
+{
+    public int Slot { get; set; }
+    public string Room { get; set; }
+    public DateTime Date { get; set; }
+    public IReadOnlyCollection<string> ReviewersId { get; set; }
 }

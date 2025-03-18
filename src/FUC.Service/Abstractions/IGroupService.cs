@@ -3,6 +3,7 @@ using FUC.Data.Entities;
 using FUC.Service.DTOs.GroupDTO;
 using FUC.Service.DTOs.ProjectProgressDTO;
 using FUC.Service.DTOs.TopicRequestDTO;
+using Microsoft.AspNetCore.Http;
 
 namespace FUC.Service.Abstractions;
 
@@ -19,6 +20,8 @@ public interface IGroupService
         CancellationToken cancellationToken);
 
     Task<OperationResult<GroupResponse>> GetGroupByIdAsync(Guid id);
+    Task<OperationResult<GroupResponse>> GetGroupByGroupCodeAsync(string groupCode);
+
     Task<OperationResult> UpdateGroupStatusAsync();
 
     Task<OperationResult<Guid>> CreateTopicRequestAsync(TopicRequest_Request request,
@@ -33,7 +36,10 @@ public interface IGroupService
         CancellationToken cancellationToken);
 
     Task<OperationResult<FucTaskResponse>> CreateTask(CreateTaskRequest request, CancellationToken cancellationToken);
-    Task<OperationResult<UpdateFucTaskResponse>> UpdateTask(UpdateTaskRequest request, CancellationToken cancellationToken);
+
+    Task<OperationResult<UpdateFucTaskResponse>> UpdateTask(UpdateTaskRequest request,
+        CancellationToken cancellationToken);
+
     Task<OperationResult<List<FucTaskResponse>>> GetTasks(Guid projectProgressId, CancellationToken cancellationToken);
     Task<OperationResult<FucTaskDetailResponse>> GetTasksDetail(Guid taskId, CancellationToken cancellationToken);
 
@@ -57,4 +63,6 @@ public interface IGroupService
 
     Task<OperationResult> UpdateProjectProgressWeek(UpdateProjectProgressWeekRequest request,
         CancellationToken cancellationToken);
+
+    Task<OperationResult> ImportReviewCalendar(IFormFile file);
 }
