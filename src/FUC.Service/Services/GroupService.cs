@@ -1462,7 +1462,8 @@ public class GroupService(
                 StudentFullName = gm.Student.FullName,
                 GroupId = gm.GroupId,
                 CreatedBy = gm.CreatedBy,
-                CreatedDate = gm.CreatedDate
+                CreatedDate = gm.CreatedDate,
+                GPA = gm.Student.GPA
             });
         // get topic's group information
         group.TopicResponse = await topicService.GetTopicByTopicCode(group.TopicCode);
