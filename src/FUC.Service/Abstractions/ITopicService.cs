@@ -25,6 +25,8 @@ public interface ITopicService
     Task<OperationResult<string>> PresentTopicPresignedUrl(Guid topicId, CancellationToken cancellationToken);
     Task<OperationResult> AssignTopicAppraisalForAvailableSupervisors(IReadOnlyList<string> supervisorEmail);
     Task<OperationResult> AssignSupervisorForAppraisalTopic(AssignSupervisorAppraisalTopicRequest request, CancellationToken cancellationToken);
+    Task<OperationResult> RemoveAssignSupervisorForAppraisalTopic(
+        RemoveAssignSupervisorAppraisalTopicRequest request, CancellationToken cancellationToken);
     Task<OperationResult<List<TopicAppraisalResponse>>> GetTopicAppraisalByUserId(TopicAppraisalBaseRequest request);
     Task<OperationResult> AppraisalTopic(AppraisalTopicRequest request, CancellationToken cancellationToken);
     Task<OperationResult<Topic>> GetTopicEntityById(Guid topicId, CancellationToken cancellationToken);

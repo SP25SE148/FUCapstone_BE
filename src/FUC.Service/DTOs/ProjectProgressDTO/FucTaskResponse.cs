@@ -10,7 +10,6 @@ public class FucTaskResponse
     public string Description { get; set; }
     public string AssigneeId { get; set; } 
     public string ReporterId { get; set; }
-    public string? Comment { get; set; }
     public FucTaskStatus Status { get; set; }
     public Priority Priority { get; set; }
     public DateTime DueDate { get; set; }

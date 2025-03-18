@@ -9,6 +9,8 @@ public sealed class TopicAppraisalResponse
     public string TopicEnglishName { get; set; }
     public string? AppraisalContent { get; set; }
     public string? AppraisalComment { get; set; }
+    public int AttemptTime { get; set; }
     public string? Status { get; set; }
     public DateTime? AppraisalDate { get; set; }
+    public DateTime CreatedDate { get; set; }
 }

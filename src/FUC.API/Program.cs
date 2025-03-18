@@ -5,6 +5,7 @@ using FUC.Common.Cache;
 using FUC.Data.Extensions;
 using FUC.Service.Extensions;
 using FUC.Service.Extensions.Options;
+using Microsoft.Extensions.DependencyInjection;
 using Serilog;
 
 Log.Logger = new LoggerConfiguration()
@@ -29,6 +30,8 @@ try
     };
 
     builder.Services.AddSingleton(bucketConfiguration);
+
+    builder.Services.Configure<TopicServiceSetting>(builder.Configuration.GetSection(nameof(TopicServiceSetting)));
 
     // Add services to the container.
     builder.Services.AddServices();

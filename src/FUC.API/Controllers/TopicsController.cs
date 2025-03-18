@@ -114,6 +114,15 @@ public class TopicsController(ITopicService topicService) : ApiController
         return result.IsSuccess ? Ok(result) : HandleFailure(result);
     }
 
+    [HttpPost("remove-topic-appraisal")]
+    [Authorize(Roles = $"{UserRoles.Manager}")]
+    public async Task<IActionResult> RemoveAssignTopicAppraisalForSupervisor(
+        [FromBody] RemoveAssignSupervisorAppraisalTopicRequest request)
+    {
+        var result = await topicService.RemoveAssignSupervisorForAppraisalTopic(request, default);
+        return result.IsSuccess ? Ok(result) : HandleFailure(result);
+    }
+
     [HttpGet("get-topic-appraisal-by-self")]
     [Authorize(Roles = $"{UserRoles.Manager},{UserRoles.Supervisor}")]
     public async Task<IActionResult> GetTopicAppraisals([FromQuery] TopicAppraisalBaseRequest request)

@@ -700,7 +700,8 @@ public class GroupService(
         var progress = await projectProgressRepository.GetAsync(
             x => x.Id == request.ProjectProgressId,
             isEnabledTracking: true,
-            include: x => x.Include(x => x.FucTasks.Where(t => t.Id == request.TaskId)),
+            include: x => x.Include(x => x.FucTasks.Where(t => t.Id == request.TaskId))
+                .ThenInclude(t => t.FucTaskHistories),
             orderBy: null,
             cancellationToken
         );
@@ -1038,7 +1039,6 @@ public class GroupService(
             DueDate = t.DueDate,
             Priority = t.Priority,
             Status = t.Status,
-            Comment = t.Comment,
             Summary = t.Summary,
             CreatedDate = t.CreatedDate,
         }).ToList();
@@ -1071,7 +1071,6 @@ public class GroupService(
                 Status = task.Status,
                 Priority = task.Priority,
                 DueDate = task.DueDate,
-                Comment = task.Comment,
                 ProjectProgressId = task.ProjectProgressId,
                 FucTaskHistories = task.FucTaskHistories.Select(h => new FucTaskHistoryDto
                 {

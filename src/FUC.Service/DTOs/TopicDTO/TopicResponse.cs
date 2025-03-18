@@ -35,12 +35,13 @@ public sealed class TopicAppraisalDto
 {
     public Guid TopicAppraisalId { get; set; }
     public Guid TopicId { get; set; }
-    public string? SupervisorId { get; set; }
-    public string? ManagerId { get; set; }
+    public string SupervisorId { get; set; }
     public string? AppraisalContent { get; set; }
     public string? AppraisalComment { get; set; }
     public TopicAppraisalStatus Status { get; set; }
     public DateTime? AppraisalDate { get; set; }
+    public int AttemptTime { get; set; }
+    public DateTime CreatedDate { get; set; }
 }
 
 public class TopicForStudentResponse : TopicResponse

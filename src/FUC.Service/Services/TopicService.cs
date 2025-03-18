@@ -1,6 +1,7 @@
 using System.Text.Json;
 using Amazon.S3;
 using AutoMapper;
+using AutoMapper.Internal;
 using FUC.Common.Abstractions;
 using FUC.Common.Constants;
 using FUC.Common.Contracts;
@@ -20,6 +21,7 @@ using FUC.Service.Extensions.Options;
 using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 
 namespace FUC.Service.Services;
 
@@ -39,11 +41,9 @@ public class TopicService(
     ISemesterService semesterService,
     IRepository<GroupMember> groupMemberRepository,
     ICacheService cache,
+    IOptions<TopicServiceSetting> topicServiceSetting,
     IIntegrationEventLogService integrationEventLogService) : ITopicService
 {
-    private const int MaxTopicsForCoSupervisors = 3;
-    private const int MaxTopicAppraisalsForTopic = 2;
-
     public async Task<OperationResult<Topic>> GetTopicEntityById(Guid topicId, CancellationToken cancellationToken)
     {
         var topic = await topicRepository
@@ -225,7 +225,9 @@ public class TopicService(
                     SupervisorId = x.SupervisorId,
                     Status = x.Status,
                     TopicAppraisalId = x.Id,
-                    TopicId = x.TopicId
+                    TopicId = x.TopicId,
+                    AttemptTime = x.AttemptTime,
+                    CreatedDate = x.CreatedDate
                 }).ToList()
             });
 
@@ -784,7 +786,7 @@ public class TopicService(
         {
             var assignedSupervisors = new HashSet<string>();
 
-            while (assignedSupervisors.Count < MaxTopicAppraisalsForTopic)
+            while (assignedSupervisors.Count < topicServiceSetting.Value.MaxTopicAppraisalsForTopic)
             {
                 var availableSupervisors = supervisorAssignments
                     .Where(s => s.Key != topic.MainSupervisorId && !assignedSupervisors.Contains(s.Key))
@@ -803,7 +805,8 @@ public class TopicService(
             topicAppraisalList.AddRange(assignedSupervisors.Select(s => new TopicAppraisal
             {
                 SupervisorId = s,
-                TopicId = topic.Id
+                TopicId = topic.Id,
+                AttemptTime = 1
             }));
         }
 
@@ -855,9 +858,22 @@ public class TopicService(
                 return OperationResult.Failure(new Error("Topic.Error", "You can not assign this superviosr for topic."));
             }
 
+            var newAttempTime = topic.TopicAppraisals.Max(x => x.AttemptTime);
+
+            if (topic.TopicAppraisals.Count(x => x.AttemptTime == newAttempTime) 
+                == topicServiceSetting.Value.MaxTopicAppraisalsForTopic)
+                return OperationResult.Failure(new Error("Topic.Error", "This topic has enough appraisal."));
+
+            if (!topic.TopicAppraisals.Any(x => x.AttemptTime == newAttempTime &&
+                x.Status == TopicAppraisalStatus.Pending))
+            {
+                newAttempTime++;
+            }
+
             topic.TopicAppraisals.Add(new TopicAppraisal
             {
-                SupervisorId = request.SupervisorId
+                SupervisorId = request.SupervisorId,
+                AttemptTime = newAttempTime
             });
 
             topicRepository.Update(topic);
@@ -871,6 +887,47 @@ public class TopicService(
             logger.LogError("Fail to assign appraisal for topic {Id} with error {Message}", request.TopicId, ex.Message);
 
             return OperationResult.Failure(new Error("Topic.Error", "Fail to assign topic appraisal."));
+        }
+    }
+
+    public async Task<OperationResult> RemoveAssignSupervisorForAppraisalTopic(
+        RemoveAssignSupervisorAppraisalTopicRequest request, CancellationToken cancellationToken)
+    {
+        try
+        { 
+            var topic = await topicRepository.GetAsync(x => x.Id == request.TopicId,
+                isEnabledTracking: true,
+                include: x => x.Include(x => x.TopicAppraisals),
+                orderBy: null,
+                cancellationToken);
+
+            if (topic == null || topic.Status != TopicStatus.Pending)
+                return OperationResult.Failure(Error.NullValue);
+
+            var topicAppraisal = topic.TopicAppraisals.FirstOrDefault(x => x.Id == request.TopicAppraisalId);
+
+            if (topicAppraisal == null) return OperationResult.Success();
+
+            if (topicAppraisal.Status != TopicAppraisalStatus.Pending)
+                return OperationResult.Failure(new Error("Topic.Error", "This topic was appraised."));
+
+            await unitOfWork.BeginTransactionAsync(cancellationToken);
+
+            topic.TopicAppraisals.Remove(topicAppraisal);
+
+            topicRepository.Update(topic);
+
+            // TODO: Send notification for supvisor has removed.
+
+            await unitOfWork.CommitAsync(cancellationToken);
+
+            return OperationResult.Success();
+        }
+        catch (Exception ex)
+        {
+            logger.LogError("Fail to remove appraisal for topic {Id} with error {Message}", request.TopicId, ex.Message);
+
+            return OperationResult.Failure(new Error("Topic.Error", "Fail to remove topic appraisal."));
         }
     }
 
@@ -907,8 +964,8 @@ public class TopicService(
         {
             query = request.OrderByAppraisalDate switch
             {
-                "_asc" => query.OrderBy(ta => ta.CreatedDate),
-                _ => query.OrderByDescending(ta => ta.CreatedDate)
+                "_asc" => query.OrderByDescending(x => x.AttemptTime).ThenBy(ta => ta.CreatedDate),
+                _ => query.OrderByDescending(x => x.AttemptTime).ThenByDescending(ta => ta.CreatedDate)
             };
         }
 
@@ -921,7 +978,9 @@ public class TopicService(
             AppraisalContent = ta.AppraisalContent,
             AppraisalDate = ta.AppraisalDate,
             TopicId = ta.TopicId,
-            TopicEnglishName = ta.Topic.EnglishName
+            TopicEnglishName = ta.Topic.EnglishName,
+            AttemptTime = ta.AttemptTime,
+            CreatedDate = ta.CreatedDate
         }).ToListAsync();
 
         return response.Count < 1
@@ -949,6 +1008,9 @@ public class TopicService(
                     $"The appraisal topic of supervisor: {currentUser.Name} does not exist."));
             }
 
+            if (topicAppraisal.SupervisorId != currentUser.UserCode)
+                return OperationResult.Failure(new Error("TopicAppraisal.Error", "You can appraisal your assigned Topic."));
+
             if (topicAppraisal.Status != TopicAppraisalStatus.Pending)
             {
                 return OperationResult.Failure(new Error("TopicAppraisal.Error", "This appraisal was reviewed."));
@@ -964,10 +1026,12 @@ public class TopicService(
 
             var otherTopicAppraisals = await topicAppraisalRepository.FindAsync(
                 x => x.TopicId == topicAppraisal.TopicId &&
+                     x.AttemptTime == topicAppraisal.AttemptTime &&
                      x.Id != topicAppraisal.Id,
-                cancellationToken);
+                cancellationToken) ?? new List<TopicAppraisal>();
 
-            if (otherTopicAppraisals is null || otherTopicAppraisals.Count == 0)
+            if (topicServiceSetting.Value.MaxTopicAppraisalsForTopic != 1 
+                && otherTopicAppraisals.Count == 0)
             {
                 return OperationResult.Failure(new Error("Topic.Error",
                     $"The other appraisal of this topic does not exist."));
@@ -990,7 +1054,10 @@ public class TopicService(
             {
                 // TODO: Send notification for re-assign because the supervisor's opinions are not the same or all are consider
                 await UpdateStatusTopicAfterAppraisal(topicAppraisal.TopicId, TopicStatus.Considered, cancellationToken);
-                var appraisalSupervisors = otherTopicAppraisals.Select(x => x.SupervisorId).Distinct();
+                var appraisalSupervisors = new List<string> { topicAppraisal.SupervisorId };
+
+                if (otherTopicAppraisals.Count > 0)
+                    appraisalSupervisors.AddRange(otherTopicAppraisals.Select(x => x.SupervisorId).Distinct());
 
                 var newAppraisals = appraisalSupervisors.Select(s => new TopicAppraisal
                 {
@@ -1114,7 +1181,7 @@ public class TopicService(
 
         var query = from s in supervisorRepository.GetQueryable()
                     where coSupervisorEmails.Contains(s.Email) &&
-                          s.CoSupervisors.Count < MaxTopicsForCoSupervisors
+                          s.CoSupervisors.Count < topicServiceSetting.Value.MaxTopicsForCoSupervisors
                     select new { s.Id, s.Email };
 
         (await query.ToListAsync(cancellationToken))
