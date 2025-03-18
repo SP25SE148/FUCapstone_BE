@@ -53,11 +53,9 @@ public class ProcessRemindersJob : IJob
 
         if (!reminderedQueue.IsEmpty)
         {
-            var deleteReminders = """
-                DELETE FROM "Reminders" WHERE "Id" = ANY(@ids);
-                """;
-
-            await _processorDbContext.Database.ExecuteSqlRawAsync(deleteReminders, reminderedQueue.ToArray());
+            await _processorDbContext.Database.ExecuteSqlInterpolatedAsync($"""
+                DELETE FROM "Reminders" WHERE "Id" = ANY({reminderedQueue.ToArray()});
+                """);
         }
 
         await _processorDbContext.Database.CommitTransactionAsync(context.CancellationToken);

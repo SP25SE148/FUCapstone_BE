@@ -11,4 +11,6 @@ public interface IDocumentsService
     Task<OperationResult> CreateTemplateDocument(Guid? parentId, string? folderName, IFormFile? file, CancellationToken cancellationToken);
     Task<OperationResult> DeleteTemplateDocument(Guid templateId, CancellationToken cancellationToken);
     Task<OperationResult> UpdateActiveStatusForTemplateDocument(Guid templateId, CancellationToken cancellationToken);
+    Task<OperationResult> CreateGroupDocument(IFormFile file, string key, CancellationToken cancellationToken);
+    Task<OperationResult<string>> PresentGroupDocumentFilePresignedUrl(string groupKey);
 }

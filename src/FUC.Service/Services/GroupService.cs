@@ -51,6 +51,7 @@ public class GroupService(
     IRepository<ReviewCalendar> reviewCalendarRepository,
     ICapstoneService capstoneService,
     IS3Service s3Service,
+    IDocumentsService documentsService,
     S3BucketConfiguration s3BucketConfiguration) : IGroupService
 {
     private const int IndexStartProgressingRow = 2;
@@ -1510,5 +1511,40 @@ public class GroupService(
         });
 
         return (await Task.WhenAll(tasks)).OrderBy(x => x.GroupCode).ToList();
+    }
+
+    public async Task<OperationResult> UploadGroupDocumentForGroup(UploadGroupDocumentRequest request, CancellationToken cancellationToken)
+    {
+        try
+        {
+            if (!await CheckStudentIsLeader(currentUser.UserCode, request.GroupId, cancellationToken))
+                return OperationResult.Failure(new Error("Group.Error", "Only leaeder can upload group document"));
+
+            var group = await groupRepository.GetAsync(
+                x => x.Id == request.GroupId && 
+                x.Status == GroupStatus.InProgress,
+                cancellationToken);
+
+            ArgumentNullException.ThrowIfNull(group);
+
+            return await documentsService.CreateGroupDocument(request.File, group.GroupCode, cancellationToken);
+        }
+        catch (Exception ex) 
+        {
+            logger.LogError("Fail to upload group document with error {Message}.", ex.Message);
+
+            return OperationResult.Failure(new Error("Group.Error", "Fail to upload group document."));
+        }
+    }
+
+    public async Task<OperationResult<string>> PresentGroupDocumentFileOfGroup(Guid groupId, CancellationToken cancellationToken)
+    {
+        var group = await groupRepository.GetAsync(
+            x => x.Id == groupId,
+            cancellationToken);
+
+        ArgumentNullException.ThrowIfNull(group);
+
+        return await documentsService.PresentGroupDocumentFilePresignedUrl(group.GroupCode);
     }
 }

@@ -12,7 +12,7 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace FUC.Processor.Data.Migrations
 {
     [DbContext(typeof(ProcessorDbContext))]
-    [Migration("20250317150106_init_db")]
+    [Migration("20250318160052_init_db")]
     partial class init_db
     {
         /// <inheritdoc />
@@ -60,7 +60,6 @@ namespace FUC.Processor.Data.Migrations
                         .HasColumnType("uuid");
 
                     b.Property<string>("Content")
-                        .IsRequired()
                         .HasColumnType("text");
 
                     b.Property<DateTime>("RemindDate")

@@ -4,6 +4,7 @@ using FUC.Common.Constants;
 using FUC.Common.IntegrationEventLog.Services;
 using FUC.Common.Shared;
 using FUC.Service.Abstractions;
+using FUC.Service.DTOs.GroupDTO;
 using FUC.Service.DTOs.GroupMemberDTO;
 using FUC.Service.DTOs.ProjectProgressDTO;
 using FUC.Service.DTOs.TopicDTO;
@@ -17,9 +18,7 @@ namespace FUC.API.Controllers;
 public class GroupController(
     IGroupService groupService,
     IGroupMemberService groupMemberService,
-    ITopicService topicService,
-    ICurrentUser currentUser,
-    IIntegrationEventLogService integrationEventLogService) : ApiController
+    ITopicService topicService) : ApiController
 {
     #region Group Endpoint
 
@@ -332,4 +331,26 @@ public class GroupController(
     }
 
     #endregion ProjectProgress
+
+    #region GroupDocument
+
+    [HttpPost("documents")]
+    [Authorize(Roles = $"{UserRoles.Student}")]
+    public async Task<IActionResult> UploadGroupDocument([FromForm] UploadGroupDocumentRequest request)
+    {
+        var result = await groupService.UploadGroupDocumentForGroup(request, default);
+
+        return result.IsSuccess ? Ok(result) : HandleFailure(result);
+    }
+
+    [HttpGet("documents/{groupId}")]
+    [Authorize(Roles = $"{UserRoles.Supervisor},{UserRoles.Manager},{UserRoles.Admin}")]
+    public async Task<IActionResult> GetPresignGroupDocument(Guid groupId)
+    {
+        var result = await groupService.PresentGroupDocumentFileOfGroup(groupId, default);
+
+        return result.IsSuccess ? Ok(result) : HandleFailure(result);
+    }
+
+    #endregion GroupDocument
 }

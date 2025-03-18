@@ -1,5 +1,4 @@
 ﻿using FUC.Common.Shared;
-using FUC.Data.Entities;
 using FUC.Service.DTOs.GroupDTO;
 using FUC.Service.DTOs.ProjectProgressDTO;
 using FUC.Service.DTOs.TopicRequestDTO;
@@ -65,4 +64,6 @@ public interface IGroupService
         CancellationToken cancellationToken);
 
     Task<OperationResult> ImportReviewCalendar(IFormFile file);
+    Task<OperationResult> UploadGroupDocumentForGroup(UploadGroupDocumentRequest request, CancellationToken cancellationToken);
+    Task<OperationResult<string>> PresentGroupDocumentFileOfGroup(Guid groupId, CancellationToken cancellationToken);
 }

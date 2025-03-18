@@ -389,7 +389,7 @@ public class DocumentsService(
         return result ? OperationResult.Success() : OperationResult.Failure(new Error("Document.Error", "Fail to upload documents."));
     }
 
-    public async Task<OperationResult<string>> PresentDocumentFilePresignedUrl(string groupKey)
+    public async Task<OperationResult<string>> PresentGroupDocumentFilePresignedUrl(string groupKey)
     {
         var result = await PresentFilePresignedUrl(s3BucketConfiguration.FUCGroupDocumentBucket, groupKey);
 

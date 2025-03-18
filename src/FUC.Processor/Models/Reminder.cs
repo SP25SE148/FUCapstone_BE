@@ -4,7 +4,7 @@ public class Reminder
 {
     public Guid Id { get; set; }
 
-    public string Content { get; set; }
+    public string? Content { get; set; }
 
     public required string ReminderType { get; set; }
 
