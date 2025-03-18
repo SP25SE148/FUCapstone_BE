@@ -129,7 +129,7 @@ public class TopicService(
                 x.CapstoneId == currentUser.CapstoneId &&
                 x.CampusId == currentUser.CampusId &&
                 x.SemesterId == currentSemester.Value.Id &&
-                !x.IsAssignedToGroup &&
+                x.IsAssignedToGroup == false &&
                 x.Status.Equals(TopicStatus.Approved),
             request.PageNumber,
             request.PageSize,
