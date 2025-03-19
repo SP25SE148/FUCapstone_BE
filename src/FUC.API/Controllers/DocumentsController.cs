@@ -63,4 +63,49 @@ public class DocumentsController(IDocumentsService documentsService) : ApiContro
 
         return result.IsSuccess ? Ok(result) : HandleFailure(result);
     }
+
+    [HttpGet("project-progress")]
+    [Authorize(Roles = $"{UserRoles.SuperAdmin},{UserRoles.Admin},{UserRoles.Manager}")]
+    public async Task<IActionResult> PresentEvaluationProjectProgressTemplatePresignedUrl()
+    {
+        var result = await documentsService.PresentEvaluationProjectProgressTemplatePresignedUrl();
+
+        return result.IsSuccess ? Ok(result) : HandleFailure(result);
+    }
+
+    [HttpGet("reviews-calendars")]
+    [Authorize(Roles = $"{UserRoles.SuperAdmin},{UserRoles.Admin},{UserRoles.Manager}")]
+    public async Task<IActionResult> PresentReviewsCalendarsTemplatePresignedUrl()
+    {
+        var result = await documentsService.PresentReviewsCalendarsTemplatePresignedUrl();
+
+        return result.IsSuccess ? Ok(result) : HandleFailure(result);
+    }
+
+    [HttpGet("defense-calendar")]
+    [Authorize(Roles = $"{UserRoles.SuperAdmin},{UserRoles.Admin},{UserRoles.Manager}")]
+    public async Task<IActionResult> PresentDefenseCalendarTemplatePresignedUrl()
+    {
+        var result = await documentsService.PresentDefenseCalendarTemplatePresignedUrl();
+
+        return result.IsSuccess ? Ok(result) : HandleFailure(result);
+    }
+
+    [HttpGet("students")]
+    [Authorize(Roles = $"{UserRoles.SuperAdmin},{UserRoles.Admin},{UserRoles.Manager}")]
+    public async Task<IActionResult> PresentStudentsImportTemplatePresignedUrl()
+    {
+        var result = await documentsService.PresentStudentsImportTemplatePresignedUrl();
+
+        return result.IsSuccess ? Ok(result) : HandleFailure(result);
+    }
+
+    [HttpGet("supervisors")]
+    [Authorize(Roles = $"{UserRoles.SuperAdmin},{UserRoles.Admin},{UserRoles.Manager}")]
+    public async Task<IActionResult> PresentSupervisorsImportTemplatePresignedUrl()
+    {
+        var result = await documentsService.PresentSupervisorsImportTemplatePresignedUrl();
+
+        return result.IsSuccess ? Ok(result) : HandleFailure(result);
+    }
 }

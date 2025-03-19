@@ -1,0 +1,114 @@
+[
+    {
+        "Id": "b17aae76-232f-4772-9d4f-39bcd1046774",
+        "FileName": "Import",
+        "FileUrl": "Import",
+        "ParentId": null,
+        "IsActive": true,
+        "IsFile": false
+    },
+    {
+        "Id": "8f09bc21-7cf8-4acd-8d5b-672165da1707",
+        "FileName": "Students",
+        "FileUrl": "Import/Students",
+        "ParentId": "b17aae76-232f-4772-9d4f-39bcd1046774",
+        "IsActive": false,
+        "IsFile": false
+    },
+    {
+        "Id": "ce139e43-9fc1-4d99-946d-9bbf6daf9cbf",
+        "FileName": "Template_Import_Students_v2 (1).xlsx",
+        "FileUrl": "Import/Students/Template_Import_Students_v2 (1).xlsx",
+        "ParentId": "8f09bc21-7cf8-4acd-8d5b-672165da1707",
+        "IsActive": true,
+        "IsFile": true
+    },
+    {
+        "Id": "4760ddcf-de1b-45c8-817d-e58bac522f2b",
+        "FileName": "Supervisors",
+        "FileUrl": "Import/Supervisors",
+        "ParentId": "b17aae76-232f-4772-9d4f-39bcd1046774",
+        "IsActive": false,
+        "IsFile": false
+    },
+    {
+        "Id": "a7f4c001-10dd-4b83-9200-dd1c89498027",
+        "FileName": "Template_Import_Supervisors_v2.xlsx",
+        "FileUrl": "Import/Supervisors/Template_Import_Supervisors_v2.xlsx",
+        "ParentId": "4760ddcf-de1b-45c8-817d-e58bac522f2b",
+        "IsActive": true,
+        "IsFile": true
+    },
+    {
+        "Id": "dc036fd1-5922-4004-8992-7fc42791460c",
+        "FileName": "ProjectProgress",
+        "FileUrl": "Import/ProjectProgress",
+        "ParentId": "b17aae76-232f-4772-9d4f-39bcd1046774",
+        "IsActive": false,
+        "IsFile": false
+    },
+    {
+        "Id": "d3981a54-ab80-413e-9019-a5d71cb65c63",
+        "FileName": "Template_Import_Project_Progress.xlsx",
+        "FileUrl": "Import/ProjectProgress/Template_Import_Project_Progress.xlsx",
+        "ParentId": "dc036fd1-5922-4004-8992-7fc42791460c",
+        "IsActive": true,
+        "IsFile": true
+    },
+    {
+        "Id": "4f8a1964-4364-4ca8-aa06-14d326d89776",
+        "FileName": "ReviewsCalendars",
+        "FileUrl": "Import/ReviewsCalendars",
+        "ParentId": "b17aae76-232f-4772-9d4f-39bcd1046774",
+        "IsActive": false,
+        "IsFile": false
+    },
+    {
+        "Id": "69e65a19-e719-4d50-b167-42a0828188d9",
+        "FileName": "Review [Attempt]_Import_Template.xlsx",
+        "FileUrl": "Import/ReviewsCalendars/Review [Attempt]_Import_Template.xlsx",
+        "ParentId": "4f8a1964-4364-4ca8-aa06-14d326d89776",
+        "IsActive": true,
+        "IsFile": true
+    },
+    {
+        "Id": "ea7066cb-60ea-47bf-88e0-238658b716c9",
+        "FileName": "DefenseCalendar",
+        "FileUrl": "Import/DefenseCalendar",
+        "ParentId": "b17aae76-232f-4772-9d4f-39bcd1046774",
+        "IsActive": false,
+        "IsFile": false
+    },
+    {
+        "Id": "6e3ee436-8142-421e-b02f-cdcbec874e0a",
+        "FileName": "SE_CapstoneProject_SP25_Defend.xlsx",
+        "FileUrl": "Import/DefenseCalendar/SE_CapstoneProject_SP25_Defend.xlsx",
+        "ParentId": "ea7066cb-60ea-47bf-88e0-238658b716c9",
+        "IsActive": true,
+        "IsFile": true
+    },
+    {
+        "Id": "659e12a2-9e76-4bf5-9ce2-0237bebf76fc",
+        "FileName": "Export",
+        "FileUrl": "Export",
+        "ParentId": null,
+        "IsActive": true,
+        "IsFile": false
+    },
+    {
+        "Id": "64382fde-c3bb-41f4-864d-602ca6531d41",
+        "FileName": "EvaluationWeekly",
+        "FileUrl": "Export/EvaluationWeekly",
+        "ParentId": "659e12a2-9e76-4bf5-9ce2-0237bebf76fc",
+        "IsActive": false,
+        "IsFile": false
+    },
+    {
+        "Id": "16b909db-701c-4731-bd8a-153d27ebb28d",
+        "FileName": "Template_Export_Evaluation_Weekly.xlsx",
+        "FileUrl": "Export/EvaluationWeekly/Template_Export_Evaluation_Weekly.xlsx",
+        "ParentId": "64382fde-c3bb-41f4-864d-602ca6531d41",
+        "IsActive": true,
+        "IsFile": true
+    }
+]

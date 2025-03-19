@@ -13,4 +13,9 @@ public interface IDocumentsService
     Task<OperationResult> UpdateActiveStatusForTemplateDocument(Guid templateId, CancellationToken cancellationToken);
     Task<OperationResult> CreateGroupDocument(IFormFile file, string key, CancellationToken cancellationToken);
     Task<OperationResult<string>> PresentGroupDocumentFilePresignedUrl(string groupKey);
+    Task<OperationResult<string>> PresentEvaluationProjectProgressTemplatePresignedUrl();
+    Task<OperationResult<string>> PresentReviewsCalendarsTemplatePresignedUrl();
+    Task<OperationResult<string>> PresentDefenseCalendarTemplatePresignedUrl();
+    Task<OperationResult<string>> PresentStudentsImportTemplatePresignedUrl();
+    Task<OperationResult<string>> PresentSupervisorsImportTemplatePresignedUrl();
 }

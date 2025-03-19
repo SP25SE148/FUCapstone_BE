@@ -828,7 +828,7 @@ public class GroupService(
         // get file format to process overide for export to supervisor
         try
         {
-            var response = await s3Service.GetFromS3(s3BucketConfiguration.FUCTemplateBucket,
+            var response = await s3Service.GetFromS3(s3BucketConfiguration.EvaluationWeeklyKey,
                 s3BucketConfiguration.EvaluationProjectProgressKey);
 
             return response == null || response.HttpStatusCode != System.Net.HttpStatusCode.OK
@@ -1556,7 +1556,9 @@ public class GroupService(
 
             ArgumentNullException.ThrowIfNull(group);
 
-            return await documentsService.CreateGroupDocument(request.File, group.GroupCode, cancellationToken);
+            var key = $"{group.CampusId}/{group.SemesterId}/{group.MajorId}/{group.CampusId}/{group.GroupCode}";
+
+            return await documentsService.CreateGroupDocument(request.File, key, cancellationToken);
         }
         catch (Exception ex) 
         {
@@ -1574,6 +1576,8 @@ public class GroupService(
 
         ArgumentNullException.ThrowIfNull(group);
 
-        return await documentsService.PresentGroupDocumentFilePresignedUrl(group.GroupCode);
+        var key = $"{group.CampusId}/{group.SemesterId}/{group.MajorId}/{group.CampusId}/{group.GroupCode}";
+
+        return await documentsService.PresentGroupDocumentFilePresignedUrl(key);
     }
 }

@@ -398,6 +398,51 @@ public class DocumentsService(
             : result.Value;
     }
 
+    public async Task<OperationResult<string>> PresentEvaluationProjectProgressTemplatePresignedUrl()
+    {
+        var result = await PresentFilePresignedUrl(s3BucketConfiguration.FUCTemplateBucket, s3BucketConfiguration.EvaluationProjectProgressKey);
+
+        return result.IsFailure
+            ? OperationResult.Failure<string>(new Error("Document.Error", "Can not export ProjectProgress template."))
+            : result.Value;
+    }
+
+    public async Task<OperationResult<string>> PresentReviewsCalendarsTemplatePresignedUrl()
+    {
+        var result = await PresentFilePresignedUrl(s3BucketConfiguration.FUCTemplateBucket, s3BucketConfiguration.ReviewsCalendarsKey);
+
+        return result.IsFailure
+            ? OperationResult.Failure<string>(new Error("Document.Error", "Can not export ReviewsCalendars template."))
+            : result.Value;
+    }
+    
+    public async Task<OperationResult<string>> PresentDefenseCalendarTemplatePresignedUrl()
+    {
+        var result = await PresentFilePresignedUrl(s3BucketConfiguration.FUCTemplateBucket, s3BucketConfiguration.DefenseCalendarKey);
+
+        return result.IsFailure
+            ? OperationResult.Failure<string>(new Error("Document.Error", "Can not export DefenseCalendar template."))
+            : result.Value;
+    }
+
+    public async Task<OperationResult<string>> PresentStudentsImportTemplatePresignedUrl()
+    {
+        var result = await PresentFilePresignedUrl(s3BucketConfiguration.FUCTemplateBucket, s3BucketConfiguration.StudentsTemplateKey);
+
+        return result.IsFailure
+            ? OperationResult.Failure<string>(new Error("Document.Error", "Can not export Students Import template."))
+            : result.Value;
+    }
+
+    public async Task<OperationResult<string>> PresentSupervisorsImportTemplatePresignedUrl()
+    {
+        var result = await PresentFilePresignedUrl(s3BucketConfiguration.FUCTemplateBucket, s3BucketConfiguration.SupervisorsTemplateKey);
+
+        return result.IsFailure
+            ? OperationResult.Failure<string>(new Error("Document.Error", "Can not export Supervisors Import template."))
+            : result.Value;
+    }
+
     private static bool IsValidFile(IFormFile file)
     {
         return file != null && file.Length > 0;
