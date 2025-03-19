@@ -16,7 +16,7 @@ public class TopicAnalysisConfiguration : IEntityTypeConfiguration<TopicAnalysis
 
         builder.Property(t => t.AnalysisResult).IsRequired();
 
-        builder.Property(t => t.CreatedDate).HasDefaultValue(DateTime.UtcNow);
+        builder.Property(t => t.CreatedDate).HasDefaultValue(DateTime.Now);
 
         builder.Property(t => t.ProcessedBy).IsRequired();  
 
@@ -24,5 +24,8 @@ public class TopicAnalysisConfiguration : IEntityTypeConfiguration<TopicAnalysis
             .WithMany(t => t.TopicAnalyses)
             .HasForeignKey(ta => ta.TopicId)
             .OnDelete(DeleteBehavior.Restrict);
+
+        builder.Property(ta => ta.CreatedDate)
+            .HasColumnType("timestamp");
     }
 }

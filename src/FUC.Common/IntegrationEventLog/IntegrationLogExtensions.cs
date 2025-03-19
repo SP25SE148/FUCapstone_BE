@@ -15,6 +15,11 @@ public static class IntegrationLogExtensions
             builder.ToTable("IntegrationEventLogs");
 
             builder.HasKey(e => e.Id);
+
+            builder.Property(e => e.ProcessedOnUtc)
+                .HasColumnType("timestamp");
+            builder.Property(e => e.OccurredOnUtc)
+                .HasColumnType("timestamp");
         });
     }
 

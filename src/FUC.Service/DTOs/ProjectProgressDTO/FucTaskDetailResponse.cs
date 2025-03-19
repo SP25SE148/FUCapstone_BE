@@ -1,5 +1,4 @@
-﻿using FUC.Data.Entities;
-using FUC.Data.Enums;
+﻿using FUC.Data.Enums;
 
 namespace FUC.Service.DTOs.ProjectProgressDTO;
 
@@ -14,7 +13,7 @@ public class FucTaskDetailResponse
     public FucTaskStatus Status { get; set; }
     public Priority Priority { get; set; }
     public DateTime DueDate { get; set; }
-    public string? Comment { get; set; }
+    public DateTime? CompletionDate { get; set; }
     public Guid ProjectProgressId { get; set; }
 
     public string ReporterName { get; set; }

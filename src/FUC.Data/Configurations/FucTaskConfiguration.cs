@@ -51,5 +51,16 @@ public class FucTaskConfiguration : IEntityTypeConfiguration<FucTask>
             .WithMany(s => s.ReportFucTasks)
             .HasForeignKey (t => t.ReporterId)
             .OnDelete(DeleteBehavior.Restrict);
+
+        builder.Property(t => t.CreatedDate)
+            .HasColumnType("timestamp");
+        builder.Property(t => t.UpdatedDate)
+            .HasColumnType("timestamp");
+        builder.Property(t => t.DeletedAt)
+            .HasColumnType("timestamp");
+        builder.Property (t => t.DueDate)
+            .HasColumnType("timestamp");
+        builder.Property(t => t.CompletionDate)
+            .HasColumnType("timestamp");
     }
 }

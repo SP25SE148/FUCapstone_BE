@@ -1,4 +1,4 @@
-﻿namespace FUC.Service.Helpers;
+﻿namespace FUC.Common.Helpers;
 
 public static class DateExtensions
 {

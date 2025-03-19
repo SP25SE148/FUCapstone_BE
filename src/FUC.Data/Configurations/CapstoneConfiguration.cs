@@ -22,7 +22,13 @@ public sealed class CapstoneConfiguration : IEntityTypeConfiguration<Capstone>
             .WithMany(m => m.Capstones)
             .HasForeignKey(c => c.MajorId)
             .OnDelete(DeleteBehavior.Restrict);
-        
-        
+
+        builder.Property(c => c.CreatedDate)
+            .HasColumnType("timestamp");
+        builder.Property(c => c.UpdatedDate)
+            .HasColumnType("timestamp");
+        builder.Property(c => c.DeletedAt)
+            .HasColumnType("timestamp");
+
     }
 }

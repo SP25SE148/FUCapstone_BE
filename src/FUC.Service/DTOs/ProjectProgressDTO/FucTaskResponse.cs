@@ -15,5 +15,6 @@ public class FucTaskResponse
     public FucTaskStatus Status { get; set; }
     public Priority Priority { get; set; }
     public DateTime DueDate { get; set; }
+    public DateTime? CompletionDate { get; set; }
     public DateTime CreatedDate { get; set; }
 }

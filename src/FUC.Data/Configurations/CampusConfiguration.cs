@@ -15,5 +15,12 @@ public sealed class CampusConfiguration : IEntityTypeConfiguration<Campus>
         builder.Property(s => s.Address).IsRequired();
         builder.Property(s => s.Phone).IsRequired();
         builder.Property(s => s.Email).IsRequired();
+
+        builder.Property(s => s.CreatedDate)
+            .HasColumnType("timestamp");
+        builder.Property(s => s.UpdatedDate)
+            .HasColumnType("timestamp");
+        builder.Property(s => s.DeletedAt)
+            .HasColumnType("timestamp");
     }
 }

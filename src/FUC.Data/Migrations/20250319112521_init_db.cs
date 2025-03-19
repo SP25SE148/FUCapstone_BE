@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace FUC.Data.Migrations
 {
     /// <inheritdoc />
-    public partial class Db_v01 : Migration
+    public partial class init_db : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -15,15 +15,15 @@ namespace FUC.Data.Migrations
                 name: "BusinessArea",
                 columns: table => new
                 {
-                    Id = table.Column<Guid>(type: "uuid", nullable: false, defaultValue: new Guid("0a676755-a7d5-4ae1-871c-cca118314aa1")),
+                    Id = table.Column<Guid>(type: "uuid", nullable: false, defaultValue: new Guid("cdb929f5-38fe-4d55-b9c1-f3529249d292")),
                     Name = table.Column<string>(type: "text", nullable: false),
                     Description = table.Column<string>(type: "text", nullable: false),
-                    CreatedDate = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
-                    UpdatedDate = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
+                    CreatedDate = table.Column<DateTime>(type: "timestamp", nullable: false),
+                    UpdatedDate = table.Column<DateTime>(type: "timestamp", nullable: true),
                     CreatedBy = table.Column<string>(type: "text", nullable: false),
                     UpdatedBy = table.Column<string>(type: "text", nullable: true),
                     IsDeleted = table.Column<bool>(type: "boolean", nullable: false),
-                    DeletedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: true)
+                    DeletedAt = table.Column<DateTime>(type: "timestamp", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -39,12 +39,12 @@ namespace FUC.Data.Migrations
                     Address = table.Column<string>(type: "text", nullable: false),
                     Phone = table.Column<string>(type: "text", nullable: false),
                     Email = table.Column<string>(type: "text", nullable: false),
-                    CreatedDate = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
-                    UpdatedDate = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
+                    CreatedDate = table.Column<DateTime>(type: "timestamp", nullable: false),
+                    UpdatedDate = table.Column<DateTime>(type: "timestamp", nullable: true),
                     CreatedBy = table.Column<string>(type: "text", nullable: false),
                     UpdatedBy = table.Column<string>(type: "text", nullable: true),
                     IsDeleted = table.Column<bool>(type: "boolean", nullable: false),
-                    DeletedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: true)
+                    DeletedAt = table.Column<DateTime>(type: "timestamp", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -58,8 +58,8 @@ namespace FUC.Data.Migrations
                     Id = table.Column<Guid>(type: "uuid", nullable: false),
                     Type = table.Column<string>(type: "text", nullable: false),
                     Content = table.Column<string>(type: "text", nullable: false),
-                    OccurredOnUtc = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
-                    ProcessedOnUtc = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
+                    OccurredOnUtc = table.Column<DateTime>(type: "timestamp", nullable: false),
+                    ProcessedOnUtc = table.Column<DateTime>(type: "timestamp", nullable: true),
                     Error = table.Column<string>(type: "text", nullable: true)
                 },
                 constraints: table =>
@@ -74,12 +74,12 @@ namespace FUC.Data.Migrations
                     Id = table.Column<string>(type: "text", nullable: false),
                     Name = table.Column<string>(type: "text", nullable: false),
                     Description = table.Column<string>(type: "text", nullable: true),
-                    CreatedDate = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
-                    UpdatedDate = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
+                    CreatedDate = table.Column<DateTime>(type: "timestamp", nullable: false),
+                    UpdatedDate = table.Column<DateTime>(type: "timestamp", nullable: true),
                     CreatedBy = table.Column<string>(type: "text", nullable: false),
                     UpdatedBy = table.Column<string>(type: "text", nullable: true),
                     IsDeleted = table.Column<bool>(type: "boolean", nullable: false),
-                    DeletedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: true)
+                    DeletedAt = table.Column<DateTime>(type: "timestamp", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -93,14 +93,14 @@ namespace FUC.Data.Migrations
                     Id = table.Column<string>(type: "text", nullable: false),
                     Name = table.Column<string>(type: "character varying(50)", maxLength: 50, nullable: false),
                     MaxGroupsPerSupervisor = table.Column<int>(type: "integer", nullable: false),
-                    StartDate = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
-                    EndDate = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
-                    CreatedDate = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
-                    UpdatedDate = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
+                    StartDate = table.Column<DateTime>(type: "timestamp", nullable: false),
+                    EndDate = table.Column<DateTime>(type: "timestamp", nullable: false),
+                    CreatedDate = table.Column<DateTime>(type: "timestamp", nullable: false),
+                    UpdatedDate = table.Column<DateTime>(type: "timestamp", nullable: true),
                     CreatedBy = table.Column<string>(type: "text", nullable: false),
                     UpdatedBy = table.Column<string>(type: "text", nullable: true),
                     IsDeleted = table.Column<bool>(type: "boolean", nullable: false),
-                    DeletedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: true)
+                    DeletedAt = table.Column<DateTime>(type: "timestamp", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -111,14 +111,14 @@ namespace FUC.Data.Migrations
                 name: "TemplateDocument",
                 columns: table => new
                 {
-                    Id = table.Column<Guid>(type: "uuid", nullable: false, defaultValue: new Guid("3817ebcd-5808-46c4-9262-0e6f8992d298")),
+                    Id = table.Column<Guid>(type: "uuid", nullable: false, defaultValue: new Guid("7b9a7dba-1a6f-414a-96d5-11fdc87c718c")),
                     FileName = table.Column<string>(type: "text", nullable: false),
                     FileUrl = table.Column<string>(type: "text", nullable: false),
                     ParentId = table.Column<Guid>(type: "uuid", nullable: true),
                     IsActive = table.Column<bool>(type: "boolean", nullable: false),
                     IsFile = table.Column<bool>(type: "boolean", nullable: false),
-                    CreatedDate = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
-                    UpdatedDate = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
+                    CreatedDate = table.Column<DateTime>(type: "timestamp", nullable: false),
+                    UpdatedDate = table.Column<DateTime>(type: "timestamp", nullable: true),
                     CreatedBy = table.Column<string>(type: "text", nullable: false),
                     UpdatedBy = table.Column<string>(type: "text", nullable: true)
                 },
@@ -135,12 +135,12 @@ namespace FUC.Data.Migrations
                     MajorGroupId = table.Column<string>(type: "text", nullable: false),
                     Name = table.Column<string>(type: "text", nullable: false),
                     Description = table.Column<string>(type: "text", nullable: true),
-                    CreatedDate = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
-                    UpdatedDate = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
+                    CreatedDate = table.Column<DateTime>(type: "timestamp", nullable: false),
+                    UpdatedDate = table.Column<DateTime>(type: "timestamp", nullable: true),
                     CreatedBy = table.Column<string>(type: "text", nullable: false),
                     UpdatedBy = table.Column<string>(type: "text", nullable: true),
                     IsDeleted = table.Column<bool>(type: "boolean", nullable: false),
-                    DeletedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: true)
+                    DeletedAt = table.Column<DateTime>(type: "timestamp", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -164,12 +164,12 @@ namespace FUC.Data.Migrations
                     MaxMember = table.Column<int>(type: "integer", nullable: false),
                     ReviewCount = table.Column<int>(type: "integer", nullable: false),
                     DurationWeeks = table.Column<int>(type: "integer", nullable: false),
-                    CreatedDate = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
-                    UpdatedDate = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
+                    CreatedDate = table.Column<DateTime>(type: "timestamp", nullable: false),
+                    UpdatedDate = table.Column<DateTime>(type: "timestamp", nullable: true),
                     CreatedBy = table.Column<string>(type: "text", nullable: false),
                     UpdatedBy = table.Column<string>(type: "text", nullable: true),
                     IsDeleted = table.Column<bool>(type: "boolean", nullable: false),
-                    DeletedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: true)
+                    DeletedAt = table.Column<DateTime>(type: "timestamp", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -193,12 +193,12 @@ namespace FUC.Data.Migrations
                     MaxGroupsInSemester = table.Column<int>(type: "integer", nullable: false),
                     Email = table.Column<string>(type: "text", nullable: false),
                     IsAvailable = table.Column<bool>(type: "boolean", nullable: false),
-                    CreatedDate = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
-                    UpdatedDate = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
+                    CreatedDate = table.Column<DateTime>(type: "timestamp", nullable: false),
+                    UpdatedDate = table.Column<DateTime>(type: "timestamp", nullable: true),
                     CreatedBy = table.Column<string>(type: "text", nullable: false),
                     UpdatedBy = table.Column<string>(type: "text", nullable: true),
                     IsDeleted = table.Column<bool>(type: "boolean", nullable: false),
-                    DeletedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: true)
+                    DeletedAt = table.Column<DateTime>(type: "timestamp", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -221,19 +221,19 @@ namespace FUC.Data.Migrations
                 name: "ReviewCriteria",
                 columns: table => new
                 {
-                    Id = table.Column<Guid>(type: "uuid", nullable: false, defaultValue: new Guid("61a4642f-be96-41c8-9bb3-78495095ab54")),
+                    Id = table.Column<Guid>(type: "uuid", nullable: false, defaultValue: new Guid("dfb9d05f-4b61-4d07-9926-1924edcc3995")),
                     CapstoneId = table.Column<string>(type: "text", nullable: false),
                     Attempt = table.Column<int>(type: "integer", nullable: false),
                     Name = table.Column<string>(type: "character varying(255)", maxLength: 255, nullable: false),
                     Description = table.Column<string>(type: "character varying(1000)", maxLength: 1000, nullable: false),
                     Requirement = table.Column<string>(type: "character varying(1000)", maxLength: 1000, nullable: false),
                     IsActive = table.Column<bool>(type: "boolean", nullable: false, defaultValue: true),
-                    CreatedDate = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
-                    UpdatedDate = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
+                    CreatedDate = table.Column<DateTime>(type: "timestamp", nullable: false),
+                    UpdatedDate = table.Column<DateTime>(type: "timestamp", nullable: true),
                     CreatedBy = table.Column<string>(type: "text", nullable: false),
                     UpdatedBy = table.Column<string>(type: "text", nullable: true),
                     IsDeleted = table.Column<bool>(type: "boolean", nullable: false),
-                    DeletedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: true)
+                    DeletedAt = table.Column<DateTime>(type: "timestamp", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -260,12 +260,12 @@ namespace FUC.Data.Migrations
                     GPA = table.Column<float>(type: "real", nullable: false),
                     IsEligible = table.Column<bool>(type: "boolean", nullable: false),
                     Status = table.Column<string>(type: "text", nullable: false, defaultValue: "InProgress"),
-                    CreatedDate = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
-                    UpdatedDate = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
+                    CreatedDate = table.Column<DateTime>(type: "timestamp", nullable: false),
+                    UpdatedDate = table.Column<DateTime>(type: "timestamp", nullable: true),
                     CreatedBy = table.Column<string>(type: "text", nullable: false),
                     UpdatedBy = table.Column<string>(type: "text", nullable: true),
                     IsDeleted = table.Column<bool>(type: "boolean", nullable: false),
-                    DeletedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: true)
+                    DeletedAt = table.Column<DateTime>(type: "timestamp", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -300,7 +300,7 @@ namespace FUC.Data.Migrations
                 name: "Group",
                 columns: table => new
                 {
-                    Id = table.Column<Guid>(type: "uuid", nullable: false, defaultValue: new Guid("271fcf67-ceca-4588-8dd3-60d94a5c7049")),
+                    Id = table.Column<Guid>(type: "uuid", nullable: false, defaultValue: new Guid("f8799781-e4cb-428d-834b-dc4f61e941bd")),
                     SemesterId = table.Column<string>(type: "text", nullable: false),
                     MajorId = table.Column<string>(type: "text", nullable: false),
                     CampusId = table.Column<string>(type: "text", nullable: false),
@@ -310,12 +310,12 @@ namespace FUC.Data.Migrations
                     TopicCode = table.Column<string>(type: "text", nullable: true),
                     GroupCode = table.Column<string>(type: "text", nullable: false),
                     Status = table.Column<string>(type: "text", nullable: false, defaultValue: "Pending"),
-                    CreatedDate = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
-                    UpdatedDate = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
+                    CreatedDate = table.Column<DateTime>(type: "timestamp", nullable: false),
+                    UpdatedDate = table.Column<DateTime>(type: "timestamp", nullable: true),
                     CreatedBy = table.Column<string>(type: "text", nullable: false),
                     UpdatedBy = table.Column<string>(type: "text", nullable: true),
                     IsDeleted = table.Column<bool>(type: "boolean", nullable: false),
-                    DeletedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: true)
+                    DeletedAt = table.Column<DateTime>(type: "timestamp", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -356,7 +356,7 @@ namespace FUC.Data.Migrations
                 name: "Topic",
                 columns: table => new
                 {
-                    Id = table.Column<Guid>(type: "uuid", nullable: false, defaultValue: new Guid("feea2c8b-ddb1-413b-b42c-dbdf41b81d0e")),
+                    Id = table.Column<Guid>(type: "uuid", nullable: false, defaultValue: new Guid("fd3b2cd6-457b-4f0a-acea-5c16351ca372")),
                     MainSupervisorId = table.Column<string>(type: "text", nullable: false),
                     CapstoneId = table.Column<string>(type: "text", nullable: false),
                     SemesterId = table.Column<string>(type: "text", nullable: false),
@@ -372,12 +372,12 @@ namespace FUC.Data.Migrations
                     Status = table.Column<string>(type: "text", nullable: false, defaultValue: "Pending"),
                     IsAssignedToGroup = table.Column<bool>(type: "boolean", nullable: false, defaultValue: false),
                     DifficultyLevel = table.Column<string>(type: "text", nullable: false),
-                    CreatedDate = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
-                    UpdatedDate = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
+                    CreatedDate = table.Column<DateTime>(type: "timestamp", nullable: false),
+                    UpdatedDate = table.Column<DateTime>(type: "timestamp", nullable: true),
                     CreatedBy = table.Column<string>(type: "text", nullable: false),
                     UpdatedBy = table.Column<string>(type: "text", nullable: true),
                     IsDeleted = table.Column<bool>(type: "boolean", nullable: false),
-                    DeletedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: true)
+                    DeletedAt = table.Column<DateTime>(type: "timestamp", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -418,13 +418,13 @@ namespace FUC.Data.Migrations
                 name: "GroupMember",
                 columns: table => new
                 {
-                    Id = table.Column<Guid>(type: "uuid", nullable: false, defaultValue: new Guid("05a9372f-b96a-4d67-ac30-dee564ca62af")),
+                    Id = table.Column<Guid>(type: "uuid", nullable: false, defaultValue: new Guid("dac99c1a-9442-4be6-a3e6-59175fa9fba5")),
                     GroupId = table.Column<Guid>(type: "uuid", nullable: false),
                     StudentId = table.Column<string>(type: "text", nullable: false),
                     IsLeader = table.Column<bool>(type: "boolean", nullable: false),
                     Status = table.Column<string>(type: "text", nullable: false, defaultValue: "UnderReview"),
-                    CreatedDate = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
-                    UpdatedDate = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
+                    CreatedDate = table.Column<DateTime>(type: "timestamp", nullable: false),
+                    UpdatedDate = table.Column<DateTime>(type: "timestamp", nullable: true),
                     CreatedBy = table.Column<string>(type: "text", nullable: false),
                     UpdatedBy = table.Column<string>(type: "text", nullable: true)
                 },
@@ -453,8 +453,8 @@ namespace FUC.Data.Migrations
                     GroupId = table.Column<Guid>(type: "uuid", nullable: false),
                     StudentId = table.Column<string>(type: "text", nullable: false),
                     Status = table.Column<string>(type: "text", nullable: false, defaultValue: "Pending"),
-                    CreatedDate = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
-                    UpdatedDate = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
+                    CreatedDate = table.Column<DateTime>(type: "timestamp", nullable: false),
+                    UpdatedDate = table.Column<DateTime>(type: "timestamp", nullable: true),
                     CreatedBy = table.Column<string>(type: "text", nullable: false),
                     UpdatedBy = table.Column<string>(type: "text", nullable: true)
                 },
@@ -483,12 +483,12 @@ namespace FUC.Data.Migrations
                     GroupId = table.Column<Guid>(type: "uuid", nullable: false),
                     MeetingDate = table.Column<string>(type: "text", nullable: false),
                     SupervisorId = table.Column<string>(type: "text", nullable: true),
-                    CreatedDate = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
-                    UpdatedDate = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
+                    CreatedDate = table.Column<DateTime>(type: "timestamp", nullable: false),
+                    UpdatedDate = table.Column<DateTime>(type: "timestamp", nullable: true),
                     CreatedBy = table.Column<string>(type: "text", nullable: false),
                     UpdatedBy = table.Column<string>(type: "text", nullable: true),
                     IsDeleted = table.Column<bool>(type: "boolean", nullable: false),
-                    DeletedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: true)
+                    DeletedAt = table.Column<DateTime>(type: "timestamp", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -510,11 +510,11 @@ namespace FUC.Data.Migrations
                 name: "CoSupervisor",
                 columns: table => new
                 {
-                    Id = table.Column<Guid>(type: "uuid", nullable: false, defaultValue: new Guid("7d663806-68eb-450c-90ab-8f214e72965c")),
+                    Id = table.Column<Guid>(type: "uuid", nullable: false, defaultValue: new Guid("267b893a-8879-45e7-b385-1bbf5a3cc391")),
                     SupervisorId = table.Column<string>(type: "text", nullable: false),
                     TopicId = table.Column<Guid>(type: "uuid", nullable: false),
-                    CreatedDate = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
-                    UpdatedDate = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
+                    CreatedDate = table.Column<DateTime>(type: "timestamp", nullable: false),
+                    UpdatedDate = table.Column<DateTime>(type: "timestamp", nullable: true),
                     CreatedBy = table.Column<string>(type: "text", nullable: false),
                     UpdatedBy = table.Column<string>(type: "text", nullable: true)
                 },
@@ -539,7 +539,7 @@ namespace FUC.Data.Migrations
                 name: "ReviewCalendar",
                 columns: table => new
                 {
-                    Id = table.Column<Guid>(type: "uuid", nullable: false, defaultValue: new Guid("81ca410a-ee92-46a2-88e8-1335cca4fce9")),
+                    Id = table.Column<Guid>(type: "uuid", nullable: false, defaultValue: new Guid("4400af60-d648-4500-aa06-3aa792c9c81d")),
                     TopicId = table.Column<Guid>(type: "uuid", nullable: false),
                     GroupId = table.Column<Guid>(type: "uuid", nullable: false),
                     MajorId = table.Column<string>(type: "text", nullable: false),
@@ -548,14 +548,14 @@ namespace FUC.Data.Migrations
                     Attempt = table.Column<int>(type: "integer", nullable: false),
                     Slot = table.Column<int>(type: "integer", nullable: false),
                     Room = table.Column<string>(type: "text", nullable: false),
-                    Date = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    Date = table.Column<DateTime>(type: "timestamp", nullable: false),
                     Status = table.Column<string>(type: "text", nullable: false, defaultValue: "Pending"),
-                    CreatedDate = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
-                    UpdatedDate = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
+                    CreatedDate = table.Column<DateTime>(type: "timestamp", nullable: false),
+                    UpdatedDate = table.Column<DateTime>(type: "timestamp", nullable: true),
                     CreatedBy = table.Column<string>(type: "text", nullable: false),
                     UpdatedBy = table.Column<string>(type: "text", nullable: true),
                     IsDeleted = table.Column<bool>(type: "boolean", nullable: false),
-                    DeletedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: true)
+                    DeletedAt = table.Column<DateTime>(type: "timestamp", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -596,9 +596,9 @@ namespace FUC.Data.Migrations
                 name: "TopicAnalysis",
                 columns: table => new
                 {
-                    Id = table.Column<Guid>(type: "uuid", nullable: false, defaultValue: new Guid("3a3cf1fd-573e-4d5c-9555-6f875a6f5e97")),
+                    Id = table.Column<Guid>(type: "uuid", nullable: false, defaultValue: new Guid("44964614-eea6-4f11-bfcc-7b43bcdc63e5")),
                     AnalysisResult = table.Column<string>(type: "text", nullable: false),
-                    CreatedDate = table.Column<DateTime>(type: "timestamp with time zone", nullable: false, defaultValue: new DateTime(2025, 3, 18, 8, 9, 31, 477, DateTimeKind.Utc).AddTicks(9703)),
+                    CreatedDate = table.Column<DateTime>(type: "timestamp", nullable: false, defaultValue: new DateTime(2025, 3, 19, 18, 25, 20, 506, DateTimeKind.Local).AddTicks(9872)),
                     ProcessedBy = table.Column<string>(type: "text", nullable: false),
                     TopicId = table.Column<Guid>(type: "uuid", nullable: false)
                 },
@@ -617,16 +617,16 @@ namespace FUC.Data.Migrations
                 name: "TopicAppraisal",
                 columns: table => new
                 {
-                    Id = table.Column<Guid>(type: "uuid", nullable: false, defaultValue: new Guid("c2673ef5-8cec-41a1-9885-8c7015da18dc")),
+                    Id = table.Column<Guid>(type: "uuid", nullable: false, defaultValue: new Guid("5b6be931-68ff-4042-9184-bfa9963949dc")),
                     SupervisorId = table.Column<string>(type: "text", nullable: false),
                     TopicId = table.Column<Guid>(type: "uuid", nullable: false),
                     AttemptTime = table.Column<int>(type: "integer", nullable: false),
                     AppraisalContent = table.Column<string>(type: "text", nullable: true),
                     AppraisalComment = table.Column<string>(type: "text", nullable: true),
                     Status = table.Column<string>(type: "text", nullable: false, defaultValue: "Pending"),
-                    AppraisalDate = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
-                    CreatedDate = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
-                    UpdatedDate = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
+                    AppraisalDate = table.Column<DateTime>(type: "timestamp", nullable: true),
+                    CreatedDate = table.Column<DateTime>(type: "timestamp", nullable: false),
+                    UpdatedDate = table.Column<DateTime>(type: "timestamp", nullable: true),
                     CreatedBy = table.Column<string>(type: "text", nullable: false),
                     UpdatedBy = table.Column<string>(type: "text", nullable: true)
                 },
@@ -651,17 +651,17 @@ namespace FUC.Data.Migrations
                 name: "TopicRequest",
                 columns: table => new
                 {
-                    Id = table.Column<Guid>(type: "uuid", nullable: false, defaultValue: new Guid("7a5e8bda-7f2a-438d-bfbc-6688e07a0ca7")),
+                    Id = table.Column<Guid>(type: "uuid", nullable: false, defaultValue: new Guid("72e87ba8-b77a-416c-bb5f-ca2b4b32c810")),
                     SupervisorId = table.Column<string>(type: "text", nullable: false),
                     GroupId = table.Column<Guid>(type: "uuid", nullable: false),
                     TopicId = table.Column<Guid>(type: "uuid", nullable: false),
                     Status = table.Column<string>(type: "text", nullable: false, defaultValue: "UnderReview"),
-                    CreatedDate = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
-                    UpdatedDate = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
+                    CreatedDate = table.Column<DateTime>(type: "timestamp", nullable: false),
+                    UpdatedDate = table.Column<DateTime>(type: "timestamp", nullable: true),
                     CreatedBy = table.Column<string>(type: "text", nullable: false),
                     UpdatedBy = table.Column<string>(type: "text", nullable: true),
                     IsDeleted = table.Column<bool>(type: "boolean", nullable: false),
-                    DeletedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: true)
+                    DeletedAt = table.Column<DateTime>(type: "timestamp", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -698,12 +698,12 @@ namespace FUC.Data.Migrations
                     MeetingLocation = table.Column<string>(type: "text", nullable: true),
                     MeetingContent = table.Column<string>(type: "text", nullable: true),
                     ProgressWeekSummary = table.Column<string>(type: "text", nullable: true),
-                    CreatedDate = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
-                    UpdatedDate = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
+                    CreatedDate = table.Column<DateTime>(type: "timestamp", nullable: false),
+                    UpdatedDate = table.Column<DateTime>(type: "timestamp", nullable: true),
                     CreatedBy = table.Column<string>(type: "text", nullable: false),
                     UpdatedBy = table.Column<string>(type: "text", nullable: true),
                     IsDeleted = table.Column<bool>(type: "boolean", nullable: false),
-                    DeletedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: true)
+                    DeletedAt = table.Column<DateTime>(type: "timestamp", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -720,17 +720,17 @@ namespace FUC.Data.Migrations
                 name: "Reviewer",
                 columns: table => new
                 {
-                    Id = table.Column<Guid>(type: "uuid", nullable: false, defaultValue: new Guid("55579607-62e8-4b3b-a7b6-bd5c0d23e8ca")),
+                    Id = table.Column<Guid>(type: "uuid", nullable: false, defaultValue: new Guid("0dc5cb0f-730c-409c-9815-224f9046b9b8")),
                     SupervisorId = table.Column<string>(type: "text", nullable: false),
                     ReviewCalenderId = table.Column<Guid>(type: "uuid", nullable: false),
                     Suggestion = table.Column<string>(type: "character varying(500)", maxLength: 500, nullable: true),
                     Comment = table.Column<string>(type: "character varying(1000)", maxLength: 1000, nullable: true),
-                    CreatedDate = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
-                    UpdatedDate = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
+                    CreatedDate = table.Column<DateTime>(type: "timestamp", nullable: false),
+                    UpdatedDate = table.Column<DateTime>(type: "timestamp", nullable: true),
                     CreatedBy = table.Column<string>(type: "text", nullable: false),
                     UpdatedBy = table.Column<string>(type: "text", nullable: true),
                     IsDeleted = table.Column<bool>(type: "boolean", nullable: false),
-                    DeletedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: true)
+                    DeletedAt = table.Column<DateTime>(type: "timestamp", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -761,15 +761,16 @@ namespace FUC.Data.Migrations
                     ReporterId = table.Column<string>(type: "text", nullable: false),
                     Status = table.Column<string>(type: "text", nullable: false, defaultValue: "ToDo"),
                     Priority = table.Column<string>(type: "text", nullable: false),
-                    DueDate = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    CompletionDate = table.Column<DateTime>(type: "timestamp", nullable: true),
+                    DueDate = table.Column<DateTime>(type: "timestamp", nullable: false),
                     ProjectProgressId = table.Column<Guid>(type: "uuid", nullable: false),
                     ProjectProgressWeekId = table.Column<Guid>(type: "uuid", nullable: true),
-                    CreatedDate = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
-                    UpdatedDate = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
+                    CreatedDate = table.Column<DateTime>(type: "timestamp", nullable: false),
+                    UpdatedDate = table.Column<DateTime>(type: "timestamp", nullable: true),
                     CreatedBy = table.Column<string>(type: "text", nullable: false),
                     UpdatedBy = table.Column<string>(type: "text", nullable: true),
                     IsDeleted = table.Column<bool>(type: "boolean", nullable: false),
-                    DeletedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: true)
+                    DeletedAt = table.Column<DateTime>(type: "timestamp", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -810,12 +811,12 @@ namespace FUC.Data.Migrations
                     Comments = table.Column<string>(type: "text", nullable: false),
                     Status = table.Column<string>(type: "text", nullable: false),
                     SupervisorId = table.Column<string>(type: "text", nullable: true),
-                    CreatedDate = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
-                    UpdatedDate = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
+                    CreatedDate = table.Column<DateTime>(type: "timestamp", nullable: false),
+                    UpdatedDate = table.Column<DateTime>(type: "timestamp", nullable: true),
                     CreatedBy = table.Column<string>(type: "text", nullable: false),
                     UpdatedBy = table.Column<string>(type: "text", nullable: true),
                     IsDeleted = table.Column<bool>(type: "boolean", nullable: false),
-                    DeletedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: true)
+                    DeletedAt = table.Column<DateTime>(type: "timestamp", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -846,12 +847,12 @@ namespace FUC.Data.Migrations
                     Id = table.Column<Guid>(type: "uuid", nullable: false),
                     TaskId = table.Column<Guid>(type: "uuid", nullable: false),
                     Content = table.Column<string>(type: "text", nullable: false),
-                    CreatedDate = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
-                    UpdatedDate = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
+                    CreatedDate = table.Column<DateTime>(type: "timestamp", nullable: false),
+                    UpdatedDate = table.Column<DateTime>(type: "timestamp", nullable: true),
                     CreatedBy = table.Column<string>(type: "text", nullable: false),
                     UpdatedBy = table.Column<string>(type: "text", nullable: true),
                     IsDeleted = table.Column<bool>(type: "boolean", nullable: false),
-                    DeletedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: true)
+                    DeletedAt = table.Column<DateTime>(type: "timestamp", nullable: true)
                 },
                 constraints: table =>
                 {

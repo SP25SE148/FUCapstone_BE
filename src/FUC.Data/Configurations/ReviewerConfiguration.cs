@@ -29,5 +29,12 @@ public sealed class ReviewerConfiguration : IEntityTypeConfiguration<Reviewer>
             .WithMany(rc => rc.Reviewers)
             .HasForeignKey(r => r.ReviewCalenderId)
             .OnDelete(DeleteBehavior.Cascade);
+
+        builder.Property(r => r.CreatedDate)
+            .HasColumnType("timestamp");
+        builder.Property(r => r.UpdatedDate)
+            .HasColumnType("timestamp");
+        builder.Property(r => r.DeletedAt)
+            .HasColumnType("timestamp");
     }
 }

@@ -31,7 +31,7 @@ public class ExpirationRequestEventConsumer : BaseEventConsumer<ExpirationReques
         {
             RemindFor = message.RequestId.ToString(),
             ReminderType = message.RequestType,
-            RemindDate = DateTime.SpecifyKind(DateTime.Now.Add(message.ExpirationDuration), DateTimeKind.Utc),
+            RemindDate = DateTime.Now.Add(message.ExpirationDuration),
         };
 
         _processorDb.Reminders.Add(expirationTask);

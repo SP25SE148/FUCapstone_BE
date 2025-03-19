@@ -58,5 +58,12 @@ public sealed class GroupConfiguration : IEntityTypeConfiguration<Group>
             .WithMany(s => s.Groups)
             .HasForeignKey(g => g.SupervisorId)
             .OnDelete(DeleteBehavior.Restrict);
+
+        builder.Property(g => g.CreatedDate)
+            .HasColumnType("timestamp");
+        builder.Property(g => g.UpdatedDate)
+            .HasColumnType("timestamp");
+        builder.Property(g => g.DeletedAt)
+            .HasColumnType("timestamp");
     }
 }

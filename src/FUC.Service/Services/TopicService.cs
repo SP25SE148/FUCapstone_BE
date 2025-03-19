@@ -1175,7 +1175,7 @@ public class TopicService(
             topicAppraisal.Status = status;
             topicAppraisal.AppraisalContent = appraisalContent;
             topicAppraisal.AppraisalComment = appraisalComment;
-            topicAppraisal.AppraisalDate = DateTime.UtcNow;
+            topicAppraisal.AppraisalDate = DateTime.Now;
 
             topicAppraisalRepository.Update(topicAppraisal);
 

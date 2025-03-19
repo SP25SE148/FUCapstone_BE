@@ -92,7 +92,7 @@ public sealed class SemesterService(ILogger<SemesterService> logger ,
         if (semester is null) return OperationResult.Failure(Error.NullValue);
 
         semester.IsDeleted = true;
-        semester.DeletedAt = DateTime.UtcNow;
+        semester.DeletedAt = DateTime.Now;
         _semesterRepository.Update(semester);
         await _uow.SaveChangesAsync();
         return OperationResult.Success();
@@ -100,8 +100,8 @@ public sealed class SemesterService(ILogger<SemesterService> logger ,
 
     public async Task<OperationResult<Semester>> GetCurrentSemesterAsync()
     {
-        var currentSemester = await _semesterRepository.GetAsync(x => DateTime.UtcNow >= x.StartDate 
-            && DateTime.UtcNow <= x.EndDate, 
+        var currentSemester = await _semesterRepository.GetAsync(x => DateTime.Now >= x.StartDate 
+            && DateTime.Now <= x.EndDate, 
             cancellationToken: default);
 
         if (currentSemester is null)

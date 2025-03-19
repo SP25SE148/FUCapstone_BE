@@ -1,6 +1,4 @@
 ﻿using FUC.Common.Events;
-using System.Text.Json;
-
 namespace FUC.Common.IntegrationEventLog;
 
 public class IntegrationEventLog

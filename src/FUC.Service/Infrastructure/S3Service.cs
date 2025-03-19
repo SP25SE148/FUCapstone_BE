@@ -142,7 +142,7 @@ public class S3Service(
             new GetPreSignedUrlRequest
             {
                 BucketName = bucketName,
-                Expires = DateTime.UtcNow.AddMinutes(timeToLiveInMinute),
+                Expires = DateTime.Now.AddMinutes(timeToLiveInMinute),
                 Key = key,
                 Verb = isUpload ? HttpVerb.PUT : HttpVerb.GET
             }

@@ -11,6 +11,7 @@ public class ProcessorDbContext : DbContext, IIntegrationDbContext
     public ProcessorDbContext(DbContextOptions<ProcessorDbContext> options) : base(options) { }
 
     public DbSet<Reminder> Reminders { get; set; }
+    public DbSet<Notification> Notifications { get; set; }
     public DbSet<IntegrationEventLog> IntegrationEventLogs { get; set; }    
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)

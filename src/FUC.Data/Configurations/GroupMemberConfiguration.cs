@@ -32,5 +32,10 @@ public sealed class GroupMemberConfiguration : IEntityTypeConfiguration<GroupMem
             .WithMany(s => s.GroupMembers)
             .HasForeignKey(gm => gm.StudentId)
             .OnDelete(DeleteBehavior.Restrict);
+
+        builder.Property(gm => gm.CreatedDate)
+            .HasColumnType("timestamp");
+        builder.Property(gm => gm.UpdatedDate)
+            .HasColumnType("timestamp");
     }
 }

@@ -87,7 +87,7 @@ public sealed class CampusService(IUnitOfWork<FucDbContext> uow, IMapper mapper)
             cancellationToken: default);
         if (campus is null) return OperationResult.Failure<Campus>(Error.NullValue);
         campus.IsDeleted = true;
-        campus.DeletedAt = DateTime.UtcNow;
+        campus.DeletedAt = DateTime.Now;
         _campusRepository.Update(campus);
         await _uow.SaveChangesAsync();
         return OperationResult.Success();

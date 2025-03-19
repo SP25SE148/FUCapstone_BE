@@ -36,10 +36,10 @@ namespace FUC.Data.Migrations
                         .HasColumnType("text");
 
                     b.Property<DateTime>("OccurredOnUtc")
-                        .HasColumnType("timestamp with time zone");
+                        .HasColumnType("timestamp");
 
                     b.Property<DateTime?>("ProcessedOnUtc")
-                        .HasColumnType("timestamp with time zone");
+                        .HasColumnType("timestamp");
 
                     b.Property<string>("Type")
                         .IsRequired()
@@ -55,17 +55,17 @@ namespace FUC.Data.Migrations
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uuid")
-                        .HasDefaultValue(new Guid("0a676755-a7d5-4ae1-871c-cca118314aa1"));
+                        .HasDefaultValue(new Guid("cdb929f5-38fe-4d55-b9c1-f3529249d292"));
 
                     b.Property<string>("CreatedBy")
                         .IsRequired()
                         .HasColumnType("text");
 
                     b.Property<DateTime>("CreatedDate")
-                        .HasColumnType("timestamp with time zone");
+                        .HasColumnType("timestamp");
 
                     b.Property<DateTime?>("DeletedAt")
-                        .HasColumnType("timestamp with time zone");
+                        .HasColumnType("timestamp");
 
                     b.Property<string>("Description")
                         .IsRequired()
@@ -82,7 +82,7 @@ namespace FUC.Data.Migrations
                         .HasColumnType("text");
 
                     b.Property<DateTime?>("UpdatedDate")
-                        .HasColumnType("timestamp with time zone");
+                        .HasColumnType("timestamp");
 
                     b.HasKey("Id");
 
@@ -103,10 +103,10 @@ namespace FUC.Data.Migrations
                         .HasColumnType("text");
 
                     b.Property<DateTime>("CreatedDate")
-                        .HasColumnType("timestamp with time zone");
+                        .HasColumnType("timestamp");
 
                     b.Property<DateTime?>("DeletedAt")
-                        .HasColumnType("timestamp with time zone");
+                        .HasColumnType("timestamp");
 
                     b.Property<string>("Email")
                         .IsRequired()
@@ -127,7 +127,7 @@ namespace FUC.Data.Migrations
                         .HasColumnType("text");
 
                     b.Property<DateTime?>("UpdatedDate")
-                        .HasColumnType("timestamp with time zone");
+                        .HasColumnType("timestamp");
 
                     b.HasKey("Id");
 
@@ -144,10 +144,10 @@ namespace FUC.Data.Migrations
                         .HasColumnType("text");
 
                     b.Property<DateTime>("CreatedDate")
-                        .HasColumnType("timestamp with time zone");
+                        .HasColumnType("timestamp");
 
                     b.Property<DateTime?>("DeletedAt")
-                        .HasColumnType("timestamp with time zone");
+                        .HasColumnType("timestamp");
 
                     b.Property<int>("DurationWeeks")
                         .HasColumnType("integer");
@@ -176,7 +176,7 @@ namespace FUC.Data.Migrations
                         .HasColumnType("text");
 
                     b.Property<DateTime?>("UpdatedDate")
-                        .HasColumnType("timestamp with time zone");
+                        .HasColumnType("timestamp");
 
                     b.HasKey("Id");
 
@@ -190,14 +190,14 @@ namespace FUC.Data.Migrations
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uuid")
-                        .HasDefaultValue(new Guid("7d663806-68eb-450c-90ab-8f214e72965c"));
+                        .HasDefaultValue(new Guid("267b893a-8879-45e7-b385-1bbf5a3cc391"));
 
                     b.Property<string>("CreatedBy")
                         .IsRequired()
                         .HasColumnType("text");
 
                     b.Property<DateTime>("CreatedDate")
-                        .HasColumnType("timestamp with time zone");
+                        .HasColumnType("timestamp");
 
                     b.Property<string>("SupervisorId")
                         .IsRequired()
@@ -210,7 +210,7 @@ namespace FUC.Data.Migrations
                         .HasColumnType("text");
 
                     b.Property<DateTime?>("UpdatedDate")
-                        .HasColumnType("timestamp with time zone");
+                        .HasColumnType("timestamp");
 
                     b.HasKey("Id");
 
@@ -231,22 +231,25 @@ namespace FUC.Data.Migrations
                         .IsRequired()
                         .HasColumnType("text");
 
+                    b.Property<DateTime?>("CompletionDate")
+                        .HasColumnType("timestamp");
+
                     b.Property<string>("CreatedBy")
                         .IsRequired()
                         .HasColumnType("text");
 
                     b.Property<DateTime>("CreatedDate")
-                        .HasColumnType("timestamp with time zone");
+                        .HasColumnType("timestamp");
 
                     b.Property<DateTime?>("DeletedAt")
-                        .HasColumnType("timestamp with time zone");
+                        .HasColumnType("timestamp");
 
                     b.Property<string>("Description")
                         .IsRequired()
                         .HasColumnType("text");
 
                     b.Property<DateTime>("DueDate")
-                        .HasColumnType("timestamp with time zone");
+                        .HasColumnType("timestamp");
 
                     b.Property<bool>("IsDeleted")
                         .HasColumnType("boolean");
@@ -283,7 +286,7 @@ namespace FUC.Data.Migrations
                         .HasColumnType("text");
 
                     b.Property<DateTime?>("UpdatedDate")
-                        .HasColumnType("timestamp with time zone");
+                        .HasColumnType("timestamp");
 
                     b.HasKey("Id");
 
@@ -313,10 +316,10 @@ namespace FUC.Data.Migrations
                         .HasColumnType("text");
 
                     b.Property<DateTime>("CreatedDate")
-                        .HasColumnType("timestamp with time zone");
+                        .HasColumnType("timestamp");
 
                     b.Property<DateTime?>("DeletedAt")
-                        .HasColumnType("timestamp with time zone");
+                        .HasColumnType("timestamp");
 
                     b.Property<bool>("IsDeleted")
                         .HasColumnType("boolean");
@@ -328,7 +331,7 @@ namespace FUC.Data.Migrations
                         .HasColumnType("text");
 
                     b.Property<DateTime?>("UpdatedDate")
-                        .HasColumnType("timestamp with time zone");
+                        .HasColumnType("timestamp");
 
                     b.HasKey("Id");
 
@@ -342,7 +345,7 @@ namespace FUC.Data.Migrations
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uuid")
-                        .HasDefaultValue(new Guid("271fcf67-ceca-4588-8dd3-60d94a5c7049"));
+                        .HasDefaultValue(new Guid("f8799781-e4cb-428d-834b-dc4f61e941bd"));
 
                     b.Property<string>("CampusId")
                         .IsRequired()
@@ -357,10 +360,10 @@ namespace FUC.Data.Migrations
                         .HasColumnType("text");
 
                     b.Property<DateTime>("CreatedDate")
-                        .HasColumnType("timestamp with time zone");
+                        .HasColumnType("timestamp");
 
                     b.Property<DateTime?>("DeletedAt")
-                        .HasColumnType("timestamp with time zone");
+                        .HasColumnType("timestamp");
 
                     b.Property<float>("GPA")
                         .HasColumnType("real");
@@ -396,7 +399,7 @@ namespace FUC.Data.Migrations
                         .HasColumnType("text");
 
                     b.Property<DateTime?>("UpdatedDate")
-                        .HasColumnType("timestamp with time zone");
+                        .HasColumnType("timestamp");
 
                     b.HasKey("Id");
 
@@ -418,14 +421,14 @@ namespace FUC.Data.Migrations
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uuid")
-                        .HasDefaultValue(new Guid("05a9372f-b96a-4d67-ac30-dee564ca62af"));
+                        .HasDefaultValue(new Guid("dac99c1a-9442-4be6-a3e6-59175fa9fba5"));
 
                     b.Property<string>("CreatedBy")
                         .IsRequired()
                         .HasColumnType("text");
 
                     b.Property<DateTime>("CreatedDate")
-                        .HasColumnType("timestamp with time zone");
+                        .HasColumnType("timestamp");
 
                     b.Property<Guid>("GroupId")
                         .HasColumnType("uuid");
@@ -447,7 +450,7 @@ namespace FUC.Data.Migrations
                         .HasColumnType("text");
 
                     b.Property<DateTime?>("UpdatedDate")
-                        .HasColumnType("timestamp with time zone");
+                        .HasColumnType("timestamp");
 
                     b.HasKey("Id");
 
@@ -469,7 +472,7 @@ namespace FUC.Data.Migrations
                         .HasColumnType("text");
 
                     b.Property<DateTime>("CreatedDate")
-                        .HasColumnType("timestamp with time zone");
+                        .HasColumnType("timestamp");
 
                     b.Property<Guid>("GroupId")
                         .HasColumnType("uuid");
@@ -488,7 +491,7 @@ namespace FUC.Data.Migrations
                         .HasColumnType("text");
 
                     b.Property<DateTime?>("UpdatedDate")
-                        .HasColumnType("timestamp with time zone");
+                        .HasColumnType("timestamp");
 
                     b.HasKey("Id");
 
@@ -509,10 +512,10 @@ namespace FUC.Data.Migrations
                         .HasColumnType("text");
 
                     b.Property<DateTime>("CreatedDate")
-                        .HasColumnType("timestamp with time zone");
+                        .HasColumnType("timestamp");
 
                     b.Property<DateTime?>("DeletedAt")
-                        .HasColumnType("timestamp with time zone");
+                        .HasColumnType("timestamp");
 
                     b.Property<string>("Description")
                         .HasColumnType("text");
@@ -532,7 +535,7 @@ namespace FUC.Data.Migrations
                         .HasColumnType("text");
 
                     b.Property<DateTime?>("UpdatedDate")
-                        .HasColumnType("timestamp with time zone");
+                        .HasColumnType("timestamp");
 
                     b.HasKey("Id");
 
@@ -551,10 +554,10 @@ namespace FUC.Data.Migrations
                         .HasColumnType("text");
 
                     b.Property<DateTime>("CreatedDate")
-                        .HasColumnType("timestamp with time zone");
+                        .HasColumnType("timestamp");
 
                     b.Property<DateTime?>("DeletedAt")
-                        .HasColumnType("timestamp with time zone");
+                        .HasColumnType("timestamp");
 
                     b.Property<string>("Description")
                         .HasColumnType("text");
@@ -570,7 +573,7 @@ namespace FUC.Data.Migrations
                         .HasColumnType("text");
 
                     b.Property<DateTime?>("UpdatedDate")
-                        .HasColumnType("timestamp with time zone");
+                        .HasColumnType("timestamp");
 
                     b.HasKey("Id");
 
@@ -588,10 +591,10 @@ namespace FUC.Data.Migrations
                         .HasColumnType("text");
 
                     b.Property<DateTime>("CreatedDate")
-                        .HasColumnType("timestamp with time zone");
+                        .HasColumnType("timestamp");
 
                     b.Property<DateTime?>("DeletedAt")
-                        .HasColumnType("timestamp with time zone");
+                        .HasColumnType("timestamp");
 
                     b.Property<Guid>("GroupId")
                         .HasColumnType("uuid");
@@ -610,7 +613,7 @@ namespace FUC.Data.Migrations
                         .HasColumnType("text");
 
                     b.Property<DateTime?>("UpdatedDate")
-                        .HasColumnType("timestamp with time zone");
+                        .HasColumnType("timestamp");
 
                     b.HasKey("Id");
 
@@ -633,10 +636,10 @@ namespace FUC.Data.Migrations
                         .HasColumnType("text");
 
                     b.Property<DateTime>("CreatedDate")
-                        .HasColumnType("timestamp with time zone");
+                        .HasColumnType("timestamp");
 
                     b.Property<DateTime?>("DeletedAt")
-                        .HasColumnType("timestamp with time zone");
+                        .HasColumnType("timestamp");
 
                     b.Property<bool>("IsDeleted")
                         .HasColumnType("boolean");
@@ -665,7 +668,7 @@ namespace FUC.Data.Migrations
                         .HasColumnType("text");
 
                     b.Property<DateTime?>("UpdatedDate")
-                        .HasColumnType("timestamp with time zone");
+                        .HasColumnType("timestamp");
 
                     b.Property<int>("WeekNumber")
                         .HasColumnType("integer");
@@ -682,7 +685,7 @@ namespace FUC.Data.Migrations
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uuid")
-                        .HasDefaultValue(new Guid("81ca410a-ee92-46a2-88e8-1335cca4fce9"));
+                        .HasDefaultValue(new Guid("4400af60-d648-4500-aa06-3aa792c9c81d"));
 
                     b.Property<int>("Attempt")
                         .HasColumnType("integer");
@@ -696,13 +699,13 @@ namespace FUC.Data.Migrations
                         .HasColumnType("text");
 
                     b.Property<DateTime>("CreatedDate")
-                        .HasColumnType("timestamp with time zone");
+                        .HasColumnType("timestamp");
 
                     b.Property<DateTime>("Date")
-                        .HasColumnType("timestamp with time zone");
+                        .HasColumnType("timestamp");
 
                     b.Property<DateTime?>("DeletedAt")
-                        .HasColumnType("timestamp with time zone");
+                        .HasColumnType("timestamp");
 
                     b.Property<Guid>("GroupId")
                         .HasColumnType("uuid");
@@ -738,7 +741,7 @@ namespace FUC.Data.Migrations
                         .HasColumnType("text");
 
                     b.Property<DateTime?>("UpdatedDate")
-                        .HasColumnType("timestamp with time zone");
+                        .HasColumnType("timestamp");
 
                     b.HasKey("Id");
 
@@ -760,7 +763,7 @@ namespace FUC.Data.Migrations
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uuid")
-                        .HasDefaultValue(new Guid("61a4642f-be96-41c8-9bb3-78495095ab54"));
+                        .HasDefaultValue(new Guid("dfb9d05f-4b61-4d07-9926-1924edcc3995"));
 
                     b.Property<int>("Attempt")
                         .HasColumnType("integer");
@@ -774,10 +777,10 @@ namespace FUC.Data.Migrations
                         .HasColumnType("text");
 
                     b.Property<DateTime>("CreatedDate")
-                        .HasColumnType("timestamp with time zone");
+                        .HasColumnType("timestamp");
 
                     b.Property<DateTime?>("DeletedAt")
-                        .HasColumnType("timestamp with time zone");
+                        .HasColumnType("timestamp");
 
                     b.Property<string>("Description")
                         .IsRequired()
@@ -806,7 +809,7 @@ namespace FUC.Data.Migrations
                         .HasColumnType("text");
 
                     b.Property<DateTime?>("UpdatedDate")
-                        .HasColumnType("timestamp with time zone");
+                        .HasColumnType("timestamp");
 
                     b.HasKey("Id");
 
@@ -820,7 +823,7 @@ namespace FUC.Data.Migrations
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uuid")
-                        .HasDefaultValue(new Guid("55579607-62e8-4b3b-a7b6-bd5c0d23e8ca"));
+                        .HasDefaultValue(new Guid("0dc5cb0f-730c-409c-9815-224f9046b9b8"));
 
                     b.Property<string>("Comment")
                         .HasMaxLength(1000)
@@ -831,10 +834,10 @@ namespace FUC.Data.Migrations
                         .HasColumnType("text");
 
                     b.Property<DateTime>("CreatedDate")
-                        .HasColumnType("timestamp with time zone");
+                        .HasColumnType("timestamp");
 
                     b.Property<DateTime?>("DeletedAt")
-                        .HasColumnType("timestamp with time zone");
+                        .HasColumnType("timestamp");
 
                     b.Property<bool>("IsDeleted")
                         .HasColumnType("boolean");
@@ -854,7 +857,7 @@ namespace FUC.Data.Migrations
                         .HasColumnType("text");
 
                     b.Property<DateTime?>("UpdatedDate")
-                        .HasColumnType("timestamp with time zone");
+                        .HasColumnType("timestamp");
 
                     b.HasKey("Id");
 
@@ -875,13 +878,13 @@ namespace FUC.Data.Migrations
                         .HasColumnType("text");
 
                     b.Property<DateTime>("CreatedDate")
-                        .HasColumnType("timestamp with time zone");
+                        .HasColumnType("timestamp");
 
                     b.Property<DateTime?>("DeletedAt")
-                        .HasColumnType("timestamp with time zone");
+                        .HasColumnType("timestamp");
 
                     b.Property<DateTime>("EndDate")
-                        .HasColumnType("timestamp with time zone");
+                        .HasColumnType("timestamp");
 
                     b.Property<bool>("IsDeleted")
                         .HasColumnType("boolean");
@@ -895,13 +898,13 @@ namespace FUC.Data.Migrations
                         .HasColumnType("character varying(50)");
 
                     b.Property<DateTime>("StartDate")
-                        .HasColumnType("timestamp with time zone");
+                        .HasColumnType("timestamp");
 
                     b.Property<string>("UpdatedBy")
                         .HasColumnType("text");
 
                     b.Property<DateTime?>("UpdatedDate")
-                        .HasColumnType("timestamp with time zone");
+                        .HasColumnType("timestamp");
 
                     b.HasKey("Id");
 
@@ -929,10 +932,10 @@ namespace FUC.Data.Migrations
                         .HasColumnType("text");
 
                     b.Property<DateTime>("CreatedDate")
-                        .HasColumnType("timestamp with time zone");
+                        .HasColumnType("timestamp");
 
                     b.Property<DateTime?>("DeletedAt")
-                        .HasColumnType("timestamp with time zone");
+                        .HasColumnType("timestamp");
 
                     b.Property<string>("Email")
                         .IsRequired()
@@ -965,7 +968,7 @@ namespace FUC.Data.Migrations
                         .HasColumnType("text");
 
                     b.Property<DateTime?>("UpdatedDate")
-                        .HasColumnType("timestamp with time zone");
+                        .HasColumnType("timestamp");
 
                     b.HasKey("Id");
 
@@ -994,10 +997,10 @@ namespace FUC.Data.Migrations
                         .HasColumnType("text");
 
                     b.Property<DateTime>("CreatedDate")
-                        .HasColumnType("timestamp with time zone");
+                        .HasColumnType("timestamp");
 
                     b.Property<DateTime?>("DeletedAt")
-                        .HasColumnType("timestamp with time zone");
+                        .HasColumnType("timestamp");
 
                     b.Property<string>("Email")
                         .IsRequired()
@@ -1024,7 +1027,7 @@ namespace FUC.Data.Migrations
                         .HasColumnType("text");
 
                     b.Property<DateTime?>("UpdatedDate")
-                        .HasColumnType("timestamp with time zone");
+                        .HasColumnType("timestamp");
 
                     b.HasKey("Id");
 
@@ -1040,14 +1043,14 @@ namespace FUC.Data.Migrations
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uuid")
-                        .HasDefaultValue(new Guid("3817ebcd-5808-46c4-9262-0e6f8992d298"));
+                        .HasDefaultValue(new Guid("7b9a7dba-1a6f-414a-96d5-11fdc87c718c"));
 
                     b.Property<string>("CreatedBy")
                         .IsRequired()
                         .HasColumnType("text");
 
                     b.Property<DateTime>("CreatedDate")
-                        .HasColumnType("timestamp with time zone");
+                        .HasColumnType("timestamp");
 
                     b.Property<string>("FileName")
                         .IsRequired()
@@ -1070,7 +1073,7 @@ namespace FUC.Data.Migrations
                         .HasColumnType("text");
 
                     b.Property<DateTime?>("UpdatedDate")
-                        .HasColumnType("timestamp with time zone");
+                        .HasColumnType("timestamp");
 
                     b.HasKey("Id");
 
@@ -1082,7 +1085,7 @@ namespace FUC.Data.Migrations
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uuid")
-                        .HasDefaultValue(new Guid("feea2c8b-ddb1-413b-b42c-dbdf41b81d0e"));
+                        .HasDefaultValue(new Guid("fd3b2cd6-457b-4f0a-acea-5c16351ca372"));
 
                     b.Property<string>("Abbreviation")
                         .IsRequired()
@@ -1107,10 +1110,10 @@ namespace FUC.Data.Migrations
                         .HasColumnType("text");
 
                     b.Property<DateTime>("CreatedDate")
-                        .HasColumnType("timestamp with time zone");
+                        .HasColumnType("timestamp");
 
                     b.Property<DateTime?>("DeletedAt")
-                        .HasColumnType("timestamp with time zone");
+                        .HasColumnType("timestamp");
 
                     b.Property<string>("Description")
                         .IsRequired()
@@ -1158,7 +1161,7 @@ namespace FUC.Data.Migrations
                         .HasColumnType("text");
 
                     b.Property<DateTime?>("UpdatedDate")
-                        .HasColumnType("timestamp with time zone");
+                        .HasColumnType("timestamp");
 
                     b.Property<string>("VietnameseName")
                         .IsRequired()
@@ -1187,7 +1190,7 @@ namespace FUC.Data.Migrations
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uuid")
-                        .HasDefaultValue(new Guid("3a3cf1fd-573e-4d5c-9555-6f875a6f5e97"));
+                        .HasDefaultValue(new Guid("44964614-eea6-4f11-bfcc-7b43bcdc63e5"));
 
                     b.Property<string>("AnalysisResult")
                         .IsRequired()
@@ -1195,8 +1198,8 @@ namespace FUC.Data.Migrations
 
                     b.Property<DateTime>("CreatedDate")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("timestamp with time zone")
-                        .HasDefaultValue(new DateTime(2025, 3, 18, 8, 9, 31, 477, DateTimeKind.Utc).AddTicks(9703));
+                        .HasColumnType("timestamp")
+                        .HasDefaultValue(new DateTime(2025, 3, 19, 18, 25, 20, 506, DateTimeKind.Local).AddTicks(9872));
 
                     b.Property<string>("ProcessedBy")
                         .IsRequired()
@@ -1217,7 +1220,7 @@ namespace FUC.Data.Migrations
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uuid")
-                        .HasDefaultValue(new Guid("c2673ef5-8cec-41a1-9885-8c7015da18dc"));
+                        .HasDefaultValue(new Guid("5b6be931-68ff-4042-9184-bfa9963949dc"));
 
                     b.Property<string>("AppraisalComment")
                         .HasColumnType("text");
@@ -1226,7 +1229,7 @@ namespace FUC.Data.Migrations
                         .HasColumnType("text");
 
                     b.Property<DateTime?>("AppraisalDate")
-                        .HasColumnType("timestamp with time zone");
+                        .HasColumnType("timestamp");
 
                     b.Property<int>("AttemptTime")
                         .HasColumnType("integer");
@@ -1236,7 +1239,7 @@ namespace FUC.Data.Migrations
                         .HasColumnType("text");
 
                     b.Property<DateTime>("CreatedDate")
-                        .HasColumnType("timestamp with time zone");
+                        .HasColumnType("timestamp");
 
                     b.Property<string>("Status")
                         .IsRequired()
@@ -1255,7 +1258,7 @@ namespace FUC.Data.Migrations
                         .HasColumnType("text");
 
                     b.Property<DateTime?>("UpdatedDate")
-                        .HasColumnType("timestamp with time zone");
+                        .HasColumnType("timestamp");
 
                     b.HasKey("Id");
 
@@ -1271,17 +1274,17 @@ namespace FUC.Data.Migrations
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uuid")
-                        .HasDefaultValue(new Guid("7a5e8bda-7f2a-438d-bfbc-6688e07a0ca7"));
+                        .HasDefaultValue(new Guid("72e87ba8-b77a-416c-bb5f-ca2b4b32c810"));
 
                     b.Property<string>("CreatedBy")
                         .IsRequired()
                         .HasColumnType("text");
 
                     b.Property<DateTime>("CreatedDate")
-                        .HasColumnType("timestamp with time zone");
+                        .HasColumnType("timestamp");
 
                     b.Property<DateTime?>("DeletedAt")
-                        .HasColumnType("timestamp with time zone");
+                        .HasColumnType("timestamp");
 
                     b.Property<Guid>("GroupId")
                         .HasColumnType("uuid");
@@ -1306,7 +1309,7 @@ namespace FUC.Data.Migrations
                         .HasColumnType("text");
 
                     b.Property<DateTime?>("UpdatedDate")
-                        .HasColumnType("timestamp with time zone");
+                        .HasColumnType("timestamp");
 
                     b.HasKey("Id");
 
@@ -1337,10 +1340,10 @@ namespace FUC.Data.Migrations
                         .HasColumnType("text");
 
                     b.Property<DateTime>("CreatedDate")
-                        .HasColumnType("timestamp with time zone");
+                        .HasColumnType("timestamp");
 
                     b.Property<DateTime?>("DeletedAt")
-                        .HasColumnType("timestamp with time zone");
+                        .HasColumnType("timestamp");
 
                     b.Property<bool>("IsDeleted")
                         .HasColumnType("boolean");
@@ -1363,7 +1366,7 @@ namespace FUC.Data.Migrations
                         .HasColumnType("text");
 
                     b.Property<DateTime?>("UpdatedDate")
-                        .HasColumnType("timestamp with time zone");
+                        .HasColumnType("timestamp");
 
                     b.HasKey("Id");
 

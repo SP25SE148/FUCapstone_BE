@@ -2,7 +2,6 @@ using FUC.Processor;
 using FUC.Processor.Extensions;
 using FUC.Processor.Hubs;
 using FUC.Processor.Middlewares;
-using FUC.Processor.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -20,13 +19,6 @@ app.UseMiddleware<ExceptionHandlingMiddleware>();
 
 app.UseAuthentication();
 app.UseAuthorization();
-
-app.MapGet("/test-mail", async (IEmailService emailService) =>
-{
-    await emailService.SendMailAsync("Test", "Hello", "kienltse173477@fpt.edu.vn");
-
-    return Results.Ok();
-});
 
 app.MapHub<NotificationHub>("/notifications");
 

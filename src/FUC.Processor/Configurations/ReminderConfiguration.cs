@@ -4,7 +4,7 @@ using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
 namespace FUC.Processor.Configurations;
 
-public class ReminderConfigurations : IEntityTypeConfiguration<Reminder>
+public class ReminderConfiguration : IEntityTypeConfiguration<Reminder>
 {
     public void Configure(EntityTypeBuilder<Reminder> builder)
     {
@@ -16,6 +16,8 @@ public class ReminderConfigurations : IEntityTypeConfiguration<Reminder>
 
         builder.Property(x => x.RemindFor).IsRequired();
 
-        builder.Property(x => x.RemindDate).IsRequired();
+        builder.Property(x => x.RemindDate)
+            .IsRequired()
+            .HasColumnType("timestamp");
     }
 }

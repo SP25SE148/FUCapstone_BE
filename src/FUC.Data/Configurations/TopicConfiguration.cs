@@ -60,5 +60,12 @@ public sealed class TopicConfiguration : IEntityTypeConfiguration<Topic>
             .WithMany(c => c.Topics)
             .HasForeignKey(t => t.BusinessAreaId)
             .OnDelete(DeleteBehavior.Restrict);
+
+        builder.Property(t => t.CreatedDate)
+            .HasColumnType("timestamp");
+        builder.Property(t => t.UpdatedDate)
+            .HasColumnType("timestamp");
+        builder.Property(t => t.DeletedAt)
+            .HasColumnType("timestamp");
     }
 }

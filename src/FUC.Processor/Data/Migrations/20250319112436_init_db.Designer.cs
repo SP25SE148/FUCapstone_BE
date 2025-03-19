@@ -12,7 +12,7 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace FUC.Processor.Data.Migrations
 {
     [DbContext(typeof(ProcessorDbContext))]
-    [Migration("20250318160052_init_db")]
+    [Migration("20250319112436_init_db")]
     partial class init_db
     {
         /// <inheritdoc />
@@ -39,10 +39,10 @@ namespace FUC.Processor.Data.Migrations
                         .HasColumnType("text");
 
                     b.Property<DateTime>("OccurredOnUtc")
-                        .HasColumnType("timestamp with time zone");
+                        .HasColumnType("timestamp");
 
                     b.Property<DateTime?>("ProcessedOnUtc")
-                        .HasColumnType("timestamp with time zone");
+                        .HasColumnType("timestamp");
 
                     b.Property<string>("Type")
                         .IsRequired()
@@ -51,6 +51,35 @@ namespace FUC.Processor.Data.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("IntegrationEventLogs", (string)null);
+                });
+
+            modelBuilder.Entity("FUC.Processor.Models.Notification", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("Content")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<DateTime>("CreatedDate")
+                        .HasColumnType("timestamp");
+
+                    b.Property<bool>("IsRead")
+                        .HasColumnType("boolean");
+
+                    b.Property<string>("Type")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("UserEmail")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("Notifications", (string)null);
                 });
 
             modelBuilder.Entity("FUC.Processor.Models.Reminder", b =>
@@ -63,7 +92,7 @@ namespace FUC.Processor.Data.Migrations
                         .HasColumnType("text");
 
                     b.Property<DateTime>("RemindDate")
-                        .HasColumnType("timestamp with time zone");
+                        .HasColumnType("timestamp");
 
                     b.Property<string>("RemindFor")
                         .IsRequired()

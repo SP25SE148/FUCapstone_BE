@@ -29,5 +29,10 @@ public sealed class JoinGroupRequestConfiguration : IEntityTypeConfiguration<Joi
             .WithMany(s => s.JoinGroupRequests)
             .HasForeignKey(gr => gr.StudentId)
             .OnDelete(DeleteBehavior.Restrict);
+
+        builder.Property(gr => gr.CreatedDate)
+            .HasColumnType("timestamp");
+        builder.Property(gr => gr.UpdatedDate)
+            .HasColumnType("timestamp");
     }
 }

@@ -13,7 +13,12 @@ public sealed class MajorConfiguration : IEntityTypeConfiguration<Major>
         builder.HasKey(m => m.Id);
         
         builder.Property(m => m.Name).IsRequired();
-        
-        
+
+        builder.Property(m => m.CreatedDate)
+            .HasColumnType("timestamp");
+        builder.Property(m => m.UpdatedDate)
+            .HasColumnType("timestamp");
+        builder.Property(m => m.DeletedAt)
+            .HasColumnType("timestamp");
     }
 }

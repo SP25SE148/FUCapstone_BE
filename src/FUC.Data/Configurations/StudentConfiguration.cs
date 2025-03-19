@@ -54,5 +54,12 @@ public sealed class StudentConfiguration : IEntityTypeConfiguration<Student>
             .WithMany(b => b.Students)
             .HasForeignKey(s => s.BusinessAreaId)
             .OnDelete(DeleteBehavior.Restrict);
+
+        builder.Property(s => s.CreatedDate)
+            .HasColumnType("timestamp");
+        builder.Property(s => s.UpdatedDate)
+            .HasColumnType("timestamp");
+        builder.Property(s => s.DeletedAt)
+            .HasColumnType("timestamp");
     }
 }

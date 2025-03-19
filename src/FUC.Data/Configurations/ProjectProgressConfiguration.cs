@@ -14,5 +14,12 @@ public class ProjectProgressConfiguration : IEntityTypeConfiguration<ProjectProg
         builder.HasKey(t => t.Id);
 
         builder.Property(t => t.MeetingDate).IsRequired();
+
+        builder.Property(t => t.CreatedDate)
+            .HasColumnType("timestamp");
+        builder.Property(t => t.UpdatedDate)
+            .HasColumnType("timestamp");
+        builder.Property(t => t.DeletedAt)
+            .HasColumnType("timestamp");
     }
 }

@@ -28,5 +28,12 @@ public sealed class TopicAppraisalConfiguration : IEntityTypeConfiguration<Topic
             .WithMany(t => t.TopicAppraisals)
             .HasForeignKey(t => t.TopicId)
             .OnDelete(DeleteBehavior.Restrict);
+
+        builder.Property(t => t.CreatedDate)
+            .HasColumnType("timestamp");
+        builder.Property(t => t.UpdatedDate)
+            .HasColumnType("timestamp");
+        builder.Property(t => t.AppraisalDate)
+            .HasColumnType("timestamp");
     }
 }

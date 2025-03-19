@@ -39,5 +39,12 @@ public sealed class TopicRequestConfiguration : IEntityTypeConfiguration<TopicRe
             .WithMany(t => t.TopicRequests)
             .HasForeignKey(tr => tr.TopicId)
             .OnDelete(DeleteBehavior.Restrict);
+
+        builder.Property(tr => tr.CreatedDate)
+            .HasColumnType("timestamp");
+        builder.Property(tr => tr.UpdatedDate)
+            .HasColumnType("timestamp");
+        builder.Property(tr => tr.DeletedAt)
+            .HasColumnType("timestamp");
     }
 }

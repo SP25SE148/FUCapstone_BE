@@ -12,6 +12,7 @@ public class FucTask : AuditableSoftDeleteEntity
     public string ReporterId { get; set; } // who assign task for member
     public FucTaskStatus Status { get; set; }
     public Priority Priority { get; set; }
+    public DateTime? CompletionDate { get; set; }
     public DateTime DueDate { get; set; }
     public Guid ProjectProgressId { get; set; }
 

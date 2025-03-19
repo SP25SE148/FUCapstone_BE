@@ -99,7 +99,7 @@ public sealed class MajorService(IUnitOfWork<FucDbContext> uow, IMapper mapper) 
             return OperationResult.Failure(Error.NullValue);
 
         major.IsDeleted = true;
-        major.DeletedAt = DateTime.UtcNow;
+        major.DeletedAt = DateTime.Now;
         _majorRepository.Update(major);
         await uow.SaveChangesAsync();
 

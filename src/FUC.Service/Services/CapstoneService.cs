@@ -106,7 +106,7 @@ public sealed class CapstoneService(IUnitOfWork<FucDbContext> uow, IMapper mappe
         if (capstone is null) return OperationResult.Failure<Capstone>(Error.NullValue);
 
         capstone.IsDeleted = true;
-        capstone.DeletedAt = DateTime.UtcNow;
+        capstone.DeletedAt = DateTime.Now;
         _capstoneRepository.Update(capstone);
         await _uow.SaveChangesAsync();
         return OperationResult.Success();

@@ -14,6 +14,13 @@ public sealed class BusinessAreaConfiguration : IEntityTypeConfiguration<Busines
         builder.Property(b => b.Name).IsRequired();
         builder.Property(b => b.Id).HasDefaultValue(Guid.NewGuid());
 
+        builder.Property(b => b.CreatedDate)
+            .HasColumnType("timestamp");
+        builder.Property(b => b.UpdatedDate)
+            .HasColumnType("timestamp");
+        builder.Property(b => b.DeletedAt)
+            .HasColumnType("timestamp");
+
         builder.HasMany(b => b.Students)
             .WithOne(s => s.BusinessArea)
             .HasForeignKey(s => s.BusinessAreaId)

@@ -87,7 +87,7 @@ public sealed class MajorGroupService(IUnitOfWork<FucDbContext> uow, IMapper map
         if (majorGroup is null) return OperationResult.Failure(Error.NullValue);
 
         majorGroup.IsDeleted = true;
-        majorGroup.DeletedAt = DateTime.UtcNow;
+        majorGroup.DeletedAt = DateTime.Now;
         _majorGroupRepository.Update(majorGroup);
         await uow.SaveChangesAsync();
 

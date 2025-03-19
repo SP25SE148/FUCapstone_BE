@@ -27,5 +27,12 @@ public class ProjectProgressWeekConfiguration : IEntityTypeConfiguration<Project
             .WithMany(w => w.ProjectProgressWeeks)
             .HasForeignKey(p => p.ProjectProgressId)
             .OnDelete(DeleteBehavior.Restrict);
+
+        builder.Property(t => t.CreatedDate)
+            .HasColumnType("timestamp");
+        builder.Property(t => t.UpdatedDate)
+            .HasColumnType("timestamp");
+        builder.Property(t => t.DeletedAt)
+            .HasColumnType("timestamp");
     }
 }

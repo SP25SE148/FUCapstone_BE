@@ -23,5 +23,10 @@ public sealed class CoSupervisorConfiguration : IEntityTypeConfiguration<CoSuper
             .WithMany(t => t.CoSupervisors)
             .HasForeignKey(cs => cs.TopicId)
             .OnDelete(DeleteBehavior.Restrict);
+
+        builder.Property(cs => cs.CreatedDate)
+            .HasColumnType("timestamp");
+        builder.Property(cs => cs.UpdatedDate)
+            .HasColumnType("timestamp");
     }
 }

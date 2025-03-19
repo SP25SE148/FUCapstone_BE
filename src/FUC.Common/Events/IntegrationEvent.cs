@@ -8,7 +8,7 @@ public abstract class IntegrationEvent
     {
         Id = Guid.NewGuid();
         RetryCount = 0;
-        CreationDate = DateTime.UtcNow;
+        CreationDate = DateTime.Now;
     }
 
     [JsonInclude]

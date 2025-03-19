@@ -1,5 +1,6 @@
 ﻿using System.Security.Claims;
 using System.Text.Json;
+using FUC.Common.Helpers;
 using FUC.Data.Entities;
 using Microsoft.EntityFrameworkCore;
 
@@ -78,15 +79,17 @@ public class AppDbInitializer
             {
                 foreach (var semester in semesters)
                 {
-                    if (semester.StartDate.Kind == DateTimeKind.Unspecified)
-                    {
-                        semester.StartDate = DateTime.SpecifyKind(semester.StartDate, DateTimeKind.Utc);
-                    }
-                    
-                    if (semester.EndDate.Kind == DateTimeKind.Unspecified)
-                    {
-                        semester.EndDate = DateTime.SpecifyKind(semester.EndDate, DateTimeKind.Utc);
-                    }
+                    //if (semester.StartDate.Kind == DateTimeKind.Unspecified)
+                    //{
+                    //    semester.StartDate = DateTime.SpecifyKind(semester.StartDate, DateTimeKind.Utc);
+                    //}
+
+                    //if (semester.EndDate.Kind == DateTimeKind.Unspecified)
+                    //{
+                    //    semester.EndDate = DateTime.SpecifyKind(semester.EndDate, DateTimeKind.Utc);
+                    //}
+                    semester.StartDate = semester.StartDate.StartOfDay();
+                    semester.EndDate = semester.EndDate.EndOfDay();
                     await context.Set<Semester>().AddAsync(semester);
                 }
             }

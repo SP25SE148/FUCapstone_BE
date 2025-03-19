@@ -32,5 +32,12 @@ public class WeeklyEvaluationConfiguration : IEntityTypeConfiguration<WeeklyEval
             .WithMany(s => s.WeeklyEvaluations)
             .HasForeignKey(w => w.ProjectProgressWeekId)
             .OnDelete(DeleteBehavior.Restrict);
+
+        builder.Property(t => t.CreatedDate)
+            .HasColumnType("timestamp");
+        builder.Property(t => t.UpdatedDate)
+            .HasColumnType("timestamp");
+        builder.Property(t => t.DeletedAt)
+            .HasColumnType("timestamp");
     }
 }

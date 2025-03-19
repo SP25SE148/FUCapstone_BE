@@ -7,6 +7,7 @@ using ClosedXML.Excel;
 using FUC.Common.Abstractions;
 using FUC.Common.Constants;
 using FUC.Common.Contracts;
+using FUC.Common.Helpers;
 using FUC.Common.IntegrationEventLog.Services;
 using FUC.Common.Shared;
 using FUC.Data;
@@ -554,7 +555,7 @@ public class GroupService(
                 ? g.GroupMembers.Where(m => m.Status == GroupMemberStatus.Accepted)
                     .Select(m => m.Student.GPA)
                     .Average()
-                : 0, // Prevent division by zero
+                : 0, 
             GroupMemberList = g.GroupMembers
                 .Where(m => m.Status == GroupMemberStatus.Accepted)
                 .Select(m => new GroupMemberResponse
@@ -690,7 +691,7 @@ public class GroupService(
                 AssigneeId = request.AssigneeId,
                 ReporterId = currentUser.UserCode,
                 Description = request.Description,
-                DueDate = request.DueDate,
+                DueDate = request.DueDate.EndOfDay(),
                 Summary = request.Summary,
             };
 
@@ -759,6 +760,15 @@ public class GroupService(
         try
         {
             await uow.BeginTransactionAsync(cancellationToken);
+
+            if (changes.ContainsKey(nameof(request.DueDate)) 
+                && currentUser.UserCode != progress.FucTasks.Single().ReporterId) 
+                return OperationResult.Failure<UpdateFucTaskResponse>(new Error("ProjectProgress.Error",
+                "Only reporter of this task can change the duedate."));
+
+            if (changes.TryGetValue(nameof(request.Status), out var status)
+                && (FucTaskStatus)status.NewValue! == FucTaskStatus.Done)
+                progress.FucTasks.Single().CompletionDate = DateTime.Now;
 
             mapper.Map(request, progress.FucTasks.Single());
 
@@ -1072,6 +1082,7 @@ public class GroupService(
             CreatedDate = t.CreatedDate,
             AssigneeName = t.Assignee.FullName,
             ReporterName = t.Reporter.FullName,
+            CompletionDate = t.CompletionDate,
         }).ToList();
     }
 
@@ -1102,6 +1113,7 @@ public class GroupService(
                 Status = task.Status,
                 Priority = task.Priority,
                 DueDate = task.DueDate,
+                CompletionDate = task.CompletionDate,
                 ProjectProgressId = task.ProjectProgressId,
                 FucTaskHistories = task.FucTaskHistories.Select(h => new FucTaskHistoryDto
                 {
@@ -1298,7 +1310,7 @@ public class GroupService(
         return new ReviewCalendarDetail()
         {
             ReviewersId = reviewers,
-            Date = DateTime.SpecifyKind(DateTime.Parse(reviewDate), DateTimeKind.Utc),
+            Date = DateTime.Parse(reviewDate),
             Slot = int.Parse(slot),
             Room = room
         };

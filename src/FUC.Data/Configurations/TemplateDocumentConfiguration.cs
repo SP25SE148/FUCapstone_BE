@@ -16,5 +16,10 @@ public sealed class TemplateDocumentConfiguration : IEntityTypeConfiguration<Tem
         builder.Property(t => t.Id).HasDefaultValue(Guid.NewGuid());
         builder.Property(t => t.FileUrl).IsRequired();
         builder.Property(t => t.IsActive).IsRequired();
+
+        builder.Property(t => t.CreatedDate)
+            .HasColumnType("timestamp");
+        builder.Property(t => t.UpdatedDate)
+            .HasColumnType("timestamp");
     }
 }

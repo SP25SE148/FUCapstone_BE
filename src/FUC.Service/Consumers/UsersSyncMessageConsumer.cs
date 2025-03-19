@@ -45,7 +45,7 @@ public class UsersSyncMessageConsumer : BaseEventConsumer<UsersSyncMessage>
                     IsEligible = true,
                     Status = StudentStatus.InProgress,
                     CreatedBy = message.CreatedBy,
-                    CreatedDate = DateTime.SpecifyKind(DateTime.Now, DateTimeKind.Utc)
+                    CreatedDate = DateTime.Now
                 }).ToList();
 
                 await _dbContext.BulkInsertAsync(students);
@@ -63,7 +63,7 @@ public class UsersSyncMessageConsumer : BaseEventConsumer<UsersSyncMessage>
                     Email = x.Email,
                     IsAvailable = true,
                     CreatedBy = message.CreatedBy,
-                    CreatedDate = DateTime.SpecifyKind(DateTime.Now, DateTimeKind.Utc)
+                    CreatedDate = DateTime.Now
                 }).ToList();
 
                 await _dbContext.BulkInsertAsync(supervisors);

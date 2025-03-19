@@ -18,9 +18,17 @@ public class AppDbInitializer
             {
                 context.Add(new Reminder
                 {
-                    Content = "Test",
+                    Content = "Test1",
                     ReminderType = "Test",
-                    RemindDate = DateTime.UtcNow.AddDays(1),
+                    RemindDate = DateTime.Now.AddMinutes(3),
+                    RemindFor = "superadmin@fpt.edu.vn"
+                });
+
+                context.Add(new Reminder
+                {
+                    Content = "Test2",
+                    ReminderType = "Test",
+                    RemindDate = DateTime.SpecifyKind(DateTime.Now.AddMinutes(2), DateTimeKind.Unspecified),
                     RemindFor = "superadmin@fpt.edu.vn"
                 });
             }

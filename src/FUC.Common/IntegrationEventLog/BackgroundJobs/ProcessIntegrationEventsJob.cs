@@ -101,7 +101,7 @@ public class ProcessIntegrationEventsJob<TDbContext> : IJob where TDbContext : D
 
             await publishEndpoint.Publish(deserializedMessage, cancellationToken);
 
-            updateQueue.Enqueue(new EventUpdate { Id = @event.Id, ProcessedOnUtc = DateTime.UtcNow });
+            updateQueue.Enqueue(new EventUpdate { Id = @event.Id, ProcessedOnUtc = DateTime.Now });
 
             _logger.LogInformation("Event {EventId} send successfully.", @event.Id);
         }
@@ -110,7 +110,7 @@ public class ProcessIntegrationEventsJob<TDbContext> : IJob where TDbContext : D
             _logger.LogWarning("Event {EventId} was processed fail. {Error}", @event.Id, ex.Message);
 
             updateQueue.Enqueue(
-                new EventUpdate { Id = @event.Id, ProcessedOnUtc = DateTime.UtcNow, Error = ex.ToString() });
+                new EventUpdate { Id = @event.Id, ProcessedOnUtc = DateTime.Now, Error = ex.ToString() });
         }
     }
 

@@ -62,5 +62,14 @@ public sealed class ReviewCalendarConfiguration : IEntityTypeConfiguration<Revie
             .WithMany(s => s.ReviewCalendars)
             .HasForeignKey(rc => rc.SemesterId)
             .OnDelete(DeleteBehavior.Cascade);
+
+        builder.Property(rc => rc.CreatedDate)
+            .HasColumnType("timestamp");
+        builder.Property(rc => rc.UpdatedDate)
+            .HasColumnType("timestamp");
+        builder.Property(rc => rc.DeletedAt)
+            .HasColumnType("timestamp");
+        builder.Property(rc => rc.Date)
+            .HasColumnType("timestamp");
     }
 }

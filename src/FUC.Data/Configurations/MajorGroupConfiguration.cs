@@ -12,5 +12,12 @@ public sealed class MajorGroupConfiguration : IEntityTypeConfiguration<MajorGrou
         builder.ToTable(TableNames.MajorGroup);
         builder.HasKey(mg => mg.Id);
         builder.Property(mg => mg.Name).IsRequired();
+
+        builder.Property(mg => mg.CreatedDate)
+            .HasColumnType("timestamp");
+        builder.Property(mg => mg.UpdatedDate)
+            .HasColumnType("timestamp");
+        builder.Property(mg => mg.DeletedAt)
+            .HasColumnType("timestamp");
     }
 }

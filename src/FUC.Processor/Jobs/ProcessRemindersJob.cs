@@ -100,6 +100,10 @@ public class ProcessRemindersJob : IJob
 
                     break;
 
+                case "Test":
+                    _logger.LogInformation("Reminder test task {TaskNumber}", reminder.Content);
+                    break;
+
                 default:
                     _logger.LogWarning("Unsupported RemindType: {Type}", reminder.ReminderType);
                     break;

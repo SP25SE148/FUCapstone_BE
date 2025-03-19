@@ -44,5 +44,12 @@ public class SupervisorConfiguration : IEntityTypeConfiguration<Supervisor>
             .WithOne(c => c.Supervisor)
             .HasForeignKey(c => c.SupervisorId)
             .OnDelete(DeleteBehavior.Cascade);
+
+        builder.Property(s => s.CreatedDate)
+            .HasColumnType("timestamp");
+        builder.Property(s => s.UpdatedDate)
+            .HasColumnType("timestamp");
+        builder.Property(s => s.DeletedAt)
+            .HasColumnType("timestamp");
     }
 }

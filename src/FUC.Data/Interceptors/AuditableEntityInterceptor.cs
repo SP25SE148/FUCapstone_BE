@@ -24,7 +24,7 @@ public class AuditableEntityInterceptor(ICurrentUser currentUser, TimeProvider d
         if (context == null)
             return;
 
-        var now = DateTime.SpecifyKind(dateTime.GetUtcNow().UtcDateTime, DateTimeKind.Utc);
+        var now = DateTime.Now;
 
         foreach (var entry in context.ChangeTracker.Entries<AuditableEntity>())
         {

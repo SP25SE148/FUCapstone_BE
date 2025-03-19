@@ -35,5 +35,12 @@ public sealed class ReviewCriteriaConfiguration : IEntityTypeConfiguration<Revie
             .WithMany(c => c.reviewCriterias)
             .HasForeignKey(rc => rc.CapstoneId)
             .OnDelete(DeleteBehavior.Cascade);
+
+        builder.Property(rc => rc.CreatedDate)
+            .HasColumnType("timestamp");
+        builder.Property(rc => rc.UpdatedDate)
+            .HasColumnType("timestamp");
+        builder.Property(rc => rc.DeletedAt)
+            .HasColumnType("timestamp");
     }
 }
