@@ -70,6 +70,7 @@ public sealed class UserController(
     }
 
     [HttpPost("import-review")]
+    [Authorize(Roles = $"{UserRoles.Manager}")]
     public async Task<IActionResult> ImportReviewAsync(IFormFile file)
     {
         var result = await groupService.ImportReviewCalendar(file);

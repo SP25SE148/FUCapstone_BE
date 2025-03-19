@@ -1243,8 +1243,13 @@ public class GroupService(
         {
             var groupCode = row.Cell(2).GetValue<string>();
             var topicCode = row.Cell(3).GetValue<string>();
-            var group = await GetGroupByGroupCodeAsync(row.Cell(2).GetValue<string>());
-            var topic = await topicService.GetTopicByTopicCode(row.Cell(3).GetValue<string>());
+            if (string.IsNullOrEmpty(groupCode) || string.IsNullOrEmpty(topicCode))
+            {
+                break;
+            }
+
+            var group = await GetGroupByGroupCodeAsync(groupCode);
+            var topic = await topicService.GetTopicByTopicCode(topicCode);
 
             if (group.IsFailure ||
                 group.Value.SemesterName != currentSemester ||
@@ -1253,9 +1258,10 @@ public class GroupService(
                 topic == null ||
                 topic.Code != group.Value.TopicCode)
             {
-                logger.LogError("import review failed");
-                return new List<ReviewCalendar>();
+                throw new Exception("Invalid group or topic");
             }
+
+            await IsGroupIsExistInReviewCalendarInCurrentAttempt(reviewCalendars, group.Value, attempt);
 
             var reviewersCalendarDetail = await GetReviewCalendarDetailsFromRow(row, workSheet);
             var reviewCalendar =
@@ -1264,6 +1270,17 @@ public class GroupService(
         }
 
         return reviewCalendars;
+    }
+
+    private async Task IsGroupIsExistInReviewCalendarInCurrentAttempt(List<ReviewCalendar> reviewCalendars,
+        GroupResponse group, int attempt)
+    {
+        if (await reviewCalendarRepository.GetAsync(x => x.GroupId == group.Id &&
+                                                         x.Attempt == attempt, default) != null ||
+            reviewCalendars.Exists(rc => rc.GroupId == group.Id))
+        {
+            throw new Exception("Group is already exist in review calendar in current attempt");
+        }
     }
 
     private static int GetAttemptNumberFromFile(IFormFile file)
