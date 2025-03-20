@@ -1,6 +1,4 @@
-﻿using System.Runtime.InteropServices.JavaScript;
-using FUC.Data.Abstractions;
-using FUC.Data.Abstractions.Entities;
+﻿using FUC.Data.Abstractions;
 
 namespace FUC.Data.Entities;
 
@@ -15,4 +13,7 @@ public sealed class Semester : AuditableSoftDeleteEntity
     public ICollection<Group> Groups { get; set; } = new List<Group>();
     public ICollection<Topic> Topics { get; set; } = new List<Topic>();
     public ICollection<ReviewCalendar> ReviewCalendars { get; set; } = new List<ReviewCalendar>();
+
+    public ICollection<DefendCapstoneProjectInformationCalendar>
+        DefendCapstoneProjectInformationCalendars { get; set; } = new List<DefendCapstoneProjectInformationCalendar>();
 }

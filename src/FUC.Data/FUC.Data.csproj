@@ -27,6 +27,7 @@
 
     <ItemGroup>
         <Compile Remove="Entities\SupervisorGroupAssignment.cs"/>
+      <Compile Remove="Entities\DefencapstioneProjectInformationCalendar.cs"/>
     </ItemGroup>
 
 </Project>

@@ -1,4 +1,5 @@
 ﻿using FUC.Data.Abstractions;
+using FUC.Data.Data;
 using FUC.Data.Enums;
 
 namespace FUC.Data.Entities;
@@ -32,4 +33,7 @@ public sealed class Topic : AuditableSoftDeleteEntity
     public ICollection<TopicAnalysis> TopicAnalyses { get; set; } = new List<TopicAnalysis>();
     public ICollection<TopicRequest> TopicRequests { get; set; } = new List<TopicRequest>();
     public ICollection<ReviewCalendar> ReviewCalendars { get; set; } = new List<ReviewCalendar>();
+
+    public ICollection<DefendCapstoneProjectInformationCalendar>
+        DefendCapstoneProjectInformationCalendars { get; set; } = new List<DefendCapstoneProjectInformationCalendar>();
 }

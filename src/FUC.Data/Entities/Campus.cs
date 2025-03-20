@@ -1,6 +1,4 @@
-﻿using System.Collections;
-using FUC.Data.Abstractions;
-using FUC.Data.Abstractions.Entities;
+﻿using FUC.Data.Abstractions;
 
 namespace FUC.Data.Entities;
 
@@ -18,4 +16,7 @@ public sealed class Campus : AuditableSoftDeleteEntity
     public ICollection<ReviewCalendar> ReviewCalendars { get; set; } = new List<ReviewCalendar>();
 
     public ICollection<Topic> Topics { get; set; } = new List<Topic>();
+
+    public ICollection<DefendCapstoneProjectInformationCalendar>
+        DefendCapstoneProjectInformationCalendars { get; set; } = new List<DefendCapstoneProjectInformationCalendar>();
 }

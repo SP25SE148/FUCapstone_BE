@@ -22,6 +22,15 @@ public sealed class GroupConfiguration : IEntityTypeConfiguration<Group>
                 v => (GroupStatus)Enum.Parse(typeof(GroupStatus), v))
             .HasDefaultValue(GroupStatus.Pending);
 
+        builder.Property(g => g.Decision)
+            .HasDefaultValue(DecisionStatus.Attempt1)
+            .HasConversion(
+                v => v.ToString(),
+                v => (DecisionStatus)Enum.Parse(typeof(DecisionStatus), v));
+
+        builder.Property(g => g.IsReDefendCapstoneProject)
+            .HasDefaultValue(false);
+
         // relationship config
 
         builder.HasOne(g => g.Major)

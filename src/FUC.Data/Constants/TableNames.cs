@@ -27,4 +27,6 @@ internal static class TableNames
     internal const string ReviewCriteria = nameof(ReviewCriteria);
     internal const string Reviewer = nameof(Reviewer);
     internal const string JoinGroupRequest = nameof(JoinGroupRequest);
+    internal const string DefendCapstoneProjectCouncilMember = nameof(DefendCapstoneProjectCouncilMember);
+    internal const string DefendCapstoneProjectInformationCalendar = nameof(DefendCapstoneProjectInformationCalendar);
 }
