@@ -22,20 +22,28 @@ public class ExpirationRequestEventConsumer : BaseEventConsumer<ExpirationReques
 
     protected override async Task ProcessMessage(ExpirationRequestEvent message)
     {
-        _logger.LogInformation("--> Consume expiration event for {RequestTyp} with Id {Id} - Event {EventId}",
+        try
+        {
+            _logger.LogInformation("--> Consume expiration event for {RequestType} with Id {Id} - Event {EventId}",
             message.RequestType,
-            message.RequestId, 
+            message.RequestId,
             message.Id);
 
-        var expirationTask = new Reminder
+            var expirationTask = new Reminder
+            {
+                RemindFor = message.RequestId.ToString(),
+                ReminderType = message.RequestType,
+                RemindDate = DateTime.Now.Add(message.ExpirationDuration),
+            };
+
+            _processorDb.Reminders.Add(expirationTask);
+
+            await _processorDb.SaveChangesAsync();
+        }
+        catch (Exception ex)
         {
-            RemindFor = message.RequestId.ToString(),
-            ReminderType = message.RequestType,
-            RemindDate = DateTime.Now.Add(message.ExpirationDuration),
-        };
-
-        _processorDb.Reminders.Add(expirationTask);
-
-        await _processorDb.SaveChangesAsync();  
+            _logger.LogError("Fail to consume expiration event with EventId {Id} with error {Message}.", message.Id, ex.Message);
+            throw;
+        }
     }
 }

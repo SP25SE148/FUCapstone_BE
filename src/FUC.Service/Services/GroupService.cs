@@ -701,17 +701,15 @@ public class GroupService(
 
             await uow.SaveChangesAsync(cancellationToken);
 
-            // TODO: Send notification
-
-            // TODO: send reminderTask 
-
             integrationEventLogService.SendEvent(new FucTaskCreatedEvent
             {
                 FucTaskId = newTask.Id,
+                KeyTask = newTask.KeyTask,
+                ReporterName = currentUser.Name,
                 ReminderType = "RemindDueDateTask",
                 NotificationFor = newTask.AssigneeId,
                 RemindTimeOnDueDate = TimeSpan.FromHours(7),
-                RemindInDaysBeforeDueDate = TimeSpan.FromDays(1)
+                RemindInDaysBeforeDueDate = 1
             });
 
             await uow.CommitAsync(cancellationToken);
@@ -1567,7 +1565,7 @@ public class GroupService(
 
             ArgumentNullException.ThrowIfNull(group);
 
-            var key = $"{group.CampusId}/{group.SemesterId}/{group.MajorId}/{group.CampusId}/{group.GroupCode}";
+            var key = $"{group.CampusId}/{group.SemesterId}/{group.MajorId}/{group.CapstoneId}/{group.GroupCode}";
 
             return await documentsService.CreateGroupDocument(request.File, key, cancellationToken);
         }
@@ -1587,7 +1585,7 @@ public class GroupService(
 
         ArgumentNullException.ThrowIfNull(group);
 
-        var key = $"{group.CampusId}/{group.SemesterId}/{group.MajorId}/{group.CampusId}/{group.GroupCode}";
+        var key = $"{group.CampusId}/{group.SemesterId}/{group.MajorId}/{group.CapstoneId}/{group.GroupCode}";
 
         return await documentsService.PresentGroupDocumentFilePresignedUrl(key);
     }

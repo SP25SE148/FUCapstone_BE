@@ -33,9 +33,10 @@ namespace FUC.Processor.Data.Migrations
                 {
                     Id = table.Column<Guid>(type: "uuid", nullable: false),
                     IsRead = table.Column<bool>(type: "boolean", nullable: false),
-                    UserEmail = table.Column<string>(type: "text", nullable: false),
-                    Content = table.Column<string>(type: "text", nullable: false),
-                    Type = table.Column<string>(type: "text", nullable: false),
+                    UserCode = table.Column<string>(type: "text", nullable: false),
+                    Content = table.Column<string>(type: "text", nullable: true),
+                    Type = table.Column<string>(type: "text", nullable: true),
+                    ReferenceTarget = table.Column<string>(type: "text", nullable: true),
                     CreatedDate = table.Column<DateTime>(type: "timestamp", nullable: false)
                 },
                 constraints: table =>
@@ -57,6 +58,18 @@ namespace FUC.Processor.Data.Migrations
                 {
                     table.PrimaryKey("PK_Reminders", x => x.Id);
                 });
+
+            migrationBuilder.CreateTable(
+                name: "Users",
+                columns: table => new
+                {
+                    UserCode = table.Column<string>(type: "text", nullable: false),
+                    Email = table.Column<string>(type: "text", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Users", x => x.UserCode);
+                });
         }
 
         /// <inheritdoc />
@@ -70,6 +83,9 @@ namespace FUC.Processor.Data.Migrations
 
             migrationBuilder.DropTable(
                 name: "Reminders");
+
+            migrationBuilder.DropTable(
+                name: "Users");
         }
     }
 }

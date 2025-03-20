@@ -31,11 +31,6 @@ public class GroupMemberNotificationMessageConsumer : IConsumer<GroupMemberNotif
          foreach (GroupMemberNotification messageGroupMemberNotification in context.Message.GroupMemberNotifications)
          {
              List<string> connections = await _usersTracker.GetConnectionForUser(messageGroupMemberNotification.MemberEmail);
-             if (connections.Any())
-             {
-                 _hub.Clients.Clients(connections).ReceiveAllNotifications("context.Message ");
-
-             }
          }
         
     }

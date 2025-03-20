@@ -4,56 +4,45 @@ namespace FUC.Processor.Hubs;
 
 public class UsersTracker
 {
-    private static readonly ConcurrentDictionary<string, List<string>> OnlineUsers = new ConcurrentDictionary<string, List<string>>();
+    private static readonly ConcurrentDictionary<string, List<string>> OnlineUsers = new();
 
-    public Task<bool> UserConnected(string email, string connectionId)
+    public Task<bool> UserConnected(string userCode, string connectionId)
     {
         bool isOnline = false;
 
-        if (OnlineUsers.ContainsKey(email))
+        if (OnlineUsers.ContainsKey(userCode))
         {
-            OnlineUsers[email].Add(connectionId);
+            OnlineUsers[userCode].Add(connectionId);
         }
         else
         {
-            OnlineUsers.TryAdd(email, new List<string> { connectionId });
+            OnlineUsers.TryAdd(userCode, new List<string> { connectionId });
         }
 
         return Task.FromResult(isOnline);
     }
 
-    public Task<bool> UserDisconnected(string email, string connectionId)
+    public Task<bool> UserDisconnected(string userCode, string connectionId)
     {
         bool isOffline = false;
 
-        if (!OnlineUsers.ContainsKey(email))
+        if (!OnlineUsers.ContainsKey(userCode))
             return Task.FromResult(isOffline);
 
-        OnlineUsers[email].Remove(connectionId);
+        OnlineUsers[userCode].Remove(connectionId);
 
-        if (OnlineUsers[email].Count == 0)
+        if (OnlineUsers[userCode].Count == 0)
         {
-            OnlineUsers.TryRemove(email, out _);
+            OnlineUsers.TryRemove(userCode, out _);
             isOffline = true;
         }
 
         return Task.FromResult(isOffline);
     }
 
-    public Task<string[]> GetOnlineUsers()
+    public Task<List<string>> GetConnectionForUser(string userCode)
     {
-        string[] onlineUsers;
-
-        onlineUsers = OnlineUsers.OrderBy(k => k.Key).Select(k => k.Key).ToArray();
-
-        return Task.FromResult(onlineUsers);
-    }
-
-    // Get all the connectionId of user -> because when we want notify the message -> we should do it for all Connection
-    public Task<List<string>> GetConnectionForUser(string email)
-    {
-        // get all the values by key -> using method GetValueOrDefault()
-        OnlineUsers.TryGetValue(email, out List<string>? value);
+        OnlineUsers.TryGetValue(userCode, out List<string>? value);
 
         return Task.FromResult(value ?? new List<string>());
     }

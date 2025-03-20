@@ -57,7 +57,6 @@ namespace FUC.Processor.Data.Migrations
                         .HasColumnType("uuid");
 
                     b.Property<string>("Content")
-                        .IsRequired()
                         .HasColumnType("text");
 
                     b.Property<DateTime>("CreatedDate")
@@ -66,11 +65,13 @@ namespace FUC.Processor.Data.Migrations
                     b.Property<bool>("IsRead")
                         .HasColumnType("boolean");
 
-                    b.Property<string>("Type")
-                        .IsRequired()
+                    b.Property<string>("ReferenceTarget")
                         .HasColumnType("text");
 
-                    b.Property<string>("UserEmail")
+                    b.Property<string>("Type")
+                        .HasColumnType("text");
+
+                    b.Property<string>("UserCode")
                         .IsRequired()
                         .HasColumnType("text");
 
@@ -102,6 +103,20 @@ namespace FUC.Processor.Data.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("Reminders", (string)null);
+                });
+
+            modelBuilder.Entity("FUC.Processor.Models.User", b =>
+                {
+                    b.Property<string>("UserCode")
+                        .HasColumnType("text");
+
+                    b.Property<string>("Email")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.HasKey("UserCode");
+
+                    b.ToTable("Users", (string)null);
                 });
 #pragma warning restore 612, 618
         }
