@@ -828,8 +828,8 @@ public class GroupService(
         // get file format to process overide for export to supervisor
         try
         {
-            var response = await s3Service.GetFromS3(s3BucketConfiguration.EvaluationWeeklyKey,
-                s3BucketConfiguration.EvaluationProjectProgressKey);
+            var response = await s3Service.GetFromS3(s3BucketConfiguration.FUCTemplateBucket,
+                s3BucketConfiguration.EvaluationWeeklyKey);
 
             return response == null || response.HttpStatusCode != System.Net.HttpStatusCode.OK
                 ? throw new AmazonS3Exception("Fail to get template in S3")
