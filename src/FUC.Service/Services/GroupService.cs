@@ -705,6 +705,15 @@ public class GroupService(
 
             // TODO: send reminderTask 
 
+            integrationEventLogService.SendEvent(new FucTaskCreatedEvent
+            {
+                FucTaskId = newTask.Id,
+                ReminderType = "RemindDueDateTask",
+                NotificationFor = newTask.AssigneeId,
+                RemindTimeOnDueDate = TimeSpan.FromHours(7),
+                RemindInDaysBeforeDueDate = TimeSpan.FromDays(1)
+            });
+
             await uow.CommitAsync(cancellationToken);
 
             return OperationResult.Success(mapper.Map<FucTaskResponse>(newTask));
@@ -872,12 +881,14 @@ public class GroupService(
             workSheet.Cell(startIndex + i, 1).SetValue(evaluations[i].StudentCode);
             workSheet.Cell(startIndex + i, 2).SetValue(evaluations[i].StudentName);
             workSheet.Cell(startIndex + i, 3).SetValue(evaluations[i].StudentRole);
-            workSheet.Cell(startIndex + i, 4).SetValue(evaluations[i].AverageContributionPercentage);
+            workSheet.Cell(startIndex + i, 4).SetValue(evaluations[i].AverageContributionPercentage)
+                .Style.NumberFormat.Format = "0.00";
 
             // fill the evaluations for student in file
             foreach (var item in evaluations[i].EvaluationWeeks)
             {
-                workSheet.Cell(startIndex + i, 4 + item.WeekNumber).SetValue(item.ContributionPercentage);
+                workSheet.Cell(startIndex + i, 4 + item.WeekNumber).SetValue(item.ContributionPercentage)
+                    .Style.NumberFormat.Format = "0.00";
             }
         }
 
