@@ -1,12 +1,14 @@
-﻿using FUC.Common.Contracts;
+﻿using FUC.Common.Abstractions;
+using FUC.Common.Contracts;
+using FUC.Common.Options;
 using FUC.Processor.Hubs;
 using FUC.Processor.Services;
-using MassTransit;
 using Microsoft.AspNetCore.SignalR;
+using Microsoft.Extensions.Options;
 
 namespace FUC.Processor.Consumers;
 
-public class UsersSyncMessageConsumer : IConsumer<UsersSyncMessage>
+public class UsersSyncMessageConsumer : BaseEventConsumer<UsersSyncMessage>
 {
     private readonly ILogger<UsersSyncMessageConsumer> _logger;
     private readonly IEmailService _emailService;
@@ -14,18 +16,19 @@ public class UsersSyncMessageConsumer : IConsumer<UsersSyncMessage>
 
     public UsersSyncMessageConsumer(ILogger<UsersSyncMessageConsumer> logger, 
         IEmailService emailService,
-        IHubContext<NotificationHub, INotificationClient> hub)
+        IHubContext<NotificationHub, INotificationClient> hub,
+        IOptions<EventConsumerConfiguration> options) : base(logger, options)
     {
         _logger = logger;
         _emailService = emailService;
         _hub = hub;
     }
 
-    public async Task Consume(ConsumeContext<UsersSyncMessage> context)
+    protected override async Task ProcessMessage(UsersSyncMessage message)
     {
         _logger.LogInformation("--> users sync consume in Notification service");
 
-        var userEmails = context.Message.UsersSync.Select(x => x.Email).ToArray();
+        var userEmails = message.UsersSync.Select(x => x.Email).ToArray();
 
         await _emailService.SendMailAsync("Welcome-FUC", "You can connect to FUC", userEmails);
     }

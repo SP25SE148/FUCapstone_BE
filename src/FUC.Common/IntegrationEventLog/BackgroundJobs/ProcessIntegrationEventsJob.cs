@@ -71,7 +71,7 @@ public class ProcessIntegrationEventsJob<TDbContext> : IJob where TDbContext : D
             for (int i = 0; i < updateQueue.Count; i++)
             {
                 parameters.Add(new NpgsqlParameter($"@Id{i}", NpgsqlDbType.Uuid) { Value = updates[i].Id });
-                parameters.Add(new NpgsqlParameter($"@ProcessedOn{i}", NpgsqlDbType.TimestampTz) { Value = updates[i].ProcessedOnUtc });
+                parameters.Add(new NpgsqlParameter($"@ProcessedOn{i}", NpgsqlDbType.Timestamp) { Value = updates[i].ProcessedOnUtc });
 
                 // Fix: Specify `NpgsqlDbType.Text` for `Error` and handle NULL values properly.
                 parameters.Add(new NpgsqlParameter($"@Error{i}", NpgsqlDbType.Text) { Value = updates[i].Error ?? (object)DBNull.Value });
