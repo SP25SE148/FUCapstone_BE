@@ -131,7 +131,7 @@ public class GroupMemberService(
         {
             RequestId = newGroupMember.Id,
             RequestType = nameof(GroupMember),
-            ExpirationDuration = TimeSpan.FromMinutes(5)
+            ExpirationDuration = TimeSpan.FromMinutes(2)
         });
 
         await uow.CommitAsync();

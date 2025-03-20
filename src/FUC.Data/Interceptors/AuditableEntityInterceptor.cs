@@ -1,13 +1,19 @@
 ﻿using FUC.Common.Abstractions;
 using FUC.Data.Abstractions;
+using FUC.Data.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Diagnostics;
 
 namespace FUC.Data.Interceptors;
-public class AuditableEntityInterceptor(ICurrentUser currentUser, TimeProvider dateTime) : SaveChangesInterceptor
+public class AuditableEntityInterceptor(ICurrentUser currentUser) : SaveChangesInterceptor
 {
     public override InterceptionResult<int> SavingChanges(DbContextEventData eventData, InterceptionResult<int> result)
     {
+        if (eventData.Context is FucDbContext dbContext && dbContext.DisableInterceptors)
+        {
+            return base.SavingChanges(eventData, result); 
+        }
+
         UpdateEntities(eventData.Context);
         return base.SavingChanges(eventData, result);
     }
@@ -15,6 +21,11 @@ public class AuditableEntityInterceptor(ICurrentUser currentUser, TimeProvider d
     public override ValueTask<InterceptionResult<int>> SavingChangesAsync(DbContextEventData eventData,
       InterceptionResult<int> result, CancellationToken cancellationToken = default)
     {
+        if (eventData.Context is FucDbContext dbContext && dbContext.DisableInterceptors)
+        {
+            return base.SavingChangesAsync(eventData, result, cancellationToken);
+        }
+
         UpdateEntities(eventData.Context);
         return base.SavingChangesAsync(eventData, result, cancellationToken);
     }

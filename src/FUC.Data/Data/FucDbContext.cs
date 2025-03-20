@@ -6,6 +6,7 @@ namespace FUC.Data.Data;
 
 public class FucDbContext : DbContext
 {
+    public bool DisableInterceptors { get; set; } = false;
     public FucDbContext() { }
 
     public FucDbContext(DbContextOptions<FucDbContext> options) : base(options) { }
