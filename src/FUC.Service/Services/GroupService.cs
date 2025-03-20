@@ -704,6 +704,7 @@ public class GroupService(
             integrationEventLogService.SendEvent(new FucTaskCreatedEvent
             {
                 FucTaskId = newTask.Id,
+                ProjectProgressId = request.ProjectProgressId,
                 KeyTask = newTask.KeyTask,
                 ReporterName = currentUser.Name,
                 ReminderType = "RemindDueDateTask",

@@ -49,7 +49,7 @@ public class FucTaskCreatedEventConsumer : BaseEventConsumer<FucTaskCreatedEvent
             await AddReminderTask(new Reminder
             {
                 ReminderType = message.ReminderType,
-                Content = $"{message.FucTaskId}/{message.KeyTask}",
+                Content = $"{message.ProjectProgressId}/{message.FucTaskId}/{message.KeyTask}",
                 RemindDate = DateTime.Now.StartOfDay()
                             .Add(message.RemindTimeOnDueDate),
                 RemindFor = message.NotificationFor,
@@ -61,7 +61,7 @@ public class FucTaskCreatedEventConsumer : BaseEventConsumer<FucTaskCreatedEvent
                 await AddReminderTask(new Reminder
                 {
                     ReminderType = message.ReminderType,
-                    Content = $"{message.FucTaskId}/{message.KeyTask}",
+                    Content = $"{message.ProjectProgressId}/{message.FucTaskId}/{message.KeyTask}",
                     RemindDate = DateTime.Now.StartOfDay()
                         .Add(message.RemindTimeOnDueDate)
                         .AddDays(-message.RemindInDaysBeforeDueDate),
@@ -72,7 +72,7 @@ public class FucTaskCreatedEventConsumer : BaseEventConsumer<FucTaskCreatedEvent
             var notification = new Notification
             {
                 Content = $"{message.ReporterName} assigned you into Task {message.KeyTask}.",
-                ReferenceTarget = $"{message.FucTaskId}/{message.KeyTask}",
+                ReferenceTarget = $"{message.ProjectProgressId}/{message.FucTaskId}/{message.KeyTask}",
                 Type = message.ReminderType,
                 IsRead = false,
                 UserCode = message.NotificationFor,
@@ -88,7 +88,8 @@ public class FucTaskCreatedEventConsumer : BaseEventConsumer<FucTaskCreatedEvent
             {
                 var emailForUser = await _processorDbContext.Users.FirstAsync(x => x.UserCode == message.NotificationFor);
 
-                await _emailService.SendMailAsync("[FUC_TASK]", $"{notification.Content}", emailForUser.Email);
+                if (!await _emailService.SendMailAsync("[FUC_TASK]", $"{notification.Content}", emailForUser.Email))
+                    throw new InvalidOperationException("Fail to send email");
             }
             else
             {
