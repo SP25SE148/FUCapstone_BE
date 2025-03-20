@@ -1,5 +1,4 @@
 ﻿using FUC.Data.Abstractions;
-using FUC.Data.Abstractions.Entities;
 
 namespace FUC.Data.Entities;
 

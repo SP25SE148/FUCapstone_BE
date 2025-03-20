@@ -23,4 +23,7 @@ public class Supervisor : AuditableSoftDeleteEntity
     public ICollection<ProjectProgress> ProjectProgresses { get; set; } = new List<ProjectProgress>();
     public ICollection<WeeklyEvaluation> WeeklyEvaluations { get; set; } = new List<WeeklyEvaluation>();
     public ICollection<Reviewer> Reviewers { get; set; } = new List<Reviewer>();
+
+    public ICollection<DefendCapstoneProjectCouncilMember> DefendCapstoneProjectMemberCouncils { get; set; } =
+        new List<DefendCapstoneProjectCouncilMember>();
 }
