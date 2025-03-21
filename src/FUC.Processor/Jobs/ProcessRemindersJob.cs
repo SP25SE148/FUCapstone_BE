@@ -30,49 +30,57 @@ public class ProcessRemindersJob : IJob
         _processorDbContext = processorDbContext;
         _integrationEventLogService = integrationEventLogService;
         _logger = logger;
-        _hub = hub; 
-        _usersTracker = usersTracker;   
+        _hub = hub;
+        _usersTracker = usersTracker;
         _emailService = emailService;
     }
 
     public async Task Execute(IJobExecutionContext context)
     {
-        _logger.LogInformation("--> Starting execute the ReminderJob at {Date}.", DateTime.Now);
-
-        await _processorDbContext.Database.BeginTransactionAsync(context.CancellationToken);
-
-        var reminders = await _processorDbContext.Reminders.FromSqlRaw(
-            $"""
-            SELECT * 
-            FROM "Reminders"
-            WHERE DATE("RemindDate") = CURRENT_DATE;
-            """
-            ).ToListAsync(context.CancellationToken);
-
-        if (reminders.Count == 0)
+        try
         {
-            _logger.LogInformation("No reminders to process.");
-            return;
-        }
+            _logger.LogInformation("--> Starting execute the ReminderJob at {Date}.", DateTime.Now);
 
-        var reminderedQueue = new ConcurrentQueue<Guid>();
+            await _processorDbContext.Database.BeginTransactionAsync(context.CancellationToken);
 
-        var reminderTasks = reminders.Select(x => ProcessReminderAsync(x,
-            reminderedQueue,
-            context.CancellationToken));
+            var reminders = await _processorDbContext.Reminders.FromSqlRaw(
+                $"""
+                SELECT * 
+                FROM "Reminders"
+                WHERE DATE("RemindDate") = CURRENT_DATE;
+                """
+                ).ToListAsync(context.CancellationToken);
 
-        await Task.WhenAll(reminderTasks);
+            if (reminders.Count == 0)
+            {
+                _logger.LogInformation("No reminders to process.");
+                return;
+            }
 
-        if (!reminderedQueue.IsEmpty)
-        {
-            await _processorDbContext.Database.ExecuteSqlInterpolatedAsync($"""
+            var reminderedQueue = new ConcurrentQueue<Guid>();
+
+            var reminderTasks = reminders.Select(x => ProcessReminderAsync(x,
+                reminderedQueue,
+                context.CancellationToken));
+
+            await Task.WhenAll(reminderTasks);
+
+            if (!reminderedQueue.IsEmpty)
+            {
+                await _processorDbContext.Database.ExecuteSqlInterpolatedAsync($"""
                 DELETE FROM "Reminders" WHERE "Id" = ANY({reminderedQueue.ToArray()});
                 """);
+            }
+
+            await _processorDbContext.Database.CommitTransactionAsync(context.CancellationToken);
+
+            _logger.LogInformation("Completed processing {Count} reminders.", reminderedQueue.Count);
         }
-
-        await _processorDbContext.Database.CommitTransactionAsync(context.CancellationToken);
-
-        _logger.LogInformation("Completed processing {Count} reminders.", reminderedQueue.Count);
+        catch (Exception ex)
+        {
+            _logger.LogError("Fail to processing reminders with Error {Message}.", ex.Message);
+            await _processorDbContext.Database.RollbackTransactionAsync(context.CancellationToken);
+        }
     }
 
     private async Task ProcessReminderAsync(Reminder reminder,
@@ -124,12 +132,17 @@ public class ProcessRemindersJob : IJob
                         Content = content,
                         Type = reminder.ReminderType,
                         ReferenceTarget = reminder.Content,
-                        CreatedDate = DateTime.Now, 
+                        CreatedDate = DateTime.Now,
                     });
 
                     await _processorDbContext.SaveChangesAsync(cancellationToken);
 
-                    if (!await _emailService.SendMailAsync("[FUC_TASK_REMINDER]", content, reminder.RemindFor))
+                    var userTarget = await _processorDbContext.Users
+                        .FirstAsync(x => x.UserCode == reminder.RemindFor, cancellationToken);
+
+                    ArgumentNullException.ThrowIfNull(userTarget);
+
+                    if (!await _emailService.SendMailAsync("[FUC_TASK_REMINDER]", content, userTarget.Email))
                         throw new InvalidOperationException("Fail to send email");
 
                     var connections = await _usersTracker.GetConnectionForUser(reminder.RemindFor);
@@ -153,6 +166,7 @@ public class ProcessRemindersJob : IJob
         catch (Exception ex)
         {
             _logger.LogWarning("Reminder {Id} was processed fail. {Error}", reminder.Id, ex.Message);
+            throw;
         }
     }
 }

@@ -10,6 +10,7 @@ using FUC.Data.Repositories;
 using FUC.Service.Abstractions;
 using FUC.Service.Extensions.Options;
 using Microsoft.AspNetCore.Http;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 
 namespace FUC.Service.Services;
@@ -18,6 +19,7 @@ public class DefendCapstoneService(
     ILogger<DefendCapstoneService> logger,
     ICurrentUser currentUser,
     IRepository<DefendCapstoneProjectInformationCalendar> defendCapstoneCalendarRepository,
+    IRepository<DefendCapstoneProjectCouncilMember> defendCapstoneCouncilMemberRepository,
     IUnitOfWork<FucDbContext> unitOfWork,
     IIntegrationEventLogService integrationEventLogService,
     S3BucketConfiguration s3BucketConfiguration,
@@ -42,7 +44,7 @@ public class DefendCapstoneService(
         try
         {
             var defendCalendars = await ParseDefendCapstoneCalendarsFromFile(file, capstone.Value.Id, cancellationToken);
-            defendCapstoneRepository.InsertRange(defendCalendars);
+            defendCapstoneCalendarRepository.InsertRange(defendCalendars);
             await unitOfWork.SaveChangesAsync(cancellationToken);
             return OperationResult.Success();
         }
@@ -86,8 +88,21 @@ public class DefendCapstoneService(
                file.FileName.EndsWith(".xlsx", StringComparison.OrdinalIgnoreCase);
     }
 
-    //public async Task<OperationResult<object>> GetDefendCalendersBySelf()
-    //{
-    //    var defendCalendars = await defendCapstoneCalendarRepository()
-    //}
+    public async Task<OperationResult<object>> GetDefendCalendersBySelf(CancellationToken cancellationToken)
+    {
+        var defendCalendarsOfMember = await defendCapstoneCouncilMemberRepository.FindAsync(
+            x => x.SupervisorId == currentUser.UserCode,
+            include: x => x.Include(x => x.DefendCapstoneProjectInformationCalendar),
+            orderBy: x => x.OrderBy(x => x.DefendCapstoneProjectInformationCalendar.Slot), 
+            cancellationToken);
+
+        ArgumentNullException.ThrowIfNull(defendCalendarsOfMember);
+
+        return object;
+    }
+}
+
+public class DefendCapstoneCalendarResponse
+{
+
 }
