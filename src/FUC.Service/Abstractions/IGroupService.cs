@@ -63,7 +63,8 @@ public interface IGroupService
     Task<OperationResult> UpdateProjectProgressWeek(UpdateProjectProgressWeekRequest request,
         CancellationToken cancellationToken);
 
-    Task<OperationResult> ImportReviewCalendar(IFormFile file);
-    Task<OperationResult> UploadGroupDocumentForGroup(UploadGroupDocumentRequest request, CancellationToken cancellationToken);
+    Task<OperationResult> UploadGroupDocumentForGroup(UploadGroupDocumentRequest request,
+        CancellationToken cancellationToken);
+
     Task<OperationResult<string>> PresentGroupDocumentFileOfGroup(Guid groupId, CancellationToken cancellationToken);
 }

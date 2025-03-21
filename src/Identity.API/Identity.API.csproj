@@ -35,6 +35,7 @@
   </ItemGroup>
 
   <ItemGroup>
+      <Folder Include="Consumers\"/>
     <Folder Include="Payloads\Responses\" />
     <Folder Include="Services\" />
   </ItemGroup>
