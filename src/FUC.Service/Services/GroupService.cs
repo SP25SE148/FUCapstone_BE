@@ -1268,7 +1268,7 @@ public class GroupService(
                 topic == null ||
                 topic.Code != group.Value.TopicCode)
             {
-                throw new Exception("Invalid group or topic");
+                throw new InvalidOperationException("Invalid group or topic");
             }
 
             await IsGroupIsExistInReviewCalendarInCurrentAttempt(reviewCalendars, group.Value, attempt);
@@ -1289,7 +1289,7 @@ public class GroupService(
                                                          x.Attempt == attempt, default) != null ||
             reviewCalendars.Exists(rc => rc.GroupId == group.Id))
         {
-            throw new Exception("Group is already exist in review calendar in current attempt");
+            throw new InvalidOperationException("Group is already exist in review calendar in current attempt");
         }
     }
 
@@ -1298,7 +1298,7 @@ public class GroupService(
         var fileName = file.FileName;
         var match = Regex.Match(fileName, @"Review (\d+)");
         return !match.Success
-            ? throw new Exception("Invalid file name format")
+            ? throw new InvalidOperationException("Invalid file name format")
             : int.Parse(match.Groups[1].Value);
     }
 

@@ -1,5 +1,4 @@
-﻿using FUC.Data.Abstractions.Entities;
-using FUC.Data.Constants;
+﻿using FUC.Data.Constants;
 using FUC.Data.Entities;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
@@ -19,7 +18,7 @@ public class
         builder.Property(x => x.SemesterId).IsRequired();
         builder.Property(x => x.DefendAttempt).IsRequired();
         builder.Property(x => x.Location).IsRequired();
-        builder.Property(x => x.Date).HasColumnType("timestamp");
+        builder.Property(x => x.DefenseDate).HasColumnType("timestamp");
         builder.Property(g => g.CreatedDate)
             .HasColumnType("timestamp");
         builder.Property(g => g.UpdatedDate)

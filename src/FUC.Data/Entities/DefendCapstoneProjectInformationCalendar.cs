@@ -10,9 +10,8 @@ public sealed class DefendCapstoneProjectInformationCalendar : AuditableEntity
     public string SemesterId { get; set; }
     public int DefendAttempt { get; set; }
     public string Location { get; set; } // Room
-    public string FileName { get; set; }
-    public string FileUrl { get; set; }
-    public DateTime Date { get; set; }
+    public int Slot { get; set; }
+    public DateTime DefenseDate { get; set; }
 
     public Campus Campus { get; set; } = null!;
     public Semester Semester { get; set; } = null!;
