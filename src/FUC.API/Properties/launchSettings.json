@@ -15,6 +15,7 @@
         "EVALUATION_WEEKLY_KEY": "Export/EvaluationWeekly",
         "STUDENTS_TEMPLATE_KEY": "Import/Students",
         "SUPERVISORS_TEMPLATE_KEY": "Import/Supervisors",
+        "THESIS_COUNCIL_MEETING_MINUTES_TEMPLATE_KEY": "Export/ThesisCouncilMeetingMinutes",
         "ENABLE_PROFILE": "true"
       },
       "dotnetRunMessages": true,
@@ -36,6 +37,7 @@
         "EVALUATION_WEEKLY_KEY": "Export/EvaluationWeekly",
         "STUDENTS_TEMPLATE_KEY": "Import/Students",
         "SUPERVISORS_TEMPLATE_KEY": "Import/Supervisors",
+        "THESIS_COUNCIL_MEETING_MINUTES_TEMPLATE_KEY": "Export/ThesisCouncilMeetingMinutes",
         "ENABLE_PROFILE": "true"
       },
       "publishAllPorts": true,

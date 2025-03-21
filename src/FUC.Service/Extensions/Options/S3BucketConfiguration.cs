@@ -11,4 +11,5 @@ public class S3BucketConfiguration
     public string EvaluationWeeklyKey { get; set; } = string.Empty;
     public string StudentsTemplateKey { get; set; } = string.Empty;
     public string SupervisorsTemplateKey { get; set; } = string.Empty;
+    public string ThesisCouncilMeetingMinutesTemplateKey { get; set; } = string.Empty;
 }

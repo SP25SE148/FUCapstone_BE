@@ -443,6 +443,15 @@ public class DocumentsService(
             : result.Value;
     }
 
+    public async Task<OperationResult<string>> PresentThesisCouncilMeetingMinutesTemplatePresignedUrl()
+    {
+        var result = await PresentFilePresignedUrl(s3BucketConfiguration.FUCTemplateBucket, s3BucketConfiguration.ThesisCouncilMeetingMinutesTemplateKey);
+
+        return result.IsFailure
+            ? OperationResult.Failure<string>(new Error("Document.Error", "Can not export Supervisors Import template."))
+            : result.Value;
+    }
+
     private static bool IsValidFile(IFormFile file)
     {
         return file != null && file.Length > 0;

@@ -65,7 +65,7 @@ public class DocumentsController(IDocumentsService documentsService) : ApiContro
     }
 
     [HttpGet("project-progress")]
-    [Authorize(Roles = $"{UserRoles.SuperAdmin},{UserRoles.Admin},{UserRoles.Manager}")]
+    [Authorize(Roles = $"{UserRoles.SuperAdmin},{UserRoles.Admin},{UserRoles.Manager},{UserRoles.Supervisor}")]
     public async Task<IActionResult> PresentEvaluationProjectProgressTemplatePresignedUrl()
     {
         var result = await documentsService.PresentEvaluationProjectProgressTemplatePresignedUrl();
@@ -105,6 +105,15 @@ public class DocumentsController(IDocumentsService documentsService) : ApiContro
     public async Task<IActionResult> PresentSupervisorsImportTemplatePresignedUrl()
     {
         var result = await documentsService.PresentSupervisorsImportTemplatePresignedUrl();
+
+        return result.IsSuccess ? Ok(result) : HandleFailure(result);
+    }
+
+    [HttpGet("thesis-minutes")]
+    [Authorize(Roles = $"{UserRoles.SuperAdmin},{UserRoles.Admin},{UserRoles.Manager}")]
+    public async Task<IActionResult> PresentThesisCouncilMeetingMinutesTemplatePresignedUrl()
+    {
+        var result = await documentsService.PresentThesisCouncilMeetingMinutesTemplatePresignedUrl();
 
         return result.IsSuccess ? Ok(result) : HandleFailure(result);
     }

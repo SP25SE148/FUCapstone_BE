@@ -18,4 +18,5 @@ public interface IDocumentsService
     Task<OperationResult<string>> PresentDefenseCalendarTemplatePresignedUrl();
     Task<OperationResult<string>> PresentStudentsImportTemplatePresignedUrl();
     Task<OperationResult<string>> PresentSupervisorsImportTemplatePresignedUrl();
+    Task<OperationResult<string>> PresentThesisCouncilMeetingMinutesTemplatePresignedUrl();
 }

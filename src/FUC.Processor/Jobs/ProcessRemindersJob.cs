@@ -86,8 +86,6 @@ public class ProcessRemindersJob : IJob
             if (reminder.RemindDate > DateTime.Now)
                 return;
 
-            await _processorDbContext.Database.BeginTransactionAsync(cancellationToken);
-
             switch (reminder.ReminderType)
             {
                 case "TopicRequest":
@@ -149,8 +147,6 @@ public class ProcessRemindersJob : IJob
                     _logger.LogWarning("Unsupported RemindType: {Type}", reminder.ReminderType);
                     break;
             }
-
-            await _processorDbContext.Database.CommitTransactionAsync(cancellationToken);
 
             reminderedQueue.Enqueue(reminder.Id);
         }

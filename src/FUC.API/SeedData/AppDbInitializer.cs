@@ -164,6 +164,14 @@ public static class AppDbInitializer
                 ArgumentNullException.ThrowIfNull(activedKey);
 
                 bucketConfiguration.SupervisorsTemplateKey = activedKey.FileUrl;
+
+                // THESIS_COUNCIL_MEETING_MINUTES_TEMPLATE_KEY
+                activedKey = records.Find(
+                    r => r.FileUrl.StartsWith(bucketConfiguration.ThesisCouncilMeetingMinutesTemplateKey));
+
+                ArgumentNullException.ThrowIfNull(activedKey);
+
+                bucketConfiguration.ThesisCouncilMeetingMinutesTemplateKey = activedKey.FileUrl;
             }
             catch (Exception ex)
             {

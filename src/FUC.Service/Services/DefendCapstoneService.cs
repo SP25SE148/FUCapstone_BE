@@ -1,5 +1,4 @@
 ﻿using ClosedXML.Excel;
-using DocumentFormat.OpenXml.Spreadsheet;
 using FUC.Common.Abstractions;
 using FUC.Common.IntegrationEventLog.Services;
 using FUC.Common.Shared;
