@@ -86,37 +86,48 @@ public class GroupService(
             leader.GroupMembers.Any(s => s.Status.Equals(GroupMemberStatus.Accepted)))
             return OperationResult.Failure<Guid>(new Error("Error.InEligible", "Leader is ineligible to create group"));
 
-        // Create group, group member for leader
-        await uow.BeginTransactionAsync();
-        var newGroup = new Group()
+        try
         {
-            CampusId = leader.CampusId,
-            CapstoneId = leader.CapstoneId,
-            MajorId = leader.MajorId,
-            SemesterId = currentSemester.Value.Id,
-        };
-
-        groupRepository.Insert(newGroup);
-
-        groupMemberRepository.Insert(new()
-        {
-            GroupId = newGroup.Id,
-            StudentId = leader.Id,
-            IsLeader = true,
-            Status = GroupMemberStatus.Accepted
-        });
-        var groupMembers = await groupMemberRepository.FindAsync(gm => gm.StudentId == currentUser.UserCode);
-        if (groupMembers.Count > 0)
-        {
-            foreach (var groupMember in groupMembers)
+            // Create group, group member for leader
+            await uow.BeginTransactionAsync();
+            var newGroup = new Group()
             {
-                groupMember.Status = GroupMemberStatus.Rejected;
-                groupMemberRepository.Update(groupMember);
-            }
-        }
+                Id = Guid.NewGuid(),
+                CampusId = leader.CampusId,
+                CapstoneId = leader.CapstoneId,
+                MajorId = leader.MajorId,
+                SemesterId = currentSemester.Value.Id,
+            };
 
-        await uow.CommitAsync();
-        return newGroup.Id;
+            groupRepository.Insert(newGroup);
+
+            groupMemberRepository.Insert(new()
+            {
+                GroupId = newGroup.Id,
+                StudentId = leader.Id,
+                IsLeader = true,
+                Status = GroupMemberStatus.Accepted
+            });
+            var groupMembers = await groupMemberRepository.FindAsync(gm => gm.StudentId == currentUser.UserCode);
+            if (groupMembers.Count > 0)
+            {
+                foreach (var groupMember in groupMembers)
+                {
+                    groupMember.Status = GroupMemberStatus.Rejected;
+                    groupMemberRepository.Update(groupMember);
+                }
+            }
+
+            await uow.CommitAsync();
+
+
+            return newGroup.Id;
+        }
+        catch (Exception e)
+        {
+            logger.LogError("Create group failed with message: {Message}", e.Message);
+            return OperationResult.Failure<Guid>(new Error("Error.CreateGroupFailed", "Create group failed"));
+        }
     }
 
     public async Task<OperationResult<IEnumerable<GroupResponse>>> GetAllGroupAsync()
@@ -555,7 +566,7 @@ public class GroupService(
                 ? g.GroupMembers.Where(m => m.Status == GroupMemberStatus.Accepted)
                     .Select(m => m.Student.GPA)
                     .Average()
-                : 0, 
+                : 0,
             GroupMemberList = g.GroupMembers
                 .Where(m => m.Status == GroupMemberStatus.Accepted)
                 .Select(m => new GroupMemberResponse
@@ -769,10 +780,10 @@ public class GroupService(
         {
             await uow.BeginTransactionAsync(cancellationToken);
 
-            if (changes.ContainsKey(nameof(request.DueDate)) 
-                && currentUser.UserCode != progress.FucTasks.Single().ReporterId) 
+            if (changes.ContainsKey(nameof(request.DueDate))
+                && currentUser.UserCode != progress.FucTasks.Single().ReporterId)
                 return OperationResult.Failure<UpdateFucTaskResponse>(new Error("ProjectProgress.Error",
-                "Only reporter of this task can change the duedate."));
+                    "Only reporter of this task can change the duedate."));
 
             if (changes.TryGetValue(nameof(request.Status), out var status)
                 && (FucTaskStatus)status.NewValue! == FucTaskStatus.Done)
@@ -1074,7 +1085,7 @@ public class GroupService(
         var tasks = await fucTaskRepository.FindAsync(
             x => x.ProjectProgressId == projectProgressId,
             include: x => x.Include(x => x.Assignee)
-                        .Include(x => x.Reporter),
+                .Include(x => x.Reporter),
             orderBy: x => x.OrderByDescending(x => x.CreatedDate),
             cancellationToken);
 
@@ -1212,162 +1223,6 @@ public class GroupService(
             return OperationResult.Failure(new Error("ProjectProgress.Error",
                 "Update ProjectProgressWeek fail."));
         }
-    }
-
-    public async Task<OperationResult> ImportReviewCalendar(IFormFile file)
-    {
-        // check if file is valid
-        if (!IsValidFile(file))
-            return OperationResult.Failure(new Error("Error.ImportFailed", "Invalid file"));
-        // get current semester 
-        var currentSemester = await semesterService.GetCurrentSemesterAsync();
-        if (currentSemester.IsFailure)
-            return OperationResult.Failure(new Error("Error.SemesterIsNotGoingOn",
-                "The current semester is not going on"));
-
-        try
-        {
-            var reviewCalendars = await ParseReviewCalendarsFromFile(file, currentSemester.Value.Id);
-            reviewCalendarRepository.InsertRange(reviewCalendars);
-            await uow.SaveChangesAsync();
-            return OperationResult.Success();
-        }
-        catch (Exception e)
-        {
-            logger.LogError("import review failed with message: {Message}", e.Message);
-            return OperationResult.Failure(new Error("Error.ImportFailed", "import review failed"));
-        }
-    }
-
-    private async Task<List<ReviewCalendar>> ParseReviewCalendarsFromFile(IFormFile file, string currentSemester)
-    {
-        var stream = new MemoryStream();
-        await file.CopyToAsync(stream);
-        using var wb = new XLWorkbook(stream);
-        IXLWorksheet workSheet = wb.Worksheet(1);
-
-        var reviewCalendars = new List<ReviewCalendar>();
-        var attempt = GetAttemptNumberFromFile(file);
-
-        foreach (var row in workSheet.Rows().Skip(3))
-        {
-            var groupCode = row.Cell(2).GetValue<string>();
-            var topicCode = row.Cell(3).GetValue<string>();
-            if (string.IsNullOrEmpty(groupCode) || string.IsNullOrEmpty(topicCode))
-            {
-                break;
-            }
-
-            var group = await GetGroupByGroupCodeAsync(groupCode);
-            var topic = await topicService.GetTopicByTopicCode(topicCode);
-
-            if (group.IsFailure ||
-                group.Value.SemesterName != currentSemester ||
-                group.Value.CampusName != currentUser.CampusId ||
-                group.Value.MajorName != currentUser.MajorId ||
-                topic == null ||
-                topic.Code != group.Value.TopicCode)
-            {
-                throw new InvalidOperationException("Invalid group or topic");
-            }
-
-            await IsGroupIsExistInReviewCalendarInCurrentAttempt(reviewCalendars, group.Value, attempt);
-
-            var reviewersCalendarDetail = await GetReviewCalendarDetailsFromRow(row, workSheet);
-            var reviewCalendar =
-                CreateReviewCalendar(group.Value, topic, attempt, currentSemester, reviewersCalendarDetail);
-            reviewCalendars.Add(reviewCalendar);
-        }
-
-        return reviewCalendars;
-    }
-
-    private async Task IsGroupIsExistInReviewCalendarInCurrentAttempt(List<ReviewCalendar> reviewCalendars,
-        GroupResponse group, int attempt)
-    {
-        if (await reviewCalendarRepository.GetAsync(x => x.GroupId == group.Id &&
-                                                         x.Attempt == attempt, default) != null ||
-            reviewCalendars.Exists(rc => rc.GroupId == group.Id))
-        {
-            throw new InvalidOperationException("Group is already exist in review calendar in current attempt");
-        }
-    }
-
-    private static int GetAttemptNumberFromFile(IFormFile file)
-    {
-        var fileName = file.FileName;
-        var match = Regex.Match(fileName, @"Review (\d+)");
-        return !match.Success
-            ? throw new InvalidOperationException("Invalid file name format")
-            : int.Parse(match.Groups[1].Value);
-    }
-
-    private async Task<ReviewCalendarDetail> GetReviewCalendarDetailsFromRow(IXLRow row, IXLWorksheet workSheet)
-    {
-        var reviewers = new List<string>();
-        int reviewerCol = 9;
-        for (; reviewerCol < row.Cells().Count(); reviewerCol++)
-        {
-            var isReviewerColumn = workSheet.Cell(3, reviewerCol).GetValue<string>().Contains("Reviewer");
-            if (!isReviewerColumn)
-                break;
-
-            var reviewerCode = row.Cell(reviewerCol).GetValue<string>();
-            var reviewer = await supervisorService.GetSupervisorByIdAsync(reviewerCode);
-            if (reviewer.IsFailure)
-            {
-                logger.LogError("import review failed with message: reviewer with code: {ReviewerCode} is not found!",
-                    reviewerCode);
-                return new ReviewCalendarDetail();
-            }
-
-            reviewers.Add(reviewerCode);
-        }
-
-        var reviewDate = row.Cell(reviewerCol++).GetValue<string>();
-        var slot = row.Cell(reviewerCol++).GetValue<string>();
-        var room = row.Cell(reviewerCol).GetValue<string>();
-
-        if (string.IsNullOrEmpty(reviewDate) || string.IsNullOrEmpty(slot) || string.IsNullOrEmpty(room))
-        {
-            logger.LogError("import review failed with message: review date, slot or room is empty!");
-            throw new Exception("Invalid review details");
-        }
-
-        return new ReviewCalendarDetail()
-        {
-            ReviewersId = reviewers,
-            Date = DateTime.Parse(reviewDate),
-            Slot = int.Parse(slot),
-            Room = room
-        };
-    }
-
-    private ReviewCalendar CreateReviewCalendar(GroupResponse group, TopicResponse topic, int attempt,
-        string currentSemester, ReviewCalendarDetail reviewDetail)
-    {
-        var reviewCalendar = new ReviewCalendar
-        {
-            Id = Guid.NewGuid(),
-            TopicId = Guid.Parse(topic.Id),
-            GroupId = group.Id,
-            MajorId = currentUser.MajorId,
-            CampusId = currentUser.CampusId,
-            SemesterId = currentSemester,
-            Attempt = attempt,
-            Slot = reviewDetail.Slot,
-            Room = reviewDetail.Room,
-            Date = reviewDetail.Date
-        };
-
-        reviewCalendar.Reviewers = reviewDetail.ReviewersId.Select(r => new Reviewer
-        {
-            Id = Guid.NewGuid(),
-            ReviewCalenderId = reviewCalendar.Id,
-            SupervisorId = r // r is supervisor id
-        }).ToList();
-
-        return reviewCalendar;
     }
 
     private static bool IsValidFile(IFormFile file)
@@ -1552,7 +1407,8 @@ public class GroupService(
         return (await Task.WhenAll(tasks)).OrderBy(x => x.GroupCode).ToList();
     }
 
-    public async Task<OperationResult> UploadGroupDocumentForGroup(UploadGroupDocumentRequest request, CancellationToken cancellationToken)
+    public async Task<OperationResult> UploadGroupDocumentForGroup(UploadGroupDocumentRequest request,
+        CancellationToken cancellationToken)
     {
         try
         {
@@ -1560,17 +1416,17 @@ public class GroupService(
                 return OperationResult.Failure(new Error("Group.Error", "Only leaeder can upload group document"));
 
             var group = await groupRepository.GetAsync(
-                x => x.Id == request.GroupId && 
-                x.Status == GroupStatus.InProgress,
+                x => x.Id == request.GroupId &&
+                     x.Status == GroupStatus.InProgress,
                 cancellationToken);
 
             ArgumentNullException.ThrowIfNull(group);
 
-            var key = $"{group.CampusId}/{group.SemesterId}/{group.MajorId}/{group.CapstoneId}/{group.GroupCode}";
+            var key = $"{group.CampusId}/{group.SemesterId}/{group.MajorId}/{group.CampusId}/{group.GroupCode}";
 
             return await documentsService.CreateGroupDocument(request.File, key, cancellationToken);
         }
-        catch (Exception ex) 
+        catch (Exception ex)
         {
             logger.LogError("Fail to upload group document with error {Message}.", ex.Message);
 
@@ -1578,7 +1434,8 @@ public class GroupService(
         }
     }
 
-    public async Task<OperationResult<string>> PresentGroupDocumentFileOfGroup(Guid groupId, CancellationToken cancellationToken)
+    public async Task<OperationResult<string>> PresentGroupDocumentFileOfGroup(Guid groupId,
+        CancellationToken cancellationToken)
     {
         var group = await groupRepository.GetAsync(
             x => x.Id == groupId,
@@ -1586,7 +1443,7 @@ public class GroupService(
 
         ArgumentNullException.ThrowIfNull(group);
 
-        var key = $"{group.CampusId}/{group.SemesterId}/{group.MajorId}/{group.CapstoneId}/{group.GroupCode}";
+        var key = $"{group.CampusId}/{group.SemesterId}/{group.MajorId}/{group.CampusId}/{group.GroupCode}";
 
         return await documentsService.PresentGroupDocumentFilePresignedUrl(key);
     }

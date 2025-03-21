@@ -17,6 +17,7 @@ public sealed class UserController(
     ICurrentUser currentUser,
     IStudentService studentService,
     ISupervisorService supervisorService,
+    IReviewCalendarService reviewCalendarService,
     IGroupService groupService) : ApiController
 {
     [HttpGet("get-all-student")]
@@ -73,7 +74,7 @@ public sealed class UserController(
     [Authorize(Roles = $"{UserRoles.Manager}")]
     public async Task<IActionResult> ImportReviewAsync(IFormFile file)
     {
-        var result = await groupService.ImportReviewCalendar(file);
+        var result = await reviewCalendarService.ImportReviewCalendar(file);
         return result.IsSuccess
             ? Ok(result)
             : HandleFailure(result);
