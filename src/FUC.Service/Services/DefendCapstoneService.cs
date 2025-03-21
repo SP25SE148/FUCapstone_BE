@@ -17,7 +17,7 @@ namespace FUC.Service.Services;
 public class DefendCapstoneService(
     ILogger<DefendCapstoneService> logger,
     ICurrentUser currentUser,
-    IRepository<DefendCapstoneProjectInformationCalendar> defendCapstoneRepository,
+    IRepository<DefendCapstoneProjectInformationCalendar> defendCapstoneCalendarRepository,
     IUnitOfWork<FucDbContext> unitOfWork,
     IIntegrationEventLogService integrationEventLogService,
     S3BucketConfiguration s3BucketConfiguration,
@@ -85,4 +85,9 @@ public class DefendCapstoneService(
         return file != null && file.Length > 0 &&
                file.FileName.EndsWith(".xlsx", StringComparison.OrdinalIgnoreCase);
     }
+
+    //public async Task<OperationResult<object>> GetDefendCalendersBySelf()
+    //{
+    //    var defendCalendars = await defendCapstoneCalendarRepository()
+    //}
 }

@@ -127,16 +127,23 @@ public class GroupMemberExpirationEventConsumer : BaseEventConsumer<GroupMemberE
 
             ArgumentNullException.ThrowIfNull(request);
 
-            request.Status = Data.Enums.GroupMemberStatus.Rejected;
-            request.UpdatedDate = DateTime.Now;
-            request.UpdatedBy = "System";
+            if (request.Status == Data.Enums.GroupMemberStatus.UnderReview)
+            {
+                request.Status = Data.Enums.GroupMemberStatus.Rejected;
+                request.UpdatedDate = DateTime.Now;
+                request.UpdatedBy = "System";
 
-            _fucDbContext.Update(request);
+                _fucDbContext.Update(request);
 
-            await _fucDbContext.SaveChangesAsync();
+                await _fucDbContext.SaveChangesAsync();
 
-            _logger.LogInformation("End change status of GroupMember {Id}",
-            message.GroupMemberId);
+                _logger.LogInformation("End change status of GroupMember {Id}",
+                message.GroupMemberId);
+            }
+            else
+            {
+                await Task.CompletedTask;
+            }
         }
         catch (Exception ex)
         {
