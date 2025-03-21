@@ -75,7 +75,10 @@ public class DefendCapstoneService(
 
             var topicResult = await topicService.GetTopicByCode(topicCode, cancellationToken);
 
-            if (topicResult.IsFailure || topicResult.Value.Status != TopicStatus.Approved || !topicResult.Value.IsAssignedToGroup)
+            if (topicResult.IsFailure || 
+                topicResult.Value.Status != TopicStatus.Approved || 
+                !topicResult.Value.IsAssignedToGroup || 
+                topicResult.Value.CapstoneId != capstoneId)
                 throw new InvalidOperationException("Topic is not available for defend pharse.");
         }
 
@@ -88,7 +91,7 @@ public class DefendCapstoneService(
                file.FileName.EndsWith(".xlsx", StringComparison.OrdinalIgnoreCase);
     }
 
-    public async Task<OperationResult<object>> GetDefendCalendersBySelf(CancellationToken cancellationToken)
+    public async Task<OperationResult<object>> GetDefendCalendersByCouncilMember(CancellationToken cancellationToken)
     {
         var defendCalendarsOfMember = await defendCapstoneCouncilMemberRepository.FindAsync(
             x => x.SupervisorId == currentUser.UserCode,
@@ -98,11 +101,21 @@ public class DefendCapstoneService(
 
         ArgumentNullException.ThrowIfNull(defendCalendarsOfMember);
 
-        return object;
+        return null;
     }
 }
 
 public class DefendCapstoneCalendarResponse
 {
-
+    public Guid Id { get; set; }
+    public Guid TopicId { get; set; }
+    public Guid GroupId { get; set; }
+    public string GroupCode { get; set; }
+    public required string TopicCode { get; set; }
+    public string CampusId { get; set; }
+    public string SemesterId { get; set; }
+    public int DefendAttempt { get; set; }
+    public string Location { get; set; } // Room
+    public int Slot { get; set; }
+    public DateTime DefenseDate { get; set; }
 }

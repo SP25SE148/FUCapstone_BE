@@ -11,6 +11,7 @@ using Quartz;
 
 namespace FUC.Processor.Jobs;
 
+[DisallowConcurrentExecution]
 public class ProcessRemindersJob : IJob
 {
     private readonly ProcessorDbContext _processorDbContext;
@@ -59,11 +60,10 @@ public class ProcessRemindersJob : IJob
 
             var reminderedQueue = new ConcurrentQueue<Guid>();
 
-            var reminderTasks = reminders.Select(x => ProcessReminderAsync(x,
-                reminderedQueue,
-                context.CancellationToken));
-
-            await Task.WhenAll(reminderTasks);
+            foreach(var reminder in reminders)
+            {
+                await ProcessReminderAsync(reminder, reminderedQueue, context.CancellationToken);
+            }
 
             if (!reminderedQueue.IsEmpty)
             {

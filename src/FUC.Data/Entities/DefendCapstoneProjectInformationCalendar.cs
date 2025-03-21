@@ -6,6 +6,7 @@ public sealed class DefendCapstoneProjectInformationCalendar : AuditableEntity
 {
     public Guid Id { get; set; }
     public Guid TopicId { get; set; }
+    public required string TopicCode { get; set; }
     public string CampusId { get; set; }
     public string SemesterId { get; set; }
     public int DefendAttempt { get; set; }
