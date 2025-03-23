@@ -79,4 +79,34 @@ public sealed class UserController(
             ? Ok(result)
             : HandleFailure(result);
     }
+
+    [HttpGet("student/get-review-calendar")]
+    [Authorize(Roles = UserRoles.Student)]
+    public async Task<IActionResult> GetReviewCalendarByStudentAsync()
+    {
+        var result = await reviewCalendarService.GetReviewCalendarByStudentId();
+        return result.IsSuccess
+            ? Ok(result)
+            : HandleFailure(result);
+    }
+
+    [HttpGet("supervisor/get-review-calendar")]
+    [Authorize(Roles = UserRoles.Supervisor)]
+    public async Task<IActionResult> GetReviewCalendarBySupervisorAsync()
+    {
+        var result = await reviewCalendarService.GetReviewCalendarBySupervisorId();
+        return result.IsSuccess
+            ? Ok(result)
+            : HandleFailure(result);
+    }
+
+    [HttpGet("manager/get-review-calendar")]
+    [Authorize(Roles = UserRoles.Manager)]
+    public async Task<IActionResult> GetReviewCalendarByManagerAsync()
+    {
+        var result = await reviewCalendarService.GetReviewCalendarByManagerId();
+        return result.IsSuccess
+            ? Ok(result)
+            : HandleFailure(result);
+    }
 }

@@ -22,6 +22,7 @@ public sealed class GroupConfiguration : IEntityTypeConfiguration<Group>
                 v => (GroupStatus)Enum.Parse(typeof(GroupStatus), v))
             .HasDefaultValue(GroupStatus.Pending);
 
+
         builder.Property(g => g.Decision)
             .HasDefaultValue(DecisionStatus.Attempt1)
             .HasConversion(
@@ -66,6 +67,11 @@ public sealed class GroupConfiguration : IEntityTypeConfiguration<Group>
         builder.HasOne(g => g.Supervisor)
             .WithMany(s => s.Groups)
             .HasForeignKey(g => g.SupervisorId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        builder.HasOne(g => g.Topic)
+            .WithOne(t => t.Group)
+            .HasForeignKey<Group>(g => g.TopicId)
             .OnDelete(DeleteBehavior.Restrict);
 
         builder.Property(g => g.CreatedDate)
