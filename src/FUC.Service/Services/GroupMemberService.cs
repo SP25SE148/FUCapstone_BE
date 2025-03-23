@@ -250,22 +250,12 @@ public class GroupMemberService(
             }
 
             // TODO: Send update group member status noti to member
-            integrationEventLogService.SendEvent(new GroupMemberStatusUpdateMessage
-            {
-                AttemptTime = 1,
-                CreatedBy = groupMember.StudentId,
-                Status = request.Status.ToString()
-            });
-            // send group member approved to sync group id to identity
-            if (request.Status.Equals(GroupMemberStatus.Accepted))
-            {
-                integrationEventLogService.SendEvent(new GroupSyncMessage()
-                {
-                    GroupId = groupMember.GroupId,
-                    UserEmail = groupMember.Student.Email,
-                    IsUpdate = false
-                });
-            }
+            // integrationEventLogService.SendEvent(new GroupMemberStatusUpdateMessage
+            // {
+            //     AttemptTime = 1,
+            //     CreatedBy = groupMember.StudentId,
+            //     Status = request.Status.ToString()
+            // });
 
             await uow.CommitAsync();
 

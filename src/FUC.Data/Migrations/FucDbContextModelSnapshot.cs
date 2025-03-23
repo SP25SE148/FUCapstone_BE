@@ -450,7 +450,6 @@ partial class FucDbContextModelSnapshot : ModelSnapshot
                     .ValueGeneratedOnAdd()
                     .HasColumnType("uuid")
                     .HasDefaultValue(new Guid("f59cc82b-12d5-4e45-b2f9-c76f9718b00f"));
-
                 b.Property<string>("CampusId")
                     .IsRequired()
                     .HasColumnType("text");
@@ -533,6 +532,7 @@ partial class FucDbContextModelSnapshot : ModelSnapshot
 
                 b.ToTable("Group", (string)null);
             });
+
 
         modelBuilder.Entity("FUC.Data.Entities.GroupMember", b =>
             {
@@ -1166,7 +1166,6 @@ partial class FucDbContextModelSnapshot : ModelSnapshot
                 b.Property<string>("CreatedBy")
                     .IsRequired()
                     .HasColumnType("text");
-
                 b.Property<DateTime>("CreatedDate")
                     .HasColumnType("timestamp");
 
@@ -2135,7 +2134,7 @@ partial class FucDbContextModelSnapshot : ModelSnapshot
 
                 b.Navigation("Group")
                     .IsRequired();
-
+                    
                 b.Navigation("ReviewCalendars");
 
                 b.Navigation("TopicAnalyses");
