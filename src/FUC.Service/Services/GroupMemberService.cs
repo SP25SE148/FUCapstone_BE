@@ -249,8 +249,6 @@ public class GroupMemberService(
                         $"Can not update status with group member id {groupMember.Id}!!"));
             }
 
-            await uow.CommitAsync();
-
             // TODO: Send update group member status noti to member
             // integrationEventLogService.SendEvent(new GroupMemberStatusUpdateMessage
             // {
@@ -258,6 +256,8 @@ public class GroupMemberService(
             //     CreatedBy = groupMember.StudentId,
             //     Status = request.Status.ToString()
             // });
+
+            await uow.CommitAsync();
 
             return OperationResult.Success();
         }
@@ -273,7 +273,7 @@ public class GroupMemberService(
         var groupMemberRequestResponse = new GroupMemberRequestResponse();
 
         var groupMembers = await (from gm in groupMemberRepository.GetQueryable()
-            where gm.StudentId.Equals(currentUser.UserCode)
+            where gm.StudentId == currentUser.UserCode
             join s in studentRepository.GetQueryable() on gm.CreatedBy equals s.Email
             orderby s.GPA, gm.CreatedDate
             select new GroupMemberResponse

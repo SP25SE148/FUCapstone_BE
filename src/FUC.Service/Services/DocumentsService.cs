@@ -1,4 +1,5 @@
-﻿using System.Text.RegularExpressions;
+﻿using System.Reflection;
+using System.Text.RegularExpressions;
 using Amazon.S3;
 using FUC.Common.Abstractions;
 using FUC.Common.Shared;
@@ -12,6 +13,7 @@ using FUC.Service.Extensions.Options;
 using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
+using System.Linq;
 
 namespace FUC.Service.Services;
 
@@ -106,6 +108,7 @@ public class DocumentsService(
                     "This is file you can not get subfolder from there."));
             }
 
+            // Add folder
             if (file is null)
             {
                 if (folderName is null)
@@ -130,6 +133,7 @@ public class DocumentsService(
                 return OperationResult.Success();
             }
 
+            // Add file
             await unitOfWork.BeginTransactionAsync(cancellationToken);
 
             var key = parentTemplate is not null
@@ -160,6 +164,8 @@ public class DocumentsService(
             templateDocumentRepository.Insert(templateDocument);
 
             await unitOfWork.SaveChangesAsync(cancellationToken);
+
+            SyncBucketConfiguration(s3BucketConfiguration, templateDocument.FileUrl);
 
             if (!await SaveDocumentToS3(file, s3BucketConfiguration.FUCTemplateBucket, key, cancellationToken))
             {
@@ -317,6 +323,8 @@ public class DocumentsService(
 
             await unitOfWork.SaveChangesAsync(cancellationToken);
 
+            SyncBucketConfiguration(s3BucketConfiguration, template.FileUrl);
+
             return OperationResult.Success();
         }
         catch (Exception ex)
@@ -389,6 +397,16 @@ public class DocumentsService(
         return result ? OperationResult.Success() : OperationResult.Failure(new Error("Document.Error", "Fail to upload documents."));
     }
 
+    public async Task<OperationResult> CreateThesisDocument(IFormFile file, string key, CancellationToken cancellationToken)
+    {
+        if (!IsValidFile(file))
+            return OperationResult.Failure(new Error("Document.Error", "File is null."));
+
+        var result = await SaveDocumentToS3(file, s3BucketConfiguration.FUCThesisBucket, key, cancellationToken);
+
+        return result ? OperationResult.Success() : OperationResult.Failure(new Error("Document.Error", "Fail to upload thesis."));
+    }
+
     public async Task<OperationResult<string>> PresentGroupDocumentFilePresignedUrl(string groupKey)
     {
         var result = await PresentFilePresignedUrl(s3BucketConfiguration.FUCGroupDocumentBucket, groupKey);
@@ -398,9 +416,20 @@ public class DocumentsService(
             : result.Value;
     }
 
+    public async Task<bool> GroupDocumentFileExistAsync(string groupKey)
+    {
+        return await s3Service.ExistAsync(s3BucketConfiguration.FUCGroupDocumentBucket, groupKey);
+    }
+
+    public async Task<bool> ThesisDocumentFileExistAsync(string thesisKey)
+    {
+        return await s3Service.ExistAsync(s3BucketConfiguration.FUCThesisBucket, thesisKey);
+    }
+
     public async Task<OperationResult<string>> PresentEvaluationProjectProgressTemplatePresignedUrl()
     {
-        var result = await PresentFilePresignedUrl(s3BucketConfiguration.FUCTemplateBucket, s3BucketConfiguration.EvaluationProjectProgressKey);
+        var result = await PresentFilePresignedUrl(s3BucketConfiguration.FUCTemplateBucket,
+            s3BucketConfiguration.EvaluationProjectProgressKey);
 
         return result.IsFailure
             ? OperationResult.Failure<string>(new Error("Document.Error", "Can not export ProjectProgress template."))
@@ -409,7 +438,8 @@ public class DocumentsService(
 
     public async Task<OperationResult<string>> PresentReviewsCalendarsTemplatePresignedUrl()
     {
-        var result = await PresentFilePresignedUrl(s3BucketConfiguration.FUCTemplateBucket, s3BucketConfiguration.ReviewsCalendarsKey);
+        var result = await PresentFilePresignedUrl(s3BucketConfiguration.FUCTemplateBucket, 
+            s3BucketConfiguration.ReviewsCalendarsKey);
 
         return result.IsFailure
             ? OperationResult.Failure<string>(new Error("Document.Error", "Can not export ReviewsCalendars template."))
@@ -418,7 +448,8 @@ public class DocumentsService(
     
     public async Task<OperationResult<string>> PresentDefenseCalendarTemplatePresignedUrl()
     {
-        var result = await PresentFilePresignedUrl(s3BucketConfiguration.FUCTemplateBucket, s3BucketConfiguration.DefenseCalendarKey);
+        var result = await PresentFilePresignedUrl(s3BucketConfiguration.FUCTemplateBucket, 
+            s3BucketConfiguration.DefenseCalendarKey);
 
         return result.IsFailure
             ? OperationResult.Failure<string>(new Error("Document.Error", "Can not export DefenseCalendar template."))
@@ -427,7 +458,8 @@ public class DocumentsService(
 
     public async Task<OperationResult<string>> PresentStudentsImportTemplatePresignedUrl()
     {
-        var result = await PresentFilePresignedUrl(s3BucketConfiguration.FUCTemplateBucket, s3BucketConfiguration.StudentsTemplateKey);
+        var result = await PresentFilePresignedUrl(s3BucketConfiguration.FUCTemplateBucket, 
+            s3BucketConfiguration.StudentsTemplateKey);
 
         return result.IsFailure
             ? OperationResult.Failure<string>(new Error("Document.Error", "Can not export Students Import template."))
@@ -436,7 +468,8 @@ public class DocumentsService(
 
     public async Task<OperationResult<string>> PresentSupervisorsImportTemplatePresignedUrl()
     {
-        var result = await PresentFilePresignedUrl(s3BucketConfiguration.FUCTemplateBucket, s3BucketConfiguration.SupervisorsTemplateKey);
+        var result = await PresentFilePresignedUrl(s3BucketConfiguration.FUCTemplateBucket, 
+            s3BucketConfiguration.SupervisorsTemplateKey);
 
         return result.IsFailure
             ? OperationResult.Failure<string>(new Error("Document.Error", "Can not export Supervisors Import template."))
@@ -452,9 +485,49 @@ public class DocumentsService(
             : result.Value;
     }
 
+    public async Task<OperationResult<string>> PresentThesisCouncilMeetingMinutesForTopicPresignedUrl(string thesisKey)
+    {
+        var result = await PresentFilePresignedUrl(s3BucketConfiguration.FUCThesisBucket, thesisKey);
+
+        return result.IsFailure
+            ? OperationResult.Failure<string>(new Error("Document.Error", "Can not export Supervisors Import template."))
+            : result.Value;
+    }
+
     private static bool IsValidFile(IFormFile file)
     {
         return file != null && file.Length > 0;
+    }
+
+    /// <summary>
+    /// the keyTemplate is the fileUrl (the File with url format "a/b/c/d") of ActivedFile that is one of FUC-Templates
+    /// </summary>
+    /// <param name="bucketConfiguration"></param>
+    /// <param name="keyTemplate"></param>
+    private void SyncBucketConfiguration(S3BucketConfiguration bucketConfiguration, string keyTemplate)
+    {
+        ArgumentNullException.ThrowIfNull(bucketConfiguration);
+
+        var prefixKey = string.Join("/", keyTemplate.Split("/")[..^1]);
+
+        Type type = bucketConfiguration.GetType();
+
+        // Get all properties of the bucketConfiguration class
+        PropertyInfo[] properties = type.GetProperties();
+        foreach (var (property, propertyValue) in from property in properties
+                                                  let propertyValue = (string)property.GetValue(bucketConfiguration)
+                                                  select (property, propertyValue))
+        {
+            ArgumentException.ThrowIfNullOrEmpty(propertyValue);
+
+            if (!propertyValue.StartsWith(prefixKey))
+            {
+                continue;
+            }
+
+            property.SetValue(s3BucketConfiguration, keyTemplate);
+            break;
+        }
     }
 
     private async Task<bool> IsZipFileAsync(IFormFile file)

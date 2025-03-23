@@ -8,2138 +8,2141 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
 #nullable disable
 
-namespace FUC.Data.Migrations
+namespace FUC.Data.Migrations;
+
+[DbContext(typeof(FucDbContext))]
+partial class FucDbContextModelSnapshot : ModelSnapshot
 {
-    [DbContext(typeof(FucDbContext))]
-    partial class FucDbContextModelSnapshot : ModelSnapshot
+    protected override void BuildModel(ModelBuilder modelBuilder)
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
-        {
 #pragma warning disable 612, 618
-            modelBuilder
-                .HasAnnotation("ProductVersion", "8.0.10")
-                .HasAnnotation("Relational:MaxIdentifierLength", 63);
+        modelBuilder
+            .HasAnnotation("ProductVersion", "8.0.10")
+            .HasAnnotation("Relational:MaxIdentifierLength", 63);
 
-            NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
+        NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
 
-            modelBuilder.Entity("FUC.Common.IntegrationEventLog.IntegrationEventLog", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid");
+        modelBuilder.Entity("FUC.Common.IntegrationEventLog.IntegrationEventLog", b =>
+            {
+                b.Property<Guid>("Id")
+                    .ValueGeneratedOnAdd()
+                    .HasColumnType("uuid");
 
-                    b.Property<string>("Content")
-                        .IsRequired()
-                        .HasColumnType("text");
+                b.Property<string>("Content")
+                    .IsRequired()
+                    .HasColumnType("text");
 
-                    b.Property<string>("Error")
-                        .HasColumnType("text");
+                b.Property<string>("Error")
+                    .HasColumnType("text");
 
-                    b.Property<DateTime>("OccurredOnUtc")
-                        .HasColumnType("timestamp");
+                b.Property<DateTime>("OccurredOnUtc")
+                    .HasColumnType("timestamp");
 
-                    b.Property<DateTime?>("ProcessedOnUtc")
-                        .HasColumnType("timestamp");
+                b.Property<DateTime?>("ProcessedOnUtc")
+                    .HasColumnType("timestamp");
 
-                    b.Property<string>("Type")
-                        .IsRequired()
-                        .HasColumnType("text");
+                b.Property<string>("Type")
+                    .IsRequired()
+                    .HasColumnType("text");
 
-                    b.HasKey("Id");
+                b.HasKey("Id");
 
-                    b.ToTable("IntegrationEventLogs", (string)null);
-                });
+                b.ToTable("IntegrationEventLogs", (string)null);
+            });
 
-            modelBuilder.Entity("FUC.Data.Entities.BusinessArea", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid")
-                        .HasDefaultValue(new Guid("b896b47d-4b12-44d5-91c9-7c2e7857a3dc"));
+        modelBuilder.Entity("FUC.Data.Entities.BusinessArea", b =>
+            {
+                b.Property<Guid>("Id")
+                    .ValueGeneratedOnAdd()
+                    .HasColumnType("uuid")
+                    .HasDefaultValue(new Guid("76ed6be6-cadb-46d2-a573-375d660c8241"));
 
-                    b.Property<string>("CreatedBy")
-                        .IsRequired()
-                        .HasColumnType("text");
+                b.Property<string>("CreatedBy")
+                    .IsRequired()
+                    .HasColumnType("text");
 
-                    b.Property<DateTime>("CreatedDate")
-                        .HasColumnType("timestamp");
+                b.Property<DateTime>("CreatedDate")
+                    .HasColumnType("timestamp");
 
-                    b.Property<DateTime?>("DeletedAt")
-                        .HasColumnType("timestamp");
+                b.Property<DateTime?>("DeletedAt")
+                    .HasColumnType("timestamp");
 
-                    b.Property<string>("Description")
-                        .IsRequired()
-                        .HasColumnType("text");
+                b.Property<string>("Description")
+                    .IsRequired()
+                    .HasColumnType("text");
 
-                    b.Property<bool>("IsDeleted")
-                        .HasColumnType("boolean");
+                b.Property<bool>("IsDeleted")
+                    .HasColumnType("boolean");
 
-                    b.Property<string>("Name")
-                        .IsRequired()
-                        .HasColumnType("text");
+                b.Property<string>("Name")
+                    .IsRequired()
+                    .HasColumnType("text");
 
-                    b.Property<string>("UpdatedBy")
-                        .HasColumnType("text");
+                b.Property<string>("UpdatedBy")
+                    .HasColumnType("text");
 
-                    b.Property<DateTime?>("UpdatedDate")
-                        .HasColumnType("timestamp");
+                b.Property<DateTime?>("UpdatedDate")
+                    .HasColumnType("timestamp");
 
-                    b.HasKey("Id");
+                b.HasKey("Id");
 
-                    b.ToTable("BusinessArea", (string)null);
-                });
+                b.ToTable("BusinessArea", (string)null);
+            });
 
-            modelBuilder.Entity("FUC.Data.Entities.Campus", b =>
-                {
-                    b.Property<string>("Id")
-                        .HasColumnType("text");
+        modelBuilder.Entity("FUC.Data.Entities.Campus", b =>
+            {
+                b.Property<string>("Id")
+                    .HasColumnType("text");
 
-                    b.Property<string>("Address")
-                        .IsRequired()
-                        .HasColumnType("text");
+                b.Property<string>("Address")
+                    .IsRequired()
+                    .HasColumnType("text");
 
-                    b.Property<string>("CreatedBy")
-                        .IsRequired()
-                        .HasColumnType("text");
+                b.Property<string>("CreatedBy")
+                    .IsRequired()
+                    .HasColumnType("text");
 
-                    b.Property<DateTime>("CreatedDate")
-                        .HasColumnType("timestamp");
+                b.Property<DateTime>("CreatedDate")
+                    .HasColumnType("timestamp");
 
-                    b.Property<DateTime?>("DeletedAt")
-                        .HasColumnType("timestamp");
+                b.Property<DateTime?>("DeletedAt")
+                    .HasColumnType("timestamp");
 
-                    b.Property<string>("Email")
-                        .IsRequired()
-                        .HasColumnType("text");
+                b.Property<string>("Email")
+                    .IsRequired()
+                    .HasColumnType("text");
 
-                    b.Property<bool>("IsDeleted")
-                        .HasColumnType("boolean");
+                b.Property<bool>("IsDeleted")
+                    .HasColumnType("boolean");
 
-                    b.Property<string>("Name")
-                        .IsRequired()
-                        .HasColumnType("text");
+                b.Property<string>("Name")
+                    .IsRequired()
+                    .HasColumnType("text");
 
-                    b.Property<string>("Phone")
-                        .IsRequired()
-                        .HasColumnType("text");
+                b.Property<string>("Phone")
+                    .IsRequired()
+                    .HasColumnType("text");
 
-                    b.Property<string>("UpdatedBy")
-                        .HasColumnType("text");
+                b.Property<string>("UpdatedBy")
+                    .HasColumnType("text");
 
-                    b.Property<DateTime?>("UpdatedDate")
-                        .HasColumnType("timestamp");
+                b.Property<DateTime?>("UpdatedDate")
+                    .HasColumnType("timestamp");
 
-                    b.HasKey("Id");
+                b.HasKey("Id");
 
-                    b.ToTable("Campus", (string)null);
-                });
+                b.ToTable("Campus", (string)null);
+            });
 
-            modelBuilder.Entity("FUC.Data.Entities.Capstone", b =>
-                {
-                    b.Property<string>("Id")
-                        .HasColumnType("text");
+        modelBuilder.Entity("FUC.Data.Entities.Capstone", b =>
+            {
+                b.Property<string>("Id")
+                    .HasColumnType("text");
 
-                    b.Property<string>("CreatedBy")
-                        .IsRequired()
-                        .HasColumnType("text");
+                b.Property<string>("CreatedBy")
+                    .IsRequired()
+                    .HasColumnType("text");
 
-                    b.Property<DateTime>("CreatedDate")
-                        .HasColumnType("timestamp");
+                b.Property<DateTime>("CreatedDate")
+                    .HasColumnType("timestamp");
 
-                    b.Property<DateTime?>("DeletedAt")
-                        .HasColumnType("timestamp");
+                b.Property<DateTime?>("DeletedAt")
+                    .HasColumnType("timestamp");
 
-                    b.Property<int>("DurationWeeks")
-                        .HasColumnType("integer");
+                b.Property<int>("DurationWeeks")
+                    .HasColumnType("integer");
 
-                    b.Property<bool>("IsDeleted")
-                        .HasColumnType("boolean");
+                b.Property<bool>("IsDeleted")
+                    .HasColumnType("boolean");
 
-                    b.Property<string>("MajorId")
-                        .IsRequired()
-                        .HasColumnType("text");
+                b.Property<string>("MajorId")
+                    .IsRequired()
+                    .HasColumnType("text");
 
-                    b.Property<int>("MaxMember")
-                        .HasColumnType("integer");
+                b.Property<int>("MaxMember")
+                    .HasColumnType("integer");
 
-                    b.Property<int>("MinMember")
-                        .HasColumnType("integer");
+                b.Property<int>("MinMember")
+                    .HasColumnType("integer");
 
-                    b.Property<string>("Name")
-                        .IsRequired()
-                        .HasColumnType("text");
+                b.Property<string>("Name")
+                    .IsRequired()
+                    .HasColumnType("text");
 
-                    b.Property<int>("ReviewCount")
-                        .HasColumnType("integer");
+                b.Property<int>("ReviewCount")
+                    .HasColumnType("integer");
 
-                    b.Property<string>("UpdatedBy")
-                        .HasColumnType("text");
+                b.Property<string>("UpdatedBy")
+                    .HasColumnType("text");
 
-                    b.Property<DateTime?>("UpdatedDate")
-                        .HasColumnType("timestamp");
+                b.Property<DateTime?>("UpdatedDate")
+                    .HasColumnType("timestamp");
 
-                    b.HasKey("Id");
+                b.HasKey("Id");
 
-                    b.HasIndex("MajorId");
+                b.HasIndex("MajorId");
 
-                    b.ToTable("Capstone", (string)null);
-                });
+                b.ToTable("Capstone", (string)null);
+            });
 
-            modelBuilder.Entity("FUC.Data.Entities.CoSupervisor", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid")
-                        .HasDefaultValue(new Guid("5abcb688-426a-4c10-a3e7-28b5b268088e"));
+        modelBuilder.Entity("FUC.Data.Entities.CoSupervisor", b =>
+            {
+                b.Property<Guid>("Id")
+                    .ValueGeneratedOnAdd()
+                    .HasColumnType("uuid")
+                    .HasDefaultValue(new Guid("bc577149-2b4a-4842-acfc-b66932a6ec86"));
 
-                    b.Property<string>("CreatedBy")
-                        .IsRequired()
-                        .HasColumnType("text");
+                b.Property<string>("CreatedBy")
+                    .IsRequired()
+                    .HasColumnType("text");
 
-                    b.Property<DateTime>("CreatedDate")
-                        .HasColumnType("timestamp");
+                b.Property<DateTime>("CreatedDate")
+                    .HasColumnType("timestamp");
 
-                    b.Property<string>("SupervisorId")
-                        .IsRequired()
-                        .HasColumnType("text");
+                b.Property<string>("SupervisorId")
+                    .IsRequired()
+                    .HasColumnType("text");
 
-                    b.Property<Guid>("TopicId")
-                        .HasColumnType("uuid");
+                b.Property<Guid>("TopicId")
+                    .HasColumnType("uuid");
 
-                    b.Property<string>("UpdatedBy")
-                        .HasColumnType("text");
+                b.Property<string>("UpdatedBy")
+                    .HasColumnType("text");
 
-                    b.Property<DateTime?>("UpdatedDate")
-                        .HasColumnType("timestamp");
+                b.Property<DateTime?>("UpdatedDate")
+                    .HasColumnType("timestamp");
 
-                    b.HasKey("Id");
+                b.HasKey("Id");
 
-                    b.HasIndex("SupervisorId");
+                b.HasIndex("SupervisorId");
 
-                    b.HasIndex("TopicId");
+                b.HasIndex("TopicId");
 
-                    b.ToTable("CoSupervisor", (string)null);
-                });
+                b.ToTable("CoSupervisor", (string)null);
+            });
 
-            modelBuilder.Entity("FUC.Data.Entities.DefendCapstoneProjectCouncilMember", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid");
+        modelBuilder.Entity("FUC.Data.Entities.DefendCapstoneProjectCouncilMember", b =>
+            {
+                b.Property<Guid>("Id")
+                    .ValueGeneratedOnAdd()
+                    .HasColumnType("uuid");
 
-                    b.Property<string>("CreatedBy")
-                        .IsRequired()
-                        .HasColumnType("text");
+                b.Property<string>("CreatedBy")
+                    .IsRequired()
+                    .HasColumnType("text");
 
-                    b.Property<DateTime>("CreatedDate")
-                        .HasColumnType("timestamp");
+                b.Property<DateTime>("CreatedDate")
+                    .HasColumnType("timestamp");
 
-                    b.Property<Guid>("DefendCapstoneProjectInformationCalendarId")
-                        .HasColumnType("uuid");
+                b.Property<Guid>("DefendCapstoneProjectInformationCalendarId")
+                    .HasColumnType("uuid");
 
-                    b.Property<bool>("IsPresident")
-                        .HasColumnType("boolean");
+                b.Property<bool>("IsPresident")
+                    .HasColumnType("boolean");
 
-                    b.Property<bool>("IsSecretary")
-                        .HasColumnType("boolean");
+                b.Property<bool>("IsSecretary")
+                    .HasColumnType("boolean");
 
-                    b.Property<string>("SupervisorId")
-                        .IsRequired()
-                        .HasColumnType("text");
+                b.Property<string>("SupervisorId")
+                    .IsRequired()
+                    .HasColumnType("text");
 
-                    b.Property<string>("UpdatedBy")
-                        .HasColumnType("text");
+                b.Property<string>("UpdatedBy")
+                    .HasColumnType("text");
 
-                    b.Property<DateTime?>("UpdatedDate")
-                        .HasColumnType("timestamp");
+                b.Property<DateTime?>("UpdatedDate")
+                    .HasColumnType("timestamp");
 
-                    b.HasKey("Id");
+                b.HasKey("Id");
 
-                    b.HasIndex("DefendCapstoneProjectInformationCalendarId");
+                b.HasIndex("DefendCapstoneProjectInformationCalendarId");
 
-                    b.HasIndex("SupervisorId");
+                b.HasIndex("SupervisorId");
 
-                    b.ToTable("DefendCapstoneProjectCouncilMember", (string)null);
-                });
+                b.ToTable("DefendCapstoneProjectCouncilMember", (string)null);
+            });
 
-            modelBuilder.Entity("FUC.Data.Entities.DefendCapstoneProjectInformationCalendar", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid");
+        modelBuilder.Entity("FUC.Data.Entities.DefendCapstoneProjectInformationCalendar", b =>
+            {
+                b.Property<Guid>("Id")
+                    .ValueGeneratedOnAdd()
+                    .HasColumnType("uuid");
 
-                    b.Property<string>("CampusId")
-                        .IsRequired()
-                        .HasColumnType("text");
+                b.Property<string>("CampusId")
+                    .IsRequired()
+                    .HasColumnType("text");
 
-                    b.Property<string>("CreatedBy")
-                        .IsRequired()
-                        .HasColumnType("text");
+                b.Property<string>("CreatedBy")
+                    .IsRequired()
+                    .HasColumnType("text");
 
-                    b.Property<DateTime>("CreatedDate")
-                        .HasColumnType("timestamp");
+                b.Property<DateTime>("CreatedDate")
+                    .HasColumnType("timestamp");
 
-                    b.Property<int>("DefendAttempt")
-                        .HasColumnType("integer");
+                b.Property<int>("DefendAttempt")
+                    .HasColumnType("integer");
 
-                    b.Property<DateTime>("DefenseDate")
-                        .HasColumnType("timestamp");
+                b.Property<DateTime>("DefenseDate")
+                    .HasColumnType("timestamp");
 
-                    b.Property<string>("Location")
-                        .IsRequired()
-                        .HasColumnType("text");
+                b.Property<bool>("IsUploadedThesisMinute")
+                    .ValueGeneratedOnAdd()
+                    .HasColumnType("boolean")
+                    .HasDefaultValue(false);
 
-                    b.Property<string>("SemesterId")
-                        .IsRequired()
-                        .HasColumnType("text");
+                b.Property<string>("Location")
+                    .IsRequired()
+                    .HasColumnType("text");
 
-                    b.Property<int>("Slot")
-                        .HasColumnType("integer");
+                b.Property<string>("SemesterId")
+                    .IsRequired()
+                    .HasColumnType("text");
 
-                    b.Property<string>("TopicCode")
-                        .IsRequired()
-                        .HasColumnType("text");
+                b.Property<int>("Slot")
+                    .HasColumnType("integer");
 
-                    b.Property<Guid>("TopicId")
-                        .HasColumnType("uuid");
+                b.Property<string>("TopicCode")
+                    .IsRequired()
+                    .HasColumnType("text");
 
-                    b.Property<string>("UpdatedBy")
-                        .HasColumnType("text");
+                b.Property<Guid>("TopicId")
+                    .HasColumnType("uuid");
 
-                    b.Property<DateTime?>("UpdatedDate")
-                        .HasColumnType("timestamp");
+                b.Property<string>("UpdatedBy")
+                    .HasColumnType("text");
 
-                    b.HasKey("Id");
+                b.Property<DateTime?>("UpdatedDate")
+                    .HasColumnType("timestamp");
 
-                    b.HasIndex("CampusId");
+                b.HasKey("Id");
 
-                    b.HasIndex("SemesterId");
+                b.HasIndex("CampusId");
 
-                    b.HasIndex("TopicId");
+                b.HasIndex("SemesterId");
 
-                    b.ToTable("DefendCapstoneProjectInformationCalendar", (string)null);
-                });
+                b.HasIndex("TopicId");
 
-            modelBuilder.Entity("FUC.Data.Entities.FucTask", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid");
+                b.ToTable("DefendCapstoneProjectInformationCalendar", (string)null);
+            });
 
-                    b.Property<string>("AssigneeId")
-                        .IsRequired()
-                        .HasColumnType("text");
+        modelBuilder.Entity("FUC.Data.Entities.FucTask", b =>
+            {
+                b.Property<Guid>("Id")
+                    .ValueGeneratedOnAdd()
+                    .HasColumnType("uuid");
 
-                    b.Property<DateTime?>("CompletionDate")
-                        .HasColumnType("timestamp");
+                b.Property<string>("AssigneeId")
+                    .IsRequired()
+                    .HasColumnType("text");
 
-                    b.Property<string>("CreatedBy")
-                        .IsRequired()
-                        .HasColumnType("text");
+                b.Property<DateTime?>("CompletionDate")
+                    .HasColumnType("timestamp");
 
-                    b.Property<DateTime>("CreatedDate")
-                        .HasColumnType("timestamp");
+                b.Property<string>("CreatedBy")
+                    .IsRequired()
+                    .HasColumnType("text");
 
-                    b.Property<DateTime?>("DeletedAt")
-                        .HasColumnType("timestamp");
+                b.Property<DateTime>("CreatedDate")
+                    .HasColumnType("timestamp");
 
-                    b.Property<string>("Description")
-                        .IsRequired()
-                        .HasColumnType("text");
+                b.Property<DateTime?>("DeletedAt")
+                    .HasColumnType("timestamp");
 
-                    b.Property<DateTime>("DueDate")
-                        .HasColumnType("timestamp");
+                b.Property<string>("Description")
+                    .IsRequired()
+                    .HasColumnType("text");
 
-                    b.Property<bool>("IsDeleted")
-                        .HasColumnType("boolean");
+                b.Property<DateTime>("DueDate")
+                    .HasColumnType("timestamp");
 
-                    b.Property<string>("KeyTask")
-                        .IsRequired()
-                        .HasColumnType("text");
+                b.Property<bool>("IsDeleted")
+                    .HasColumnType("boolean");
 
-                    b.Property<string>("Priority")
-                        .IsRequired()
-                        .HasColumnType("text");
+                b.Property<string>("KeyTask")
+                    .IsRequired()
+                    .HasColumnType("text");
 
-                    b.Property<Guid>("ProjectProgressId")
-                        .HasColumnType("uuid");
+                b.Property<string>("Priority")
+                    .IsRequired()
+                    .HasColumnType("text");
 
-                    b.Property<Guid?>("ProjectProgressWeekId")
-                        .HasColumnType("uuid");
+                b.Property<Guid>("ProjectProgressId")
+                    .HasColumnType("uuid");
 
-                    b.Property<string>("ReporterId")
-                        .IsRequired()
-                        .HasColumnType("text");
+                b.Property<Guid?>("ProjectProgressWeekId")
+                    .HasColumnType("uuid");
 
-                    b.Property<string>("Status")
-                        .IsRequired()
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("text")
-                        .HasDefaultValue("ToDo");
+                b.Property<string>("ReporterId")
+                    .IsRequired()
+                    .HasColumnType("text");
 
-                    b.Property<string>("Summary")
-                        .IsRequired()
-                        .HasColumnType("text");
+                b.Property<string>("Status")
+                    .IsRequired()
+                    .ValueGeneratedOnAdd()
+                    .HasColumnType("text")
+                    .HasDefaultValue("ToDo");
 
-                    b.Property<string>("UpdatedBy")
-                        .HasColumnType("text");
+                b.Property<string>("Summary")
+                    .IsRequired()
+                    .HasColumnType("text");
 
-                    b.Property<DateTime?>("UpdatedDate")
-                        .HasColumnType("timestamp");
+                b.Property<string>("UpdatedBy")
+                    .HasColumnType("text");
 
-                    b.HasKey("Id");
+                b.Property<DateTime?>("UpdatedDate")
+                    .HasColumnType("timestamp");
 
-                    b.HasIndex("AssigneeId");
+                b.HasKey("Id");
 
-                    b.HasIndex("ProjectProgressId");
+                b.HasIndex("AssigneeId");
 
-                    b.HasIndex("ProjectProgressWeekId");
+                b.HasIndex("ProjectProgressId");
 
-                    b.HasIndex("ReporterId");
+                b.HasIndex("ProjectProgressWeekId");
 
-                    b.ToTable("FucTask", (string)null);
-                });
+                b.HasIndex("ReporterId");
 
-            modelBuilder.Entity("FUC.Data.Entities.FucTaskHistory", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid");
+                b.ToTable("FucTask", (string)null);
+            });
 
-                    b.Property<string>("Content")
-                        .IsRequired()
-                        .HasColumnType("text");
+        modelBuilder.Entity("FUC.Data.Entities.FucTaskHistory", b =>
+            {
+                b.Property<Guid>("Id")
+                    .ValueGeneratedOnAdd()
+                    .HasColumnType("uuid");
 
-                    b.Property<string>("CreatedBy")
-                        .IsRequired()
-                        .HasColumnType("text");
+                b.Property<string>("Content")
+                    .IsRequired()
+                    .HasColumnType("text");
 
-                    b.Property<DateTime>("CreatedDate")
-                        .HasColumnType("timestamp");
+                b.Property<string>("CreatedBy")
+                    .IsRequired()
+                    .HasColumnType("text");
 
-                    b.Property<DateTime?>("DeletedAt")
-                        .HasColumnType("timestamp");
+                b.Property<DateTime>("CreatedDate")
+                    .HasColumnType("timestamp");
 
-                    b.Property<bool>("IsDeleted")
-                        .HasColumnType("boolean");
+                b.Property<DateTime?>("DeletedAt")
+                    .HasColumnType("timestamp");
 
-                    b.Property<Guid>("TaskId")
-                        .HasColumnType("uuid");
+                b.Property<bool>("IsDeleted")
+                    .HasColumnType("boolean");
 
-                    b.Property<string>("UpdatedBy")
-                        .HasColumnType("text");
+                b.Property<Guid>("TaskId")
+                    .HasColumnType("uuid");
 
-                    b.Property<DateTime?>("UpdatedDate")
-                        .HasColumnType("timestamp");
+                b.Property<string>("UpdatedBy")
+                    .HasColumnType("text");
 
-                    b.HasKey("Id");
+                b.Property<DateTime?>("UpdatedDate")
+                    .HasColumnType("timestamp");
 
-                    b.HasIndex("TaskId");
+                b.HasKey("Id");
 
-                    b.ToTable("FucTaskHistory", (string)null);
-                });
+                b.HasIndex("TaskId");
 
-            modelBuilder.Entity("FUC.Data.Entities.Group", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid")
-                        .HasDefaultValue(new Guid("c08d8cc8-ed29-4328-9f50-c326c7bb9d88"));
+                b.ToTable("FucTaskHistory", (string)null);
+            });
 
-                    b.Property<string>("CampusId")
-                        .IsRequired()
-                        .HasColumnType("text");
+        modelBuilder.Entity("FUC.Data.Entities.Group", b =>
+            {
+                b.Property<Guid>("Id")
+                    .ValueGeneratedOnAdd()
+                    .HasColumnType("uuid")
+                    .HasDefaultValue(new Guid("f59cc82b-12d5-4e45-b2f9-c76f9718b00f"));
+                b.Property<string>("CampusId")
+                    .IsRequired()
+                    .HasColumnType("text");
 
-                    b.Property<string>("CapstoneId")
-                        .IsRequired()
-                        .HasColumnType("text");
+                b.Property<string>("CapstoneId")
+                    .IsRequired()
+                    .HasColumnType("text");
 
-                    b.Property<string>("CreatedBy")
-                        .IsRequired()
-                        .HasColumnType("text");
+                b.Property<string>("CreatedBy")
+                    .IsRequired()
+                    .HasColumnType("text");
 
-                    b.Property<DateTime>("CreatedDate")
-                        .HasColumnType("timestamp");
+                b.Property<DateTime>("CreatedDate")
+                    .HasColumnType("timestamp");
 
-                    b.Property<string>("Decision")
-                        .IsRequired()
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("text")
-                        .HasDefaultValue("Attempt1");
+                b.Property<string>("Decision")
+                    .IsRequired()
+                    .ValueGeneratedOnAdd()
+                    .HasColumnType("text")
+                    .HasDefaultValue("Attempt1");
 
-                    b.Property<DateTime?>("DeletedAt")
-                        .HasColumnType("timestamp");
+                b.Property<DateTime?>("DeletedAt")
+                    .HasColumnType("timestamp");
 
-                    b.Property<float>("GPA")
-                        .HasColumnType("real");
+                b.Property<float>("GPA")
+                    .HasColumnType("real");
 
-                    b.Property<string>("GroupCode")
-                        .IsRequired()
-                        .HasColumnType("text");
+                b.Property<string>("GroupCode")
+                    .IsRequired()
+                    .HasColumnType("text");
 
-                    b.Property<bool>("IsDeleted")
-                        .HasColumnType("boolean");
+                b.Property<bool>("IsDeleted")
+                    .HasColumnType("boolean");
 
-                    b.Property<bool>("IsReDefendCapstoneProject")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("boolean")
-                        .HasDefaultValue(false);
+                b.Property<bool>("IsReDefendCapstoneProject")
+                    .ValueGeneratedOnAdd()
+                    .HasColumnType("boolean")
+                    .HasDefaultValue(false);
 
-                    b.Property<string>("MajorId")
-                        .IsRequired()
-                        .HasColumnType("text");
+                b.Property<string>("MajorId")
+                    .IsRequired()
+                    .HasColumnType("text");
 
-                    b.Property<string>("SemesterId")
-                        .IsRequired()
-                        .HasColumnType("text");
+                b.Property<string>("SemesterId")
+                    .IsRequired()
+                    .HasColumnType("text");
 
-                    b.Property<string>("Status")
-                        .IsRequired()
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("text")
-                        .HasDefaultValue("Pending");
+                b.Property<string>("Status")
+                    .IsRequired()
+                    .ValueGeneratedOnAdd()
+                    .HasColumnType("text")
+                    .HasDefaultValue("Pending");
 
-                    b.Property<string>("SupervisorId")
-                        .HasColumnType("text");
+                b.Property<string>("SupervisorId")
+                    .HasColumnType("text");
 
-                    b.Property<Guid?>("TopicId")
-                        .HasColumnType("uuid");
+                b.Property<Guid?>("TopicId")
+                    .HasColumnType("uuid");
 
-                    b.Property<string>("UpdatedBy")
-                        .HasColumnType("text");
+                b.Property<string>("UpdatedBy")
+                    .HasColumnType("text");
 
-                    b.Property<DateTime?>("UpdatedDate")
-                        .HasColumnType("timestamp");
+                b.Property<DateTime?>("UpdatedDate")
+                    .HasColumnType("timestamp");
 
-                    b.HasKey("Id");
+                b.HasKey("Id");
 
-                    b.HasIndex("CampusId");
+                b.HasIndex("CampusId");
 
-                    b.HasIndex("CapstoneId");
+                b.HasIndex("CapstoneId");
 
-                    b.HasIndex("MajorId");
+                b.HasIndex("MajorId");
 
-                    b.HasIndex("SemesterId");
+                b.HasIndex("SemesterId");
 
-                    b.HasIndex("SupervisorId");
+                b.HasIndex("SupervisorId");
 
-                    b.HasIndex("TopicId")
-                        .IsUnique();
+                b.HasIndex("TopicId")
+                    .IsUnique();
 
-                    b.ToTable("Group", (string)null);
-                });
+                b.ToTable("Group", (string)null);
+            });
 
-            modelBuilder.Entity("FUC.Data.Entities.GroupMember", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid")
-                        .HasDefaultValue(new Guid("39a0fb9c-b62b-4bc8-8d97-89598cefc4a8"));
 
-                    b.Property<string>("CreatedBy")
-                        .IsRequired()
-                        .HasColumnType("text");
+        modelBuilder.Entity("FUC.Data.Entities.GroupMember", b =>
+            {
+                b.Property<Guid>("Id")
+                    .ValueGeneratedOnAdd()
+                    .HasColumnType("uuid")
+                    .HasDefaultValue(new Guid("a3612480-c12b-47cf-94bb-26bf3430654d"));
 
-                    b.Property<DateTime>("CreatedDate")
-                        .HasColumnType("timestamp");
+                b.Property<string>("CreatedBy")
+                    .IsRequired()
+                    .HasColumnType("text");
 
-                    b.Property<Guid>("GroupId")
-                        .HasColumnType("uuid");
+                b.Property<DateTime>("CreatedDate")
+                    .HasColumnType("timestamp");
 
-                    b.Property<bool>("IsLeader")
-                        .HasColumnType("boolean");
+                b.Property<Guid>("GroupId")
+                    .HasColumnType("uuid");
 
-                    b.Property<string>("Status")
-                        .IsRequired()
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("text")
-                        .HasDefaultValue("UnderReview");
+                b.Property<bool>("IsLeader")
+                    .HasColumnType("boolean");
 
-                    b.Property<string>("StudentId")
-                        .IsRequired()
-                        .HasColumnType("text");
+                b.Property<string>("Status")
+                    .IsRequired()
+                    .ValueGeneratedOnAdd()
+                    .HasColumnType("text")
+                    .HasDefaultValue("UnderReview");
 
-                    b.Property<string>("UpdatedBy")
-                        .HasColumnType("text");
+                b.Property<string>("StudentId")
+                    .IsRequired()
+                    .HasColumnType("text");
 
-                    b.Property<DateTime?>("UpdatedDate")
-                        .HasColumnType("timestamp");
+                b.Property<string>("UpdatedBy")
+                    .HasColumnType("text");
 
-                    b.HasKey("Id");
+                b.Property<DateTime?>("UpdatedDate")
+                    .HasColumnType("timestamp");
 
-                    b.HasIndex("GroupId");
+                b.HasKey("Id");
 
-                    b.HasIndex("StudentId");
+                b.HasIndex("GroupId");
 
-                    b.ToTable("GroupMember", (string)null);
-                });
+                b.HasIndex("StudentId");
 
-            modelBuilder.Entity("FUC.Data.Entities.JoinGroupRequest", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid");
+                b.ToTable("GroupMember", (string)null);
+            });
 
-                    b.Property<string>("CreatedBy")
-                        .IsRequired()
-                        .HasColumnType("text");
+        modelBuilder.Entity("FUC.Data.Entities.JoinGroupRequest", b =>
+            {
+                b.Property<Guid>("Id")
+                    .ValueGeneratedOnAdd()
+                    .HasColumnType("uuid");
 
-                    b.Property<DateTime>("CreatedDate")
-                        .HasColumnType("timestamp");
+                b.Property<string>("CreatedBy")
+                    .IsRequired()
+                    .HasColumnType("text");
 
-                    b.Property<Guid>("GroupId")
-                        .HasColumnType("uuid");
+                b.Property<DateTime>("CreatedDate")
+                    .HasColumnType("timestamp");
 
-                    b.Property<string>("Status")
-                        .IsRequired()
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("text")
-                        .HasDefaultValue("Pending");
+                b.Property<Guid>("GroupId")
+                    .HasColumnType("uuid");
 
-                    b.Property<string>("StudentId")
-                        .IsRequired()
-                        .HasColumnType("text");
+                b.Property<string>("Status")
+                    .IsRequired()
+                    .ValueGeneratedOnAdd()
+                    .HasColumnType("text")
+                    .HasDefaultValue("Pending");
 
-                    b.Property<string>("UpdatedBy")
-                        .HasColumnType("text");
+                b.Property<string>("StudentId")
+                    .IsRequired()
+                    .HasColumnType("text");
 
-                    b.Property<DateTime?>("UpdatedDate")
-                        .HasColumnType("timestamp");
+                b.Property<string>("UpdatedBy")
+                    .HasColumnType("text");
 
-                    b.HasKey("Id");
+                b.Property<DateTime?>("UpdatedDate")
+                    .HasColumnType("timestamp");
 
-                    b.HasIndex("GroupId");
+                b.HasKey("Id");
 
-                    b.HasIndex("StudentId");
+                b.HasIndex("GroupId");
 
-                    b.ToTable("JoinGroupRequest", (string)null);
-                });
+                b.HasIndex("StudentId");
 
-            modelBuilder.Entity("FUC.Data.Entities.Major", b =>
-                {
-                    b.Property<string>("Id")
-                        .HasColumnType("text");
+                b.ToTable("JoinGroupRequest", (string)null);
+            });
 
-                    b.Property<string>("CreatedBy")
-                        .IsRequired()
-                        .HasColumnType("text");
+        modelBuilder.Entity("FUC.Data.Entities.Major", b =>
+            {
+                b.Property<string>("Id")
+                    .HasColumnType("text");
 
-                    b.Property<DateTime>("CreatedDate")
-                        .HasColumnType("timestamp");
+                b.Property<string>("CreatedBy")
+                    .IsRequired()
+                    .HasColumnType("text");
 
-                    b.Property<DateTime?>("DeletedAt")
-                        .HasColumnType("timestamp");
+                b.Property<DateTime>("CreatedDate")
+                    .HasColumnType("timestamp");
 
-                    b.Property<string>("Description")
-                        .HasColumnType("text");
+                b.Property<DateTime?>("DeletedAt")
+                    .HasColumnType("timestamp");
 
-                    b.Property<bool>("IsDeleted")
-                        .HasColumnType("boolean");
+                b.Property<string>("Description")
+                    .HasColumnType("text");
 
-                    b.Property<string>("MajorGroupId")
-                        .IsRequired()
-                        .HasColumnType("text");
+                b.Property<bool>("IsDeleted")
+                    .HasColumnType("boolean");
 
-                    b.Property<string>("Name")
-                        .IsRequired()
-                        .HasColumnType("text");
+                b.Property<string>("MajorGroupId")
+                    .IsRequired()
+                    .HasColumnType("text");
 
-                    b.Property<string>("UpdatedBy")
-                        .HasColumnType("text");
+                b.Property<string>("Name")
+                    .IsRequired()
+                    .HasColumnType("text");
 
-                    b.Property<DateTime?>("UpdatedDate")
-                        .HasColumnType("timestamp");
+                b.Property<string>("UpdatedBy")
+                    .HasColumnType("text");
 
-                    b.HasKey("Id");
+                b.Property<DateTime?>("UpdatedDate")
+                    .HasColumnType("timestamp");
 
-                    b.HasIndex("MajorGroupId");
+                b.HasKey("Id");
 
-                    b.ToTable("Major", (string)null);
-                });
+                b.HasIndex("MajorGroupId");
 
-            modelBuilder.Entity("FUC.Data.Entities.MajorGroup", b =>
-                {
-                    b.Property<string>("Id")
-                        .HasColumnType("text");
+                b.ToTable("Major", (string)null);
+            });
 
-                    b.Property<string>("CreatedBy")
-                        .IsRequired()
-                        .HasColumnType("text");
+        modelBuilder.Entity("FUC.Data.Entities.MajorGroup", b =>
+            {
+                b.Property<string>("Id")
+                    .HasColumnType("text");
 
-                    b.Property<DateTime>("CreatedDate")
-                        .HasColumnType("timestamp");
+                b.Property<string>("CreatedBy")
+                    .IsRequired()
+                    .HasColumnType("text");
 
-                    b.Property<DateTime?>("DeletedAt")
-                        .HasColumnType("timestamp");
+                b.Property<DateTime>("CreatedDate")
+                    .HasColumnType("timestamp");
 
-                    b.Property<string>("Description")
-                        .HasColumnType("text");
+                b.Property<DateTime?>("DeletedAt")
+                    .HasColumnType("timestamp");
 
-                    b.Property<bool>("IsDeleted")
-                        .HasColumnType("boolean");
+                b.Property<string>("Description")
+                    .HasColumnType("text");
 
-                    b.Property<string>("Name")
-                        .IsRequired()
-                        .HasColumnType("text");
+                b.Property<bool>("IsDeleted")
+                    .HasColumnType("boolean");
 
-                    b.Property<string>("UpdatedBy")
-                        .HasColumnType("text");
+                b.Property<string>("Name")
+                    .IsRequired()
+                    .HasColumnType("text");
 
-                    b.Property<DateTime?>("UpdatedDate")
-                        .HasColumnType("timestamp");
+                b.Property<string>("UpdatedBy")
+                    .HasColumnType("text");
 
-                    b.HasKey("Id");
+                b.Property<DateTime?>("UpdatedDate")
+                    .HasColumnType("timestamp");
 
-                    b.ToTable("MajorGroup", (string)null);
-                });
+                b.HasKey("Id");
 
-            modelBuilder.Entity("FUC.Data.Entities.ProjectProgress", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid");
+                b.ToTable("MajorGroup", (string)null);
+            });
 
-                    b.Property<string>("CreatedBy")
-                        .IsRequired()
-                        .HasColumnType("text");
+        modelBuilder.Entity("FUC.Data.Entities.ProjectProgress", b =>
+            {
+                b.Property<Guid>("Id")
+                    .ValueGeneratedOnAdd()
+                    .HasColumnType("uuid");
 
-                    b.Property<DateTime>("CreatedDate")
-                        .HasColumnType("timestamp");
+                b.Property<string>("CreatedBy")
+                    .IsRequired()
+                    .HasColumnType("text");
 
-                    b.Property<DateTime?>("DeletedAt")
-                        .HasColumnType("timestamp");
+                b.Property<DateTime>("CreatedDate")
+                    .HasColumnType("timestamp");
 
-                    b.Property<Guid>("GroupId")
-                        .HasColumnType("uuid");
+                b.Property<DateTime?>("DeletedAt")
+                    .HasColumnType("timestamp");
 
-                    b.Property<bool>("IsDeleted")
-                        .HasColumnType("boolean");
+                b.Property<Guid>("GroupId")
+                    .HasColumnType("uuid");
 
-                    b.Property<string>("MeetingDate")
-                        .IsRequired()
-                        .HasColumnType("text");
+                b.Property<bool>("IsDeleted")
+                    .HasColumnType("boolean");
 
-                    b.Property<string>("SupervisorId")
-                        .HasColumnType("text");
+                b.Property<string>("MeetingDate")
+                    .IsRequired()
+                    .HasColumnType("text");
 
-                    b.Property<string>("UpdatedBy")
-                        .HasColumnType("text");
+                b.Property<string>("SupervisorId")
+                    .HasColumnType("text");
 
-                    b.Property<DateTime?>("UpdatedDate")
-                        .HasColumnType("timestamp");
+                b.Property<string>("UpdatedBy")
+                    .HasColumnType("text");
 
-                    b.HasKey("Id");
+                b.Property<DateTime?>("UpdatedDate")
+                    .HasColumnType("timestamp");
 
-                    b.HasIndex("GroupId")
-                        .IsUnique();
+                b.HasKey("Id");
 
-                    b.HasIndex("SupervisorId");
+                b.HasIndex("GroupId")
+                    .IsUnique();
 
-                    b.ToTable("ProjectProgress", (string)null);
-                });
+                b.HasIndex("SupervisorId");
 
-            modelBuilder.Entity("FUC.Data.Entities.ProjectProgressWeek", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid");
+                b.ToTable("ProjectProgress", (string)null);
+            });
 
-                    b.Property<string>("CreatedBy")
-                        .IsRequired()
-                        .HasColumnType("text");
+        modelBuilder.Entity("FUC.Data.Entities.ProjectProgressWeek", b =>
+            {
+                b.Property<Guid>("Id")
+                    .ValueGeneratedOnAdd()
+                    .HasColumnType("uuid");
 
-                    b.Property<DateTime>("CreatedDate")
-                        .HasColumnType("timestamp");
+                b.Property<string>("CreatedBy")
+                    .IsRequired()
+                    .HasColumnType("text");
 
-                    b.Property<DateTime?>("DeletedAt")
-                        .HasColumnType("timestamp");
+                b.Property<DateTime>("CreatedDate")
+                    .HasColumnType("timestamp");
 
-                    b.Property<bool>("IsDeleted")
-                        .HasColumnType("boolean");
+                b.Property<DateTime?>("DeletedAt")
+                    .HasColumnType("timestamp");
 
-                    b.Property<string>("MeetingContent")
-                        .HasColumnType("text");
+                b.Property<bool>("IsDeleted")
+                    .HasColumnType("boolean");
 
-                    b.Property<string>("MeetingLocation")
-                        .HasColumnType("text");
+                b.Property<string>("MeetingContent")
+                    .HasColumnType("text");
 
-                    b.Property<string>("ProgressWeekSummary")
-                        .HasColumnType("text");
+                b.Property<string>("MeetingLocation")
+                    .HasColumnType("text");
 
-                    b.Property<Guid>("ProjectProgressId")
-                        .HasColumnType("uuid");
+                b.Property<string>("ProgressWeekSummary")
+                    .HasColumnType("text");
 
-                    b.Property<string>("Status")
-                        .IsRequired()
-                        .HasColumnType("text");
+                b.Property<Guid>("ProjectProgressId")
+                    .HasColumnType("uuid");
 
-                    b.Property<string>("TaskDescription")
-                        .IsRequired()
-                        .HasColumnType("text");
+                b.Property<string>("Status")
+                    .IsRequired()
+                    .HasColumnType("text");
 
-                    b.Property<string>("UpdatedBy")
-                        .HasColumnType("text");
+                b.Property<string>("TaskDescription")
+                    .IsRequired()
+                    .HasColumnType("text");
 
-                    b.Property<DateTime?>("UpdatedDate")
-                        .HasColumnType("timestamp");
+                b.Property<string>("UpdatedBy")
+                    .HasColumnType("text");
 
-                    b.Property<int>("WeekNumber")
-                        .HasColumnType("integer");
+                b.Property<DateTime?>("UpdatedDate")
+                    .HasColumnType("timestamp");
 
-                    b.HasKey("Id");
+                b.Property<int>("WeekNumber")
+                    .HasColumnType("integer");
 
-                    b.HasIndex("ProjectProgressId");
+                b.HasKey("Id");
 
-                    b.ToTable("ProjectProgressWeek", (string)null);
-                });
+                b.HasIndex("ProjectProgressId");
 
-            modelBuilder.Entity("FUC.Data.Entities.ReviewCalendar", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid")
-                        .HasDefaultValue(new Guid("12c1f94c-9c81-4d8c-b53d-ad19f8a079fd"));
+                b.ToTable("ProjectProgressWeek", (string)null);
+            });
 
-                    b.Property<int>("Attempt")
-                        .HasColumnType("integer");
+        modelBuilder.Entity("FUC.Data.Entities.ReviewCalendar", b =>
+            {
+                b.Property<Guid>("Id")
+                    .ValueGeneratedOnAdd()
+                    .HasColumnType("uuid")
+                    .HasDefaultValue(new Guid("3b2ed125-f3ee-4c1d-b15b-f197974e1d01"));
 
-                    b.Property<string>("CampusId")
-                        .IsRequired()
-                        .HasColumnType("text");
+                b.Property<int>("Attempt")
+                    .HasColumnType("integer");
 
-                    b.Property<string>("CreatedBy")
-                        .IsRequired()
-                        .HasColumnType("text");
+                b.Property<string>("CampusId")
+                    .IsRequired()
+                    .HasColumnType("text");
 
-                    b.Property<DateTime>("CreatedDate")
-                        .HasColumnType("timestamp");
+                b.Property<string>("CreatedBy")
+                    .IsRequired()
+                    .HasColumnType("text");
 
-                    b.Property<DateTime>("Date")
-                        .HasColumnType("timestamp");
+                b.Property<DateTime>("CreatedDate")
+                    .HasColumnType("timestamp");
 
-                    b.Property<DateTime?>("DeletedAt")
-                        .HasColumnType("timestamp");
+                b.Property<DateTime>("Date")
+                    .HasColumnType("timestamp");
 
-                    b.Property<Guid>("GroupId")
-                        .HasColumnType("uuid");
+                b.Property<DateTime?>("DeletedAt")
+                    .HasColumnType("timestamp");
 
-                    b.Property<bool>("IsDeleted")
-                        .HasColumnType("boolean");
+                b.Property<Guid>("GroupId")
+                    .HasColumnType("uuid");
 
-                    b.Property<string>("MajorId")
-                        .IsRequired()
-                        .HasColumnType("text");
+                b.Property<bool>("IsDeleted")
+                    .HasColumnType("boolean");
 
-                    b.Property<string>("Room")
-                        .IsRequired()
-                        .HasColumnType("text");
+                b.Property<string>("MajorId")
+                    .IsRequired()
+                    .HasColumnType("text");
 
-                    b.Property<string>("SemesterId")
-                        .IsRequired()
-                        .HasColumnType("text");
+                b.Property<string>("Room")
+                    .IsRequired()
+                    .HasColumnType("text");
 
-                    b.Property<int>("Slot")
-                        .HasColumnType("integer");
+                b.Property<string>("SemesterId")
+                    .IsRequired()
+                    .HasColumnType("text");
 
-                    b.Property<string>("Status")
-                        .IsRequired()
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("text")
-                        .HasDefaultValue("Pending");
+                b.Property<int>("Slot")
+                    .HasColumnType("integer");
 
-                    b.Property<Guid>("TopicId")
-                        .HasColumnType("uuid");
+                b.Property<string>("Status")
+                    .IsRequired()
+                    .ValueGeneratedOnAdd()
+                    .HasColumnType("text")
+                    .HasDefaultValue("Pending");
 
-                    b.Property<string>("UpdatedBy")
-                        .HasColumnType("text");
+                b.Property<Guid>("TopicId")
+                    .HasColumnType("uuid");
 
-                    b.Property<DateTime?>("UpdatedDate")
-                        .HasColumnType("timestamp");
+                b.Property<string>("UpdatedBy")
+                    .HasColumnType("text");
 
-                    b.HasKey("Id");
+                b.Property<DateTime?>("UpdatedDate")
+                    .HasColumnType("timestamp");
 
-                    b.HasIndex("CampusId");
+                b.HasKey("Id");
 
-                    b.HasIndex("GroupId");
+                b.HasIndex("CampusId");
 
-                    b.HasIndex("MajorId");
+                b.HasIndex("GroupId");
 
-                    b.HasIndex("SemesterId");
+                b.HasIndex("MajorId");
 
-                    b.HasIndex("TopicId");
+                b.HasIndex("SemesterId");
 
-                    b.ToTable("ReviewCalendar", (string)null);
-                });
+                b.HasIndex("TopicId");
 
-            modelBuilder.Entity("FUC.Data.Entities.ReviewCriteria", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid")
-                        .HasDefaultValue(new Guid("7fba7c89-19fc-4ea2-be58-fc3c155da55c"));
+                b.ToTable("ReviewCalendar", (string)null);
+            });
 
-                    b.Property<int>("Attempt")
-                        .HasColumnType("integer");
+        modelBuilder.Entity("FUC.Data.Entities.ReviewCriteria", b =>
+            {
+                b.Property<Guid>("Id")
+                    .ValueGeneratedOnAdd()
+                    .HasColumnType("uuid")
+                    .HasDefaultValue(new Guid("3d657f98-8360-45ff-b9ec-4505ecbec6dc"));
 
-                    b.Property<string>("CapstoneId")
-                        .IsRequired()
-                        .HasColumnType("text");
+                b.Property<int>("Attempt")
+                    .HasColumnType("integer");
 
-                    b.Property<string>("CreatedBy")
-                        .IsRequired()
-                        .HasColumnType("text");
+                b.Property<string>("CapstoneId")
+                    .IsRequired()
+                    .HasColumnType("text");
 
-                    b.Property<DateTime>("CreatedDate")
-                        .HasColumnType("timestamp");
+                b.Property<string>("CreatedBy")
+                    .IsRequired()
+                    .HasColumnType("text");
 
-                    b.Property<DateTime?>("DeletedAt")
-                        .HasColumnType("timestamp");
+                b.Property<DateTime>("CreatedDate")
+                    .HasColumnType("timestamp");
 
-                    b.Property<string>("Description")
-                        .IsRequired()
-                        .HasMaxLength(1000)
-                        .HasColumnType("character varying(1000)");
+                b.Property<DateTime?>("DeletedAt")
+                    .HasColumnType("timestamp");
 
-                    b.Property<bool>("IsActive")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("boolean")
-                        .HasDefaultValue(true);
+                b.Property<string>("Description")
+                    .IsRequired()
+                    .HasMaxLength(1000)
+                    .HasColumnType("character varying(1000)");
 
-                    b.Property<bool>("IsDeleted")
-                        .HasColumnType("boolean");
+                b.Property<bool>("IsActive")
+                    .ValueGeneratedOnAdd()
+                    .HasColumnType("boolean")
+                    .HasDefaultValue(true);
 
-                    b.Property<string>("Name")
-                        .IsRequired()
-                        .HasMaxLength(255)
-                        .HasColumnType("character varying(255)");
+                b.Property<bool>("IsDeleted")
+                    .HasColumnType("boolean");
 
-                    b.Property<string>("Requirement")
-                        .IsRequired()
-                        .HasMaxLength(1000)
-                        .HasColumnType("character varying(1000)");
+                b.Property<string>("Name")
+                    .IsRequired()
+                    .HasMaxLength(255)
+                    .HasColumnType("character varying(255)");
 
-                    b.Property<string>("UpdatedBy")
-                        .HasColumnType("text");
+                b.Property<string>("Requirement")
+                    .IsRequired()
+                    .HasMaxLength(1000)
+                    .HasColumnType("character varying(1000)");
 
-                    b.Property<DateTime?>("UpdatedDate")
-                        .HasColumnType("timestamp");
+                b.Property<string>("UpdatedBy")
+                    .HasColumnType("text");
 
-                    b.HasKey("Id");
+                b.Property<DateTime?>("UpdatedDate")
+                    .HasColumnType("timestamp");
 
-                    b.HasIndex("CapstoneId");
+                b.HasKey("Id");
 
-                    b.ToTable("ReviewCriteria", (string)null);
-                });
+                b.HasIndex("CapstoneId");
 
-            modelBuilder.Entity("FUC.Data.Entities.Reviewer", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid")
-                        .HasDefaultValue(new Guid("9a6bf852-b996-4f75-b748-58b3184c3fa2"));
+                b.ToTable("ReviewCriteria", (string)null);
+            });
 
-                    b.Property<string>("Comment")
-                        .HasMaxLength(1000)
-                        .HasColumnType("character varying(1000)");
+        modelBuilder.Entity("FUC.Data.Entities.Reviewer", b =>
+            {
+                b.Property<Guid>("Id")
+                    .ValueGeneratedOnAdd()
+                    .HasColumnType("uuid")
+                    .HasDefaultValue(new Guid("0a6e1b52-9892-4564-8ff9-910ea6328125"));
 
-                    b.Property<string>("CreatedBy")
-                        .IsRequired()
-                        .HasColumnType("text");
+                b.Property<string>("Comment")
+                    .HasMaxLength(1000)
+                    .HasColumnType("character varying(1000)");
 
-                    b.Property<DateTime>("CreatedDate")
-                        .HasColumnType("timestamp");
+                b.Property<string>("CreatedBy")
+                    .IsRequired()
+                    .HasColumnType("text");
 
-                    b.Property<DateTime?>("DeletedAt")
-                        .HasColumnType("timestamp");
+                b.Property<DateTime>("CreatedDate")
+                    .HasColumnType("timestamp");
 
-                    b.Property<bool>("IsDeleted")
-                        .HasColumnType("boolean");
+                b.Property<DateTime?>("DeletedAt")
+                    .HasColumnType("timestamp");
 
-                    b.Property<Guid>("ReviewCalenderId")
-                        .HasColumnType("uuid");
+                b.Property<bool>("IsDeleted")
+                    .HasColumnType("boolean");
 
-                    b.Property<string>("Suggestion")
-                        .HasMaxLength(500)
-                        .HasColumnType("character varying(500)");
+                b.Property<Guid>("ReviewCalenderId")
+                    .HasColumnType("uuid");
 
-                    b.Property<string>("SupervisorId")
-                        .IsRequired()
-                        .HasColumnType("text");
+                b.Property<string>("Suggestion")
+                    .HasMaxLength(500)
+                    .HasColumnType("character varying(500)");
 
-                    b.Property<string>("UpdatedBy")
-                        .HasColumnType("text");
+                b.Property<string>("SupervisorId")
+                    .IsRequired()
+                    .HasColumnType("text");
 
-                    b.Property<DateTime?>("UpdatedDate")
-                        .HasColumnType("timestamp");
+                b.Property<string>("UpdatedBy")
+                    .HasColumnType("text");
 
-                    b.HasKey("Id");
+                b.Property<DateTime?>("UpdatedDate")
+                    .HasColumnType("timestamp");
 
-                    b.HasIndex("ReviewCalenderId");
+                b.HasKey("Id");
 
-                    b.HasIndex("SupervisorId");
+                b.HasIndex("ReviewCalenderId");
 
-                    b.ToTable("Reviewer", (string)null);
-                });
+                b.HasIndex("SupervisorId");
 
-            modelBuilder.Entity("FUC.Data.Entities.Semester", b =>
-                {
-                    b.Property<string>("Id")
-                        .HasColumnType("text");
+                b.ToTable("Reviewer", (string)null);
+            });
 
-                    b.Property<string>("CreatedBy")
-                        .IsRequired()
-                        .HasColumnType("text");
+        modelBuilder.Entity("FUC.Data.Entities.Semester", b =>
+            {
+                b.Property<string>("Id")
+                    .HasColumnType("text");
 
-                    b.Property<DateTime>("CreatedDate")
-                        .HasColumnType("timestamp");
+                b.Property<string>("CreatedBy")
+                    .IsRequired()
+                    .HasColumnType("text");
 
-                    b.Property<DateTime?>("DeletedAt")
-                        .HasColumnType("timestamp");
+                b.Property<DateTime>("CreatedDate")
+                    .HasColumnType("timestamp");
 
-                    b.Property<DateTime>("EndDate")
-                        .HasColumnType("timestamp");
+                b.Property<DateTime?>("DeletedAt")
+                    .HasColumnType("timestamp");
 
-                    b.Property<bool>("IsDeleted")
-                        .HasColumnType("boolean");
+                b.Property<DateTime>("EndDate")
+                    .HasColumnType("timestamp");
 
-                    b.Property<int>("MaxGroupsPerSupervisor")
-                        .HasColumnType("integer");
+                b.Property<bool>("IsDeleted")
+                    .HasColumnType("boolean");
 
-                    b.Property<string>("Name")
-                        .IsRequired()
-                        .HasMaxLength(50)
-                        .HasColumnType("character varying(50)");
+                b.Property<int>("MaxGroupsPerSupervisor")
+                    .HasColumnType("integer");
 
-                    b.Property<DateTime>("StartDate")
-                        .HasColumnType("timestamp");
+                b.Property<string>("Name")
+                    .IsRequired()
+                    .HasMaxLength(50)
+                    .HasColumnType("character varying(50)");
 
-                    b.Property<string>("UpdatedBy")
-                        .HasColumnType("text");
+                b.Property<DateTime>("StartDate")
+                    .HasColumnType("timestamp");
 
-                    b.Property<DateTime?>("UpdatedDate")
-                        .HasColumnType("timestamp");
+                b.Property<string>("UpdatedBy")
+                    .HasColumnType("text");
 
-                    b.HasKey("Id");
+                b.Property<DateTime?>("UpdatedDate")
+                    .HasColumnType("timestamp");
 
-                    b.ToTable("Semester", (string)null);
-                });
+                b.HasKey("Id");
 
-            modelBuilder.Entity("FUC.Data.Entities.Student", b =>
-                {
-                    b.Property<string>("Id")
-                        .HasColumnType("text");
+                b.ToTable("Semester", (string)null);
+            });
 
-                    b.Property<Guid?>("BusinessAreaId")
-                        .HasColumnType("uuid");
+        modelBuilder.Entity("FUC.Data.Entities.Student", b =>
+            {
+                b.Property<string>("Id")
+                    .HasColumnType("text");
 
-                    b.Property<string>("CampusId")
-                        .IsRequired()
-                        .HasColumnType("text");
+                b.Property<Guid?>("BusinessAreaId")
+                    .HasColumnType("uuid");
 
-                    b.Property<string>("CapstoneId")
-                        .IsRequired()
-                        .HasColumnType("text");
+                b.Property<string>("CampusId")
+                    .IsRequired()
+                    .HasColumnType("text");
 
-                    b.Property<string>("CreatedBy")
-                        .IsRequired()
-                        .HasColumnType("text");
+                b.Property<string>("CapstoneId")
+                    .IsRequired()
+                    .HasColumnType("text");
 
-                    b.Property<DateTime>("CreatedDate")
-                        .HasColumnType("timestamp");
+                b.Property<string>("CreatedBy")
+                    .IsRequired()
+                    .HasColumnType("text");
 
-                    b.Property<DateTime?>("DeletedAt")
-                        .HasColumnType("timestamp");
+                b.Property<DateTime>("CreatedDate")
+                    .HasColumnType("timestamp");
 
-                    b.Property<string>("Email")
-                        .IsRequired()
-                        .HasColumnType("text");
+                b.Property<DateTime?>("DeletedAt")
+                    .HasColumnType("timestamp");
 
-                    b.Property<string>("FullName")
-                        .IsRequired()
-                        .HasColumnType("text");
+                b.Property<string>("Email")
+                    .IsRequired()
+                    .HasColumnType("text");
 
-                    b.Property<float>("GPA")
-                        .HasColumnType("real");
+                b.Property<string>("FullName")
+                    .IsRequired()
+                    .HasColumnType("text");
 
-                    b.Property<bool>("IsDeleted")
-                        .HasColumnType("boolean");
+                b.Property<float>("GPA")
+                    .HasColumnType("real");
 
-                    b.Property<bool>("IsEligible")
-                        .HasColumnType("boolean");
+                b.Property<bool>("IsDeleted")
+                    .HasColumnType("boolean");
 
-                    b.Property<string>("MajorId")
-                        .IsRequired()
-                        .HasColumnType("text");
+                b.Property<bool>("IsEligible")
+                    .HasColumnType("boolean");
 
-                    b.Property<string>("Status")
-                        .IsRequired()
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("text")
-                        .HasDefaultValue("InProgress");
+                b.Property<string>("MajorId")
+                    .IsRequired()
+                    .HasColumnType("text");
 
-                    b.Property<string>("UpdatedBy")
-                        .HasColumnType("text");
+                b.Property<string>("Status")
+                    .IsRequired()
+                    .ValueGeneratedOnAdd()
+                    .HasColumnType("text")
+                    .HasDefaultValue("InProgress");
 
-                    b.Property<DateTime?>("UpdatedDate")
-                        .HasColumnType("timestamp");
+                b.Property<string>("UpdatedBy")
+                    .HasColumnType("text");
 
-                    b.HasKey("Id");
+                b.Property<DateTime?>("UpdatedDate")
+                    .HasColumnType("timestamp");
 
-                    b.HasIndex("BusinessAreaId");
+                b.HasKey("Id");
 
-                    b.HasIndex("CampusId");
+                b.HasIndex("BusinessAreaId");
 
-                    b.HasIndex("CapstoneId");
+                b.HasIndex("CampusId");
 
-                    b.HasIndex("MajorId");
+                b.HasIndex("CapstoneId");
 
-                    b.ToTable("Student", (string)null);
-                });
+                b.HasIndex("MajorId");
 
-            modelBuilder.Entity("FUC.Data.Entities.Supervisor", b =>
-                {
-                    b.Property<string>("Id")
-                        .HasColumnType("text");
+                b.ToTable("Student", (string)null);
+            });
 
-                    b.Property<string>("CampusId")
-                        .IsRequired()
-                        .HasColumnType("text");
+        modelBuilder.Entity("FUC.Data.Entities.Supervisor", b =>
+            {
+                b.Property<string>("Id")
+                    .HasColumnType("text");
 
-                    b.Property<string>("CreatedBy")
-                        .IsRequired()
-                        .HasColumnType("text");
+                b.Property<string>("CampusId")
+                    .IsRequired()
+                    .HasColumnType("text");
 
-                    b.Property<DateTime>("CreatedDate")
-                        .HasColumnType("timestamp");
+                b.Property<string>("CreatedBy")
+                    .IsRequired()
+                    .HasColumnType("text");
 
-                    b.Property<DateTime?>("DeletedAt")
-                        .HasColumnType("timestamp");
+                b.Property<DateTime>("CreatedDate")
+                    .HasColumnType("timestamp");
 
-                    b.Property<string>("Email")
-                        .IsRequired()
-                        .HasColumnType("text");
+                b.Property<DateTime?>("DeletedAt")
+                    .HasColumnType("timestamp");
 
-                    b.Property<string>("FullName")
-                        .IsRequired()
-                        .HasColumnType("text");
+                b.Property<string>("Email")
+                    .IsRequired()
+                    .HasColumnType("text");
 
-                    b.Property<bool>("IsAvailable")
-                        .HasColumnType("boolean");
+                b.Property<string>("FullName")
+                    .IsRequired()
+                    .HasColumnType("text");
 
-                    b.Property<bool>("IsDeleted")
-                        .HasColumnType("boolean");
+                b.Property<bool>("IsAvailable")
+                    .HasColumnType("boolean");
 
-                    b.Property<string>("MajorId")
-                        .IsRequired()
-                        .HasColumnType("text");
+                b.Property<bool>("IsDeleted")
+                    .HasColumnType("boolean");
 
-                    b.Property<int>("MaxGroupsInSemester")
-                        .HasColumnType("integer");
+                b.Property<string>("MajorId")
+                    .IsRequired()
+                    .HasColumnType("text");
 
-                    b.Property<string>("UpdatedBy")
-                        .HasColumnType("text");
+                b.Property<int>("MaxGroupsInSemester")
+                    .HasColumnType("integer");
 
-                    b.Property<DateTime?>("UpdatedDate")
-                        .HasColumnType("timestamp");
+                b.Property<string>("UpdatedBy")
+                    .HasColumnType("text");
 
-                    b.HasKey("Id");
+                b.Property<DateTime?>("UpdatedDate")
+                    .HasColumnType("timestamp");
 
-                    b.HasIndex("CampusId");
+                b.HasKey("Id");
 
-                    b.HasIndex("MajorId");
+                b.HasIndex("CampusId");
 
-                    b.ToTable("Supervisor", (string)null);
-                });
+                b.HasIndex("MajorId");
 
-            modelBuilder.Entity("FUC.Data.Entities.TemplateDocument", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid")
-                        .HasDefaultValue(new Guid("7738332d-d0bf-4c7e-9b5e-39333a7be90e"));
+                b.ToTable("Supervisor", (string)null);
+            });
 
-                    b.Property<string>("CreatedBy")
-                        .IsRequired()
-                        .HasColumnType("text");
+        modelBuilder.Entity("FUC.Data.Entities.TemplateDocument", b =>
+            {
+                b.Property<Guid>("Id")
+                    .ValueGeneratedOnAdd()
+                    .HasColumnType("uuid")
+                    .HasDefaultValue(new Guid("d5023726-1520-4aa9-ab8a-110583761046"));
 
-                    b.Property<DateTime>("CreatedDate")
-                        .HasColumnType("timestamp");
+                b.Property<string>("CreatedBy")
+                    .IsRequired()
+                    .HasColumnType("text");
+                b.Property<DateTime>("CreatedDate")
+                    .HasColumnType("timestamp");
 
-                    b.Property<string>("FileName")
-                        .IsRequired()
-                        .HasColumnType("text");
+                b.Property<string>("FileName")
+                    .IsRequired()
+                    .HasColumnType("text");
 
-                    b.Property<string>("FileUrl")
-                        .IsRequired()
-                        .HasColumnType("text");
+                b.Property<string>("FileUrl")
+                    .IsRequired()
+                    .HasColumnType("text");
 
-                    b.Property<bool>("IsActive")
-                        .HasColumnType("boolean");
+                b.Property<bool>("IsActive")
+                    .HasColumnType("boolean");
 
-                    b.Property<bool>("IsFile")
-                        .HasColumnType("boolean");
+                b.Property<bool>("IsFile")
+                    .HasColumnType("boolean");
 
-                    b.Property<Guid?>("ParentId")
-                        .HasColumnType("uuid");
+                b.Property<Guid?>("ParentId")
+                    .HasColumnType("uuid");
 
-                    b.Property<string>("UpdatedBy")
-                        .HasColumnType("text");
+                b.Property<string>("UpdatedBy")
+                    .HasColumnType("text");
 
-                    b.Property<DateTime?>("UpdatedDate")
-                        .HasColumnType("timestamp");
+                b.Property<DateTime?>("UpdatedDate")
+                    .HasColumnType("timestamp");
 
-                    b.HasKey("Id");
+                b.HasKey("Id");
 
-                    b.ToTable("TemplateDocument", (string)null);
-                });
+                b.ToTable("TemplateDocument", (string)null);
+            });
 
-            modelBuilder.Entity("FUC.Data.Entities.Topic", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid")
-                        .HasDefaultValue(new Guid("f35f2fee-c390-44b6-b872-bb98f0be6e81"));
+        modelBuilder.Entity("FUC.Data.Entities.Topic", b =>
+            {
+                b.Property<Guid>("Id")
+                    .ValueGeneratedOnAdd()
+                    .HasColumnType("uuid")
+                    .HasDefaultValue(new Guid("65d61e8d-37cc-44af-a1ab-b17f2915a30f"));
 
-                    b.Property<string>("Abbreviation")
-                        .IsRequired()
-                        .HasColumnType("text");
+                b.Property<string>("Abbreviation")
+                    .IsRequired()
+                    .HasColumnType("text");
 
-                    b.Property<Guid>("BusinessAreaId")
-                        .HasColumnType("uuid");
+                b.Property<Guid>("BusinessAreaId")
+                    .HasColumnType("uuid");
 
-                    b.Property<string>("CampusId")
-                        .IsRequired()
-                        .HasColumnType("text");
+                b.Property<string>("CampusId")
+                    .IsRequired()
+                    .HasColumnType("text");
 
-                    b.Property<string>("CapstoneId")
-                        .IsRequired()
-                        .HasColumnType("text");
+                b.Property<string>("CapstoneId")
+                    .IsRequired()
+                    .HasColumnType("text");
 
-                    b.Property<string>("Code")
-                        .HasColumnType("text");
+                b.Property<string>("Code")
+                    .HasColumnType("text");
 
-                    b.Property<string>("CreatedBy")
-                        .IsRequired()
-                        .HasColumnType("text");
+                b.Property<string>("CreatedBy")
+                    .IsRequired()
+                    .HasColumnType("text");
 
-                    b.Property<DateTime>("CreatedDate")
-                        .HasColumnType("timestamp");
+                b.Property<DateTime>("CreatedDate")
+                    .HasColumnType("timestamp");
 
-                    b.Property<DateTime?>("DeletedAt")
-                        .HasColumnType("timestamp");
+                b.Property<DateTime?>("DeletedAt")
+                    .HasColumnType("timestamp");
 
-                    b.Property<string>("Description")
-                        .IsRequired()
-                        .HasColumnType("text");
+                b.Property<string>("Description")
+                    .IsRequired()
+                    .HasColumnType("text");
 
-                    b.Property<string>("DifficultyLevel")
-                        .IsRequired()
-                        .HasColumnType("text");
+                b.Property<string>("DifficultyLevel")
+                    .IsRequired()
+                    .HasColumnType("text");
 
-                    b.Property<string>("EnglishName")
-                        .IsRequired()
-                        .HasColumnType("text");
+                b.Property<string>("EnglishName")
+                    .IsRequired()
+                    .HasColumnType("text");
 
-                    b.Property<string>("FileName")
-                        .IsRequired()
-                        .HasColumnType("text");
+                b.Property<string>("FileName")
+                    .IsRequired()
+                    .HasColumnType("text");
 
-                    b.Property<string>("FileUrl")
-                        .IsRequired()
-                        .HasColumnType("text");
+                b.Property<string>("FileUrl")
+                    .IsRequired()
+                    .HasColumnType("text");
 
-                    b.Property<bool>("IsAssignedToGroup")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("boolean")
-                        .HasDefaultValue(false);
+                b.Property<bool>("IsAssignedToGroup")
+                    .ValueGeneratedOnAdd()
+                    .HasColumnType("boolean")
+                    .HasDefaultValue(false);
 
-                    b.Property<bool>("IsDeleted")
-                        .HasColumnType("boolean");
+                b.Property<bool>("IsDeleted")
+                    .HasColumnType("boolean");
 
-                    b.Property<string>("MainSupervisorId")
-                        .IsRequired()
-                        .HasColumnType("text");
+                b.Property<string>("MainSupervisorId")
+                    .IsRequired()
+                    .HasColumnType("text");
 
-                    b.Property<string>("SemesterId")
-                        .IsRequired()
-                        .HasColumnType("text");
+                b.Property<string>("SemesterId")
+                    .IsRequired()
+                    .HasColumnType("text");
 
-                    b.Property<string>("Status")
-                        .IsRequired()
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("text")
-                        .HasDefaultValue("Pending");
+                b.Property<string>("Status")
+                    .IsRequired()
+                    .ValueGeneratedOnAdd()
+                    .HasColumnType("text")
+                    .HasDefaultValue("Pending");
 
-                    b.Property<string>("UpdatedBy")
-                        .HasColumnType("text");
+                b.Property<string>("UpdatedBy")
+                    .HasColumnType("text");
 
-                    b.Property<DateTime?>("UpdatedDate")
-                        .HasColumnType("timestamp");
+                b.Property<DateTime?>("UpdatedDate")
+                    .HasColumnType("timestamp");
 
-                    b.Property<string>("VietnameseName")
-                        .IsRequired()
-                        .HasColumnType("text");
+                b.Property<string>("VietnameseName")
+                    .IsRequired()
+                    .HasColumnType("text");
 
-                    b.HasKey("Id");
+                b.HasKey("Id");
 
-                    b.HasIndex("BusinessAreaId");
+                b.HasIndex("BusinessAreaId");
 
-                    b.HasIndex("CampusId");
+                b.HasIndex("CampusId");
 
-                    b.HasIndex("CapstoneId");
+                b.HasIndex("CapstoneId");
 
-                    b.HasIndex("Code")
-                        .IsUnique();
+                b.HasIndex("Code")
+                    .IsUnique();
 
-                    b.HasIndex("MainSupervisorId");
+                b.HasIndex("MainSupervisorId");
 
-                    b.HasIndex("SemesterId");
+                b.HasIndex("SemesterId");
 
-                    b.ToTable("Topic", (string)null);
-                });
+                b.ToTable("Topic", (string)null);
+            });
 
-            modelBuilder.Entity("FUC.Data.Entities.TopicAnalysis", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid")
-                        .HasDefaultValue(new Guid("f99a2e1f-0b98-4d93-885d-07cf713b40cc"));
+        modelBuilder.Entity("FUC.Data.Entities.TopicAnalysis", b =>
+            {
+                b.Property<Guid>("Id")
+                    .ValueGeneratedOnAdd()
+                    .HasColumnType("uuid")
+                    .HasDefaultValue(new Guid("4f7ba5a5-f018-4927-897c-b44a4cb52ebd"));
 
-                    b.Property<string>("AnalysisResult")
-                        .IsRequired()
-                        .HasColumnType("text");
+                b.Property<string>("AnalysisResult")
+                    .IsRequired()
+                    .HasColumnType("text");
 
-                    b.Property<DateTime>("CreatedDate")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("timestamp")
-                        .HasDefaultValue(new DateTime(2025, 3, 23, 14, 16, 1, 388, DateTimeKind.Local).AddTicks(1307));
+                b.Property<DateTime>("CreatedDate")
+                    .ValueGeneratedOnAdd()
+                    .HasColumnType("timestamp")
+                    .HasDefaultValue(new DateTime(2025, 3, 23, 16, 32, 49, 276, DateTimeKind.Local).AddTicks(6010));
 
-                    b.Property<string>("ProcessedBy")
-                        .IsRequired()
-                        .HasColumnType("text");
+                b.Property<string>("ProcessedBy")
+                    .IsRequired()
+                    .HasColumnType("text");
 
-                    b.Property<Guid>("TopicId")
-                        .HasColumnType("uuid");
+                b.Property<Guid>("TopicId")
+                    .HasColumnType("uuid");
 
-                    b.HasKey("Id");
+                b.HasKey("Id");
 
-                    b.HasIndex("TopicId");
+                b.HasIndex("TopicId");
 
-                    b.ToTable("TopicAnalysis", (string)null);
-                });
+                b.ToTable("TopicAnalysis", (string)null);
+            });
 
-            modelBuilder.Entity("FUC.Data.Entities.TopicAppraisal", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid")
-                        .HasDefaultValue(new Guid("2264541a-6308-4776-91e3-df37d4a568ae"));
+        modelBuilder.Entity("FUC.Data.Entities.TopicAppraisal", b =>
+            {
+                b.Property<Guid>("Id")
+                    .ValueGeneratedOnAdd()
+                    .HasColumnType("uuid")
+                    .HasDefaultValue(new Guid("8ce58f2c-333b-4594-b2a9-df04802ae35b"));
 
-                    b.Property<string>("AppraisalComment")
-                        .HasColumnType("text");
+                b.Property<string>("AppraisalComment")
+                    .HasColumnType("text");
 
-                    b.Property<string>("AppraisalContent")
-                        .HasColumnType("text");
+                b.Property<string>("AppraisalContent")
+                    .HasColumnType("text");
 
-                    b.Property<DateTime?>("AppraisalDate")
-                        .HasColumnType("timestamp");
+                b.Property<DateTime?>("AppraisalDate")
+                    .HasColumnType("timestamp");
 
-                    b.Property<int>("AttemptTime")
-                        .HasColumnType("integer");
+                b.Property<int>("AttemptTime")
+                    .HasColumnType("integer");
 
-                    b.Property<string>("CreatedBy")
-                        .IsRequired()
-                        .HasColumnType("text");
+                b.Property<string>("CreatedBy")
+                    .IsRequired()
+                    .HasColumnType("text");
 
-                    b.Property<DateTime>("CreatedDate")
-                        .HasColumnType("timestamp");
+                b.Property<DateTime>("CreatedDate")
+                    .HasColumnType("timestamp");
 
-                    b.Property<string>("Status")
-                        .IsRequired()
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("text")
-                        .HasDefaultValue("Pending");
+                b.Property<string>("Status")
+                    .IsRequired()
+                    .ValueGeneratedOnAdd()
+                    .HasColumnType("text")
+                    .HasDefaultValue("Pending");
 
-                    b.Property<string>("SupervisorId")
-                        .IsRequired()
-                        .HasColumnType("text");
+                b.Property<string>("SupervisorId")
+                    .IsRequired()
+                    .HasColumnType("text");
 
-                    b.Property<Guid>("TopicId")
-                        .HasColumnType("uuid");
+                b.Property<Guid>("TopicId")
+                    .HasColumnType("uuid");
 
-                    b.Property<string>("UpdatedBy")
-                        .HasColumnType("text");
+                b.Property<string>("UpdatedBy")
+                    .HasColumnType("text");
 
-                    b.Property<DateTime?>("UpdatedDate")
-                        .HasColumnType("timestamp");
+                b.Property<DateTime?>("UpdatedDate")
+                    .HasColumnType("timestamp");
 
-                    b.HasKey("Id");
+                b.HasKey("Id");
 
-                    b.HasIndex("SupervisorId");
+                b.HasIndex("SupervisorId");
 
-                    b.HasIndex("TopicId");
+                b.HasIndex("TopicId");
 
-                    b.ToTable("TopicAppraisal", (string)null);
-                });
+                b.ToTable("TopicAppraisal", (string)null);
+            });
 
-            modelBuilder.Entity("FUC.Data.Entities.TopicRequest", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid")
-                        .HasDefaultValue(new Guid("878553d0-3d96-4461-8fd5-33f90645da02"));
+        modelBuilder.Entity("FUC.Data.Entities.TopicRequest", b =>
+            {
+                b.Property<Guid>("Id")
+                    .ValueGeneratedOnAdd()
+                    .HasColumnType("uuid")
+                    .HasDefaultValue(new Guid("ca886446-11d4-4ef5-9b9b-f91d01bf8b01"));
 
-                    b.Property<string>("CreatedBy")
-                        .IsRequired()
-                        .HasColumnType("text");
+                b.Property<string>("CreatedBy")
+                    .IsRequired()
+                    .HasColumnType("text");
 
-                    b.Property<DateTime>("CreatedDate")
-                        .HasColumnType("timestamp");
+                b.Property<DateTime>("CreatedDate")
+                    .HasColumnType("timestamp");
 
-                    b.Property<DateTime?>("DeletedAt")
-                        .HasColumnType("timestamp");
+                b.Property<DateTime?>("DeletedAt")
+                    .HasColumnType("timestamp");
 
-                    b.Property<Guid>("GroupId")
-                        .HasColumnType("uuid");
+                b.Property<Guid>("GroupId")
+                    .HasColumnType("uuid");
 
-                    b.Property<bool>("IsDeleted")
-                        .HasColumnType("boolean");
+                b.Property<bool>("IsDeleted")
+                    .HasColumnType("boolean");
 
-                    b.Property<string>("Status")
-                        .IsRequired()
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("text")
-                        .HasDefaultValue("UnderReview");
+                b.Property<string>("Status")
+                    .IsRequired()
+                    .ValueGeneratedOnAdd()
+                    .HasColumnType("text")
+                    .HasDefaultValue("UnderReview");
 
-                    b.Property<string>("SupervisorId")
-                        .IsRequired()
-                        .HasColumnType("text");
+                b.Property<string>("SupervisorId")
+                    .IsRequired()
+                    .HasColumnType("text");
 
-                    b.Property<Guid>("TopicId")
-                        .HasColumnType("uuid");
+                b.Property<Guid>("TopicId")
+                    .HasColumnType("uuid");
 
-                    b.Property<string>("UpdatedBy")
-                        .HasColumnType("text");
+                b.Property<string>("UpdatedBy")
+                    .HasColumnType("text");
 
-                    b.Property<DateTime?>("UpdatedDate")
-                        .HasColumnType("timestamp");
+                b.Property<DateTime?>("UpdatedDate")
+                    .HasColumnType("timestamp");
 
-                    b.HasKey("Id");
+                b.HasKey("Id");
 
-                    b.HasIndex("GroupId");
+                b.HasIndex("GroupId");
 
-                    b.HasIndex("SupervisorId");
+                b.HasIndex("SupervisorId");
 
-                    b.HasIndex("TopicId");
+                b.HasIndex("TopicId");
 
-                    b.ToTable("TopicRequest", (string)null);
-                });
+                b.ToTable("TopicRequest", (string)null);
+            });
 
-            modelBuilder.Entity("FUC.Data.Entities.WeeklyEvaluation", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid");
+        modelBuilder.Entity("FUC.Data.Entities.WeeklyEvaluation", b =>
+            {
+                b.Property<Guid>("Id")
+                    .ValueGeneratedOnAdd()
+                    .HasColumnType("uuid");
 
-                    b.Property<string>("Comments")
-                        .IsRequired()
-                        .HasColumnType("text");
+                b.Property<string>("Comments")
+                    .IsRequired()
+                    .HasColumnType("text");
 
-                    b.Property<double>("ContributionPercentage")
-                        .HasColumnType("double precision");
+                b.Property<double>("ContributionPercentage")
+                    .HasColumnType("double precision");
 
-                    b.Property<string>("CreatedBy")
-                        .IsRequired()
-                        .HasColumnType("text");
+                b.Property<string>("CreatedBy")
+                    .IsRequired()
+                    .HasColumnType("text");
 
-                    b.Property<DateTime>("CreatedDate")
-                        .HasColumnType("timestamp");
+                b.Property<DateTime>("CreatedDate")
+                    .HasColumnType("timestamp");
 
-                    b.Property<DateTime?>("DeletedAt")
-                        .HasColumnType("timestamp");
+                b.Property<DateTime?>("DeletedAt")
+                    .HasColumnType("timestamp");
 
-                    b.Property<bool>("IsDeleted")
-                        .HasColumnType("boolean");
+                b.Property<bool>("IsDeleted")
+                    .HasColumnType("boolean");
 
-                    b.Property<Guid>("ProjectProgressWeekId")
-                        .HasColumnType("uuid");
+                b.Property<Guid>("ProjectProgressWeekId")
+                    .HasColumnType("uuid");
 
-                    b.Property<string>("Status")
-                        .IsRequired()
-                        .HasColumnType("text");
+                b.Property<string>("Status")
+                    .IsRequired()
+                    .HasColumnType("text");
 
-                    b.Property<string>("StudentId")
-                        .IsRequired()
-                        .HasColumnType("text");
+                b.Property<string>("StudentId")
+                    .IsRequired()
+                    .HasColumnType("text");
 
-                    b.Property<string>("SupervisorId")
-                        .HasColumnType("text");
+                b.Property<string>("SupervisorId")
+                    .HasColumnType("text");
 
-                    b.Property<string>("UpdatedBy")
-                        .HasColumnType("text");
+                b.Property<string>("UpdatedBy")
+                    .HasColumnType("text");
 
-                    b.Property<DateTime?>("UpdatedDate")
-                        .HasColumnType("timestamp");
+                b.Property<DateTime?>("UpdatedDate")
+                    .HasColumnType("timestamp");
 
-                    b.HasKey("Id");
+                b.HasKey("Id");
 
-                    b.HasIndex("ProjectProgressWeekId");
+                b.HasIndex("ProjectProgressWeekId");
 
-                    b.HasIndex("StudentId");
+                b.HasIndex("StudentId");
 
-                    b.HasIndex("SupervisorId");
+                b.HasIndex("SupervisorId");
 
-                    b.ToTable("WeeklyEvaluation", (string)null);
-                });
+                b.ToTable("WeeklyEvaluation", (string)null);
+            });
 
-            modelBuilder.Entity("FUC.Data.Entities.Capstone", b =>
-                {
-                    b.HasOne("FUC.Data.Entities.Major", "Major")
-                        .WithMany("Capstones")
-                        .HasForeignKey("MajorId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
+        modelBuilder.Entity("FUC.Data.Entities.Capstone", b =>
+            {
+                b.HasOne("FUC.Data.Entities.Major", "Major")
+                    .WithMany("Capstones")
+                    .HasForeignKey("MajorId")
+                    .OnDelete(DeleteBehavior.Restrict)
+                    .IsRequired();
 
-                    b.Navigation("Major");
-                });
+                b.Navigation("Major");
+            });
 
-            modelBuilder.Entity("FUC.Data.Entities.CoSupervisor", b =>
-                {
-                    b.HasOne("FUC.Data.Entities.Supervisor", "Supervisor")
-                        .WithMany("CoSupervisors")
-                        .HasForeignKey("SupervisorId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+        modelBuilder.Entity("FUC.Data.Entities.CoSupervisor", b =>
+            {
+                b.HasOne("FUC.Data.Entities.Supervisor", "Supervisor")
+                    .WithMany("CoSupervisors")
+                    .HasForeignKey("SupervisorId")
+                    .OnDelete(DeleteBehavior.Cascade)
+                    .IsRequired();
 
-                    b.HasOne("FUC.Data.Entities.Topic", "Topic")
-                        .WithMany("CoSupervisors")
-                        .HasForeignKey("TopicId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
+                b.HasOne("FUC.Data.Entities.Topic", "Topic")
+                    .WithMany("CoSupervisors")
+                    .HasForeignKey("TopicId")
+                    .OnDelete(DeleteBehavior.Restrict)
+                    .IsRequired();
 
-                    b.Navigation("Supervisor");
+                b.Navigation("Supervisor");
 
-                    b.Navigation("Topic");
-                });
+                b.Navigation("Topic");
+            });
 
-            modelBuilder.Entity("FUC.Data.Entities.DefendCapstoneProjectCouncilMember", b =>
-                {
-                    b.HasOne("FUC.Data.Entities.DefendCapstoneProjectInformationCalendar", "DefendCapstoneProjectInformationCalendar")
-                        .WithMany("DefendCapstoneProjectMemberCouncils")
-                        .HasForeignKey("DefendCapstoneProjectInformationCalendarId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
+        modelBuilder.Entity("FUC.Data.Entities.DefendCapstoneProjectCouncilMember", b =>
+            {
+                b.HasOne("FUC.Data.Entities.DefendCapstoneProjectInformationCalendar", "DefendCapstoneProjectInformationCalendar")
+                    .WithMany("DefendCapstoneProjectMemberCouncils")
+                    .HasForeignKey("DefendCapstoneProjectInformationCalendarId")
+                    .OnDelete(DeleteBehavior.Restrict)
+                    .IsRequired();
 
-                    b.HasOne("FUC.Data.Entities.Supervisor", "Supervisor")
-                        .WithMany("DefendCapstoneProjectMemberCouncils")
-                        .HasForeignKey("SupervisorId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
+                b.HasOne("FUC.Data.Entities.Supervisor", "Supervisor")
+                    .WithMany("DefendCapstoneProjectMemberCouncils")
+                    .HasForeignKey("SupervisorId")
+                    .OnDelete(DeleteBehavior.Restrict)
+                    .IsRequired();
 
-                    b.Navigation("DefendCapstoneProjectInformationCalendar");
+                b.Navigation("DefendCapstoneProjectInformationCalendar");
 
-                    b.Navigation("Supervisor");
-                });
+                b.Navigation("Supervisor");
+            });
 
-            modelBuilder.Entity("FUC.Data.Entities.DefendCapstoneProjectInformationCalendar", b =>
-                {
-                    b.HasOne("FUC.Data.Entities.Campus", "Campus")
-                        .WithMany("DefendCapstoneProjectInformationCalendars")
-                        .HasForeignKey("CampusId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
+        modelBuilder.Entity("FUC.Data.Entities.DefendCapstoneProjectInformationCalendar", b =>
+            {
+                b.HasOne("FUC.Data.Entities.Campus", "Campus")
+                    .WithMany("DefendCapstoneProjectInformationCalendars")
+                    .HasForeignKey("CampusId")
+                    .OnDelete(DeleteBehavior.Restrict)
+                    .IsRequired();
 
-                    b.HasOne("FUC.Data.Entities.Semester", "Semester")
-                        .WithMany("DefendCapstoneProjectInformationCalendars")
-                        .HasForeignKey("SemesterId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
+                b.HasOne("FUC.Data.Entities.Semester", "Semester")
+                    .WithMany("DefendCapstoneProjectInformationCalendars")
+                    .HasForeignKey("SemesterId")
+                    .OnDelete(DeleteBehavior.Restrict)
+                    .IsRequired();
 
-                    b.HasOne("FUC.Data.Entities.Topic", "Topic")
-                        .WithMany("DefendCapstoneProjectInformationCalendars")
-                        .HasForeignKey("TopicId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
+                b.HasOne("FUC.Data.Entities.Topic", "Topic")
+                    .WithMany("DefendCapstoneProjectInformationCalendars")
+                    .HasForeignKey("TopicId")
+                    .OnDelete(DeleteBehavior.Restrict)
+                    .IsRequired();
 
-                    b.Navigation("Campus");
+                b.Navigation("Campus");
 
-                    b.Navigation("Semester");
+                b.Navigation("Semester");
 
-                    b.Navigation("Topic");
-                });
+                b.Navigation("Topic");
+            });
 
-            modelBuilder.Entity("FUC.Data.Entities.FucTask", b =>
-                {
-                    b.HasOne("FUC.Data.Entities.Student", "Assignee")
-                        .WithMany("FucTasks")
-                        .HasForeignKey("AssigneeId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
+        modelBuilder.Entity("FUC.Data.Entities.FucTask", b =>
+            {
+                b.HasOne("FUC.Data.Entities.Student", "Assignee")
+                    .WithMany("FucTasks")
+                    .HasForeignKey("AssigneeId")
+                    .OnDelete(DeleteBehavior.Restrict)
+                    .IsRequired();
 
-                    b.HasOne("FUC.Data.Entities.ProjectProgress", "ProjectProgress")
-                        .WithMany("FucTasks")
-                        .HasForeignKey("ProjectProgressId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
+                b.HasOne("FUC.Data.Entities.ProjectProgress", "ProjectProgress")
+                    .WithMany("FucTasks")
+                    .HasForeignKey("ProjectProgressId")
+                    .OnDelete(DeleteBehavior.Restrict)
+                    .IsRequired();
 
-                    b.HasOne("FUC.Data.Entities.ProjectProgressWeek", null)
-                        .WithMany("FucTasks")
-                        .HasForeignKey("ProjectProgressWeekId");
+                b.HasOne("FUC.Data.Entities.ProjectProgressWeek", null)
+                    .WithMany("FucTasks")
+                    .HasForeignKey("ProjectProgressWeekId");
 
-                    b.HasOne("FUC.Data.Entities.Student", "Reporter")
-                        .WithMany("ReportFucTasks")
-                        .HasForeignKey("ReporterId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
+                b.HasOne("FUC.Data.Entities.Student", "Reporter")
+                    .WithMany("ReportFucTasks")
+                    .HasForeignKey("ReporterId")
+                    .OnDelete(DeleteBehavior.Restrict)
+                    .IsRequired();
 
-                    b.Navigation("Assignee");
+                b.Navigation("Assignee");
 
-                    b.Navigation("ProjectProgress");
+                b.Navigation("ProjectProgress");
 
-                    b.Navigation("Reporter");
-                });
+                b.Navigation("Reporter");
+            });
 
-            modelBuilder.Entity("FUC.Data.Entities.FucTaskHistory", b =>
-                {
-                    b.HasOne("FUC.Data.Entities.FucTask", "FucTask")
-                        .WithMany("FucTaskHistories")
-                        .HasForeignKey("TaskId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
+        modelBuilder.Entity("FUC.Data.Entities.FucTaskHistory", b =>
+            {
+                b.HasOne("FUC.Data.Entities.FucTask", "FucTask")
+                    .WithMany("FucTaskHistories")
+                    .HasForeignKey("TaskId")
+                    .OnDelete(DeleteBehavior.Restrict)
+                    .IsRequired();
 
-                    b.Navigation("FucTask");
-                });
+                b.Navigation("FucTask");
+            });
 
-            modelBuilder.Entity("FUC.Data.Entities.Group", b =>
-                {
-                    b.HasOne("FUC.Data.Entities.Campus", "Campus")
-                        .WithMany("Groups")
-                        .HasForeignKey("CampusId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
+        modelBuilder.Entity("FUC.Data.Entities.Group", b =>
+            {
+                b.HasOne("FUC.Data.Entities.Campus", "Campus")
+                    .WithMany("Groups")
+                    .HasForeignKey("CampusId")
+                    .OnDelete(DeleteBehavior.Restrict)
+                    .IsRequired();
 
-                    b.HasOne("FUC.Data.Entities.Capstone", "Capstone")
-                        .WithMany("Groups")
-                        .HasForeignKey("CapstoneId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
+                b.HasOne("FUC.Data.Entities.Capstone", "Capstone")
+                    .WithMany("Groups")
+                    .HasForeignKey("CapstoneId")
+                    .OnDelete(DeleteBehavior.Restrict)
+                    .IsRequired();
 
-                    b.HasOne("FUC.Data.Entities.Major", "Major")
-                        .WithMany("Groups")
-                        .HasForeignKey("MajorId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
+                b.HasOne("FUC.Data.Entities.Major", "Major")
+                    .WithMany("Groups")
+                    .HasForeignKey("MajorId")
+                    .OnDelete(DeleteBehavior.Restrict)
+                    .IsRequired();
 
-                    b.HasOne("FUC.Data.Entities.Semester", "Semester")
-                        .WithMany("Groups")
-                        .HasForeignKey("SemesterId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
+                b.HasOne("FUC.Data.Entities.Semester", "Semester")
+                    .WithMany("Groups")
+                    .HasForeignKey("SemesterId")
+                    .OnDelete(DeleteBehavior.Restrict)
+                    .IsRequired();
 
-                    b.HasOne("FUC.Data.Entities.Supervisor", "Supervisor")
-                        .WithMany("Groups")
-                        .HasForeignKey("SupervisorId")
-                        .OnDelete(DeleteBehavior.Restrict);
+                b.HasOne("FUC.Data.Entities.Supervisor", "Supervisor")
+                    .WithMany("Groups")
+                    .HasForeignKey("SupervisorId")
+                    .OnDelete(DeleteBehavior.Restrict);
 
-                    b.HasOne("FUC.Data.Entities.Topic", "Topic")
-                        .WithOne("Group")
-                        .HasForeignKey("FUC.Data.Entities.Group", "TopicId")
-                        .OnDelete(DeleteBehavior.Restrict);
+                b.HasOne("FUC.Data.Entities.Topic", "Topic")
+                    .WithOne("Group")
+                    .HasForeignKey("FUC.Data.Entities.Group", "TopicId")
+                    .OnDelete(DeleteBehavior.Restrict);
 
-                    b.Navigation("Campus");
+                b.Navigation("Campus");
 
-                    b.Navigation("Capstone");
+                b.Navigation("Capstone");
 
-                    b.Navigation("Major");
+                b.Navigation("Major");
 
-                    b.Navigation("Semester");
+                b.Navigation("Semester");
 
-                    b.Navigation("Supervisor");
+                b.Navigation("Supervisor");
 
-                    b.Navigation("Topic");
-                });
+                b.Navigation("Topic");
+            });
 
-            modelBuilder.Entity("FUC.Data.Entities.GroupMember", b =>
-                {
-                    b.HasOne("FUC.Data.Entities.Group", "Group")
-                        .WithMany("GroupMembers")
-                        .HasForeignKey("GroupId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
+        modelBuilder.Entity("FUC.Data.Entities.GroupMember", b =>
+            {
+                b.HasOne("FUC.Data.Entities.Group", "Group")
+                    .WithMany("GroupMembers")
+                    .HasForeignKey("GroupId")
+                    .OnDelete(DeleteBehavior.Restrict)
+                    .IsRequired();
 
-                    b.HasOne("FUC.Data.Entities.Student", "Student")
-                        .WithMany("GroupMembers")
-                        .HasForeignKey("StudentId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
+                b.HasOne("FUC.Data.Entities.Student", "Student")
+                    .WithMany("GroupMembers")
+                    .HasForeignKey("StudentId")
+                    .OnDelete(DeleteBehavior.Restrict)
+                    .IsRequired();
 
-                    b.Navigation("Group");
+                b.Navigation("Group");
 
-                    b.Navigation("Student");
-                });
+                b.Navigation("Student");
+            });
 
-            modelBuilder.Entity("FUC.Data.Entities.JoinGroupRequest", b =>
-                {
-                    b.HasOne("FUC.Data.Entities.Group", "Group")
-                        .WithMany("JoinGroupRequests")
-                        .HasForeignKey("GroupId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
+        modelBuilder.Entity("FUC.Data.Entities.JoinGroupRequest", b =>
+            {
+                b.HasOne("FUC.Data.Entities.Group", "Group")
+                    .WithMany("JoinGroupRequests")
+                    .HasForeignKey("GroupId")
+                    .OnDelete(DeleteBehavior.Restrict)
+                    .IsRequired();
 
-                    b.HasOne("FUC.Data.Entities.Student", "Student")
-                        .WithMany("JoinGroupRequests")
-                        .HasForeignKey("StudentId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
+                b.HasOne("FUC.Data.Entities.Student", "Student")
+                    .WithMany("JoinGroupRequests")
+                    .HasForeignKey("StudentId")
+                    .OnDelete(DeleteBehavior.Restrict)
+                    .IsRequired();
 
-                    b.Navigation("Group");
+                b.Navigation("Group");
 
-                    b.Navigation("Student");
-                });
+                b.Navigation("Student");
+            });
 
-            modelBuilder.Entity("FUC.Data.Entities.Major", b =>
-                {
-                    b.HasOne("FUC.Data.Entities.MajorGroup", "MajorGroup")
-                        .WithMany("Majors")
-                        .HasForeignKey("MajorGroupId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+        modelBuilder.Entity("FUC.Data.Entities.Major", b =>
+            {
+                b.HasOne("FUC.Data.Entities.MajorGroup", "MajorGroup")
+                    .WithMany("Majors")
+                    .HasForeignKey("MajorGroupId")
+                    .OnDelete(DeleteBehavior.Cascade)
+                    .IsRequired();
 
-                    b.Navigation("MajorGroup");
-                });
+                b.Navigation("MajorGroup");
+            });
 
-            modelBuilder.Entity("FUC.Data.Entities.ProjectProgress", b =>
-                {
-                    b.HasOne("FUC.Data.Entities.Group", "Group")
-                        .WithOne("ProjectProgress")
-                        .HasForeignKey("FUC.Data.Entities.ProjectProgress", "GroupId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+        modelBuilder.Entity("FUC.Data.Entities.ProjectProgress", b =>
+            {
+                b.HasOne("FUC.Data.Entities.Group", "Group")
+                    .WithOne("ProjectProgress")
+                    .HasForeignKey("FUC.Data.Entities.ProjectProgress", "GroupId")
+                    .OnDelete(DeleteBehavior.Cascade)
+                    .IsRequired();
 
-                    b.HasOne("FUC.Data.Entities.Supervisor", null)
-                        .WithMany("ProjectProgresses")
-                        .HasForeignKey("SupervisorId");
+                b.HasOne("FUC.Data.Entities.Supervisor", null)
+                    .WithMany("ProjectProgresses")
+                    .HasForeignKey("SupervisorId");
 
-                    b.Navigation("Group");
-                });
+                b.Navigation("Group");
+            });
 
-            modelBuilder.Entity("FUC.Data.Entities.ProjectProgressWeek", b =>
-                {
-                    b.HasOne("FUC.Data.Entities.ProjectProgress", "ProjectProgress")
-                        .WithMany("ProjectProgressWeeks")
-                        .HasForeignKey("ProjectProgressId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
+        modelBuilder.Entity("FUC.Data.Entities.ProjectProgressWeek", b =>
+            {
+                b.HasOne("FUC.Data.Entities.ProjectProgress", "ProjectProgress")
+                    .WithMany("ProjectProgressWeeks")
+                    .HasForeignKey("ProjectProgressId")
+                    .OnDelete(DeleteBehavior.Restrict)
+                    .IsRequired();
 
-                    b.Navigation("ProjectProgress");
-                });
+                b.Navigation("ProjectProgress");
+            });
 
-            modelBuilder.Entity("FUC.Data.Entities.ReviewCalendar", b =>
-                {
-                    b.HasOne("FUC.Data.Entities.Campus", "Campus")
-                        .WithMany("ReviewCalendars")
-                        .HasForeignKey("CampusId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+        modelBuilder.Entity("FUC.Data.Entities.ReviewCalendar", b =>
+            {
+                b.HasOne("FUC.Data.Entities.Campus", "Campus")
+                    .WithMany("ReviewCalendars")
+                    .HasForeignKey("CampusId")
+                    .OnDelete(DeleteBehavior.Cascade)
+                    .IsRequired();
 
-                    b.HasOne("FUC.Data.Entities.Group", "Group")
-                        .WithMany("ReviewCalendars")
-                        .HasForeignKey("GroupId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                b.HasOne("FUC.Data.Entities.Group", "Group")
+                    .WithMany("ReviewCalendars")
+                    .HasForeignKey("GroupId")
+                    .OnDelete(DeleteBehavior.Cascade)
+                    .IsRequired();
 
-                    b.HasOne("FUC.Data.Entities.Major", "Major")
-                        .WithMany("ReviewCalendars")
-                        .HasForeignKey("MajorId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                b.HasOne("FUC.Data.Entities.Major", "Major")
+                    .WithMany("ReviewCalendars")
+                    .HasForeignKey("MajorId")
+                    .OnDelete(DeleteBehavior.Cascade)
+                    .IsRequired();
 
-                    b.HasOne("FUC.Data.Entities.Semester", "Semester")
-                        .WithMany("ReviewCalendars")
-                        .HasForeignKey("SemesterId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                b.HasOne("FUC.Data.Entities.Semester", "Semester")
+                    .WithMany("ReviewCalendars")
+                    .HasForeignKey("SemesterId")
+                    .OnDelete(DeleteBehavior.Cascade)
+                    .IsRequired();
 
-                    b.HasOne("FUC.Data.Entities.Topic", "Topic")
-                        .WithMany("ReviewCalendars")
-                        .HasForeignKey("TopicId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                b.HasOne("FUC.Data.Entities.Topic", "Topic")
+                    .WithMany("ReviewCalendars")
+                    .HasForeignKey("TopicId")
+                    .OnDelete(DeleteBehavior.Cascade)
+                    .IsRequired();
 
-                    b.Navigation("Campus");
+                b.Navigation("Campus");
 
-                    b.Navigation("Group");
+                b.Navigation("Group");
 
-                    b.Navigation("Major");
+                b.Navigation("Major");
 
-                    b.Navigation("Semester");
+                b.Navigation("Semester");
 
-                    b.Navigation("Topic");
-                });
+                b.Navigation("Topic");
+            });
 
-            modelBuilder.Entity("FUC.Data.Entities.ReviewCriteria", b =>
-                {
-                    b.HasOne("FUC.Data.Entities.Capstone", "Capstone")
-                        .WithMany("reviewCriterias")
-                        .HasForeignKey("CapstoneId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+        modelBuilder.Entity("FUC.Data.Entities.ReviewCriteria", b =>
+            {
+                b.HasOne("FUC.Data.Entities.Capstone", "Capstone")
+                    .WithMany("reviewCriterias")
+                    .HasForeignKey("CapstoneId")
+                    .OnDelete(DeleteBehavior.Cascade)
+                    .IsRequired();
 
-                    b.Navigation("Capstone");
-                });
+                b.Navigation("Capstone");
+            });
 
-            modelBuilder.Entity("FUC.Data.Entities.Reviewer", b =>
-                {
-                    b.HasOne("FUC.Data.Entities.ReviewCalendar", "ReviewCalender")
-                        .WithMany("Reviewers")
-                        .HasForeignKey("ReviewCalenderId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+        modelBuilder.Entity("FUC.Data.Entities.Reviewer", b =>
+            {
+                b.HasOne("FUC.Data.Entities.ReviewCalendar", "ReviewCalender")
+                    .WithMany("Reviewers")
+                    .HasForeignKey("ReviewCalenderId")
+                    .OnDelete(DeleteBehavior.Cascade)
+                    .IsRequired();
 
-                    b.HasOne("FUC.Data.Entities.Supervisor", "Supervisor")
-                        .WithMany("Reviewers")
-                        .HasForeignKey("SupervisorId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
+                b.HasOne("FUC.Data.Entities.Supervisor", "Supervisor")
+                    .WithMany("Reviewers")
+                    .HasForeignKey("SupervisorId")
+                    .OnDelete(DeleteBehavior.Restrict)
+                    .IsRequired();
 
-                    b.Navigation("ReviewCalender");
+                b.Navigation("ReviewCalender");
 
-                    b.Navigation("Supervisor");
-                });
+                b.Navigation("Supervisor");
+            });
 
-            modelBuilder.Entity("FUC.Data.Entities.Student", b =>
-                {
-                    b.HasOne("FUC.Data.Entities.BusinessArea", "BusinessArea")
-                        .WithMany("Students")
-                        .HasForeignKey("BusinessAreaId")
-                        .OnDelete(DeleteBehavior.Restrict);
+        modelBuilder.Entity("FUC.Data.Entities.Student", b =>
+            {
+                b.HasOne("FUC.Data.Entities.BusinessArea", "BusinessArea")
+                    .WithMany("Students")
+                    .HasForeignKey("BusinessAreaId")
+                    .OnDelete(DeleteBehavior.Restrict);
 
-                    b.HasOne("FUC.Data.Entities.Campus", "Campus")
-                        .WithMany("Students")
-                        .HasForeignKey("CampusId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
+                b.HasOne("FUC.Data.Entities.Campus", "Campus")
+                    .WithMany("Students")
+                    .HasForeignKey("CampusId")
+                    .OnDelete(DeleteBehavior.Restrict)
+                    .IsRequired();
 
-                    b.HasOne("FUC.Data.Entities.Capstone", "Capstone")
-                        .WithMany("Students")
-                        .HasForeignKey("CapstoneId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
+                b.HasOne("FUC.Data.Entities.Capstone", "Capstone")
+                    .WithMany("Students")
+                    .HasForeignKey("CapstoneId")
+                    .OnDelete(DeleteBehavior.Restrict)
+                    .IsRequired();
 
-                    b.HasOne("FUC.Data.Entities.Major", "Major")
-                        .WithMany("Students")
-                        .HasForeignKey("MajorId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
+                b.HasOne("FUC.Data.Entities.Major", "Major")
+                    .WithMany("Students")
+                    .HasForeignKey("MajorId")
+                    .OnDelete(DeleteBehavior.Restrict)
+                    .IsRequired();
 
-                    b.Navigation("BusinessArea");
+                b.Navigation("BusinessArea");
 
-                    b.Navigation("Campus");
+                b.Navigation("Campus");
 
-                    b.Navigation("Capstone");
+                b.Navigation("Capstone");
 
-                    b.Navigation("Major");
-                });
+                b.Navigation("Major");
+            });
 
-            modelBuilder.Entity("FUC.Data.Entities.Supervisor", b =>
-                {
-                    b.HasOne("FUC.Data.Entities.Campus", "Campus")
-                        .WithMany("Supervisors")
-                        .HasForeignKey("CampusId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
+        modelBuilder.Entity("FUC.Data.Entities.Supervisor", b =>
+            {
+                b.HasOne("FUC.Data.Entities.Campus", "Campus")
+                    .WithMany("Supervisors")
+                    .HasForeignKey("CampusId")
+                    .OnDelete(DeleteBehavior.Restrict)
+                    .IsRequired();
 
-                    b.HasOne("FUC.Data.Entities.Major", "Major")
-                        .WithMany("Supervisors")
-                        .HasForeignKey("MajorId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
+                b.HasOne("FUC.Data.Entities.Major", "Major")
+                    .WithMany("Supervisors")
+                    .HasForeignKey("MajorId")
+                    .OnDelete(DeleteBehavior.Restrict)
+                    .IsRequired();
 
-                    b.Navigation("Campus");
+                b.Navigation("Campus");
 
-                    b.Navigation("Major");
-                });
+                b.Navigation("Major");
+            });
 
-            modelBuilder.Entity("FUC.Data.Entities.Topic", b =>
-                {
-                    b.HasOne("FUC.Data.Entities.BusinessArea", "BusinessArea")
-                        .WithMany("Topics")
-                        .HasForeignKey("BusinessAreaId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
+        modelBuilder.Entity("FUC.Data.Entities.Topic", b =>
+            {
+                b.HasOne("FUC.Data.Entities.BusinessArea", "BusinessArea")
+                    .WithMany("Topics")
+                    .HasForeignKey("BusinessAreaId")
+                    .OnDelete(DeleteBehavior.Restrict)
+                    .IsRequired();
 
-                    b.HasOne("FUC.Data.Entities.Campus", "Campus")
-                        .WithMany("Topics")
-                        .HasForeignKey("CampusId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
+                b.HasOne("FUC.Data.Entities.Campus", "Campus")
+                    .WithMany("Topics")
+                    .HasForeignKey("CampusId")
+                    .OnDelete(DeleteBehavior.Restrict)
+                    .IsRequired();
 
-                    b.HasOne("FUC.Data.Entities.Capstone", "Capstone")
-                        .WithMany("Topics")
-                        .HasForeignKey("CapstoneId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
+                b.HasOne("FUC.Data.Entities.Capstone", "Capstone")
+                    .WithMany("Topics")
+                    .HasForeignKey("CapstoneId")
+                    .OnDelete(DeleteBehavior.Restrict)
+                    .IsRequired();
 
-                    b.HasOne("FUC.Data.Entities.Supervisor", "MainSupervisor")
-                        .WithMany("Topics")
-                        .HasForeignKey("MainSupervisorId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
+                b.HasOne("FUC.Data.Entities.Supervisor", "MainSupervisor")
+                    .WithMany("Topics")
+                    .HasForeignKey("MainSupervisorId")
+                    .OnDelete(DeleteBehavior.Restrict)
+                    .IsRequired();
 
-                    b.HasOne("FUC.Data.Entities.Semester", "Semester")
-                        .WithMany("Topics")
-                        .HasForeignKey("SemesterId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
+                b.HasOne("FUC.Data.Entities.Semester", "Semester")
+                    .WithMany("Topics")
+                    .HasForeignKey("SemesterId")
+                    .OnDelete(DeleteBehavior.Restrict)
+                    .IsRequired();
 
-                    b.Navigation("BusinessArea");
+                b.Navigation("BusinessArea");
 
-                    b.Navigation("Campus");
+                b.Navigation("Campus");
 
-                    b.Navigation("Capstone");
+                b.Navigation("Capstone");
 
-                    b.Navigation("MainSupervisor");
+                b.Navigation("MainSupervisor");
 
-                    b.Navigation("Semester");
-                });
+                b.Navigation("Semester");
+            });
 
-            modelBuilder.Entity("FUC.Data.Entities.TopicAnalysis", b =>
-                {
-                    b.HasOne("FUC.Data.Entities.Topic", "Topic")
-                        .WithMany("TopicAnalyses")
-                        .HasForeignKey("TopicId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
+        modelBuilder.Entity("FUC.Data.Entities.TopicAnalysis", b =>
+            {
+                b.HasOne("FUC.Data.Entities.Topic", "Topic")
+                    .WithMany("TopicAnalyses")
+                    .HasForeignKey("TopicId")
+                    .OnDelete(DeleteBehavior.Restrict)
+                    .IsRequired();
 
-                    b.Navigation("Topic");
-                });
+                b.Navigation("Topic");
+            });
 
-            modelBuilder.Entity("FUC.Data.Entities.TopicAppraisal", b =>
-                {
-                    b.HasOne("FUC.Data.Entities.Supervisor", "Supervisor")
-                        .WithMany("TopicAppraisals")
-                        .HasForeignKey("SupervisorId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
+        modelBuilder.Entity("FUC.Data.Entities.TopicAppraisal", b =>
+            {
+                b.HasOne("FUC.Data.Entities.Supervisor", "Supervisor")
+                    .WithMany("TopicAppraisals")
+                    .HasForeignKey("SupervisorId")
+                    .OnDelete(DeleteBehavior.Restrict)
+                    .IsRequired();
 
-                    b.HasOne("FUC.Data.Entities.Topic", "Topic")
-                        .WithMany("TopicAppraisals")
-                        .HasForeignKey("TopicId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
+                b.HasOne("FUC.Data.Entities.Topic", "Topic")
+                    .WithMany("TopicAppraisals")
+                    .HasForeignKey("TopicId")
+                    .OnDelete(DeleteBehavior.Restrict)
+                    .IsRequired();
 
-                    b.Navigation("Supervisor");
+                b.Navigation("Supervisor");
 
-                    b.Navigation("Topic");
-                });
+                b.Navigation("Topic");
+            });
 
-            modelBuilder.Entity("FUC.Data.Entities.TopicRequest", b =>
-                {
-                    b.HasOne("FUC.Data.Entities.Group", "Group")
-                        .WithMany("TopicRequests")
-                        .HasForeignKey("GroupId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
+        modelBuilder.Entity("FUC.Data.Entities.TopicRequest", b =>
+            {
+                b.HasOne("FUC.Data.Entities.Group", "Group")
+                    .WithMany("TopicRequests")
+                    .HasForeignKey("GroupId")
+                    .OnDelete(DeleteBehavior.Restrict)
+                    .IsRequired();
 
-                    b.HasOne("FUC.Data.Entities.Supervisor", "Supervisor")
-                        .WithMany("TopicRequests")
-                        .HasForeignKey("SupervisorId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
+                b.HasOne("FUC.Data.Entities.Supervisor", "Supervisor")
+                    .WithMany("TopicRequests")
+                    .HasForeignKey("SupervisorId")
+                    .OnDelete(DeleteBehavior.Restrict)
+                    .IsRequired();
 
-                    b.HasOne("FUC.Data.Entities.Topic", "Topic")
-                        .WithMany("TopicRequests")
-                        .HasForeignKey("TopicId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
+                b.HasOne("FUC.Data.Entities.Topic", "Topic")
+                    .WithMany("TopicRequests")
+                    .HasForeignKey("TopicId")
+                    .OnDelete(DeleteBehavior.Restrict)
+                    .IsRequired();
 
-                    b.Navigation("Group");
+                b.Navigation("Group");
 
-                    b.Navigation("Supervisor");
+                b.Navigation("Supervisor");
 
-                    b.Navigation("Topic");
-                });
+                b.Navigation("Topic");
+            });
 
-            modelBuilder.Entity("FUC.Data.Entities.WeeklyEvaluation", b =>
-                {
-                    b.HasOne("FUC.Data.Entities.ProjectProgressWeek", "ProjectProgressWeek")
-                        .WithMany("WeeklyEvaluations")
-                        .HasForeignKey("ProjectProgressWeekId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
+        modelBuilder.Entity("FUC.Data.Entities.WeeklyEvaluation", b =>
+            {
+                b.HasOne("FUC.Data.Entities.ProjectProgressWeek", "ProjectProgressWeek")
+                    .WithMany("WeeklyEvaluations")
+                    .HasForeignKey("ProjectProgressWeekId")
+                    .OnDelete(DeleteBehavior.Restrict)
+                    .IsRequired();
 
-                    b.HasOne("FUC.Data.Entities.Student", "Student")
-                        .WithMany("WeeklyEvaluations")
-                        .HasForeignKey("StudentId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
+                b.HasOne("FUC.Data.Entities.Student", "Student")
+                    .WithMany("WeeklyEvaluations")
+                    .HasForeignKey("StudentId")
+                    .OnDelete(DeleteBehavior.Restrict)
+                    .IsRequired();
 
-                    b.HasOne("FUC.Data.Entities.Supervisor", null)
-                        .WithMany("WeeklyEvaluations")
-                        .HasForeignKey("SupervisorId");
+                b.HasOne("FUC.Data.Entities.Supervisor", null)
+                    .WithMany("WeeklyEvaluations")
+                    .HasForeignKey("SupervisorId");
 
-                    b.Navigation("ProjectProgressWeek");
+                b.Navigation("ProjectProgressWeek");
 
-                    b.Navigation("Student");
-                });
+                b.Navigation("Student");
+            });
 
-            modelBuilder.Entity("FUC.Data.Entities.BusinessArea", b =>
-                {
-                    b.Navigation("Students");
+        modelBuilder.Entity("FUC.Data.Entities.BusinessArea", b =>
+            {
+                b.Navigation("Students");
 
-                    b.Navigation("Topics");
-                });
+                b.Navigation("Topics");
+            });
 
-            modelBuilder.Entity("FUC.Data.Entities.Campus", b =>
-                {
-                    b.Navigation("DefendCapstoneProjectInformationCalendars");
+        modelBuilder.Entity("FUC.Data.Entities.Campus", b =>
+            {
+                b.Navigation("DefendCapstoneProjectInformationCalendars");
 
-                    b.Navigation("Groups");
+                b.Navigation("Groups");
 
-                    b.Navigation("ReviewCalendars");
+                b.Navigation("ReviewCalendars");
 
-                    b.Navigation("Students");
+                b.Navigation("Students");
 
-                    b.Navigation("Supervisors");
+                b.Navigation("Supervisors");
 
-                    b.Navigation("Topics");
-                });
+                b.Navigation("Topics");
+            });
 
-            modelBuilder.Entity("FUC.Data.Entities.Capstone", b =>
-                {
-                    b.Navigation("Groups");
+        modelBuilder.Entity("FUC.Data.Entities.Capstone", b =>
+            {
+                b.Navigation("Groups");
 
-                    b.Navigation("Students");
+                b.Navigation("Students");
 
-                    b.Navigation("Topics");
+                b.Navigation("Topics");
 
-                    b.Navigation("reviewCriterias");
-                });
+                b.Navigation("reviewCriterias");
+            });
 
-            modelBuilder.Entity("FUC.Data.Entities.DefendCapstoneProjectInformationCalendar", b =>
-                {
-                    b.Navigation("DefendCapstoneProjectMemberCouncils");
-                });
+        modelBuilder.Entity("FUC.Data.Entities.DefendCapstoneProjectInformationCalendar", b =>
+            {
+                b.Navigation("DefendCapstoneProjectMemberCouncils");
+            });
 
-            modelBuilder.Entity("FUC.Data.Entities.FucTask", b =>
-                {
-                    b.Navigation("FucTaskHistories");
-                });
+        modelBuilder.Entity("FUC.Data.Entities.FucTask", b =>
+            {
+                b.Navigation("FucTaskHistories");
+            });
 
-            modelBuilder.Entity("FUC.Data.Entities.Group", b =>
-                {
-                    b.Navigation("GroupMembers");
+        modelBuilder.Entity("FUC.Data.Entities.Group", b =>
+            {
+                b.Navigation("GroupMembers");
 
-                    b.Navigation("JoinGroupRequests");
+                b.Navigation("JoinGroupRequests");
 
-                    b.Navigation("ProjectProgress")
-                        .IsRequired();
+                b.Navigation("ProjectProgress")
+                    .IsRequired();
 
-                    b.Navigation("ReviewCalendars");
+                b.Navigation("ReviewCalendars");
 
-                    b.Navigation("TopicRequests");
-                });
+                b.Navigation("TopicRequests");
+            });
 
-            modelBuilder.Entity("FUC.Data.Entities.Major", b =>
-                {
-                    b.Navigation("Capstones");
+        modelBuilder.Entity("FUC.Data.Entities.Major", b =>
+            {
+                b.Navigation("Capstones");
 
-                    b.Navigation("Groups");
+                b.Navigation("Groups");
 
-                    b.Navigation("ReviewCalendars");
+                b.Navigation("ReviewCalendars");
 
-                    b.Navigation("Students");
+                b.Navigation("Students");
 
-                    b.Navigation("Supervisors");
-                });
+                b.Navigation("Supervisors");
+            });
 
-            modelBuilder.Entity("FUC.Data.Entities.MajorGroup", b =>
-                {
-                    b.Navigation("Majors");
-                });
+        modelBuilder.Entity("FUC.Data.Entities.MajorGroup", b =>
+            {
+                b.Navigation("Majors");
+            });
 
-            modelBuilder.Entity("FUC.Data.Entities.ProjectProgress", b =>
-                {
-                    b.Navigation("FucTasks");
+        modelBuilder.Entity("FUC.Data.Entities.ProjectProgress", b =>
+            {
+                b.Navigation("FucTasks");
 
-                    b.Navigation("ProjectProgressWeeks");
-                });
+                b.Navigation("ProjectProgressWeeks");
+            });
 
-            modelBuilder.Entity("FUC.Data.Entities.ProjectProgressWeek", b =>
-                {
-                    b.Navigation("FucTasks");
+        modelBuilder.Entity("FUC.Data.Entities.ProjectProgressWeek", b =>
+            {
+                b.Navigation("FucTasks");
 
-                    b.Navigation("WeeklyEvaluations");
-                });
+                b.Navigation("WeeklyEvaluations");
+            });
 
-            modelBuilder.Entity("FUC.Data.Entities.ReviewCalendar", b =>
-                {
-                    b.Navigation("Reviewers");
-                });
+        modelBuilder.Entity("FUC.Data.Entities.ReviewCalendar", b =>
+            {
+                b.Navigation("Reviewers");
+            });
 
-            modelBuilder.Entity("FUC.Data.Entities.Semester", b =>
-                {
-                    b.Navigation("DefendCapstoneProjectInformationCalendars");
+        modelBuilder.Entity("FUC.Data.Entities.Semester", b =>
+            {
+                b.Navigation("DefendCapstoneProjectInformationCalendars");
 
-                    b.Navigation("Groups");
+                b.Navigation("Groups");
 
-                    b.Navigation("ReviewCalendars");
+                b.Navigation("ReviewCalendars");
 
-                    b.Navigation("Topics");
-                });
+                b.Navigation("Topics");
+            });
 
-            modelBuilder.Entity("FUC.Data.Entities.Student", b =>
-                {
-                    b.Navigation("FucTasks");
+        modelBuilder.Entity("FUC.Data.Entities.Student", b =>
+            {
+                b.Navigation("FucTasks");
 
-                    b.Navigation("GroupMembers");
+                b.Navigation("GroupMembers");
 
-                    b.Navigation("JoinGroupRequests");
+                b.Navigation("JoinGroupRequests");
 
-                    b.Navigation("ReportFucTasks");
+                b.Navigation("ReportFucTasks");
 
-                    b.Navigation("WeeklyEvaluations");
-                });
+                b.Navigation("WeeklyEvaluations");
+            });
 
-            modelBuilder.Entity("FUC.Data.Entities.Supervisor", b =>
-                {
-                    b.Navigation("CoSupervisors");
+        modelBuilder.Entity("FUC.Data.Entities.Supervisor", b =>
+            {
+                b.Navigation("CoSupervisors");
 
-                    b.Navigation("DefendCapstoneProjectMemberCouncils");
+                b.Navigation("DefendCapstoneProjectMemberCouncils");
 
-                    b.Navigation("Groups");
+                b.Navigation("Groups");
 
-                    b.Navigation("ProjectProgresses");
+                b.Navigation("ProjectProgresses");
 
-                    b.Navigation("Reviewers");
+                b.Navigation("Reviewers");
 
-                    b.Navigation("TopicAppraisals");
+                b.Navigation("TopicAppraisals");
 
-                    b.Navigation("TopicRequests");
+                b.Navigation("TopicRequests");
 
-                    b.Navigation("Topics");
+                b.Navigation("Topics");
 
-                    b.Navigation("WeeklyEvaluations");
-                });
+                b.Navigation("WeeklyEvaluations");
+            });
 
-            modelBuilder.Entity("FUC.Data.Entities.Topic", b =>
-                {
-                    b.Navigation("CoSupervisors");
+        modelBuilder.Entity("FUC.Data.Entities.Topic", b =>
+            {
+                b.Navigation("CoSupervisors");
 
-                    b.Navigation("DefendCapstoneProjectInformationCalendars");
+                b.Navigation("DefendCapstoneProjectInformationCalendars");
 
-                    b.Navigation("Group")
-                        .IsRequired();
+                b.Navigation("Group")
+                    .IsRequired();
+                    
+                b.Navigation("ReviewCalendars");
 
-                    b.Navigation("ReviewCalendars");
+                b.Navigation("TopicAnalyses");
 
-                    b.Navigation("TopicAnalyses");
+                b.Navigation("TopicAppraisals");
 
-                    b.Navigation("TopicAppraisals");
-
-                    b.Navigation("TopicRequests");
-                });
+                b.Navigation("TopicRequests");
+            });
 #pragma warning restore 612, 618
-        }
     }
 }

@@ -26,12 +26,14 @@ try
         FUCTopicBucket = Environment.GetEnvironmentVariable("TOPIC_BUCKET_NAME"),
         FUCTemplateBucket = Environment.GetEnvironmentVariable("TEMPLATE_BUCKET_NAME"),
         FUCGroupDocumentBucket = Environment.GetEnvironmentVariable("GROUP_DOCUMENT_BUCKET_NAME"),
+        FUCThesisBucket = Environment.GetEnvironmentVariable("THESIS_BUCKET_NAME"),
         EvaluationProjectProgressKey = Environment.GetEnvironmentVariable("EVALUATION_PROJECT_PROGRESS_KEY"),
         EvaluationWeeklyKey = Environment.GetEnvironmentVariable("EVALUATION_WEEKLY_KEY"),
         ReviewsCalendarsKey = Environment.GetEnvironmentVariable("REVIEWS_CALENDARS_KEY"),
         DefenseCalendarKey = Environment.GetEnvironmentVariable("DEFENSE_CALENDAR_KEY"),
         StudentsTemplateKey = Environment.GetEnvironmentVariable("STUDENTS_TEMPLATE_KEY"),
-        SupervisorsTemplateKey = Environment.GetEnvironmentVariable("SUPERVISORS_TEMPLATE_KEY")
+        SupervisorsTemplateKey = Environment.GetEnvironmentVariable("SUPERVISORS_TEMPLATE_KEY"),
+        ThesisCouncilMeetingMinutesTemplateKey = Environment.GetEnvironmentVariable("THESIS_COUNCIL_MEETING_MINUTES_TEMPLATE_KEY")
     };
 
     builder.Services.AddSingleton(bucketConfiguration);

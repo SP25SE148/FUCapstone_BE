@@ -15,7 +15,7 @@ public partial class init_db : Migration
             name: "BusinessArea",
             columns: table => new
             {
-                Id = table.Column<Guid>(type: "uuid", nullable: false, defaultValue: new Guid("836ecfa8-172c-4a72-a0ba-6a11f4af21ba")),
+                Id = table.Column<Guid>(type: "uuid", nullable: false, defaultValue: new Guid("76ed6be6-cadb-46d2-a573-375d660c8241")),
                 Name = table.Column<string>(type: "text", nullable: false),
                 Description = table.Column<string>(type: "text", nullable: false),
                 CreatedDate = table.Column<DateTime>(type: "timestamp", nullable: false),
@@ -111,7 +111,7 @@ public partial class init_db : Migration
             name: "TemplateDocument",
             columns: table => new
             {
-                Id = table.Column<Guid>(type: "uuid", nullable: false, defaultValue: new Guid("a1504981-373c-43dc-87f7-902b8741b4b7")),
+                Id = table.Column<Guid>(type: "uuid", nullable: false, defaultValue: new Guid("d5023726-1520-4aa9-ab8a-110583761046")),
                 FileName = table.Column<string>(type: "text", nullable: false),
                 FileUrl = table.Column<string>(type: "text", nullable: false),
                 ParentId = table.Column<Guid>(type: "uuid", nullable: true),
@@ -221,7 +221,7 @@ public partial class init_db : Migration
             name: "ReviewCriteria",
             columns: table => new
             {
-                Id = table.Column<Guid>(type: "uuid", nullable: false, defaultValue: new Guid("bf8499b1-12e7-4376-b279-6cb35939c9c0")),
+                Id = table.Column<Guid>(type: "uuid", nullable: false, defaultValue: new Guid("3d657f98-8360-45ff-b9ec-4505ecbec6dc")),
                 CapstoneId = table.Column<string>(type: "text", nullable: false),
                 Attempt = table.Column<int>(type: "integer", nullable: false),
                 Name = table.Column<string>(type: "character varying(255)", maxLength: 255, nullable: false),
@@ -297,68 +297,10 @@ public partial class init_db : Migration
             });
 
         migrationBuilder.CreateTable(
-            name: "Group",
-            columns: table => new
-            {
-                Id = table.Column<Guid>(type: "uuid", nullable: false, defaultValue: new Guid("0ab94658-c249-4dc8-bd96-46f0d13eaea9")),
-                SemesterId = table.Column<string>(type: "text", nullable: false),
-                MajorId = table.Column<string>(type: "text", nullable: false),
-                CampusId = table.Column<string>(type: "text", nullable: false),
-                SupervisorId = table.Column<string>(type: "text", nullable: true),
-                CapstoneId = table.Column<string>(type: "text", nullable: false),
-                GPA = table.Column<float>(type: "real", nullable: false),
-                TopicCode = table.Column<string>(type: "text", nullable: true),
-                GroupCode = table.Column<string>(type: "text", nullable: false),
-                Status = table.Column<string>(type: "text", nullable: false, defaultValue: "Pending"),
-                Decision = table.Column<string>(type: "text", nullable: false, defaultValue: "Attempt1"),
-                IsReDefendCapstoneProject = table.Column<bool>(type: "boolean", nullable: false, defaultValue: false),
-                CreatedDate = table.Column<DateTime>(type: "timestamp", nullable: false),
-                UpdatedDate = table.Column<DateTime>(type: "timestamp", nullable: true),
-                CreatedBy = table.Column<string>(type: "text", nullable: false),
-                UpdatedBy = table.Column<string>(type: "text", nullable: true),
-                IsDeleted = table.Column<bool>(type: "boolean", nullable: false),
-                DeletedAt = table.Column<DateTime>(type: "timestamp", nullable: true)
-            },
-            constraints: table =>
-            {
-                table.PrimaryKey("PK_Group", x => x.Id);
-                table.ForeignKey(
-                    name: "FK_Group_Campus_CampusId",
-                    column: x => x.CampusId,
-                    principalTable: "Campus",
-                    principalColumn: "Id",
-                    onDelete: ReferentialAction.Restrict);
-                table.ForeignKey(
-                    name: "FK_Group_Capstone_CapstoneId",
-                    column: x => x.CapstoneId,
-                    principalTable: "Capstone",
-                    principalColumn: "Id",
-                    onDelete: ReferentialAction.Restrict);
-                table.ForeignKey(
-                    name: "FK_Group_Major_MajorId",
-                    column: x => x.MajorId,
-                    principalTable: "Major",
-                    principalColumn: "Id",
-                    onDelete: ReferentialAction.Restrict);
-                table.ForeignKey(
-                    name: "FK_Group_Semester_SemesterId",
-                    column: x => x.SemesterId,
-                    principalTable: "Semester",
-                    principalColumn: "Id",
-                    onDelete: ReferentialAction.Restrict);
-                table.ForeignKey(
-                    name: "FK_Group_Supervisor_SupervisorId",
-                    column: x => x.SupervisorId,
-                    principalTable: "Supervisor",
-                    principalColumn: "Id",
-                    onDelete: ReferentialAction.Restrict);
-            });
-
-        migrationBuilder.CreateTable(
             name: "Topic",
             columns: table => new
             {
-                Id = table.Column<Guid>(type: "uuid", nullable: false, defaultValue: new Guid("c311b1fd-d1b0-4db1-9fff-2fe4a6f0f43a")),
+                Id = table.Column<Guid>(type: "uuid", nullable: false, defaultValue: new Guid("65d61e8d-37cc-44af-a1ab-b17f2915a30f")),
                 MainSupervisorId = table.Column<string>(type: "text", nullable: false),
                 CapstoneId = table.Column<string>(type: "text", nullable: false),
                 SemesterId = table.Column<string>(type: "text", nullable: false),
@@ -417,10 +359,231 @@ public partial class init_db : Migration
             });
 
         migrationBuilder.CreateTable(
+            name: "CoSupervisor",
+            columns: table => new
+            {
+                Id = table.Column<Guid>(type: "uuid", nullable: false, defaultValue: new Guid("bc577149-2b4a-4842-acfc-b66932a6ec86")),
+                SupervisorId = table.Column<string>(type: "text", nullable: false),
+                TopicId = table.Column<Guid>(type: "uuid", nullable: false),
+                CreatedDate = table.Column<DateTime>(type: "timestamp", nullable: false),
+                UpdatedDate = table.Column<DateTime>(type: "timestamp", nullable: true),
+                CreatedBy = table.Column<string>(type: "text", nullable: false),
+                UpdatedBy = table.Column<string>(type: "text", nullable: true)
+            },
+            constraints: table =>
+            {
+                table.PrimaryKey("PK_CoSupervisor", x => x.Id);
+                table.ForeignKey(
+                    name: "FK_CoSupervisor_Supervisor_SupervisorId",
+                    column: x => x.SupervisorId,
+                    principalTable: "Supervisor",
+                    principalColumn: "Id",
+                    onDelete: ReferentialAction.Cascade);
+                table.ForeignKey(
+                    name: "FK_CoSupervisor_Topic_TopicId",
+                    column: x => x.TopicId,
+                    principalTable: "Topic",
+                    principalColumn: "Id",
+                    onDelete: ReferentialAction.Restrict);
+            });
+
+        migrationBuilder.CreateTable(
+            name: "DefendCapstoneProjectInformationCalendar",
+            columns: table => new
+            {
+                Id = table.Column<Guid>(type: "uuid", nullable: false),
+                TopicId = table.Column<Guid>(type: "uuid", nullable: false),
+                TopicCode = table.Column<string>(type: "text", nullable: false),
+                CampusId = table.Column<string>(type: "text", nullable: false),
+                SemesterId = table.Column<string>(type: "text", nullable: false),
+                DefendAttempt = table.Column<int>(type: "integer", nullable: false),
+                Location = table.Column<string>(type: "text", nullable: false),
+                Slot = table.Column<int>(type: "integer", nullable: false),
+                IsUploadedThesisMinute = table.Column<bool>(type: "boolean", nullable: false, defaultValue: false),
+                DefenseDate = table.Column<DateTime>(type: "timestamp", nullable: false),
+                CreatedDate = table.Column<DateTime>(type: "timestamp", nullable: false),
+                UpdatedDate = table.Column<DateTime>(type: "timestamp", nullable: true),
+                CreatedBy = table.Column<string>(type: "text", nullable: false),
+                UpdatedBy = table.Column<string>(type: "text", nullable: true)
+            },
+            constraints: table =>
+            {
+                table.PrimaryKey("PK_DefendCapstoneProjectInformationCalendar", x => x.Id);
+                table.ForeignKey(
+                    name: "FK_DefendCapstoneProjectInformationCalendar_Campus_CampusId",
+                    column: x => x.CampusId,
+                    principalTable: "Campus",
+                    principalColumn: "Id",
+                    onDelete: ReferentialAction.Restrict);
+                table.ForeignKey(
+                    name: "FK_DefendCapstoneProjectInformationCalendar_Semester_SemesterId",
+                    column: x => x.SemesterId,
+                    principalTable: "Semester",
+                    principalColumn: "Id",
+                    onDelete: ReferentialAction.Restrict);
+                table.ForeignKey(
+                    name: "FK_DefendCapstoneProjectInformationCalendar_Topic_TopicId",
+                    column: x => x.TopicId,
+                    principalTable: "Topic",
+                    principalColumn: "Id",
+                    onDelete: ReferentialAction.Restrict);
+            });
+
+        migrationBuilder.CreateTable(
+            name: "Group",
+            columns: table => new
+            {
+                Id = table.Column<Guid>(type: "uuid", nullable: false, defaultValue: new Guid("f59cc82b-12d5-4e45-b2f9-c76f9718b00f")),
+                SemesterId = table.Column<string>(type: "text", nullable: false),
+                MajorId = table.Column<string>(type: "text", nullable: false),
+                CampusId = table.Column<string>(type: "text", nullable: false),
+                SupervisorId = table.Column<string>(type: "text", nullable: true),
+                CapstoneId = table.Column<string>(type: "text", nullable: false),
+                TopicId = table.Column<Guid>(type: "uuid", nullable: true),
+                GPA = table.Column<float>(type: "real", nullable: false),
+                GroupCode = table.Column<string>(type: "text", nullable: false),
+                Status = table.Column<string>(type: "text", nullable: false, defaultValue: "Pending"),
+                Decision = table.Column<string>(type: "text", nullable: false, defaultValue: "Attempt1"),
+                IsReDefendCapstoneProject = table.Column<bool>(type: "boolean", nullable: false, defaultValue: false),
+                CreatedDate = table.Column<DateTime>(type: "timestamp", nullable: false),
+                UpdatedDate = table.Column<DateTime>(type: "timestamp", nullable: true),
+                CreatedBy = table.Column<string>(type: "text", nullable: false),
+                UpdatedBy = table.Column<string>(type: "text", nullable: true),
+                IsDeleted = table.Column<bool>(type: "boolean", nullable: false),
+                DeletedAt = table.Column<DateTime>(type: "timestamp", nullable: true)
+            },
+            constraints: table =>
+            {
+                table.PrimaryKey("PK_Group", x => x.Id);
+                table.ForeignKey(
+                    name: "FK_Group_Campus_CampusId",
+                    column: x => x.CampusId,
+                    principalTable: "Campus",
+                    principalColumn: "Id",
+                    onDelete: ReferentialAction.Restrict);
+                table.ForeignKey(
+                    name: "FK_Group_Capstone_CapstoneId",
+                    column: x => x.CapstoneId,
+                    principalTable: "Capstone",
+                    principalColumn: "Id",
+                    onDelete: ReferentialAction.Restrict);
+                table.ForeignKey(
+                    name: "FK_Group_Major_MajorId",
+                    column: x => x.MajorId,
+                    principalTable: "Major",
+                    principalColumn: "Id",
+                    onDelete: ReferentialAction.Restrict);
+                table.ForeignKey(
+                    name: "FK_Group_Semester_SemesterId",
+                    column: x => x.SemesterId,
+                    principalTable: "Semester",
+                    principalColumn: "Id",
+                    onDelete: ReferentialAction.Restrict);
+                table.ForeignKey(
+                    name: "FK_Group_Supervisor_SupervisorId",
+                    column: x => x.SupervisorId,
+                    principalTable: "Supervisor",
+                    principalColumn: "Id",
+                    onDelete: ReferentialAction.Restrict);
+                table.ForeignKey(
+                    name: "FK_Group_Topic_TopicId",
+                    column: x => x.TopicId,
+                    principalTable: "Topic",
+                    principalColumn: "Id",
+                    onDelete: ReferentialAction.Restrict);
+            });
+
+        migrationBuilder.CreateTable(
+            name: "TopicAnalysis",
+            columns: table => new
+            {
+                Id = table.Column<Guid>(type: "uuid", nullable: false, defaultValue: new Guid("4f7ba5a5-f018-4927-897c-b44a4cb52ebd")),
+                AnalysisResult = table.Column<string>(type: "text", nullable: false),
+                CreatedDate = table.Column<DateTime>(type: "timestamp", nullable: false, defaultValue: new DateTime(2025, 3, 23, 16, 32, 49, 276, DateTimeKind.Local).AddTicks(6010)),
+                ProcessedBy = table.Column<string>(type: "text", nullable: false),
+                TopicId = table.Column<Guid>(type: "uuid", nullable: false)
+            },
+            constraints: table =>
+            {
+                table.PrimaryKey("PK_TopicAnalysis", x => x.Id);
+                table.ForeignKey(
+                    name: "FK_TopicAnalysis_Topic_TopicId",
+                    column: x => x.TopicId,
+                    principalTable: "Topic",
+                    principalColumn: "Id",
+                    onDelete: ReferentialAction.Restrict);
+            });
+
+        migrationBuilder.CreateTable(
+            name: "TopicAppraisal",
+            columns: table => new
+            {
+                Id = table.Column<Guid>(type: "uuid", nullable: false, defaultValue: new Guid("8ce58f2c-333b-4594-b2a9-df04802ae35b")),
+                SupervisorId = table.Column<string>(type: "text", nullable: false),
+                TopicId = table.Column<Guid>(type: "uuid", nullable: false),
+                AttemptTime = table.Column<int>(type: "integer", nullable: false),
+                AppraisalContent = table.Column<string>(type: "text", nullable: true),
+                AppraisalComment = table.Column<string>(type: "text", nullable: true),
+                Status = table.Column<string>(type: "text", nullable: false, defaultValue: "Pending"),
+                AppraisalDate = table.Column<DateTime>(type: "timestamp", nullable: true),
+                CreatedDate = table.Column<DateTime>(type: "timestamp", nullable: false),
+                UpdatedDate = table.Column<DateTime>(type: "timestamp", nullable: true),
+                CreatedBy = table.Column<string>(type: "text", nullable: false),
+                UpdatedBy = table.Column<string>(type: "text", nullable: true)
+            },
+            constraints: table =>
+            {
+                table.PrimaryKey("PK_TopicAppraisal", x => x.Id);
+                table.ForeignKey(
+                    name: "FK_TopicAppraisal_Supervisor_SupervisorId",
+                    column: x => x.SupervisorId,
+                    principalTable: "Supervisor",
+                    principalColumn: "Id",
+                    onDelete: ReferentialAction.Restrict);
+                table.ForeignKey(
+                    name: "FK_TopicAppraisal_Topic_TopicId",
+                    column: x => x.TopicId,
+                    principalTable: "Topic",
+                    principalColumn: "Id",
+                    onDelete: ReferentialAction.Restrict);
+            });
+
+        migrationBuilder.CreateTable(
+            name: "DefendCapstoneProjectCouncilMember",
+            columns: table => new
+            {
+                Id = table.Column<Guid>(type: "uuid", nullable: false),
+                DefendCapstoneProjectInformationCalendarId = table.Column<Guid>(type: "uuid", nullable: false),
+                SupervisorId = table.Column<string>(type: "text", nullable: false),
+                IsPresident = table.Column<bool>(type: "boolean", nullable: false),
+                IsSecretary = table.Column<bool>(type: "boolean", nullable: false),
+                CreatedDate = table.Column<DateTime>(type: "timestamp", nullable: false),
+                UpdatedDate = table.Column<DateTime>(type: "timestamp", nullable: true),
+                CreatedBy = table.Column<string>(type: "text", nullable: false),
+                UpdatedBy = table.Column<string>(type: "text", nullable: true)
+            },
+            constraints: table =>
+            {
+                table.PrimaryKey("PK_DefendCapstoneProjectCouncilMember", x => x.Id);
+                table.ForeignKey(
+                    name: "FK_DefendCapstoneProjectCouncilMember_DefendCapstoneProjectInf~",
+                    column: x => x.DefendCapstoneProjectInformationCalendarId,
+                    principalTable: "DefendCapstoneProjectInformationCalendar",
+                    principalColumn: "Id",
+                    onDelete: ReferentialAction.Restrict);
+                table.ForeignKey(
+                    name: "FK_DefendCapstoneProjectCouncilMember_Supervisor_SupervisorId",
+                    column: x => x.SupervisorId,
+                    principalTable: "Supervisor",
+                    principalColumn: "Id",
+                    onDelete: ReferentialAction.Restrict);
+            });
+
+        migrationBuilder.CreateTable(
             name: "GroupMember",
             columns: table => new
             {
-                Id = table.Column<Guid>(type: "uuid", nullable: false, defaultValue: new Guid("3d8a915e-8360-438a-9156-28c284d01e01")),
+                Id = table.Column<Guid>(type: "uuid", nullable: false, defaultValue: new Guid("a3612480-c12b-47cf-94bb-26bf3430654d")),
                 GroupId = table.Column<Guid>(type: "uuid", nullable: false),
                 StudentId = table.Column<string>(type: "text", nullable: false),
                 IsLeader = table.Column<bool>(type: "boolean", nullable: false),
@@ -509,80 +672,10 @@ public partial class init_db : Migration
             });
 
         migrationBuilder.CreateTable(
-            name: "CoSupervisor",
-            columns: table => new
-            {
-                Id = table.Column<Guid>(type: "uuid", nullable: false, defaultValue: new Guid("0440d914-71e3-408a-a7cb-cbb0e0e31191")),
-                SupervisorId = table.Column<string>(type: "text", nullable: false),
-                TopicId = table.Column<Guid>(type: "uuid", nullable: false),
-                CreatedDate = table.Column<DateTime>(type: "timestamp", nullable: false),
-                UpdatedDate = table.Column<DateTime>(type: "timestamp", nullable: true),
-                CreatedBy = table.Column<string>(type: "text", nullable: false),
-                UpdatedBy = table.Column<string>(type: "text", nullable: true)
-            },
-            constraints: table =>
-            {
-                table.PrimaryKey("PK_CoSupervisor", x => x.Id);
-                table.ForeignKey(
-                    name: "FK_CoSupervisor_Supervisor_SupervisorId",
-                    column: x => x.SupervisorId,
-                    principalTable: "Supervisor",
-                    principalColumn: "Id",
-                    onDelete: ReferentialAction.Cascade);
-                table.ForeignKey(
-                    name: "FK_CoSupervisor_Topic_TopicId",
-                    column: x => x.TopicId,
-                    principalTable: "Topic",
-                    principalColumn: "Id",
-                    onDelete: ReferentialAction.Restrict);
-            });
-
-        migrationBuilder.CreateTable(
-            name: "DefendCapstoneProjectInformationCalendar",
-            columns: table => new
-            {
-                Id = table.Column<Guid>(type: "uuid", nullable: false),
-                TopicId = table.Column<Guid>(type: "uuid", nullable: false),
-                TopicCode = table.Column<string>(type: "text", nullable: false),
-                CampusId = table.Column<string>(type: "text", nullable: false),
-                SemesterId = table.Column<string>(type: "text", nullable: false),
-                DefendAttempt = table.Column<int>(type: "integer", nullable: false),
-                Location = table.Column<string>(type: "text", nullable: false),
-                Slot = table.Column<int>(type: "integer", nullable: false),
-                DefenseDate = table.Column<DateTime>(type: "timestamp", nullable: false),
-                CreatedDate = table.Column<DateTime>(type: "timestamp", nullable: false),
-                UpdatedDate = table.Column<DateTime>(type: "timestamp", nullable: true),
-                CreatedBy = table.Column<string>(type: "text", nullable: false),
-                UpdatedBy = table.Column<string>(type: "text", nullable: true)
-            },
-            constraints: table =>
-            {
-                table.PrimaryKey("PK_DefendCapstoneProjectInformationCalendar", x => x.Id);
-                table.ForeignKey(
-                    name: "FK_DefendCapstoneProjectInformationCalendar_Campus_CampusId",
-                    column: x => x.CampusId,
-                    principalTable: "Campus",
-                    principalColumn: "Id",
-                    onDelete: ReferentialAction.Restrict);
-                table.ForeignKey(
-                    name: "FK_DefendCapstoneProjectInformationCalendar_Semester_SemesterId",
-                    column: x => x.SemesterId,
-                    principalTable: "Semester",
-                    principalColumn: "Id",
-                    onDelete: ReferentialAction.Restrict);
-                table.ForeignKey(
-                    name: "FK_DefendCapstoneProjectInformationCalendar_Topic_TopicId",
-                    column: x => x.TopicId,
-                    principalTable: "Topic",
-                    principalColumn: "Id",
-                    onDelete: ReferentialAction.Restrict);
-            });
-
-        migrationBuilder.CreateTable(
             name: "ReviewCalendar",
             columns: table => new
             {
-                Id = table.Column<Guid>(type: "uuid", nullable: false, defaultValue: new Guid("b5d67d1b-6995-4da5-b20d-e86692ff199e")),
+                Id = table.Column<Guid>(type: "uuid", nullable: false, defaultValue: new Guid("3b2ed125-f3ee-4c1d-b15b-f197974e1d01")),
                 TopicId = table.Column<Guid>(type: "uuid", nullable: false),
                 GroupId = table.Column<Guid>(type: "uuid", nullable: false),
                 MajorId = table.Column<string>(type: "text", nullable: false),
@@ -636,65 +729,10 @@ public partial class init_db : Migration
             });
 
         migrationBuilder.CreateTable(
-            name: "TopicAnalysis",
-            columns: table => new
-            {
-                Id = table.Column<Guid>(type: "uuid", nullable: false, defaultValue: new Guid("59d9ef3b-9ab8-41ec-a840-c168c48af30c")),
-                AnalysisResult = table.Column<string>(type: "text", nullable: false),
-                CreatedDate = table.Column<DateTime>(type: "timestamp", nullable: false, defaultValue: new DateTime(2025, 3, 21, 20, 15, 59, 146, DateTimeKind.Local).AddTicks(3725)),
-                ProcessedBy = table.Column<string>(type: "text", nullable: false),
-                TopicId = table.Column<Guid>(type: "uuid", nullable: false)
-            },
-            constraints: table =>
-            {
-                table.PrimaryKey("PK_TopicAnalysis", x => x.Id);
-                table.ForeignKey(
-                    name: "FK_TopicAnalysis_Topic_TopicId",
-                    column: x => x.TopicId,
-                    principalTable: "Topic",
-                    principalColumn: "Id",
-                    onDelete: ReferentialAction.Restrict);
-            });
-
-        migrationBuilder.CreateTable(
-            name: "TopicAppraisal",
-            columns: table => new
-            {
-                Id = table.Column<Guid>(type: "uuid", nullable: false, defaultValue: new Guid("0309eec4-0805-4670-b76c-4fd37ee4e5db")),
-                SupervisorId = table.Column<string>(type: "text", nullable: false),
-                TopicId = table.Column<Guid>(type: "uuid", nullable: false),
-                AttemptTime = table.Column<int>(type: "integer", nullable: false),
-                AppraisalContent = table.Column<string>(type: "text", nullable: true),
-                AppraisalComment = table.Column<string>(type: "text", nullable: true),
-                Status = table.Column<string>(type: "text", nullable: false, defaultValue: "Pending"),
-                AppraisalDate = table.Column<DateTime>(type: "timestamp", nullable: true),
-                CreatedDate = table.Column<DateTime>(type: "timestamp", nullable: false),
-                UpdatedDate = table.Column<DateTime>(type: "timestamp", nullable: true),
-                CreatedBy = table.Column<string>(type: "text", nullable: false),
-                UpdatedBy = table.Column<string>(type: "text", nullable: true)
-            },
-            constraints: table =>
-            {
-                table.PrimaryKey("PK_TopicAppraisal", x => x.Id);
-                table.ForeignKey(
-                    name: "FK_TopicAppraisal_Supervisor_SupervisorId",
-                    column: x => x.SupervisorId,
-                    principalTable: "Supervisor",
-                    principalColumn: "Id",
-                    onDelete: ReferentialAction.Restrict);
-                table.ForeignKey(
-                    name: "FK_TopicAppraisal_Topic_TopicId",
-                    column: x => x.TopicId,
-                    principalTable: "Topic",
-                    principalColumn: "Id",
-                    onDelete: ReferentialAction.Restrict);
-            });
-
-        migrationBuilder.CreateTable(
             name: "TopicRequest",
             columns: table => new
             {
-                Id = table.Column<Guid>(type: "uuid", nullable: false, defaultValue: new Guid("ff35c242-5457-44f8-b228-95bce47a42dc")),
+                Id = table.Column<Guid>(type: "uuid", nullable: false, defaultValue: new Guid("ca886446-11d4-4ef5-9b9b-f91d01bf8b01")),
                 SupervisorId = table.Column<string>(type: "text", nullable: false),
                 GroupId = table.Column<Guid>(type: "uuid", nullable: false),
                 TopicId = table.Column<Guid>(type: "uuid", nullable: false),
@@ -760,41 +798,10 @@ public partial class init_db : Migration
             });
 
         migrationBuilder.CreateTable(
-            name: "DefendCapstoneProjectCouncilMember",
-            columns: table => new
-            {
-                Id = table.Column<Guid>(type: "uuid", nullable: false),
-                DefendCapstoneProjectInformationCalendarId = table.Column<Guid>(type: "uuid", nullable: false),
-                SupervisorId = table.Column<string>(type: "text", nullable: false),
-                IsPresident = table.Column<bool>(type: "boolean", nullable: false),
-                IsSecretary = table.Column<bool>(type: "boolean", nullable: false),
-                CreatedDate = table.Column<DateTime>(type: "timestamp", nullable: false),
-                UpdatedDate = table.Column<DateTime>(type: "timestamp", nullable: true),
-                CreatedBy = table.Column<string>(type: "text", nullable: false),
-                UpdatedBy = table.Column<string>(type: "text", nullable: true)
-            },
-            constraints: table =>
-            {
-                table.PrimaryKey("PK_DefendCapstoneProjectCouncilMember", x => x.Id);
-                table.ForeignKey(
-                    name: "FK_DefendCapstoneProjectCouncilMember_DefendCapstoneProjectInf~",
-                    column: x => x.DefendCapstoneProjectInformationCalendarId,
-                    principalTable: "DefendCapstoneProjectInformationCalendar",
-                    principalColumn: "Id",
-                    onDelete: ReferentialAction.Restrict);
-                table.ForeignKey(
-                    name: "FK_DefendCapstoneProjectCouncilMember_Supervisor_SupervisorId",
-                    column: x => x.SupervisorId,
-                    principalTable: "Supervisor",
-                    principalColumn: "Id",
-                    onDelete: ReferentialAction.Restrict);
-            });
-
-        migrationBuilder.CreateTable(
             name: "Reviewer",
             columns: table => new
             {
-                Id = table.Column<Guid>(type: "uuid", nullable: false, defaultValue: new Guid("4ec6ae6a-8060-4282-af9e-021a9cffa6db")),
+                Id = table.Column<Guid>(type: "uuid", nullable: false, defaultValue: new Guid("0a6e1b52-9892-4564-8ff9-910ea6328125")),
                 SupervisorId = table.Column<string>(type: "text", nullable: false),
                 ReviewCalenderId = table.Column<Guid>(type: "uuid", nullable: false),
                 Suggestion = table.Column<string>(type: "character varying(500)", maxLength: 500, nullable: true),
@@ -1028,6 +1035,12 @@ public partial class init_db : Migration
             name: "IX_Group_SupervisorId",
             table: "Group",
             column: "SupervisorId");
+
+        migrationBuilder.CreateIndex(
+            name: "IX_Group_TopicId",
+            table: "Group",
+            column: "TopicId",
+            unique: true);
 
         migrationBuilder.CreateIndex(
             name: "IX_GroupMember_GroupId",
@@ -1275,16 +1288,16 @@ public partial class init_db : Migration
             name: "Student");
 
         migrationBuilder.DropTable(
-            name: "Topic");
-
-        migrationBuilder.DropTable(
             name: "ProjectProgress");
 
         migrationBuilder.DropTable(
-            name: "BusinessArea");
+            name: "Group");
 
         migrationBuilder.DropTable(
-            name: "Group");
+            name: "Topic");
+
+        migrationBuilder.DropTable(
+            name: "BusinessArea");
 
         migrationBuilder.DropTable(
             name: "Capstone");
