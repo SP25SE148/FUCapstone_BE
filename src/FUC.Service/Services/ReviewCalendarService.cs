@@ -190,7 +190,7 @@ public sealed class ReviewCalendarService(
         int reviewerCol = 9;
         for (; reviewerCol < row.Cells().Count(); reviewerCol++)
         {
-            var isReviewerColumn = workSheet.Cell(3, reviewerCol).GetValue<string>().Contains("Reviewer");
+            var isReviewerColumn = workSheet.Cell(5, reviewerCol).GetValue<string>().Contains("Reviewer");
             if (!isReviewerColumn)
                 break;
 

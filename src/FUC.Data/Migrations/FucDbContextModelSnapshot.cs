@@ -55,7 +55,7 @@ namespace FUC.Data.Migrations
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uuid")
-                        .HasDefaultValue(new Guid("164f52e3-4ff9-4020-8f16-a1dc324055a5"));
+                        .HasDefaultValue(new Guid("b896b47d-4b12-44d5-91c9-7c2e7857a3dc"));
 
                     b.Property<string>("CreatedBy")
                         .IsRequired()
@@ -190,7 +190,7 @@ namespace FUC.Data.Migrations
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uuid")
-                        .HasDefaultValue(new Guid("eb3e66f7-0039-44ad-9d79-789a4d89ebee"));
+                        .HasDefaultValue(new Guid("5abcb688-426a-4c10-a3e7-28b5b268088e"));
 
                     b.Property<string>("CreatedBy")
                         .IsRequired()
@@ -444,7 +444,7 @@ namespace FUC.Data.Migrations
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uuid")
-                        .HasDefaultValue(new Guid("73faee60-57dd-47da-91a0-d258911e15c3"));
+                        .HasDefaultValue(new Guid("c08d8cc8-ed29-4328-9f50-c326c7bb9d88"));
 
                     b.Property<string>("CampusId")
                         .IsRequired()
@@ -502,7 +502,7 @@ namespace FUC.Data.Migrations
                     b.Property<string>("SupervisorId")
                         .HasColumnType("text");
 
-                    b.Property<Guid>("TopicId")
+                    b.Property<Guid?>("TopicId")
                         .HasColumnType("uuid");
 
                     b.Property<string>("UpdatedBy")
@@ -523,7 +523,8 @@ namespace FUC.Data.Migrations
 
                     b.HasIndex("SupervisorId");
 
-                    b.HasIndex("TopicId");
+                    b.HasIndex("TopicId")
+                        .IsUnique();
 
                     b.ToTable("Group", (string)null);
                 });
@@ -533,7 +534,7 @@ namespace FUC.Data.Migrations
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uuid")
-                        .HasDefaultValue(new Guid("c901b4b0-aa54-4d8e-a72c-dd9516a14530"));
+                        .HasDefaultValue(new Guid("39a0fb9c-b62b-4bc8-8d97-89598cefc4a8"));
 
                     b.Property<string>("CreatedBy")
                         .IsRequired()
@@ -797,7 +798,7 @@ namespace FUC.Data.Migrations
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uuid")
-                        .HasDefaultValue(new Guid("68a59f55-97e3-436a-a735-6a414fe82432"));
+                        .HasDefaultValue(new Guid("12c1f94c-9c81-4d8c-b53d-ad19f8a079fd"));
 
                     b.Property<int>("Attempt")
                         .HasColumnType("integer");
@@ -875,7 +876,7 @@ namespace FUC.Data.Migrations
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uuid")
-                        .HasDefaultValue(new Guid("8c468168-86ae-45a9-9fea-e8f9b8e1a84e"));
+                        .HasDefaultValue(new Guid("7fba7c89-19fc-4ea2-be58-fc3c155da55c"));
 
                     b.Property<int>("Attempt")
                         .HasColumnType("integer");
@@ -935,7 +936,7 @@ namespace FUC.Data.Migrations
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uuid")
-                        .HasDefaultValue(new Guid("95056ee9-487d-4399-b6dc-a40cd5d9990e"));
+                        .HasDefaultValue(new Guid("9a6bf852-b996-4f75-b748-58b3184c3fa2"));
 
                     b.Property<string>("Comment")
                         .HasMaxLength(1000)
@@ -1155,7 +1156,7 @@ namespace FUC.Data.Migrations
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uuid")
-                        .HasDefaultValue(new Guid("f23bebc7-482a-4f68-ba60-d0251c1ab87a"));
+                        .HasDefaultValue(new Guid("7738332d-d0bf-4c7e-9b5e-39333a7be90e"));
 
                     b.Property<string>("CreatedBy")
                         .IsRequired()
@@ -1197,7 +1198,7 @@ namespace FUC.Data.Migrations
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uuid")
-                        .HasDefaultValue(new Guid("3fddb133-050e-4e16-8d1b-fd742a8e3a32"));
+                        .HasDefaultValue(new Guid("f35f2fee-c390-44b6-b872-bb98f0be6e81"));
 
                     b.Property<string>("Abbreviation")
                         .IsRequired()
@@ -1302,7 +1303,7 @@ namespace FUC.Data.Migrations
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uuid")
-                        .HasDefaultValue(new Guid("c3db238a-94fa-4baa-8774-7cf72ecaa5cb"));
+                        .HasDefaultValue(new Guid("f99a2e1f-0b98-4d93-885d-07cf713b40cc"));
 
                     b.Property<string>("AnalysisResult")
                         .IsRequired()
@@ -1311,7 +1312,7 @@ namespace FUC.Data.Migrations
                     b.Property<DateTime>("CreatedDate")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("timestamp")
-                        .HasDefaultValue(new DateTime(2025, 3, 23, 14, 1, 11, 979, DateTimeKind.Local).AddTicks(2747));
+                        .HasDefaultValue(new DateTime(2025, 3, 23, 14, 16, 1, 388, DateTimeKind.Local).AddTicks(1307));
 
                     b.Property<string>("ProcessedBy")
                         .IsRequired()
@@ -1332,7 +1333,7 @@ namespace FUC.Data.Migrations
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uuid")
-                        .HasDefaultValue(new Guid("d11208ad-82da-42e0-b2fe-2016b6347bab"));
+                        .HasDefaultValue(new Guid("2264541a-6308-4776-91e3-df37d4a568ae"));
 
                     b.Property<string>("AppraisalComment")
                         .HasColumnType("text");
@@ -1386,7 +1387,7 @@ namespace FUC.Data.Migrations
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uuid")
-                        .HasDefaultValue(new Guid("d16960ed-e2e2-499a-960a-3a249c4dce43"));
+                        .HasDefaultValue(new Guid("878553d0-3d96-4461-8fd5-33f90645da02"));
 
                     b.Property<string>("CreatedBy")
                         .IsRequired()
@@ -1641,10 +1642,9 @@ namespace FUC.Data.Migrations
                         .OnDelete(DeleteBehavior.Restrict);
 
                     b.HasOne("FUC.Data.Entities.Topic", "Topic")
-                        .WithMany()
-                        .HasForeignKey("TopicId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                        .WithOne("Group")
+                        .HasForeignKey("FUC.Data.Entities.Group", "TopicId")
+                        .OnDelete(DeleteBehavior.Restrict);
 
                     b.Navigation("Campus");
 
@@ -2127,6 +2127,9 @@ namespace FUC.Data.Migrations
                     b.Navigation("CoSupervisors");
 
                     b.Navigation("DefendCapstoneProjectInformationCalendars");
+
+                    b.Navigation("Group")
+                        .IsRequired();
 
                     b.Navigation("ReviewCalendars");
 

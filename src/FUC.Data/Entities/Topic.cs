@@ -27,6 +27,7 @@ public sealed class Topic : AuditableSoftDeleteEntity
     public Semester Semester { get; set; } = null!;
     public Campus Campus { get; set; } = null!;
     public BusinessArea BusinessArea { get; set; } = null!;
+    public Group Group { get; set; } = null!;
 
     public ICollection<CoSupervisor> CoSupervisors { get; set; } = new List<CoSupervisor>();
     public ICollection<TopicAppraisal> TopicAppraisals { get; set; } = new List<TopicAppraisal>();

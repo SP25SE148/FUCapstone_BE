@@ -32,7 +32,7 @@ public class GroupController(
             : HandleFailure(result);
     }
 
-    [HttpPut("{groupId}")]
+    [HttpPut]
     [Authorize(Roles = nameof(UserRoles.Student))]
     public async Task<IActionResult> CreateGroupCodeAsync()
     {

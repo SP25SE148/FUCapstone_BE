@@ -25,11 +25,13 @@ public class DefendCapstoneService(
     S3BucketConfiguration s3BucketConfiguration,
     ICapstoneService capstoneService,
     ITopicService topicService,
+    ISupervisorService supervisorService,
     IS3Service s3Service)
 {
     private const int MaxAttemptTimesToDefendCapstone = 2;
 
-    public async Task<OperationResult> UploadDenfendCapstoneProjectCalendar(IFormFile file, CancellationToken cancellationToken)
+    public async Task<OperationResult> UploadDefendCapstoneProjectCalendar(IFormFile file,
+        CancellationToken cancellationToken)
     {
         if (!IsValidFile(file))
         {
@@ -43,7 +45,8 @@ public class DefendCapstoneService(
 
         try
         {
-            var defendCalendars = await ParseDefendCapstoneCalendarsFromFile(file, capstone.Value.Id, cancellationToken);
+            var defendCalendars =
+                await ParseDefendCapstoneCalendarsFromFile(file, capstone.Value.Id, cancellationToken);
             defendCapstoneCalendarRepository.InsertRange(defendCalendars);
             await unitOfWork.SaveChangesAsync(cancellationToken);
             return OperationResult.Success();
@@ -55,7 +58,8 @@ public class DefendCapstoneService(
         }
     }
 
-    private async Task<List<DefendCapstoneProjectInformationCalendar>> ParseDefendCapstoneCalendarsFromFile(IFormFile file, string capstoneId, CancellationToken cancellationToken)
+    private async Task<List<DefendCapstoneProjectInformationCalendar>> ParseDefendCapstoneCalendarsFromFile(
+        IFormFile file, string capstoneId, CancellationToken cancellationToken)
     {
         var stream = new MemoryStream();
         await file.CopyToAsync(stream, cancellationToken);
@@ -63,23 +67,55 @@ public class DefendCapstoneService(
         IXLWorksheet workSheet = wb.Worksheet(1);
 
         var defendCalendars = new List<DefendCapstoneProjectInformationCalendar>();
-
+        var memberColumn = 8;
         foreach (var row in workSheet.Rows().Skip(2))
         {
             var topicCode = row.Cell(2).GetValue<string>();
-
+            var memberInfoList = new List<string>();
             if (string.IsNullOrEmpty(topicCode))
             {
                 break;
             }
 
             var topicResult = await topicService.GetTopicByCode(topicCode, cancellationToken);
-
-            if (topicResult.IsFailure || 
-                topicResult.Value.Status != TopicStatus.Approved || 
-                !topicResult.Value.IsAssignedToGroup || 
+            if (topicResult.IsFailure ||
+                topicResult.Value.Status != TopicStatus.Approved ||
+                !topicResult.Value.IsAssignedToGroup ||
                 topicResult.Value.CapstoneId != capstoneId)
-                throw new InvalidOperationException("Topic is not available for defend pharse.");
+                throw new InvalidOperationException("Topic is not available for defend phase.");
+
+            var presidentInformation = await supervisorService.GetSupervisorByIdAsync(row.Cell(6).GetValue<string>());
+            if (presidentInformation.IsFailure)
+                throw new InvalidOperationException("President is not available for defend phase.");
+
+            var secretaryInformation = await supervisorService.GetSupervisorByIdAsync(row.Cell(7).GetValue<string>());
+            if (secretaryInformation.IsFailure)
+                throw new InvalidOperationException("Secretary is not available for defend phase.");
+
+            if (topicResult.Value.MainSupervisorId.Equals(presidentInformation.Value.Id) ||
+                topicResult.Value.MainSupervisorId.Equals(secretaryInformation.Value.Id))
+                throw new Exception("Can not assign this supervisor for their own topic.");
+
+
+            for (; memberColumn < row.Cells().Count(); memberColumn++)
+            {
+                if (!string.IsNullOrEmpty(workSheet.Cell(2, memberColumn).GetValue<string>()))
+                {
+                    var memberInfo =
+                        await supervisorService.GetSupervisorByIdAsync(row.Cell(memberColumn).GetValue<string>());
+                    if (memberInfo.IsFailure)
+                        throw new Exception("member information is invalid ");
+                    if (topicResult.Value.MainSupervisorId.Equals(memberInfo.Value.Id))
+                        throw new Exception("Can not assign this supervisor for their own topic.");
+
+                    memberInfoList
+                        .Add(memberInfo.Value.Id);
+                    // check if member information is duplicate value with president or secretary
+                    if (memberInfoList.Any(
+                            x => x == secretaryInformation.Value.Id || x == presidentInformation.Value.Id))
+                        throw new Exception("Member information is duplicate value with president or secretary.");
+                }
+            }
         }
 
         return defendCalendars;
@@ -96,7 +132,7 @@ public class DefendCapstoneService(
         var defendCalendarsOfMember = await defendCapstoneCouncilMemberRepository.FindAsync(
             x => x.SupervisorId == currentUser.UserCode,
             include: x => x.Include(x => x.DefendCapstoneProjectInformationCalendar),
-            orderBy: x => x.OrderBy(x => x.DefendCapstoneProjectInformationCalendar.Slot), 
+            orderBy: x => x.OrderBy(x => x.DefendCapstoneProjectInformationCalendar.Slot),
             cancellationToken);
 
         ArgumentNullException.ThrowIfNull(defendCalendarsOfMember);

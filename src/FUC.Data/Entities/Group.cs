@@ -11,7 +11,7 @@ public sealed class Group : AuditableSoftDeleteEntity
     public string CampusId { get; set; }
     public string? SupervisorId { get; set; }
     public string CapstoneId { get; set; }
-    public Guid TopicId { get; set; }
+    public Guid? TopicId { get; set; }
     public float GPA { get; set; } // calculate from members gpa
     public string GroupCode { get; set; } = string.Empty;
     public GroupStatus Status { get; set; }
@@ -28,6 +28,6 @@ public sealed class Group : AuditableSoftDeleteEntity
     public ICollection<TopicRequest> TopicRequests { get; set; } = new List<TopicRequest>();
     public ICollection<ReviewCalendar> ReviewCalendars { get; set; } = new List<ReviewCalendar>();
     public ICollection<JoinGroupRequest> JoinGroupRequests { get; set; } = new List<JoinGroupRequest>();
-    public Topic Topic { get; set; }
+    public Topic? Topic { get; set; }
     public ProjectProgress ProjectProgress { get; set; } = null!;
 }

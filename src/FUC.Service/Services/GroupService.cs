@@ -833,7 +833,7 @@ public class GroupService(
 
         ArgumentNullException.ThrowIfNull(group);
 
-        var topicResult = await topicService.GetTopicById(group.TopicId, cancellationToken);
+        var topicResult = await topicService.GetTopicById(group.TopicId ?? Guid.Empty, cancellationToken);
         if (topicResult.IsFailure)
             return OperationResult.Failure<byte[]>(topicResult.Error);
 
@@ -1389,7 +1389,7 @@ public class GroupService(
         var tasks = groups.Select(async g =>
         {
             var topicResult = await topicService
-                .GetTopicById(g.TopicId, cancellationToken);
+                .GetTopicById(g.TopicId ?? Guid.Empty, cancellationToken);
 
             return topicResult.IsFailure
                 ? throw new ArgumentNullException(topicResult.Error)

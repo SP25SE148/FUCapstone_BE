@@ -63,6 +63,7 @@ public static class ServiceCollectionExtensions
         services.AddScoped<ITopicService, TopicService>();
         services.AddScoped<ISupervisorService, SupervisorService>();
         services.AddScoped<IDocumentsService, DocumentsService>();
+        services.AddScoped<IReviewCalendarService, ReviewCalendarService>();
         // Add EventLogService
         services.AddEventConsumerConfiguration(configuration);
         services.AddIntegrationEventLogService<FucDbContext>();
