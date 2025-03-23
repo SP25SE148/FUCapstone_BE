@@ -1,7 +1,9 @@
 ﻿using System.Text.Json.Serialization;
+using MassTransit;
 
 namespace FUC.Common.Events;
 
+[ExcludeFromTopology]
 public abstract class IntegrationEvent
 {
     protected IntegrationEvent()

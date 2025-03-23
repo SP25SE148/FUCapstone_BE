@@ -4,5 +4,6 @@ public enum GroupStatus
 {
     Pending,
     InProgress,
+    Completed,
     Deleted
 }

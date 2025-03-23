@@ -9,9 +9,6 @@ public static class TrackingTaskHistory
     {
         var changes = new Dictionary<string, (object?, object?)>();
 
-        if (request.KeyTask != null && request.KeyTask != existingTask.KeyTask)
-            changes[nameof(request.KeyTask)] = (existingTask.KeyTask, request.KeyTask);
-
         if (request.Description != null && request.Description != existingTask.Description)
             changes[nameof(request.Description)] = (existingTask.Description, request.Description);
 

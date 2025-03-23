@@ -18,6 +18,7 @@ public class
         builder.Property(x => x.SemesterId).IsRequired();
         builder.Property(x => x.DefendAttempt).IsRequired();
         builder.Property(x => x.Location).IsRequired();
+        builder.Property(x => x.IsUploadedThesisMinute).HasDefaultValue(false);
         builder.Property(x => x.DefenseDate).HasColumnType("timestamp");
         builder.Property(g => g.CreatedDate)
             .HasColumnType("timestamp");

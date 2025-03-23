@@ -158,10 +158,10 @@ public static class ServiceCollectionExtensions
 
             configure
                 .AddJob(typeof(ProcessRemindersJob), reminderJobKey)
-                .AddTrigger(trigger => 
+                .AddTrigger(trigger =>
                     trigger.ForJob(reminderJobKey)
                         .WithSimpleSchedule(schedule =>
-                                schedule.WithInterval(TimeSpan.FromMinutes(1)) // Run every 10 sec
+                                schedule.WithInterval(TimeSpan.FromMinutes(1))
                                         .RepeatForever()));
         });
 

@@ -12,6 +12,9 @@ public interface IDocumentsService
     Task<OperationResult> DeleteTemplateDocument(Guid templateId, CancellationToken cancellationToken);
     Task<OperationResult> UpdateActiveStatusForTemplateDocument(Guid templateId, CancellationToken cancellationToken);
     Task<OperationResult> CreateGroupDocument(IFormFile file, string key, CancellationToken cancellationToken);
+    Task<OperationResult> CreateThesisDocument(IFormFile file, string key, CancellationToken cancellationToken);
+    Task<bool> ThesisDocumentFileExistAsync(string thesisKey);
+    Task<bool> GroupDocumentFileExistAsync(string groupKey);
     Task<OperationResult<string>> PresentGroupDocumentFilePresignedUrl(string groupKey);
     Task<OperationResult<string>> PresentEvaluationProjectProgressTemplatePresignedUrl();
     Task<OperationResult<string>> PresentReviewsCalendarsTemplatePresignedUrl();
@@ -19,4 +22,5 @@ public interface IDocumentsService
     Task<OperationResult<string>> PresentStudentsImportTemplatePresignedUrl();
     Task<OperationResult<string>> PresentSupervisorsImportTemplatePresignedUrl();
     Task<OperationResult<string>> PresentThesisCouncilMeetingMinutesTemplatePresignedUrl();
+    Task<OperationResult<string>> PresentThesisCouncilMeetingMinutesForTopicPresignedUrl(string thesisKey);
 }

@@ -44,13 +44,9 @@ public class ProcessRemindersJob : IJob
 
             await _processorDbContext.Database.BeginTransactionAsync(context.CancellationToken);
 
-            var reminders = await _processorDbContext.Reminders.FromSqlRaw(
-                $"""
-                SELECT * 
-                FROM "Reminders"
-                WHERE DATE("RemindDate") = CURRENT_DATE;
-                """
-                ).ToListAsync(context.CancellationToken);
+            var reminders = await _processorDbContext.Reminders
+                .Where(r => r.RemindDate <= DateTime.Now)
+                .ToListAsync(context.CancellationToken);
 
             if (reminders.Count == 0)
             {
@@ -91,9 +87,6 @@ public class ProcessRemindersJob : IJob
 
         try
         {
-            if (reminder.RemindDate > DateTime.Now)
-                return;
-
             switch (reminder.ReminderType)
             {
                 case "TopicRequest":
@@ -120,10 +113,10 @@ public class ProcessRemindersJob : IJob
 
                     break;
 
-                case "RemindDueDateTask":
+                case nameof(FucTaskCreatedEvent):
                     var target = reminder.Content!.Split("/");
 
-                    var content = $"You have to done the Task {target[2]} ontime.";
+                    var content = $"You have to done the Task '{target[^1]}' ontime.";
 
                     _processorDbContext.Notifications.Add(new Notification
                     {

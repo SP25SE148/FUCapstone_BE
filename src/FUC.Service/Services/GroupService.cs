@@ -595,7 +595,8 @@ public class GroupService(
 
         var group = await groupRepository.GetAsync(
             x => x.Id == request.GroupId,
-            include: x => x.Include(g => g.Capstone),
+            include: x => x.Include(g => g.Capstone)
+                .Include(g => g.GroupMembers.Where(m => m.Status == GroupMemberStatus.Accepted)),
             orderBy: null,
             cancellationToken);
 
@@ -648,6 +649,13 @@ public class GroupService(
             // TODO: send reminderTask into process service
 
             // TODO: send the notification for relative people
+
+            integrationEventLogService.SendEvent(new ProjectProgressCreatedEvent 
+            {
+                GroupId = group.Id,
+                StudentCodes = group.GroupMembers.Select(x => x.StudentId).ToList(),
+                Type = nameof(ProjectProgressCreatedEvent),
+            });
 
             await uow.CommitAsync(cancellationToken);
 
@@ -718,7 +726,7 @@ public class GroupService(
                 ProjectProgressId = request.ProjectProgressId,
                 KeyTask = newTask.KeyTask,
                 ReporterName = currentUser.Name,
-                ReminderType = "RemindDueDateTask",
+                ReminderType = nameof(FucTaskCreatedEvent),
                 NotificationFor = newTask.AssigneeId,
                 RemindTimeOnDueDate = TimeSpan.FromHours(7),
                 RemindInDaysBeforeDueDate = 1
@@ -799,6 +807,41 @@ public class GroupService(
                         ? request.Comment!
                         : $"{currentUser.UserCode} changed {h.Key} from {h.Value.OldValue} to {h.Value.NewValue}.",
                 });
+
+                if (h.Key == nameof(request.AssigneeId))
+                {
+                    // update reminder for other person
+                    integrationEventLogService.SendEvent(new FucTaskAssigneeUpdatedEvent
+                    {
+                        FucTaskId = progress.FucTasks.Single().Id,
+                        ProjectProgressId = progress.Id,
+                        NotificationFor = request.AssigneeId!,
+                        ReminderType = nameof(FucTaskAssigneeUpdatedEvent)
+                    });
+                }
+
+                if (h.Key == nameof(request.DueDate))
+                {
+                    // update reminder for other date
+                    integrationEventLogService.SendEvent(new FucTaskDueDateUpdatedEvent 
+                    {
+                        FucTaskId = progress.FucTasks.Single().Id,
+                        ProjectProgressId = progress.Id,
+                        ReminderType = nameof(FucTaskDueDateUpdatedEvent),
+                        DueDateChangedTime = ((DateTime)h.Value.NewValue!).EndOfDay() - (DateTime)h.Value.OldValue!
+                    });
+                }
+
+                if (h.Key == nameof(request.Status) && request.Status == FucTaskStatus.Done)
+                {
+                    // remove reminder
+                    integrationEventLogService.SendEvent(new FucTaskStatusDoneUpdatedEvent
+                    {
+                        FucTaskId = progress.FucTasks.Single().Id,
+                        ProjectProgressId = progress.Id,
+                        ReminderType = nameof(FucTaskStatusDoneUpdatedEvent),
+                    });
+                }
             }
 
             projectProgressRepository.Update(progress);
