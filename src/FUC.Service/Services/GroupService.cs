@@ -375,7 +375,7 @@ public class GroupService(
                     $"Group with id {groupMember.GroupId} is not {GroupStatus.InProgress.ToString()} status"));
 
             // check if topic code of group is not null
-            if (!string.IsNullOrEmpty(groupMember.Group.TopicCode))
+            if (groupMember.Group.TopicId != null)
                 return OperationResult.Failure<Guid>(new Error("Error.CreateFailed",
                     "Can not create topic request for group already have topic code!"));
 
@@ -525,7 +525,7 @@ public class GroupService(
                 }
 
                 // assign supervisor to group
-                topicRequest.Group.TopicCode = topicRequest.Topic.Code;
+                topicRequest.Group.TopicId = topicRequest.Topic.Id;
                 topicRequest.Group.SupervisorId = topicRequest.Topic.MainSupervisorId;
                 topicRequestRepository.Update(topicRequest);
             }
@@ -561,7 +561,7 @@ public class GroupService(
             CapstoneName = g.CapstoneId,
             MajorName = g.MajorId,
             SemesterName = g.SemesterId,
-            TopicCode = g.TopicCode,
+            TopicCode = g.Topic.Code ?? "undefined",
             AverageGPA = g.GroupMembers.Any(m => m.Status == GroupMemberStatus.Accepted)
                 ? g.GroupMembers.Where(m => m.Status == GroupMemberStatus.Accepted)
                     .Select(m => m.Student.GPA)
@@ -828,14 +828,12 @@ public class GroupService(
     public async Task<OperationResult<byte[]>> ExportProgressEvaluationOfGroup(Guid groupId,
         CancellationToken cancellationToken)
     {
-        var group = await groupRepository.GetAsync(x => x.Id == groupId && !string.IsNullOrEmpty(x.TopicCode),
+        var group = await groupRepository.GetAsync(x => x.Id == groupId && x.TopicId != null,
             cancellationToken);
 
         ArgumentNullException.ThrowIfNull(group);
 
-        var topicResult = await topicService.GetTopicByCode(group.TopicCode!,
-            cancellationToken);
-
+        var topicResult = await topicService.GetTopicById(group.TopicId, cancellationToken);
         if (topicResult.IsFailure)
             return OperationResult.Failure<byte[]>(topicResult.Error);
 
@@ -844,7 +842,7 @@ public class GroupService(
         if (result.IsFailure)
             return OperationResult.Failure<byte[]>(result.Error);
 
-        // get file format to process overide for export to supervisor
+        // get file format to process override for export to supervisor
         try
         {
             var response = await s3Service.GetFromS3(s3BucketConfiguration.FUCTemplateBucket,
@@ -865,7 +863,7 @@ public class GroupService(
 
     private static async Task<OperationResult<byte[]>> ProcessEvaluationProjectProgressTemplate(
         GetObjectResponse response,
-        Topic topic,
+        TopicResponse topic,
         List<EvaluationProjectProgressResponse> evaluations,
         CancellationToken cancellationToken)
     {
@@ -1332,13 +1330,14 @@ public class GroupService(
                 CampusName = gm.Group.CampusId,
                 CapstoneName = gm.Group.CapstoneId,
                 GroupCode = gm.Group.GroupCode,
-                TopicCode = gm.Group.TopicCode,
+                TopicCode = gm.Group.Topic.Code,
                 MajorName = gm.Group.MajorId,
                 SemesterName = gm.Group.SemesterId
             },
             gm => gm.AsSplitQuery()
                 .Include(gm => gm.Student)
-                .Include(gm => gm.Group));
+                .Include(gm => gm.Group)
+                .ThenInclude(g => g.Topic));
 
         if (group is null)
         {
@@ -1390,7 +1389,7 @@ public class GroupService(
         var tasks = groups.Select(async g =>
         {
             var topicResult = await topicService
-                .GetTopicByCode(g.TopicCode!, cancellationToken);
+                .GetTopicById(g.TopicId, cancellationToken);
 
             return topicResult.IsFailure
                 ? throw new ArgumentNullException(topicResult.Error)
