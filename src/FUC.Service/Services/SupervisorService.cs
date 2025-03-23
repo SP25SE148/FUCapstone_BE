@@ -38,6 +38,7 @@ public sealed class SupervisorService(
     {
         var supervisor = await supervisorRepository.GetAsync(
             s => s.Id == id,
+            s => s.Include(s => s.Topics),
             default);
         return supervisor is not null
             ? OperationResult.Success(mapper.Map<SupervisorResponseDTO>(supervisor))
