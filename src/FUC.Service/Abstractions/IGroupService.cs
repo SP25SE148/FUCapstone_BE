@@ -1,4 +1,5 @@
 ﻿using FUC.Common.Shared;
+using FUC.Data.Enums;
 using FUC.Service.DTOs.GroupDTO;
 using FUC.Service.DTOs.ProjectProgressDTO;
 using FUC.Service.DTOs.TopicRequestDTO;
@@ -67,4 +68,6 @@ public interface IGroupService
         CancellationToken cancellationToken);
 
     Task<OperationResult<string>> PresentGroupDocumentFileOfGroup(Guid groupId, CancellationToken cancellationToken);
+    Task<OperationResult> UpdateGroupDecisionBySupervisorIdAsync(UpdateGroupDecisionStatusBySupervisorRequest request);
+    Task<OperationResult> UpdateGroupDecisionByPresidentIdAsync(UpdateGroupDecisionStatusByPresidentRequest request);
 }

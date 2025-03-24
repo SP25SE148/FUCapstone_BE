@@ -12,7 +12,7 @@ public sealed class DefendCapstoneProjectInformationCalendar : AuditableEntity
     public int DefendAttempt { get; set; }
     public string Location { get; set; } // Room
     public int Slot { get; set; }
-    public bool IsUploadedThesisMinute { get; set; } 
+    public bool IsUploadedThesisMinute { get; set; }
     public DateTime DefenseDate { get; set; }
 
     public Campus Campus { get; set; } = null!;

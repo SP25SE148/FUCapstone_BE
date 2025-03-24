@@ -6,6 +6,8 @@ namespace FUC.Service.DTOs.GroupDTO;
 public sealed record GroupResponse
 {
     public Guid Id { get; init; }
+    public string SupervisorId { get; set; }
+    public string SupervisorName { get; set; }
     public string SemesterName { get; init; } = string.Empty;
     public string MajorName { get; init; } = string.Empty;
     public string CapstoneName { get; init; } = string.Empty;
