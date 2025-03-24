@@ -49,6 +49,7 @@ public class GroupService(
     IRepository<Student> studentRepository,
     IRepository<Group> groupRepository,
     ITopicService topicService,
+    IRepository<DefendCapstoneProjectCouncilMember> defendCapstoneProjectCouncilMemberRepository,
     IRepository<ReviewCalendar> reviewCalendarRepository,
     ICapstoneService capstoneService,
     IS3Service s3Service,
@@ -547,7 +548,8 @@ public class GroupService(
     {
         return g =>
             g.Include(g => g.GroupMembers)
-                .ThenInclude(gm => gm.Student);
+                .ThenInclude(gm => gm.Student)
+                .Include(g => g.Supervisor);
     }
 
     private static Expression<Func<Group, GroupResponse>> CreateSelectorForGroupResponse()
@@ -555,6 +557,8 @@ public class GroupService(
         return g => new GroupResponse
         {
             Id = g.Id,
+            SupervisorId = g.SupervisorId ?? "undefined",
+            SupervisorName = g.Supervisor == null ? "undefined" : g.Supervisor.FullName,
             Status = g.Status.ToString(),
             GroupCode = g.GroupCode,
             CampusName = g.CampusId,
@@ -650,7 +654,7 @@ public class GroupService(
 
             // TODO: send the notification for relative people
 
-            integrationEventLogService.SendEvent(new ProjectProgressCreatedEvent 
+            integrationEventLogService.SendEvent(new ProjectProgressCreatedEvent
             {
                 GroupId = group.Id,
                 StudentCodes = group.GroupMembers.Select(x => x.StudentId).ToList(),
@@ -823,7 +827,7 @@ public class GroupService(
                 if (h.Key == nameof(request.DueDate))
                 {
                     // update reminder for other date
-                    integrationEventLogService.SendEvent(new FucTaskDueDateUpdatedEvent 
+                    integrationEventLogService.SendEvent(new FucTaskDueDateUpdatedEvent
                     {
                         FucTaskId = progress.FucTasks.Single().Id,
                         ProjectProgressId = progress.Id,
@@ -1369,6 +1373,8 @@ public class GroupService(
             gm => new GroupResponse
             {
                 Id = gm.GroupId,
+                SupervisorId = gm.Group.SupervisorId ?? "undefined",
+                SupervisorName = gm.Group.Supervisor == null ? "undefined" : gm.Group.Supervisor.FullName,
                 Status = gm.Group.Status.ToString(),
                 CampusName = gm.Group.CampusId,
                 CapstoneName = gm.Group.CapstoneId,
@@ -1380,7 +1386,8 @@ public class GroupService(
             gm => gm.AsSplitQuery()
                 .Include(gm => gm.Student)
                 .Include(gm => gm.Group)
-                .ThenInclude(g => g.Topic));
+                .ThenInclude(g => g.Topic)
+                .Include(g => g.Group.Supervisor));
 
         if (group is null)
         {
@@ -1488,5 +1495,103 @@ public class GroupService(
         var key = $"{group.CampusId}/{group.SemesterId}/{group.MajorId}/{group.CampusId}/{group.GroupCode}";
 
         return await documentsService.PresentGroupDocumentFilePresignedUrl(key);
+    }
+
+    public async Task<OperationResult> UpdateGroupDecisionBySupervisorIdAsync(
+        UpdateGroupDecisionStatusBySupervisorRequest request)
+    {
+        try
+        {
+            var group = await groupRepository.GetAsync(g => g.Id == request.GroupId,
+                true,
+                g =>
+                    g.Include(g => g.Supervisor)
+                        .Include(g => g.Capstone)
+                        .Include(g => g.ReviewCalendars.Where(rc => rc.Status == ReviewCalendarStatus.Done)));
+            if (IsGroupValidForUpdateDecisionStatus(group))
+                return OperationResult.Failure(new Error("Error.UpdateFailed",
+                    "can not update group decision status because group is not valid"));
+
+            if (group.SupervisorId != currentUser.UserCode)
+                return OperationResult.Failure(new Error("Error.UpdateFailed", "Can not update group decision"));
+
+            // check if group is re defend capstone project
+            if (group.Decision != DecisionStatus.Undefined || group.IsReDefendCapstoneProject)
+            {
+                return OperationResult.Failure(new Error("Error.UpdateFailed", "Can not update group decision"));
+            }
+
+            group.Decision = request.DecisionStatus;
+            groupRepository.Update(group);
+            await uow.SaveChangesAsync();
+            return OperationResult.Success();
+        }
+        catch (Exception e)
+        {
+            logger.LogError("Update group decision status failed with error {Message}.", e.Message);
+            return OperationResult.Failure(new Error("Error.UpdateFailed", "Update group decision status failed"));
+        }
+    }
+
+    public async Task<OperationResult> UpdateGroupDecisionByPresidentIdAsync(
+        UpdateGroupDecisionStatusByPresidentRequest request)
+    {
+        try
+        {
+            var group = await groupRepository.GetAsync(g => g.Id == request.GroupId,
+                true,
+                g =>
+                    g.Include(g => g.Supervisor)
+                        .Include(g => g.Capstone)
+                        .Include(g => g.ReviewCalendars.Where(rc => rc.Status == ReviewCalendarStatus.Done)));
+            var president = await defendCapstoneProjectCouncilMemberRepository.GetAsync(
+                cm => cm.SupervisorId == currentUser.UserCode && cm.IsPresident == true,
+                cm => cm.Include(cm => cm.DefendCapstoneProjectInformationCalendar),
+                default);
+
+            if (president == null)
+                return OperationResult.Failure(new Error("Error.UpdateFailed", "Invalid president"));
+
+            if (IsGroupValidForUpdateDecisionStatus(group))
+                return OperationResult.Failure(new Error("Error.UpdateFailed",
+                    "can not update group decision status because group is not valid"));
+
+            if (president.DefendCapstoneProjectInformationCalendar.TopicId != group!.TopicId)
+                return OperationResult.Failure(new Error("Error.UpdateFailed", "Can not update group decision"));
+
+            if (group!.Decision == DecisionStatus.Undefined)
+                return OperationResult.Failure(new Error("Error.UpdateFailed",
+                    "Can not update group decision while group decision is undefined"));
+            switch (request.IsReDefendCapstoneProject)
+            {
+                case false:
+                    group!.IsReDefendCapstoneProject = false;
+                    group.Status = GroupStatus.Completed;
+                    break;
+                case true when group!.Decision == DecisionStatus.Attempt1:
+                    group.Decision = DecisionStatus.Attempt2;
+                    group.IsReDefendCapstoneProject = true;
+                    break;
+                default:
+                    break;
+            }
+
+            groupRepository.Update(group);
+            await uow.SaveChangesAsync();
+            return OperationResult.Success();
+        }
+        catch (Exception e)
+        {
+            logger.LogError("Update group decision status failed with error {Message}.", e.Message);
+            return OperationResult.Failure(new Error("Error.UpdateFailed", "Update group decision status failed"));
+        }
+    }
+
+
+    private static bool IsGroupValidForUpdateDecisionStatus(Group? group)
+    {
+        return group != null &&
+               group.Status == GroupStatus.InProgress &&
+               group.ReviewCalendars.Count >= group.Capstone.ReviewCount;
     }
 }

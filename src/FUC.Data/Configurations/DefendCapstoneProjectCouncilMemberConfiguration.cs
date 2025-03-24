@@ -11,7 +11,8 @@ public class
     public void Configure(EntityTypeBuilder<DefendCapstoneProjectCouncilMember> builder)
     {
         builder.ToTable(TableNames.DefendCapstoneProjectCouncilMember);
-
+        builder.ToTable(tb => tb.HasCheckConstraint("CK_DefendCapstoneProjectCouncilMembers_IsPresident_IsSecretary",
+            "NOT (IsPresident = 1 AND IsSecretary = 1)"));
         builder.HasKey(x => x.Id);
 
         builder.Property(x => x.DefendCapstoneProjectInformationCalendarId).IsRequired();

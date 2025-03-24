@@ -24,7 +24,7 @@ public sealed class GroupConfiguration : IEntityTypeConfiguration<Group>
 
 
         builder.Property(g => g.Decision)
-            .HasDefaultValue(DecisionStatus.Attempt1)
+            .HasDefaultValue(DecisionStatus.Undefined)
             .HasConversion(
                 v => v.ToString(),
                 v => (DecisionStatus)Enum.Parse(typeof(DecisionStatus), v));

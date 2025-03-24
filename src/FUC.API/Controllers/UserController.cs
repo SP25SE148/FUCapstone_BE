@@ -4,6 +4,7 @@ using FUC.Common.Abstractions;
 using FUC.Common.Constants;
 using FUC.Common.Shared;
 using FUC.Service.Abstractions;
+using FUC.Service.DTOs.GroupDTO;
 using FUC.Service.DTOs.StudentDTO;
 using FUC.Service.DTOs.SupervisorDTO;
 using FUC.Service.DTOs.TopicRequestDTO;
@@ -18,6 +19,7 @@ public sealed class UserController(
     IStudentService studentService,
     ISupervisorService supervisorService,
     IReviewCalendarService reviewCalendarService,
+    IDefendCapstoneService defendCapstoneService,
     IGroupService groupService) : ApiController
 {
     [HttpGet("get-all-student")]
@@ -105,6 +107,38 @@ public sealed class UserController(
     public async Task<IActionResult> GetReviewCalendarByManagerAsync()
     {
         var result = await reviewCalendarService.GetReviewCalendarByManagerId();
+        return result.IsSuccess
+            ? Ok(result)
+            : HandleFailure(result);
+    }
+
+    [HttpPost("import-defend-capstone-calendar")]
+    [Authorize(Roles = UserRoles.Manager)]
+    public async Task<IActionResult> ImportDefendCapstoneCalendarAsync(IFormFile file)
+    {
+        var result = await defendCapstoneService.UploadDefendCapstoneProjectCalendar(file, default);
+        return result.IsSuccess
+            ? Ok(result)
+            : HandleFailure(result);
+    }
+
+    [HttpPut("supervisor/update-group-decision-status")]
+    [Authorize(Roles = UserRoles.Supervisor)]
+    public async Task<IActionResult> UpdateGroupDecisionStatusBySupervisorAsync(
+        [FromBody] UpdateGroupDecisionStatusBySupervisorRequest request)
+    {
+        var result = await groupService.UpdateGroupDecisionBySupervisorIdAsync(request);
+        return result.IsSuccess
+            ? Ok(result)
+            : HandleFailure(result);
+    }
+
+    [HttpPut("president/update-group-decision-status")]
+    [Authorize(Roles = UserRoles.Supervisor)]
+    public async Task<IActionResult> UpdateGroupDecisionStatusByPresidentAsync(
+        [FromBody] UpdateGroupDecisionStatusByPresidentRequest request)
+    {
+        var result = await groupService.UpdateGroupDecisionByPresidentIdAsync(request);
         return result.IsSuccess
             ? Ok(result)
             : HandleFailure(result);
