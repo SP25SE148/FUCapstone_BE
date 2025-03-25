@@ -1050,8 +1050,6 @@ public class TopicService(
 
             var topicAppraisal = await topicAppraisalRepository.GetAsync(
                 t => t.Id == request.TopicAppraisalId,
-                include: t => t.Include(x => x.Topic),
-                orderBy: null,
                 cancellationToken);
 
             if (topicAppraisal is null)
@@ -1129,7 +1127,7 @@ public class TopicService(
                 {
                     SupervisorIds = appraisalSupervisors,
                     TopicId = topicAppraisal.TopicId,
-                    TopicEnglishName = topicAppraisal.Topic.EnglishName
+                    TopicEnglishName = ""
                 });
             }
 
