@@ -1,5 +1,6 @@
 ﻿using FUC.Common.Shared;
 using FUC.Service.DTOs.DefendCapstone;
+using FUC.Service.DTOs.GroupDTO;
 using Microsoft.AspNetCore.Http;
 
 namespace FUC.Service.Abstractions;
@@ -18,5 +19,6 @@ public interface IDefendCapstoneService
 
     Task<OperationResult<string>> PresentThesisForTopicResignedUrl(Guid calendarId, CancellationToken cancellationToken);
 
-    Task<OperationResult> UpdateStatusOfGroupAfterDefend(Guid calendarId, CancellationToken cancellationToken);
+    Task<OperationResult> UpdateStatusOfGroupAfterDefend(UpdateGroupDecisionStatusByPresidentRequest request,
+        CancellationToken cancellationToken);
 }

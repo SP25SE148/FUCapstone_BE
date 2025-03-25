@@ -12,7 +12,8 @@ public sealed class UpdateGroupDecisionStatusBySupervisorRequest : UpdateGroupDe
     public DecisionStatus DecisionStatus { get; set; }
 }
 
-public sealed class UpdateGroupDecisionStatusByPresidentRequest : UpdateGroupDecisionStatusRequest
+public sealed class UpdateGroupDecisionStatusByPresidentRequest
 {
     public bool IsReDefendCapstoneProject { get; set; }
+    public Guid CalendarId { get; set; }
 }

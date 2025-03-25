@@ -5,6 +5,8 @@ public class DefendCapstoneCalendarResponse
     public Guid Id { get; set; }
     public Guid TopicId { get; set; }
     public required string TopicCode { get; set; }
+    public Guid GroupId { get; set; }
+    public string GroupCode { get; set; }
     public string CampusId { get; set; }
     public string SemesterId { get; set; }
     public int DefendAttempt { get; set; }

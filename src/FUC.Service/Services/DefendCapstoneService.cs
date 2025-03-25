@@ -10,12 +10,11 @@ using FUC.Data.Enums;
 using FUC.Data.Repositories;
 using FUC.Service.Abstractions;
 using FUC.Service.DTOs.SupervisorDTO;
-using FUC.Service.DTOs.TopicDTO;
-using FUC.Service.Extensions.Options;
 using FUC.Service.DTOs.DefendCapstone;
 using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
+using FUC.Service.DTOs.GroupDTO;
 
 namespace FUC.Service.Services;
 
@@ -26,10 +25,9 @@ public class DefendCapstoneService(
     IRepository<DefendCapstoneProjectCouncilMember> defendCapstoneCouncilMemberRepository,
     IUnitOfWork<FucDbContext> unitOfWork,
     IIntegrationEventLogService integrationEventLogService,
-    S3BucketConfiguration s3BucketConfiguration,
     ISemesterService semesterService,
-    ICapstoneService capstoneService,
     ITopicService topicService,
+    IGroupService groupService,
     ISupervisorService supervisorService,
     IDocumentsService documentsService) : IDefendCapstoneService
 {
@@ -78,9 +76,11 @@ public class DefendCapstoneService(
 
         var calendars = await defendCapstoneCalendarRepository.FindAsync(
             x => defendCalendarsIdsOfMember.Contains(x.Id),
-            include: x => x.Include(x => x.DefendCapstoneProjectMemberCouncils)
-                .ThenInclude(x => x.Supervisor)
-                .Include(x => x.Topic),
+            include: x => x.AsSplitQuery()
+                .Include(x => x.DefendCapstoneProjectMemberCouncils)
+                    .ThenInclude(x => x.Supervisor)
+                .Include(x => x.Topic)
+                    .ThenInclude(x => x.Group),
             cancellationToken);
 
         if (calendars is null || calendars.Count == 0)
@@ -92,6 +92,7 @@ public class DefendCapstoneService(
                 {
                     Id = x.Id,
                     TopicId = x.TopicId,
+                    GroupId = x.Topic.Group.Id,
                     DefenseDate = x.DefenseDate,
                     DefendAttempt = x.DefendAttempt,
                     Location = x.Location,
@@ -99,6 +100,7 @@ public class DefendCapstoneService(
                     CampusId = x.CampusId,
                     SemesterId = x.SemesterId,
                     TopicCode = x.TopicCode,
+                    GroupCode = x.Topic.Group.GroupCode,
                     CouncilMembers = x.DefendCapstoneProjectMemberCouncils.Select(x =>
                         new DefendCapstoneCouncilMemberDto
                         {
@@ -191,13 +193,15 @@ public class DefendCapstoneService(
         return await documentsService.PresentThesisCouncilMeetingMinutesForTopicPresignedUrl(key);
     }
 
-    public async Task<OperationResult> UpdateStatusOfGroupAfterDefend(Guid calendarId,
+    public async Task<OperationResult> UpdateStatusOfGroupAfterDefend(UpdateGroupDecisionStatusByPresidentRequest request,
         CancellationToken cancellationToken)
     {
         var calendar = await defendCapstoneCalendarRepository.GetAsync(
-            x => x.Id == calendarId,
-            include: x => x.Include(x => x.DefendCapstoneProjectMemberCouncils)
-                .Include(x => x.Topic),
+            x => x.Id == request.CalendarId,
+            include: x => x.AsSplitQuery()
+                .Include(x => x.DefendCapstoneProjectMemberCouncils)
+                .Include(x => x.Topic)
+                    .ThenInclude(x => x.Group),
             orderBy: null,
             cancellationToken);
 
@@ -212,9 +216,8 @@ public class DefendCapstoneService(
             return OperationResult.Failure<string>(new Error("DefendCapstone.Error",
                 "You can not get this thesis because you are not in the Council."));
 
-        //TODO: Update status of group
-
-        return OperationResult.Success();
+        // Update status of group
+        return await groupService.UpdateGroupDecisionByPresidentIdAsync(calendar.Topic.Group.Id, request.IsReDefendCapstoneProject);
     }
 
     private async Task<List<DefendCapstoneProjectInformationCalendar>> ParseDefendCapstoneCalendarsFromFile(
@@ -231,7 +234,7 @@ public class DefendCapstoneService(
         var defendAttempt = workSheet.Cell(2, 13).GetValue<string>(); //attempt
         if (!int.TryParse(defendAttempt, out var attempt))
         {
-            throw new Exception("defend attempt time is empty!");
+            throw new InvalidOperationException("Defend attempt time is empty!");
         }
 
         foreach (var row in workSheet.Rows().Skip(2))
@@ -263,7 +266,7 @@ public class DefendCapstoneService(
                     // check if member information is duplicate value with president or secretary
                     if (IsMemberInformationValid(memberInfoList, presidentAndSecretary.Item1.Id,
                             presidentAndSecretary.Item2.Id))
-                        throw new Exception("Member information is duplicate value with president or secretary.");
+                        throw new InvalidOperationException("Member information is duplicate value with president or secretary.");
                 }
             }
 
@@ -281,7 +284,7 @@ public class DefendCapstoneService(
         return defendCalendars;
     }
 
-    private DefendCapstoneProjectInformationCalendar CreateDefendCalendar(
+    private static DefendCapstoneProjectInformationCalendar CreateDefendCalendar(
         Topic topic,
         string currentUserCampusId,
         string currentSemesterId,
@@ -309,7 +312,7 @@ public class DefendCapstoneService(
         return defendCalendar;
     }
 
-    private void AddPresidentToDefendCalendar(
+    private static void AddPresidentToDefendCalendar(
         DefendCapstoneProjectInformationCalendar defendCalendar,
         SupervisorResponseDTO president)
     {
@@ -323,7 +326,7 @@ public class DefendCapstoneService(
         });
     }
 
-    private void AddSecretaryToDefendCalendar(
+    private static void AddSecretaryToDefendCalendar(
         DefendCapstoneProjectInformationCalendar defendCalendar,
         SupervisorResponseDTO secretary)
     {
@@ -337,7 +340,7 @@ public class DefendCapstoneService(
         });
     }
 
-    private void AddMembersToDefendCalendar(
+    private static void AddMembersToDefendCalendar(
         DefendCapstoneProjectInformationCalendar defendCalendar,
         List<string> memberInfoList)
     {
@@ -360,15 +363,15 @@ public class DefendCapstoneService(
         if (string.IsNullOrEmpty(reviewDate) || string.IsNullOrEmpty(slot) || string.IsNullOrEmpty(room))
         {
             logger.LogError("import defend capstone calendar failed with message: review date, slot or room is empty!");
-            throw new Exception("Invalid defend capstone calendar details");
+            throw new InvalidOperationException("Invalid defend capstone calendar details");
         }
 
         return (DateTime.Parse(reviewDate), int.Parse(slot), room);
     }
 
-    private bool IsMemberInformationValid(List<string> memberInfoList, string presidentId, string secretaryId)
+    private static bool IsMemberInformationValid(List<string> memberInfoList, string presidentId, string secretaryId)
     {
-        return memberInfoList.Any(x => x == presidentId || x == secretaryId);
+        return memberInfoList.Exists(x => x == presidentId || x == secretaryId);
     }
 
     private async Task<SupervisorResponseDTO> GetMemberInformationAsync(IXLRow row, Topic topic, int memberColumn)
@@ -377,9 +380,9 @@ public class DefendCapstoneService(
             await supervisorService.GetSupervisorByIdAsync(row.Cell(memberColumn).GetValue<string>());
 
         return memberInfo.IsFailure
-            ? throw new Exception("member information is invalid ")
+            ? throw new InvalidOperationException("Member information is invalid ")
             : IsCouncilMemberIsMainSupervisor(topic, memberInfo.Value.Id)
-                ? throw new Exception("Can not assign this supervisor for their own topic.")
+                ? throw new InvalidOperationException("Can not assign this supervisor for their own topic.")
                 : memberInfo.Value;
     }
 
@@ -396,13 +399,13 @@ public class DefendCapstoneService(
 
         return IsCouncilMemberIsMainSupervisor(topic, presidentInformation.Value.Id) ||
                IsCouncilMemberIsMainSupervisor(topic, secretaryInformation.Value.Id)
-            ? throw new Exception("Can not assign this supervisor for their own topic.")
+            ? throw new InvalidOperationException("Can not assign this supervisor for their own topic.")
             : (presidentInformation.Value, secretaryInformation.Value);
     }
 
-    private bool IsCouncilMemberIsMainSupervisor(Topic topic, string councilMemberId)
+    private static bool IsCouncilMemberIsMainSupervisor(Topic topic, string councilMemberId)
     {
-        return topic.MainSupervisorId.Equals(councilMemberId);
+        return topic.MainSupervisorId == councilMemberId;
     }
 
     private static bool IsValidFile(IFormFile file)

@@ -4,6 +4,7 @@ using FUC.Common.Abstractions;
 using FUC.Common.Constants;
 using FUC.Common.Shared;
 using FUC.Service.Abstractions;
+using FUC.Service.DTOs.DefendCapstone;
 using FUC.Service.DTOs.GroupDTO;
 using FUC.Service.DTOs.StudentDTO;
 using FUC.Service.DTOs.SupervisorDTO;
@@ -27,6 +28,7 @@ public sealed class UserController(
     public async Task<IActionResult> GetAllStudentAsync()
     {
         OperationResult<IEnumerable<StudentResponseDTO>> result = await studentService.GetAllStudentAsync(default);
+
         return result.IsSuccess
             ? Ok(result)
             : HandleFailure(result);
@@ -38,6 +40,7 @@ public sealed class UserController(
     {
         OperationResult<IEnumerable<SupervisorResponseDTO>> result =
             await supervisorService.GetAllSupervisorAsync(default);
+
         return result.IsSuccess
             ? Ok(result)
             : HandleFailure(result);
@@ -47,6 +50,7 @@ public sealed class UserController(
     public async Task<IActionResult> GetStudentInformation(string id)
     {
         OperationResult<StudentResponseDTO> studentInfo = await studentService.GetStudentByIdAsync(id);
+
         return studentInfo.IsSuccess
             ? Ok(studentInfo)
             : HandleFailure(studentInfo);
@@ -57,6 +61,7 @@ public sealed class UserController(
     public async Task<IActionResult> UpdateStudentInformation([FromBody] UpdateStudentRequest request)
     {
         var result = await studentService.UpdateStudentInformation(request, currentUser.UserCode);
+
         return result.IsSuccess
             ? Ok(result)
             : HandleFailure(result);
@@ -77,6 +82,7 @@ public sealed class UserController(
     public async Task<IActionResult> ImportReviewAsync(IFormFile file)
     {
         var result = await reviewCalendarService.ImportReviewCalendar(file);
+
         return result.IsSuccess
             ? Ok(result)
             : HandleFailure(result);
@@ -87,6 +93,7 @@ public sealed class UserController(
     public async Task<IActionResult> GetReviewCalendarByStudentAsync()
     {
         var result = await reviewCalendarService.GetReviewCalendarByStudentId();
+
         return result.IsSuccess
             ? Ok(result)
             : HandleFailure(result);
@@ -97,6 +104,7 @@ public sealed class UserController(
     public async Task<IActionResult> GetReviewCalendarBySupervisorAsync()
     {
         var result = await reviewCalendarService.GetReviewCalendarBySupervisorId();
+
         return result.IsSuccess
             ? Ok(result)
             : HandleFailure(result);
@@ -107,16 +115,18 @@ public sealed class UserController(
     public async Task<IActionResult> GetReviewCalendarByManagerAsync()
     {
         var result = await reviewCalendarService.GetReviewCalendarByManagerId();
+
         return result.IsSuccess
             ? Ok(result)
             : HandleFailure(result);
     }
 
-    [HttpPost("import-defend-capstone-calendar")]
+    [HttpPost("defend/calendar")]
     [Authorize(Roles = UserRoles.Manager)]
     public async Task<IActionResult> ImportDefendCapstoneCalendarAsync(IFormFile file)
     {
         var result = await defendCapstoneService.UploadDefendCapstoneProjectCalendar(file, default);
+
         return result.IsSuccess
             ? Ok(result)
             : HandleFailure(result);
@@ -128,17 +138,53 @@ public sealed class UserController(
         [FromBody] UpdateGroupDecisionStatusBySupervisorRequest request)
     {
         var result = await groupService.UpdateGroupDecisionBySupervisorIdAsync(request);
+
         return result.IsSuccess
             ? Ok(result)
             : HandleFailure(result);
     }
 
-    [HttpPut("president/update-group-decision-status")]
+    [HttpPut("defend/president-decision-status")]
     [Authorize(Roles = UserRoles.Supervisor)]
     public async Task<IActionResult> UpdateGroupDecisionStatusByPresidentAsync(
         [FromBody] UpdateGroupDecisionStatusByPresidentRequest request)
     {
-        var result = await groupService.UpdateGroupDecisionByPresidentIdAsync(request);
+        var result = await defendCapstoneService.UpdateStatusOfGroupAfterDefend(request, default);
+
+        return result.IsSuccess
+            ? Ok(result)
+            : HandleFailure(result);
+    }
+
+    [HttpGet("defend/calendar")]
+    [Authorize(Roles = $"{UserRoles.Supervisor},{UserRoles.Manager}")]
+    public async Task<IActionResult> GetDefendCalendarAsync()
+    {
+        var result = await defendCapstoneService.GetDefendCalendersByCouncilMember(default);
+
+        return result.IsSuccess
+            ? Ok(result)
+            : HandleFailure(result);
+    }
+
+    [HttpPost("defend/thesis")]
+    [Authorize(Roles = $"{UserRoles.Supervisor}")]
+    public async Task<IActionResult> UploadThesisCouncilMeetingMinutesForDefendCapstone([FromBody] UploadThesisCouncilMeetingMinutesRequest request)
+    {
+        var result = await defendCapstoneService
+            .UploadThesisCouncilMeetingMinutesForDefendCapstone(request, default);
+
+        return result.IsSuccess
+            ? Ok(result)
+            : HandleFailure(result);
+    }
+
+    [HttpGet("defend/thesis/{calendarId}")]
+    [Authorize(Roles = $"{UserRoles.Supervisor},{UserRoles.Manager}")]
+    public async Task<IActionResult> PresentThesisForTopicResignedUrl(Guid calendarId)
+    {
+        var result = await defendCapstoneService.PresentThesisForTopicResignedUrl(calendarId, default);
+
         return result.IsSuccess
             ? Ok(result)
             : HandleFailure(result);

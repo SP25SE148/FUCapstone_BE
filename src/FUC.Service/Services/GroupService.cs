@@ -41,8 +41,6 @@ public class GroupService(
     ICurrentUser currentUser,
     IRepository<GroupMember> groupMemberRepository,
     IRepository<TopicRequest> topicRequestRepository,
-    IRepository<ProjectProgressWeek> projectProgressWeekRepository,
-    ISupervisorService supervisorService,
     IRepository<ProjectProgress> projectProgressRepository,
     IRepository<FucTask> fucTaskRepository,
     IRepository<WeeklyEvaluation> weeklyEvaluationRepository,
@@ -50,7 +48,6 @@ public class GroupService(
     IRepository<Group> groupRepository,
     ITopicService topicService,
     IRepository<DefendCapstoneProjectCouncilMember> defendCapstoneProjectCouncilMemberRepository,
-    IRepository<ReviewCalendar> reviewCalendarRepository,
     ICapstoneService capstoneService,
     IS3Service s3Service,
     IDocumentsService documentsService,
@@ -1536,18 +1533,18 @@ public class GroupService(
     }
 
     public async Task<OperationResult> UpdateGroupDecisionByPresidentIdAsync(
-        UpdateGroupDecisionStatusByPresidentRequest request)
+        Guid groupId, bool isReDefendCapstoneProject)
     {
         try
         {
-            var group = await groupRepository.GetAsync(g => g.Id == request.GroupId,
+            var group = await groupRepository.GetAsync(g => g.Id == groupId,
                 true,
                 g =>
                     g.Include(g => g.Supervisor)
                         .Include(g => g.Capstone)
                         .Include(g => g.ReviewCalendars.Where(rc => rc.Status == ReviewCalendarStatus.Done)));
             var president = await defendCapstoneProjectCouncilMemberRepository.GetAsync(
-                cm => cm.SupervisorId == currentUser.UserCode && cm.IsPresident == true,
+                cm => cm.SupervisorId == currentUser.UserCode && cm.IsPresident,
                 cm => cm.Include(cm => cm.DefendCapstoneProjectInformationCalendar),
                 default);
 
@@ -1564,7 +1561,7 @@ public class GroupService(
             if (group!.Decision == DecisionStatus.Undefined)
                 return OperationResult.Failure(new Error("Error.UpdateFailed",
                     "Can not update group decision while group decision is undefined"));
-            switch (request.IsReDefendCapstoneProject)
+            switch (isReDefendCapstoneProject)
             {
                 case false:
                     group!.IsReDefendCapstoneProject = false;
