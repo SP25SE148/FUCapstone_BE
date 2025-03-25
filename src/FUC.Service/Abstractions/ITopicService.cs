@@ -23,7 +23,8 @@ public interface ITopicService
     Task<TopicResponse?> GetTopicByTopicCode(string? topicCode);
     Task<OperationResult> SemanticTopic(Guid topicId, bool withCurrentSemester, CancellationToken cancellationToken);
     Task<OperationResult<string>> PresentTopicPresignedUrl(Guid topicId, CancellationToken cancellationToken);
-    Task<OperationResult> AssignTopicAppraisalForAvailableSupervisors(IReadOnlyList<string> supervisorEmail);
+    Task<OperationResult> AssignTopicAppraisalForAvailableSupervisors(IReadOnlyList<string> supervisorEmail,
+        CancellationToken cancellationToken);
     Task<OperationResult> AssignSupervisorForAppraisalTopic(AssignSupervisorAppraisalTopicRequest request, CancellationToken cancellationToken);
     Task<OperationResult> RemoveAssignSupervisorForAppraisalTopic(
         RemoveAssignSupervisorAppraisalTopicRequest request, CancellationToken cancellationToken);

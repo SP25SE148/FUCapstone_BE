@@ -102,7 +102,7 @@ public class TopicsController(ITopicService topicService) : ApiController
     [Authorize(Roles = $"{UserRoles.Manager}")]
     public async Task<IActionResult> AssignTopicAppraisal([FromBody] IReadOnlyList<string> supervisorEmail)
     {
-        var result = await topicService.AssignTopicAppraisalForAvailableSupervisors(supervisorEmail);
+        var result = await topicService.AssignTopicAppraisalForAvailableSupervisors(supervisorEmail, default);
         return result.IsSuccess ? Ok(result) : HandleFailure(result);
     }
 

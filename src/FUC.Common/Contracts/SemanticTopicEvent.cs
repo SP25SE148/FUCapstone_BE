@@ -5,6 +5,7 @@ namespace FUC.Common.Contracts;
 public class SemanticTopicEvent : IntegrationEvent
 {
     public string TopicId { get; set; }
+    public string TopicEnglishName { get; set; }
     public List<string> SemesterIds { get; set; }
     public string ProcessedBy { get; set; }
     public bool IsCurrentSemester { get; set; }

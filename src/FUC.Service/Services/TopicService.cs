@@ -1,7 +1,6 @@
 using System.Text.Json;
 using Amazon.S3;
 using AutoMapper;
-using AutoMapper.Internal;
 using FUC.Common.Abstractions;
 using FUC.Common.Constants;
 using FUC.Common.Contracts;
@@ -408,9 +407,10 @@ public class TopicService(
             integrationEventLogService.SendEvent(new SemanticTopicEvent
             {
                 TopicId = topic.Id.ToString(),
+                TopicEnglishName = topic.EnglishName,
                 IsCurrentSemester = withCurrentSemester,
                 SemesterIds = semesterIds,
-                ProcessedBy = currentUser.Email,
+                ProcessedBy = currentUser.UserCode,
                 CampusId = topic.CampusId,
                 CapstoneId = topic.CapstoneId,
             });
@@ -512,8 +512,9 @@ public class TopicService(
             integrationEventLogService.SendEvent(new SemanticTopicEvent
             {
                 TopicId = topic.Id.ToString(),
+                TopicEnglishName = request.EnglishName,
                 SemesterIds = await semesterService.GetPreviouseSemesterIds(getCurrentSemesterResult.Value.StartDate),
-                ProcessedBy = currentUser.Email,
+                ProcessedBy = currentUser.UserCode,
                 IsCurrentSemester = false,
                 CampusId = currentUser.CampusId,
                 CapstoneId = request.CapstoneId
@@ -727,98 +728,119 @@ public class TopicService(
     }
 
     public async Task<OperationResult> AssignTopicAppraisalForAvailableSupervisors(
-        IReadOnlyList<string> supervisorEmail)
+        IReadOnlyList<string> supervisorEmail, CancellationToken cancellationToken)
     {
-        // TODO: Check the valid date to assign supervisors to topics (TimeConfig table)
-
-        var currentSemester = await semesterService.GetCurrentSemesterAsync();
-        if (currentSemester.IsFailure)
+        try
         {
-            logger.LogError("The current semester is inactive!");
-            return OperationResult.Failure(new Error("Error.CurrentSemesterIsNull", "Current semester is inactive!"));
-        }
+            // TODO: Check the valid date to assign supervisors to topics (TimeConfig table)
 
-        if (supervisorEmail.Count < TopicAppraisalRequirement.SupervisorAppraisalMinimum)
-        {
-            logger.LogError("The Supervisor Appraisal size is invalid!");
-            return OperationResult.Failure(new Error("Error.InvalidSupervisorAppraisalSize",
-                $"The Supervisor appraisal must be at least {TopicAppraisalRequirement.SupervisorAppraisalMinimum}"));
-        }
-
-        var supervisorIdList = await (from s in supervisorRepository.GetQueryable()
-            where supervisorEmail.Contains(s.Email) &&
-                  s.IsAvailable &&
-                  s.MajorId == currentUser.MajorId &&
-                  s.CampusId == currentUser.CampusId
-            select s.Id).ToListAsync();
-
-        if (supervisorIdList.Count == 0)
-        {
-            logger.LogError("Supervisors were not found!");
-            return OperationResult.Failure(Error.NullValue);
-        }
-
-        IList<Topic> topicList = await topicRepository
-            .FindAsync(t => t.Status == TopicStatus.Pending &&
-                            t.CampusId == currentUser.CampusId &&
-                            t.CapstoneId == currentUser.CapstoneId &&
-                            t.SemesterId == currentSemester.Value.Id,
-                t => t.Include(t => t.TopicAppraisals)
-                    .Include(t => t.CoSupervisors)
-                    .Include(t => t.Capstone));
-
-        topicList = topicList
-            .Where(t => t.Capstone.MajorId == currentUser.MajorId &&
-                        (t.TopicAppraisals == null || t.TopicAppraisals.Count == 0))
-            .ToList();
-
-        if (!topicList.Any())
-        {
-            logger.LogError("No pending topics found!");
-            return OperationResult.Failure(Error.NullValue);
-        }
-
-        // Shuffle topics and supervisors to ensure fairness
-        var rand = new Random();
-        topicList = topicList.OrderBy(_ => rand.Next()).ToList();
-        supervisorIdList = supervisorIdList.OrderBy(_ => rand.Next()).ToList();
-
-        // Track supervisor assignments count
-        var supervisorAssignments = supervisorIdList.ToDictionary(s => s, _ => 0);
-        var topicAppraisalList = new List<TopicAppraisal>();
-
-        foreach (var topic in topicList)
-        {
-            var assignedSupervisors = new HashSet<string>();
-
-            while (assignedSupervisors.Count < topicServiceSetting.Value.MaxTopicAppraisalsForTopic)
+            var currentSemester = await semesterService.GetCurrentSemesterAsync();
+            if (currentSemester.IsFailure)
             {
-                var availableSupervisors = supervisorAssignments
-                    .Where(s => s.Key != topic.MainSupervisorId && !assignedSupervisors.Contains(s.Key))
-                    .OrderBy(s => s.Value) // Pick the least assigned
-                    .ToList();
-
-                if (availableSupervisors.Count == 0)
-                    break; // No more available supervisors
-
-                var supervisorId = availableSupervisors[0].Key;
-
-                assignedSupervisors.Add(supervisorId);
-                supervisorAssignments[supervisorId]++;
+                logger.LogError("The current semester is inactive!");
+                return OperationResult.Failure(new Error("Error.CurrentSemesterIsNull", "Current semester is inactive!"));
             }
 
-            topicAppraisalList.AddRange(assignedSupervisors.Select(s => new TopicAppraisal
+            if (supervisorEmail.Count < TopicAppraisalRequirement.SupervisorAppraisalMinimum)
             {
-                SupervisorId = s,
-                TopicId = topic.Id,
-                AttemptTime = 1
-            }));
+                logger.LogError("The Supervisor Appraisal size is invalid!");
+                return OperationResult.Failure(new Error("Error.InvalidSupervisorAppraisalSize",
+                    $"The Supervisor appraisal must be at least {TopicAppraisalRequirement.SupervisorAppraisalMinimum}"));
+            }
+
+            var supervisorIdList = await (from s in supervisorRepository.GetQueryable()
+                                          where supervisorEmail.Contains(s.Email) &&
+                                                s.IsAvailable &&
+                                                s.MajorId == currentUser.MajorId &&
+                                                s.CampusId == currentUser.CampusId
+                                          select s.Id).ToListAsync(cancellationToken);
+
+            if (supervisorIdList.Count == 0)
+            {
+                logger.LogError("Supervisors were not found!");
+                return OperationResult.Failure(Error.NullValue);
+            }
+
+            IList<Topic> topicList = await topicRepository
+                .FindAsync(t => t.Status == TopicStatus.Pending &&
+                                t.CampusId == currentUser.CampusId &&
+                                t.CapstoneId == currentUser.CapstoneId &&
+                                t.SemesterId == currentSemester.Value.Id,
+                    t => t.Include(t => t.TopicAppraisals)
+                        .Include(t => t.CoSupervisors)
+                        .Include(t => t.Capstone),
+                    cancellationToken);
+
+            topicList = topicList
+                .Where(t => t.Capstone.MajorId == currentUser.MajorId &&
+                            (t.TopicAppraisals == null || t.TopicAppraisals.Count == 0))
+                .ToList();
+
+            if (!topicList.Any())
+            {
+                logger.LogError("No pending topics found!");
+                return OperationResult.Failure(Error.NullValue);
+            }
+
+            // Shuffle topics and supervisors to ensure fairness
+            var rand = new Random();
+            topicList = topicList.OrderBy(_ => rand.Next()).ToList();
+            supervisorIdList = supervisorIdList.OrderBy(_ => rand.Next()).ToList();
+
+            // Track supervisor assignments count
+            var supervisorAssignments = supervisorIdList.ToDictionary(s => s, _ => 0);
+            var topicAppraisalList = new List<TopicAppraisal>();
+
+            foreach (var topic in topicList)
+            {
+                var assignedSupervisors = new HashSet<string>();
+
+                while (assignedSupervisors.Count < topicServiceSetting.Value.MaxTopicAppraisalsForTopic)
+                {
+                    var availableSupervisors = supervisorAssignments
+                        .Where(s => s.Key != topic.MainSupervisorId && !assignedSupervisors.Contains(s.Key))
+                        .OrderBy(s => s.Value) // Pick the least assigned
+                        .ToList();
+
+                    if (availableSupervisors.Count == 0)
+                        break; // No more available supervisors
+
+                    var supervisorId = availableSupervisors[0].Key;
+
+                    assignedSupervisors.Add(supervisorId);
+                    supervisorAssignments[supervisorId]++;
+                }
+
+                topicAppraisalList.AddRange(assignedSupervisors.Select(s => new TopicAppraisal
+                {
+                    SupervisorId = s,
+                    TopicId = topic.Id,
+                    AttemptTime = 1
+                }));
+            }
+
+            await unitOfWork.BeginTransactionAsync(cancellationToken);
+
+            topicAppraisalRepository.InsertRange(topicAppraisalList);
+            await unitOfWork.SaveChangesAsync(cancellationToken);
+
+            integrationEventLogService.SendEvent(new AssignedAvailableSupervisorForAppraisalEvent
+            {
+                SupervisorIds = supervisorIdList
+            });
+
+            await unitOfWork.CommitAsync(cancellationToken);    
+
+            return OperationResult.Success();
         }
+        catch (Exception ex)
+        {
+            logger.LogError("Fail to assign all the available supervisors with error: {Message}", ex.Message);
+            
+            await unitOfWork.RollbackAsync(cancellationToken);  
 
-        topicAppraisalRepository.InsertRange(topicAppraisalList);
-        await unitOfWork.SaveChangesAsync();
-
-        return OperationResult.Success();
+            return OperationResult.Failure(new Error("TopicAppraisal.Error", "Fail to assign supervisors for appraisal."));
+        }
     }
 
     public async Task<OperationResult> AssignSupervisorForAppraisalTopic(AssignSupervisorAppraisalTopicRequest request,
@@ -878,6 +900,8 @@ public class TopicService(
                 newAttempTime++;
             }
 
+            await unitOfWork.BeginTransactionAsync(cancellationToken);
+
             topic.TopicAppraisals.Add(new TopicAppraisal
             {
                 SupervisorId = request.SupervisorId,
@@ -888,12 +912,23 @@ public class TopicService(
 
             await unitOfWork.SaveChangesAsync(cancellationToken);
 
+            integrationEventLogService.SendEvent(new AssignedSupervisorForAppraisalEvent
+            {
+                TopicId = topic.Id,
+                SupervisorId = request.SupervisorId,
+                TopicEnglishName = topic.EnglishName
+            });
+
+            await unitOfWork.CommitAsync(cancellationToken);
+
             return OperationResult.Success();
         }
         catch (Exception ex)
         {
             logger.LogError("Fail to assign appraisal for topic {Id} with error {Message}", request.TopicId,
                 ex.Message);
+
+            await unitOfWork.RollbackAsync(cancellationToken);  
 
             return OperationResult.Failure(new Error("Topic.Error", "Fail to assign topic appraisal."));
         }
@@ -926,8 +961,13 @@ public class TopicService(
 
             topicRepository.Update(topic);
 
-            // TODO: Send notification for supvisor has removed.
-
+            integrationEventLogService.SendEvent(new SupervisorAppraisalRemovedEvent
+            {
+                SupervisorId = topicAppraisal.SupervisorId,
+                TopicId = topic.Id,
+                TopicEnglishName = topic.EnglishName
+            });
+            
             await unitOfWork.CommitAsync(cancellationToken);
 
             return OperationResult.Success();
@@ -1010,6 +1050,8 @@ public class TopicService(
 
             var topicAppraisal = await topicAppraisalRepository.GetAsync(
                 t => t.Id == request.TopicAppraisalId,
+                include: t => t.Include(x => x.Topic),
+                orderBy: null,
                 cancellationToken);
 
             if (topicAppraisal is null)
@@ -1063,8 +1105,7 @@ public class TopicService(
             }
             else if (otherTopicAppraisals.All(x =>
                          x.AppraisalDate is not null && x.Status != TopicAppraisalStatus.Pending))
-            {
-                // TODO: Send notification for re-assign because the supervisor's opinions are not the same or all are consider
+            {   
                 await UpdateStatusTopicAfterAppraisal(topicAppraisal.TopicId, TopicStatus.Considered,
                     cancellationToken);
                 var appraisalSupervisors = new List<string> { topicAppraisal.SupervisorId };
@@ -1082,6 +1123,14 @@ public class TopicService(
                 {
                     topicAppraisalRepository.InsertRange(newAppraisals);
                 }
+
+                // Notification for re-assign because the supervisor's opinions are not the same or all are consider
+                integrationEventLogService.SendEvent(new ReAssignAppraisalTopicEvent
+                {
+                    SupervisorIds = appraisalSupervisors,
+                    TopicId = topicAppraisal.TopicId,
+                    TopicEnglishName = topicAppraisal.Topic.EnglishName
+                });
             }
 
             await unitOfWork.CommitAsync(cancellationToken);
@@ -1119,11 +1168,17 @@ public class TopicService(
             {
                 topic.Code = await GenerationTopicCode(topic.CampusId, topic.Capstone.MajorId, topic.CapstoneId,
                     cancellationToken);
+
+                integrationEventLogService.SendEvent(new TopicApprovedEvent
+                {
+                    SupervisorId = topic.MainSupervisorId, 
+                    TopicId = topicId,
+                    TopicEnglishName = topic.EnglishName,
+                    TopicCode = topic.Code, 
+                });
             }
 
             topicRepository.Update(topic);
-
-            // TODO: Notification for relative people, send integration event
 
             await unitOfWork.SaveChangesAsync(cancellationToken);
         }

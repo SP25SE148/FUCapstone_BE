@@ -53,6 +53,12 @@ public class EmailSerivce : IEmailService
 
             return true;
         }
+        catch (SmtpFailedRecipientException ex)
+        {
+            // Log and ignore the error for invalid email addresses
+            _logger.LogWarning("Failed to send email to a recipient. Reason: {Message}", ex.Message);
+            return true;
+        }
         catch (Exception ex) 
         {
             _logger.LogError("Fail to send email with error {Message}.", ex.Message);

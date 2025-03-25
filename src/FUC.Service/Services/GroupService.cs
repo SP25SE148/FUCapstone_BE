@@ -599,7 +599,9 @@ public class GroupService(
 
         var group = await groupRepository.GetAsync(
             x => x.Id == request.GroupId,
-            include: x => x.Include(g => g.Capstone)
+            include: x => x.AsSplitQuery()
+                .Include(g => g.Capstone)
+                .Include(x => x.Semester)
                 .Include(g => g.GroupMembers.Where(m => m.Status == GroupMemberStatus.Accepted)),
             orderBy: null,
             cancellationToken);
@@ -650,15 +652,17 @@ public class GroupService(
 
             await uow.SaveChangesAsync(cancellationToken);
 
-            // TODO: send reminderTask into process service
-
-            // TODO: send the notification for relative people
-
-            integrationEventLogService.SendEvent(new ProjectProgressCreatedEvent
+            integrationEventLogService.SendEvent(new ProjectProgressCreatedEvent 
             {
                 GroupId = group.Id,
                 StudentCodes = group.GroupMembers.Select(x => x.StudentId).ToList(),
                 Type = nameof(ProjectProgressCreatedEvent),
+                EndDate = group.Semester.EndDate.EndOfDay(),
+                ProjectProgressId = projectProgress.Id,
+                RemindDate = DayOfWeek.Monday,
+                RemindTime = TimeSpan.FromHours(7),
+                SupervisorCode = group.SupervisorId,
+                SupervisorName = currentUser.Name,
             });
 
             await uow.CommitAsync(cancellationToken);
@@ -851,8 +855,6 @@ public class GroupService(
             projectProgressRepository.Update(progress);
 
             await uow.SaveChangesAsync(cancellationToken);
-
-            // TODO: Send notification
 
             await uow.CommitAsync(cancellationToken);
 

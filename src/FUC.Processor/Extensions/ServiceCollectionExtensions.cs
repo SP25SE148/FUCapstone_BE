@@ -28,6 +28,11 @@ public static class ServiceCollectionExtensions
             options.UseNpgsql(configuration.GetConnectionString("ProcessorConnection"));
         });
 
+        services.AddDbContextFactory<ProcessorDbContext>(options =>
+        {
+            options.UseNpgsql(configuration.GetConnectionString("ProcessorConnection"));
+        });
+
         services.AddDbContext<FucDbContext>((provider, options) =>
         {
             options.UseNpgsql(configuration.GetConnectionString("FucConnection"));

@@ -37,11 +37,28 @@ namespace FUC.Processor.Data.Migrations
                     Content = table.Column<string>(type: "text", nullable: true),
                     Type = table.Column<string>(type: "text", nullable: true),
                     ReferenceTarget = table.Column<string>(type: "text", nullable: true),
-                    CreatedDate = table.Column<DateTime>(type: "timestamp", nullable: false)
+                    CreatedDate = table.Column<DateTime>(type: "timestamp", nullable: false, defaultValue: new DateTime(2025, 3, 25, 11, 22, 36, 298, DateTimeKind.Local).AddTicks(5600))
                 },
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_Notifications", x => x.Id);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "RecurrentReminders",
+                columns: table => new
+                {
+                    Id = table.Column<Guid>(type: "uuid", nullable: false),
+                    Content = table.Column<string>(type: "text", nullable: false),
+                    ReminderType = table.Column<string>(type: "text", nullable: false),
+                    RemindFor = table.Column<string>(type: "text", nullable: false),
+                    RecurringDay = table.Column<string>(type: "varchar(20)", nullable: false),
+                    EndDate = table.Column<DateTime>(type: "timestamp", nullable: true),
+                    RemindTime = table.Column<TimeSpan>(type: "interval", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_RecurrentReminders", x => x.Id);
                 });
 
             migrationBuilder.CreateTable(
@@ -80,6 +97,9 @@ namespace FUC.Processor.Data.Migrations
 
             migrationBuilder.DropTable(
                 name: "Notifications");
+
+            migrationBuilder.DropTable(
+                name: "RecurrentReminders");
 
             migrationBuilder.DropTable(
                 name: "Reminders");
