@@ -6,6 +6,7 @@ using FUC.Common.Shared;
 using FUC.Data;
 using FUC.Data.Data;
 using FUC.Data.Entities;
+using FUC.Data.Enums;
 using FUC.Data.Repositories;
 using FUC.Service.Abstractions;
 using FUC.Service.DTOs.GroupDTO;
@@ -90,7 +91,9 @@ public sealed class ReviewCalendarService(
                 TopicEnglishName = r.ReviewCalender.Topic.EnglishName,
                 MainSupervisorCode = r.ReviewCalender.Topic.MainSupervisorId,
                 ReviewersCode = r.ReviewCalender.Reviewers.Select(r => r.SupervisorId).ToList(),
-                CoSupervisorsCode = r.ReviewCalender.Topic.CoSupervisors.Select(c => c.SupervisorId).ToList()
+                CoSupervisorsCode = r.ReviewCalender.Topic.CoSupervisors.Select(c => c.SupervisorId).ToList(),
+                Comment = r.ReviewCalender.Reviewers.Select(r => r.Comment).ToList(),
+                Suggestion = r.ReviewCalender.Reviewers.Select(r => r.Suggestion).ToList()
             });
         return reviewCalendars.Count > 0
             ? reviewCalendars.ToList()
@@ -124,8 +127,37 @@ public sealed class ReviewCalendarService(
             : OperationResult.Failure<IEnumerable<ReviewCalendarResponse>>(Error.NullValue);
     }
 
+    public async Task<OperationResult> UpdateReviewCalendar(UpdateReviewerSuggestionAndCommentRequest request)
+    {
+        try
+        {
+            var reviewer = await reviewerRepository.GetAsync(
+                r => r.SupervisorId == currentUser.UserCode && r.ReviewCalenderId == request.ReviewCalenderId,
+                true,
+                include: r => r.Include(rc => rc.ReviewCalender));
+            if (IsReviewerValidToEnterSuggestionAndComment(reviewer))
+                return OperationResult.Failure(Error.NullValue);
+            reviewer!.Suggestion = request.Suggestion;
+            reviewer.Comment = request.Comment;
+            reviewer.ReviewCalender.Status = ReviewCalendarStatus.Done;
+            await uow.SaveChangesAsync();
+            return OperationResult.Success();
+        }
+        catch (Exception e)
+        {
+            logger.LogError("update reviewer suggestion and comment failed with message: {Message}", e.Message);
+            return OperationResult.Failure(new Error("Error.UpdateFailed",
+                "update reviewer suggestion and comment failed"));
+        }
+    }
+
 
     #region private method
+
+    private static bool IsReviewerValidToEnterSuggestionAndComment(Reviewer? reviewer)
+    {
+        return reviewer != null && reviewer.ReviewCalender.Status == ReviewCalendarStatus.InProgress;
+    }
 
     private async Task<List<ReviewCalendar>> ParseReviewCalendarsFromFile(IFormFile file, string currentSemester)
     {
@@ -273,7 +305,9 @@ public sealed class ReviewCalendarService(
             TopicEnglishName = calendar.Topic.EnglishName,
             MainSupervisorCode = calendar.Topic.MainSupervisorId,
             ReviewersCode = calendar.Reviewers.Select(r => r.SupervisorId).ToList(),
-            CoSupervisorsCode = calendar.Topic.CoSupervisors.Select(c => c.SupervisorId).ToList()
+            CoSupervisorsCode = calendar.Topic.CoSupervisors.Select(c => c.SupervisorId).ToList(),
+            Suggestion = calendar.Reviewers.Select(x => x.Suggestion).ToList(),
+            Comment = calendar.Reviewers.Select(x => x.Comment).ToList(),
         };
 
     private Func<IQueryable<ReviewCalendar>, IIncludableQueryable<ReviewCalendar, object>>

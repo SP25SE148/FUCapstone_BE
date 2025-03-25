@@ -15,4 +15,6 @@ public sealed class ReviewCalendarResponse
     public string Room { get; set; }
     public DateTime Date { get; set; }
     public IReadOnlyCollection<string> ReviewersCode { get; set; }
+    public IReadOnlyCollection<string?> Suggestion { get; set; }
+    public IReadOnlyCollection<string?> Comment { get; set; }
 }

@@ -11,4 +11,5 @@ public interface IReviewCalendarService
     Task<OperationResult<IEnumerable<ReviewCalendarResponse>>> GetReviewCalendarBySupervisorId();
     Task<OperationResult<IEnumerable<ReviewCalendarResponse>>> GetReviewCalendarByStudentId();
     Task<OperationResult<IEnumerable<ReviewCalendarResponse>>> GetReviewCalendarByManagerId();
+    Task<OperationResult> UpdateReviewCalendar(UpdateReviewerSuggestionAndCommentRequest request);
 }
