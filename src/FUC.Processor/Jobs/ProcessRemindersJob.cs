@@ -14,23 +14,24 @@ namespace FUC.Processor.Jobs;
 [DisallowConcurrentExecution]
 public class ProcessRemindersJob : IJob
 {
-    private readonly IDbContextFactory<ProcessorDbContext> _processorDbContextFactory;
     private readonly ILogger<ProcessRemindersJob> _logger;
     private readonly IIntegrationEventLogService _integrationEventLogService;
     private readonly IEmailService _emailService;
     private readonly IHubContext<NotificationHub, INotificationClient> _hub;
     private readonly UsersTracker _usersTracker;
+    private readonly IServiceScopeFactory _serviceScopeFactory;
 
     public ProcessRemindersJob(ILogger<ProcessRemindersJob> logger,
         UsersTracker usersTracker,
-        IServiceProvider serviceProvider)
+        IServiceProvider serviceProvider,
+        IServiceScopeFactory serviceScopeFactory)
     {
         _logger = logger;
         _usersTracker = usersTracker;
-        _processorDbContextFactory = serviceProvider.GetRequiredService<IDbContextFactory<ProcessorDbContext>>();
         _integrationEventLogService = serviceProvider.GetRequiredService<IIntegrationEventLogService>();
         _hub = serviceProvider.GetRequiredService<IHubContext<NotificationHub, INotificationClient>>();
         _emailService = serviceProvider.GetRequiredService<IEmailService>();
+        _serviceScopeFactory = serviceScopeFactory;
     }
 
     public async Task Execute(IJobExecutionContext context)
@@ -39,8 +40,8 @@ public class ProcessRemindersJob : IJob
 
         var tasks = new List<Task>
             {
-                ExcuteRemindersAsync(context.CancellationToken),
-                ExcuteRecurrentRemindersAsync(context.CancellationToken)
+                ExecuteRemindersAsync(context.CancellationToken),
+                ExecuteRecurrentRemindersAsync(context.CancellationToken)
             };
 
         await Task.WhenAll(tasks);
@@ -48,10 +49,11 @@ public class ProcessRemindersJob : IJob
         _logger.LogInformation("Completed ProcessReminderJob at {Date}.", DateTime.Now);
     }
 
-    private async Task ExcuteRemindersAsync(CancellationToken cancellationToken)
+    private async Task ExecuteRemindersAsync(CancellationToken cancellationToken)
     {
-        using var _processorDbContext = await _processorDbContextFactory
-            .CreateDbContextAsync(cancellationToken);
+        using var scope = _serviceScopeFactory.CreateScope();
+
+        var _processorDbContext = scope.ServiceProvider.GetRequiredService<ProcessorDbContext>();
 
         try
         {
@@ -94,10 +96,11 @@ public class ProcessRemindersJob : IJob
         }
     }
 
-    private async Task ExcuteRecurrentRemindersAsync(CancellationToken cancellationToken)
+    private async Task ExecuteRecurrentRemindersAsync(CancellationToken cancellationToken)
     {
-        using var _processorDbContext = await _processorDbContextFactory
-            .CreateDbContextAsync(cancellationToken);
+        using var scope = _serviceScopeFactory.CreateScope();
+
+        var _processorDbContext = scope.ServiceProvider.GetRequiredService<ProcessorDbContext>();
 
         try
         {

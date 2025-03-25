@@ -626,6 +626,7 @@ public class GroupService(
             var projectProgress = new ProjectProgress
             {
                 MeetingDate = workSheet.Cell(IndexStartProgressingRow, 1).GetValue<string>(),
+                Slot = workSheet.Cell(IndexStartProgressingRow + 1, 1).GetValue<string>(),
             };
 
             int durationWeeks = group.Capstone.DurationWeeks;
@@ -656,7 +657,7 @@ public class GroupService(
                 Type = nameof(ProjectProgressCreatedEvent),
                 EndDate = group.Semester.EndDate.EndOfDay(),
                 ProjectProgressId = projectProgress.Id,
-                RemindDate = DayOfWeek.Monday,
+                RemindDate = (DayOfWeek)Enum.Parse(typeof(DayOfWeek), projectProgress.MeetingDate, true),
                 RemindTime = TimeSpan.FromHours(7),
                 SupervisorCode = group.SupervisorId,
                 SupervisorName = currentUser.Name,
@@ -1213,6 +1214,7 @@ public class GroupService(
             {
                 Id = projectProgress.Id,
                 MeetingDate = projectProgress.MeetingDate,
+                Slot = projectProgress.Slot,    
                 ProjectProgressWeeks = projectProgress
                     .ProjectProgressWeeks
                     .OrderBy(p => p.WeekNumber)

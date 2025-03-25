@@ -6,6 +6,7 @@ public class ProjectProgressDto
 {
     public Guid Id { get; set; }
     public string MeetingDate { get; set; }
+    public string Slot { get; set; }
     public ICollection<ProjectProgressWeekDto> ProjectProgressWeeks { get; set; }
 }
 
