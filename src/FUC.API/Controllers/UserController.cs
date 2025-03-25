@@ -6,6 +6,7 @@ using FUC.Common.Shared;
 using FUC.Service.Abstractions;
 using FUC.Service.DTOs.DefendCapstone;
 using FUC.Service.DTOs.GroupDTO;
+using FUC.Service.DTOs.ReviewCalendarDTO;
 using FUC.Service.DTOs.StudentDTO;
 using FUC.Service.DTOs.SupervisorDTO;
 using FUC.Service.DTOs.TopicRequestDTO;
@@ -169,7 +170,8 @@ public sealed class UserController(
 
     [HttpPost("defend/thesis")]
     [Authorize(Roles = $"{UserRoles.Supervisor}")]
-    public async Task<IActionResult> UploadThesisCouncilMeetingMinutesForDefendCapstone([FromBody] UploadThesisCouncilMeetingMinutesRequest request)
+    public async Task<IActionResult> UploadThesisCouncilMeetingMinutesForDefendCapstone(
+        [FromBody] UploadThesisCouncilMeetingMinutesRequest request)
     {
         var result = await defendCapstoneService
             .UploadThesisCouncilMeetingMinutesForDefendCapstone(request, default);
@@ -185,6 +187,17 @@ public sealed class UserController(
     {
         var result = await defendCapstoneService.PresentThesisForTopicResignedUrl(calendarId, default);
 
+        return result.IsSuccess
+            ? Ok(result)
+            : HandleFailure(result);
+    }
+
+    [HttpPut("supervisor/update-reviewer-suggestion-and-comment")]
+    [Authorize(Roles = UserRoles.Supervisor)]
+    public async Task<IActionResult> UpdateReviewerSuggestionAndCommentAsync(
+        [FromBody] UpdateReviewerSuggestionAndCommentRequest request)
+    {
+        var result = await reviewCalendarService.UpdateReviewCalendar(request);
         return result.IsSuccess
             ? Ok(result)
             : HandleFailure(result);
