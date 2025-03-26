@@ -42,6 +42,7 @@ public interface IGroupService
 
     Task<OperationResult<List<FucTaskResponse>>> GetTasks(Guid projectProgressId, CancellationToken cancellationToken);
     Task<OperationResult<FucTaskDetailResponse>> GetTasksDetail(Guid taskId, CancellationToken cancellationToken);
+    Task<OperationResult<DashBoardFucTasksOfGroup>> DashBoardTaskOfGroup(Guid projectProgressId, CancellationToken cancellationToken);
 
     Task<OperationResult> CreateWeeklyEvaluations(CreateWeeklyEvaluationRequest request,
         CancellationToken cancellationToken);

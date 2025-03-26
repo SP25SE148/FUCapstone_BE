@@ -271,6 +271,15 @@ public class GroupController(
         return result.IsSuccess ? Ok(result) : HandleFailure(result);
     }
 
+    [Authorize(Roles = $"{UserRoles.Supervisor}")]
+    [HttpGet("progress/{projectProgressId}/tasks/dashboard")]
+    public async Task<IActionResult> DashBoardTaskOfGroup(Guid projectProgressId)
+    {
+        var result = await groupService.DashBoardTaskOfGroup(projectProgressId, default);
+
+        return result.IsSuccess ? Ok(result) : HandleFailure(result);
+    }
+
     [Authorize(Roles = UserRoles.Student)]
     [HttpPut("progress/tasks")]
     public async Task<IActionResult> UpdateProjectProgressTask([FromBody] UpdateTaskRequest request)

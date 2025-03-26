@@ -1,5 +1,4 @@
 ﻿using System.Linq.Expressions;
-using System.Text.RegularExpressions;
 using Amazon.S3;
 using Amazon.S3.Model;
 using AutoMapper;
@@ -1191,6 +1190,48 @@ public class GroupService(
                 CreatedDate = task.CreatedDate,
                 LastUpdatedDate = task.UpdatedDate
             };
+    }
+
+    public async Task<OperationResult<DashBoardFucTasksOfGroup>> DashBoardTaskOfGroup(Guid projectProgressId, CancellationToken cancellationToken)
+    {
+        var progress = await projectProgressRepository.GetAsync(
+            x => x.Id == projectProgressId,
+            include: x => x.Include(x => x.FucTasks),
+            orderBy: null,
+            cancellationToken);
+
+        if (progress == null || progress.FucTasks.Count == 0)
+            return OperationResult.Failure<DashBoardFucTasksOfGroup>(Error.NullValue);
+
+        if (!await CheckSupervisorInGroup(currentUser.UserCode, progress.GroupId, cancellationToken))
+            return OperationResult.Failure<DashBoardFucTasksOfGroup>(new Error("ProjectProgress.Error",
+                "This supervisor do not have permission."));
+
+        var fucTasks = progress.FucTasks;
+
+        var studentTasks = fucTasks.GroupBy(x => x.AssigneeId);
+
+        return new DashBoardFucTasksOfGroup
+        {
+            DashBoardFucTask = GetDashBoardFucTasksDetail(fucTasks),
+            DashBoardFucTasksStudents = studentTasks.Select(x => new DashBoardFucTasksStudent
+            {
+                DashBoardFucTask = GetDashBoardFucTasksDetail(x.ToList()),
+                StudentId = x.Key
+            }).ToList()
+        };
+    }
+
+    private static DashBoardFucTasksDetail GetDashBoardFucTasksDetail(List<FucTask> fucTasks)
+    {
+        return new DashBoardFucTasksDetail
+        {
+            TotalTasks = fucTasks.Count,
+            TotalToDoTasks = fucTasks.Count(x => x.Status == FucTaskStatus.ToDo && x.CompletionDate is null && x.DueDate <= DateTime.Now),
+            TotalInprogressTasks = fucTasks.Count(x => x.Status == FucTaskStatus.InProgress && x.CompletionDate is null && x.DueDate <= DateTime.Now),
+            TotalDoneTasks = fucTasks.Count(x => x.Status == FucTaskStatus.Done && x.CompletionDate!.Value <= x.DueDate),
+            TotalExpiredTasks = fucTasks.Count(x => x.Status == FucTaskStatus.Done && x.CompletionDate!.Value <= x.DueDate),
+        };
     }
 
     public async Task<OperationResult<ProjectProgressDto>> GetProjectProgressByGroup(Guid groupId,

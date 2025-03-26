@@ -9,6 +9,6 @@ public class ProjectProgress : AuditableSoftDeleteEntity
     public string MeetingDate { get; set; }
     public string Slot { get; set; }
     public Group Group { get; set; } = null!;
-    public ICollection<ProjectProgressWeek> ProjectProgressWeeks { get; set; } = new List<ProjectProgressWeek>();
-    public ICollection<FucTask> FucTasks { get; set; } = new List<FucTask>();
+    public List<ProjectProgressWeek> ProjectProgressWeeks { get; set; } = new List<ProjectProgressWeek>();
+    public List<FucTask> FucTasks { get; set; } = new List<FucTask>();
 }
