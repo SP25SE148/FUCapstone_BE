@@ -231,7 +231,7 @@ public class UsersController(ILogger<UsersController> logger,
 
         await dbContext.BeginTransactionAsync();
 
-        foreach (IXLRow row in workSheet.Rows().Skip(4))
+        foreach (IXLRow row in workSheet.Rows().Skip(5))
         {
             // Check the end of table
             if (!row.Cell(2).TryGetValue<string>(out var usercode)
@@ -305,14 +305,14 @@ public class UsersController(ILogger<UsersController> logger,
         var result = await userManager.CreateAsync(user, role == "Student" ? "Pass123@" : "Pass123$");
         if (!result.Succeeded)
         {
-            throw new Exception(result.Errors.First().Description);
+            throw new InvalidOperationException(result.Errors.First().Description);
         }
 
         result = await userManager.AddToRoleAsync(user, role);
 
         if (!result.Succeeded)
         {
-            throw new Exception(result.Errors.First().Description);
+            throw new InvalidOperationException(result.Errors.First().Description);
         }
     }
 

@@ -1,7 +1,5 @@
 ﻿using FUC.API.Abstractions;
-using FUC.Common.Abstractions;
 using FUC.Common.Constants;
-using FUC.Common.IntegrationEventLog.Services;
 using FUC.Common.Shared;
 using FUC.Service.Abstractions;
 using FUC.Service.DTOs.GroupDTO;

@@ -52,7 +52,7 @@ public class GroupService(
     IDocumentsService documentsService,
     S3BucketConfiguration s3BucketConfiguration) : IGroupService
 {
-    private const int IndexStartProgressingRow = 2;
+    private const int IndexStartProgressingRow = 6;
 
     public async Task<OperationResult<Guid>> CreateGroupAsync()
     {
@@ -450,7 +450,7 @@ public class GroupService(
                     string.IsNullOrEmpty(request.SearchTerm) ||
                     tr.Topic.Code != null && tr.Topic.Code.Contains(request.SearchTerm) ||
                     tr.Topic.EnglishName.Contains(request.SearchTerm) ||
-                    (currentUser.Role.Equals(UserRoles.Student)
+                    (currentUser.Role == UserRoles.Student
                         ? tr.Supervisor.FullName.Contains(request.SearchTerm)
                         : tr.Group.GroupCode.Contains(request.SearchTerm)),
                 tr =>
