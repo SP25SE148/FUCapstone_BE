@@ -3,6 +3,7 @@ namespace FUC.Service.DTOs.TopicDTO;
 
 public class AppraisalTopicRequest 
 {
+    public Guid TopicId { get; set; }
     public Guid TopicAppraisalId { get; set; }
     public required string AppraisalContent { get; set; }
     public required string AppraisalComment { get; set; }

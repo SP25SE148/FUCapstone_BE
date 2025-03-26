@@ -30,7 +30,7 @@ public sealed class Topic : AuditableSoftDeleteEntity
     public Group Group { get; set; } = null!;
 
     public ICollection<CoSupervisor> CoSupervisors { get; set; } = new List<CoSupervisor>();
-    public ICollection<TopicAppraisal> TopicAppraisals { get; set; } = new List<TopicAppraisal>();
+    public List<TopicAppraisal> TopicAppraisals { get; set; } = new List<TopicAppraisal>();
     public ICollection<TopicAnalysis> TopicAnalyses { get; set; } = new List<TopicAnalysis>();
     public ICollection<TopicRequest> TopicRequests { get; set; } = new List<TopicRequest>();
     public ICollection<ReviewCalendar> ReviewCalendars { get; set; } = new List<ReviewCalendar>();

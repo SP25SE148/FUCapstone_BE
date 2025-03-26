@@ -63,6 +63,7 @@ public class ProcessRemindersJob : IJob
 
             var reminders = await _processorDbContext.Reminders
                 .Where(r => r.RemindDate <= DateTime.Now)
+                .Take(100)
                 .ToListAsync(cancellationToken);
 
             if (reminders.Count == 0)
@@ -115,6 +116,7 @@ public class ProcessRemindersJob : IJob
                 .Where(r => r.RecurringDay == DateTime.Now.DayOfWeek &&
                 r.RemindTime >= currentTime.Subtract(buffer) &&
                 r.RemindTime <= currentTime.Add(buffer))
+                .Take(100)
                 .ToListAsync(cancellationToken);
 
             if (recurrentReminders.Count == 0)
