@@ -72,22 +72,22 @@ public class TimeConfigurationService(
         ArgumentNullException.ThrowIfNull(timeConfig);
 
         if (request.TeamUpDate.HasValue && 
-            CheckConfigurationDateIsValid(request.TeamUpDate.Value, currentSemester.Value))
+            !CheckConfigurationDateIsValid(request.TeamUpDate.Value, currentSemester.Value))
             return OperationResult.Failure(new Error("TimeConfiguration.Error",
                 $"TimeUpDate need to in the duration of Semester {currentSemester.Value.Id}"));
 
         if (request.TeamUpExpirationDate.HasValue && 
-            CheckConfigurationDateIsValid(request.TeamUpExpirationDate.Value, currentSemester.Value))
+            !CheckConfigurationDateIsValid(request.TeamUpExpirationDate.Value, currentSemester.Value))
             return OperationResult.Failure(new Error("TimeConfiguration.Error",
                 $"TimeUpExpirationDate need to in the duration of Semester {currentSemester.Value.Id}"));
 
         if (request.RegistTopicDate.HasValue && 
-            CheckConfigurationDateIsValid(request.RegistTopicDate.Value, currentSemester.Value))
+            !CheckConfigurationDateIsValid(request.RegistTopicDate.Value, currentSemester.Value))
             return OperationResult.Failure(new Error("TimeConfiguration.Error",
                 $"RegistTopicDate need to in the duration of Semester {currentSemester.Value.Id}"));
 
         if (request.RegistTopicExpiredDate.HasValue && 
-            CheckConfigurationDateIsValid(request.RegistTopicExpiredDate.Value, currentSemester.Value))
+            !CheckConfigurationDateIsValid(request.RegistTopicExpiredDate.Value, currentSemester.Value))
             return OperationResult.Failure(new Error("TimeConfiguration.Error",
                 $"RegistTopicExpiredDate need to in the duration of Semester {currentSemester.Value.Id}"));
 
@@ -108,19 +108,19 @@ public class TimeConfigurationService(
         if (currentSemester.IsFailure)
             return OperationResult.Failure(currentSemester.Error);
 
-        if (CheckConfigurationDateIsValid(request.TeamUpDate, currentSemester.Value))
+        if (!CheckConfigurationDateIsValid(request.TeamUpDate, currentSemester.Value))
             return OperationResult.Failure(new Error("TimeConfiguration.Error", 
-                $"TimeUpDate need to in the duration of Semester {currentSemester.Value.Id}"));
+                $"TeamUpDate need to in the duration of Semester {currentSemester.Value.Id}"));
 
-        if (CheckConfigurationDateIsValid(request.TeamUpExpirationDate, currentSemester.Value))
+        if (!CheckConfigurationDateIsValid(request.TeamUpExpirationDate, currentSemester.Value))
             return OperationResult.Failure(new Error("TimeConfiguration.Error", 
-                $"TimeUpExpirationDate need to in the duration of Semester {currentSemester.Value.Id}"));
+                $"TeamUpExpirationDate need to in the duration of Semester {currentSemester.Value.Id}"));
 
-        if (CheckConfigurationDateIsValid(request.RegistTopicDate, currentSemester.Value))
+        if (!CheckConfigurationDateIsValid(request.RegistTopicDate, currentSemester.Value))
             return OperationResult.Failure(new Error("TimeConfiguration.Error", 
                 $"RegistTopicDate need to in the duration of Semester {currentSemester.Value.Id}"));
 
-        if (CheckConfigurationDateIsValid(request.RegistTopicExpiredDate, currentSemester.Value))
+        if (!CheckConfigurationDateIsValid(request.RegistTopicExpiredDate, currentSemester.Value))
             return OperationResult.Failure(new Error("TimeConfiguration.Error", 
                 $"RegistTopicExpiredDate need to in the duration of Semester {currentSemester.Value.Id}"));
 

@@ -248,9 +248,9 @@ public class GroupMemberStatusUpdateMessageConsumer : BaseEventConsumer<GroupMem
 
     protected override async Task ProcessMessage(GroupMemberStatusUpdateMessage message)
     {
-        _logger.LogInformation("Starting to send notification for SupervisorAppraisalRemovedEvent with supervisor {Id}", message.SupervisorId);
+        _logger.LogInformation("Starting to send notification for GroupMemberStatusUpdateMessage with studentId {Id}", message.LeaderCode);
 
-        var connections = await _usersTracker.GetConnectionForUser(message.SupervisorId);
+        var connections = await _usersTracker.GetConnectionForUser(message.LeaderCode);
 
         _processorDbContext.Notifications.Add(new Notification
         {
