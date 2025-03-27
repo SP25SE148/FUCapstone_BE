@@ -59,7 +59,7 @@ public interface IGroupService
     Task<OperationResult<byte[]>> ExportProgressEvaluationOfGroup(Guid groupId, CancellationToken cancellationToken);
     Task<OperationResult<GroupResponse>> GetGroupInformationByGroupSelfId();
 
-    Task<OperationResult<List<GroupManageBySupervisorResponse>>> GetGroupsWhichMentorBySupervisor(
+    Task<OperationResult<IList<GroupManageBySupervisorResponse>>> GetGroupsWhichMentorBySupervisor(
         CancellationToken cancellationToken);
 
     Task<OperationResult> UpdateProjectProgressWeek(UpdateProjectProgressWeekRequest request,

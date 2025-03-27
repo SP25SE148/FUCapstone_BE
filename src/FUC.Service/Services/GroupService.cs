@@ -1474,7 +1474,7 @@ public class GroupService(
         return group;
     }
 
-    public async Task<OperationResult<List<GroupManageBySupervisorResponse>>> GetGroupsWhichMentorBySupervisor(
+    public async Task<OperationResult<IList<GroupManageBySupervisorResponse>>> GetGroupsWhichMentorBySupervisor(
         CancellationToken cancellationToken)
     {
         string supervisorId = currentUser.UserCode;
@@ -1482,35 +1482,28 @@ public class GroupService(
         var currentSemester = await semesterService.GetCurrentSemesterAsync();
 
         if (currentSemester.IsFailure)
-            return OperationResult.Failure<List<GroupManageBySupervisorResponse>>(currentSemester.Error);
+            return OperationResult.Failure<IList<GroupManageBySupervisorResponse>>(currentSemester.Error);
 
         var groups = await groupRepository.FindAsync(
             x => x.SupervisorId == supervisorId &&
                  x.Status == GroupStatus.InProgress &&
                  x.SemesterId == currentSemester.Value.Id,
+            include: x => x.Include(x => x.Topic),
+            orderBy: x => x.OrderBy(x => x.GroupCode),
+            selector: x => new GroupManageBySupervisorResponse
+            {
+                GroupId = x.Id,
+                GroupCode = x.GroupCode,
+                EnglishName = x.Topic!.EnglishName,
+                TopicCode = x.Topic.Code,
+                SemesterCode = x.SemesterId
+            },
             cancellationToken);
 
         if (groups == null || groups.Count == 0)
             ArgumentNullException.ThrowIfNull(groups);
 
-        var tasks = groups.Select(async g =>
-        {
-            var topicResult = await topicService
-                .GetTopicById(g.TopicId ?? Guid.Empty, cancellationToken);
-
-            return topicResult.IsFailure
-                ? throw new ArgumentNullException(topicResult.Error)
-                : new GroupManageBySupervisorResponse
-                {
-                    GroupId = g.Id,
-                    GroupCode = g.GroupCode,
-                    EnglishName = topicResult.Value.EnglishName,
-                    TopicCode = topicResult.Value.Code,
-                    SemesterCode = g.SemesterId
-                };
-        });
-
-        return (await Task.WhenAll(tasks)).OrderBy(x => x.GroupCode).ToList();
+        return OperationResult.Success(groups);
     }
 
     public async Task<OperationResult> UploadGroupDocumentForGroup(UploadGroupDocumentRequest request,
@@ -1565,11 +1558,12 @@ public class GroupService(
                     g.Include(g => g.Supervisor)
                         .Include(g => g.Capstone)
                         .Include(g => g.ReviewCalendars.Where(rc => rc.Status == ReviewCalendarStatus.Done)));
+
             if (IsGroupValidForUpdateDecisionStatus(group))
                 return OperationResult.Failure(new Error("Error.UpdateFailed",
                     "can not update group decision status because group is not valid"));
 
-            if (group.SupervisorId != currentUser.UserCode)
+            if (group!.SupervisorId != currentUser.UserCode)
                 return OperationResult.Failure(new Error("Error.UpdateFailed", "Can not update group decision"));
 
             // check if group is re defend capstone project

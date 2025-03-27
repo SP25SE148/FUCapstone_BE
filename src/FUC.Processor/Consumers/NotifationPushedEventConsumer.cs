@@ -225,3 +225,45 @@ public class AssignedAvailableSupervisorForAppraisalEventConsumer : BaseEventCon
         }
     }
 }
+
+public class GroupMemberStatusUpdateMessageConsumer : BaseEventConsumer<GroupMemberStatusUpdateMessage>
+{
+    private readonly ILogger<GroupMemberStatusUpdateMessageConsumer> _logger;
+    private readonly UsersTracker _usersTracker;
+    private readonly ProcessorDbContext _processorDbContext;
+    private readonly IHubContext<NotificationHub, INotificationClient> _hub;
+
+    public GroupMemberStatusUpdateMessageConsumer(
+        ILogger<GroupMemberStatusUpdateMessageConsumer> logger,
+        UsersTracker usersTracker,
+        IHubContext<NotificationHub, INotificationClient> hub,
+        ProcessorDbContext processorDbContext,
+        IOptions<EventConsumerConfiguration> options) : base(logger, options)
+    {
+        _logger = logger;
+        _usersTracker = usersTracker;
+        _hub = hub;
+        _processorDbContext = processorDbContext;
+    }
+
+    protected override async Task ProcessMessage(GroupMemberStatusUpdateMessage message)
+    {
+        _logger.LogInformation("Starting to send notification for SupervisorAppraisalRemovedEvent with supervisor {Id}", message.SupervisorId);
+
+        var connections = await _usersTracker.GetConnectionForUser(message.SupervisorId);
+
+        _processorDbContext.Notifications.Add(new Notification
+        {
+            UserCode = message.LeaderCode,
+            ReferenceTarget = message.GroupMemberId.ToString(),
+            Content = $"Member {message.MemberCode} was {message.Status} your request to join group.",
+            IsRead = false,
+            Type = nameof(GroupMemberStatusUpdateMessage)
+        });
+
+        await _processorDbContext.SaveChangesAsync();
+
+        await _hub.Clients.Clients(connections).ReceiveNewNotification
+            ($"Member {message.MemberCode} was {message.Status} your request to join group.");
+    }
+}

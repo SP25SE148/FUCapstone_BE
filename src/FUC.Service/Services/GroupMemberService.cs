@@ -236,7 +236,7 @@ public class GroupMemberService(
                     break;
                 case GroupMemberStatus.Cancelled:
                     var groupMemberLeader = await groupMemberRepository.GetAsync(
-                        gm => gm.GroupId.Equals(request.GroupId) && gm.StudentId.Equals(currentUser.UserCode),
+                        gm => gm.GroupId.Equals(request.GroupId) && gm.StudentId == currentUser.UserCode,
                         default);
                     if (groupMemberLeader is null || !groupMemberLeader.IsLeader)
                         return OperationResult.Failure(new Error("Error.UpdateFailed",
@@ -249,11 +249,13 @@ public class GroupMemberService(
                     return OperationResult.Failure(new Error("Error.UpdateFailed",
                         $"Can not update status with group member id {groupMember.Id}!!"));
             }
-
-            // TODO: Send update group member status noti to member
+            
             integrationEventLogService.SendEvent(new GroupMemberStatusUpdateMessage
             {
-                Status = request.Status.ToString()
+                GroupMemberId = groupMember.Id,
+                LeaderCode = await GetLeaderIdOfGroup(groupMember.GroupId),  
+                Status = request.Status.ToString(),
+                MemberCode = currentUser.UserCode
             });
 
             await uow.CommitAsync();
@@ -661,5 +663,16 @@ public class GroupMemberService(
                 joinGroupRequestRepository.Update(jg);
             }
         }
+    }
+
+    private async Task<string> GetLeaderIdOfGroup(Guid groupId)
+    {
+        var leaderId = await groupMemberRepository.GetAsync(
+            x => x.GroupId == groupId && x.IsLeader,
+            selector: x => x.StudentId);
+
+        ArgumentNullException.ThrowIfNull(leaderId);    
+
+        return leaderId;
     }
 }
