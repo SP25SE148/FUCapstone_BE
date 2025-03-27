@@ -422,7 +422,8 @@ public class GroupService(
             {
                 RequestId = topic.Id,
                 RequestType = nameof(TopicRequest),
-                ExpirationDuration = TimeSpan.FromHours(systemConfigService.GetSystemConfiguration().ExpirationTopicRequestDuration)
+                ExpirationDuration =
+                    TimeSpan.FromHours(systemConfigService.GetSystemConfiguration().ExpirationTopicRequestDuration)
             });
 
             await uow.CommitAsync(cancellationToken);
@@ -650,7 +651,7 @@ public class GroupService(
 
             await uow.SaveChangesAsync(cancellationToken);
 
-            integrationEventLogService.SendEvent(new ProjectProgressCreatedEvent 
+            integrationEventLogService.SendEvent(new ProjectProgressCreatedEvent
             {
                 GroupId = group.Id,
                 StudentCodes = group.GroupMembers.Select(x => x.StudentId).ToList(),
@@ -1193,7 +1194,8 @@ public class GroupService(
             };
     }
 
-    public async Task<OperationResult<DashBoardFucTasksOfGroup>> DashBoardTaskOfGroup(Guid projectProgressId, CancellationToken cancellationToken)
+    public async Task<OperationResult<DashBoardFucTasksOfGroup>> DashBoardTaskOfGroup(Guid projectProgressId,
+        CancellationToken cancellationToken)
     {
         var progress = await projectProgressRepository.GetAsync(
             x => x.Id == projectProgressId,
@@ -1228,10 +1230,14 @@ public class GroupService(
         return new DashBoardFucTasksDetail
         {
             TotalTasks = fucTasks.Count,
-            TotalToDoTasks = fucTasks.Count(x => x.Status == FucTaskStatus.ToDo && x.CompletionDate is null && x.DueDate <= DateTime.Now),
-            TotalInprogressTasks = fucTasks.Count(x => x.Status == FucTaskStatus.InProgress && x.CompletionDate is null && x.DueDate <= DateTime.Now),
-            TotalDoneTasks = fucTasks.Count(x => x.Status == FucTaskStatus.Done && x.CompletionDate!.Value <= x.DueDate),
-            TotalExpiredTasks = fucTasks.Count(x => x.Status == FucTaskStatus.Done && x.CompletionDate!.Value <= x.DueDate),
+            TotalToDoTasks = fucTasks.Count(x =>
+                x.Status == FucTaskStatus.ToDo && x.CompletionDate is null && x.DueDate <= DateTime.Now),
+            TotalInprogressTasks = fucTasks.Count(x =>
+                x.Status == FucTaskStatus.InProgress && x.CompletionDate is null && x.DueDate <= DateTime.Now),
+            TotalDoneTasks =
+                fucTasks.Count(x => x.Status == FucTaskStatus.Done && x.CompletionDate!.Value <= x.DueDate),
+            TotalExpiredTasks =
+                fucTasks.Count(x => x.Status == FucTaskStatus.Done && x.CompletionDate!.Value <= x.DueDate),
         };
     }
 
@@ -1256,7 +1262,7 @@ public class GroupService(
             {
                 Id = projectProgress.Id,
                 MeetingDate = projectProgress.MeetingDate,
-                Slot = projectProgress.Slot,    
+                Slot = projectProgress.Slot,
                 ProjectProgressWeeks = projectProgress
                     .ProjectProgressWeeks
                     .OrderBy(p => p.WeekNumber)
@@ -1594,6 +1600,10 @@ public class GroupService(
 
             if (president == null)
                 return OperationResult.Failure(new Error("Error.UpdateFailed", "Invalid president"));
+
+            if (president.DefendCapstoneProjectInformationCalendar.DefenseDate.Date != DateTime.Now.Date)
+                return OperationResult.Failure(new Error("Error.Updated",
+                    "Can not update group decision on invalid date time"));
 
             if (IsGroupValidForUpdateDecisionStatus(group))
                 return OperationResult.Failure(new Error("Error.UpdateFailed",

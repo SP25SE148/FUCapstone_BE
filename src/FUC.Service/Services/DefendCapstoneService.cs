@@ -79,9 +79,9 @@ public class DefendCapstoneService(
             x => defendCalendarsIdsOfMember.Contains(x.Id),
             include: x => x.AsSplitQuery()
                 .Include(x => x.DefendCapstoneProjectMemberCouncils)
-                    .ThenInclude(x => x.Supervisor)
+                .ThenInclude(x => x.Supervisor)
                 .Include(x => x.Topic)
-                    .ThenInclude(x => x.Group),
+                .ThenInclude(x => x.Group),
             cancellationToken);
 
         if (calendars is null || calendars.Count == 0)
@@ -194,7 +194,8 @@ public class DefendCapstoneService(
         return await documentsService.PresentThesisCouncilMeetingMinutesForTopicPresignedUrl(key);
     }
 
-    public async Task<OperationResult> UpdateStatusOfGroupAfterDefend(UpdateGroupDecisionStatusByPresidentRequest request,
+    public async Task<OperationResult> UpdateStatusOfGroupAfterDefend(
+        UpdateGroupDecisionStatusByPresidentRequest request,
         CancellationToken cancellationToken)
     {
         var calendar = await defendCapstoneCalendarRepository.GetAsync(
@@ -202,7 +203,7 @@ public class DefendCapstoneService(
             include: x => x.AsSplitQuery()
                 .Include(x => x.DefendCapstoneProjectMemberCouncils)
                 .Include(x => x.Topic)
-                    .ThenInclude(x => x.Group),
+                .ThenInclude(x => x.Group),
             orderBy: null,
             cancellationToken);
 
@@ -218,7 +219,8 @@ public class DefendCapstoneService(
                 "You can not get this thesis because you are not in the Council."));
 
         // Update status of group
-        return await groupService.UpdateGroupDecisionByPresidentIdAsync(calendar.Topic.Group.Id, request.IsReDefendCapstoneProject);
+        return await groupService.UpdateGroupDecisionByPresidentIdAsync(calendar.Topic.Group.Id,
+            request.IsReDefendCapstoneProject);
     }
 
     private async Task<List<DefendCapstoneProjectInformationCalendar>> ParseDefendCapstoneCalendarsFromFile(
@@ -232,13 +234,17 @@ public class DefendCapstoneService(
         var defendCalendars = new List<DefendCapstoneProjectInformationCalendar>();
         var memberColumn = 8;
         var memberInfoList = new List<string>();
-        var defendAttempt = workSheet.Cell(2, 13).GetValue<string>(); //attempt
-        if (!int.TryParse(defendAttempt, out var attempt))
+
+        var existingDefendCalendars = await defendCapstoneCalendarRepository.GetAllAsync();
+        var attempt = existingDefendCalendars.Any() ? existingDefendCalendars.Max(rc => rc.DefendAttempt) + 1 : 1;
+
+        if (attempt > systemConfigService.GetSystemConfiguration().MaxAttemptTimesToDefendCapstone)
         {
-            throw new InvalidOperationException("Defend attempt time is empty!");
+            throw new InvalidOperationException("You have reached the maximum number of attempts to defend capstone.");
         }
 
-        foreach (var row in workSheet.Rows().Skip(2))
+
+        foreach (var row in workSheet.Rows().Skip(5))
         {
             var topicCode = row.Cell(2).GetValue<string>();
             if (string.IsNullOrEmpty(topicCode))
@@ -267,7 +273,8 @@ public class DefendCapstoneService(
                     // check if member information is duplicate value with president or secretary
                     if (IsMemberInformationValid(memberInfoList, presidentAndSecretary.Item1.Id,
                             presidentAndSecretary.Item2.Id))
-                        throw new InvalidOperationException("Member information is duplicate value with president or secretary.");
+                        throw new InvalidOperationException(
+                            "Member information is duplicate value with president or secretary.");
                 }
             }
 
