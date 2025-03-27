@@ -29,6 +29,7 @@ public sealed class ReviewCalendarService(
     IRepository<Reviewer> reviewerRepository,
     ISupervisorService supervisorService,
     ICurrentUser currentUser,
+    ISystemConfigurationService systemConfigurationService,
     IRepository<ReviewCalendar> reviewCalendarRepository) : IReviewCalendarService
 {
     public async Task<OperationResult> ImportReviewCalendar(IFormFile file)
@@ -156,7 +157,8 @@ public sealed class ReviewCalendarService(
 
     private static bool IsReviewerValidToEnterSuggestionAndComment(Reviewer? reviewer)
     {
-        return reviewer != null && reviewer.ReviewCalender.Status == ReviewCalendarStatus.InProgress;
+        return reviewer != null && reviewer.ReviewCalender.Status == ReviewCalendarStatus.InProgress &&
+               reviewer.ReviewCalender.Date.Date == DateTime.Now.Date;
     }
 
     private async Task<List<ReviewCalendar>> ParseReviewCalendarsFromFile(IFormFile file, string currentSemester)
@@ -167,9 +169,12 @@ public sealed class ReviewCalendarService(
         IXLWorksheet workSheet = wb.Worksheet(1);
 
         var reviewCalendars = new List<ReviewCalendar>();
-        var attempt = workSheet.Row(2).Cell(2).GetValue<int>();
-        if (attempt == null)
-            throw new Exception("Invalid attempt");
+
+        // Get the next attempt number
+        var existingCalendars = await reviewCalendarRepository.GetAllAsync();
+        var attempt = existingCalendars.Any() ? existingCalendars.Max(rc => rc.Attempt) + 1 : 1;
+        if (attempt > systemConfigurationService.GetSystemConfiguration().MaxAttemptTimesToReviewTopic)
+            throw new Exception("Max attempt times to review topic");
 
         foreach (var row in workSheet.Rows().Skip(5))
         {
@@ -257,7 +262,7 @@ public sealed class ReviewCalendarService(
         };
     }
 
-    private ReviewCalendar CreateReviewCalendar(GroupResponse group, TopicResponse topic, int attempt,
+    private ReviewCalendar CreateReviewCalendar(GroupResponse group, TopicResponse topic, int defendAttempt,
         string currentSemester, ReviewCalendarDetail reviewDetail)
     {
         var reviewCalendar = new ReviewCalendar
@@ -268,7 +273,7 @@ public sealed class ReviewCalendarService(
             MajorId = currentUser.MajorId,
             CampusId = currentUser.CampusId,
             SemesterId = currentSemester,
-            Attempt = attempt,
+            Attempt = defendAttempt,
             Slot = reviewDetail.Slot,
             Room = reviewDetail.Room,
             Date = reviewDetail.Date
