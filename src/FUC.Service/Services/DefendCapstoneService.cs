@@ -32,8 +32,6 @@ public class DefendCapstoneService(
     ISystemConfigurationService systemConfigService,
     IDocumentsService documentsService) : IDefendCapstoneService
 {
-    private const int MaxAttemptTimesToDefendCapstone = 2;
-
     public async Task<OperationResult> UploadDefendCapstoneProjectCalendar(IFormFile file,
         CancellationToken cancellationToken)
     {

@@ -51,6 +51,7 @@ public class GroupService(
     IS3Service s3Service,
     IDocumentsService documentsService,
     ISystemConfigurationService systemConfigService,
+    ITimeConfigurationService timeConfigurationService,
     S3BucketConfiguration s3BucketConfiguration) : IGroupService
 {
     private const int IndexStartProgressingRow = 6;
@@ -345,7 +346,14 @@ public class GroupService(
     {
         try
         {
-            // TODO: Check if the create topic request is requested in invalid date
+            var timeConfig = await timeConfigurationService.GetCurrentTimeConfiguration(currentUser.CapstoneId);
+
+            if (timeConfig.IsFailure)
+                return OperationResult.Failure<Guid>(timeConfig.Error);
+
+            if (timeConfig.Value.IsActived && 
+                (timeConfig.Value.RegistTopicDate > DateTime.Now || timeConfig.Value.RegistTopicExpiredDate < DateTime.Now))
+                return OperationResult.Failure<Guid>(new Error("TopicRequest.Error", "You need request topic in right time."));
 
             var groupMember = await groupMemberRepository
                 .GetAsync(

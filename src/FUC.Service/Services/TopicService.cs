@@ -20,7 +20,6 @@ using FUC.Service.Extensions.Options;
 using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Options;
 
 namespace FUC.Service.Services;
 
@@ -40,6 +39,7 @@ public class TopicService(
     ISemesterService semesterService,
     IRepository<GroupMember> groupMemberRepository,
     ICacheService cache,
+    ITimeConfigurationService timeConfigurationService,
     ISystemConfigurationService systemConfigService,
     IIntegrationEventLogService integrationEventLogService) : ITopicService
 {
@@ -733,7 +733,7 @@ public class TopicService(
         try
         {
             // TODO: Check the valid date to assign supervisors to topics (TimeConfig table)
-
+           
             var currentSemester = await semesterService.GetCurrentSemesterAsync();
             if (currentSemester.IsFailure)
             {

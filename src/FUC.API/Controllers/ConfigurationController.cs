@@ -2,6 +2,7 @@
 using FUC.Common.Constants;
 using FUC.Common.Shared;
 using FUC.Service.Abstractions;
+using FUC.Service.DTOs.ConfigDTO;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -10,12 +11,16 @@ namespace FUC.API.Controllers;
 public sealed class ConfigurationController : ApiController
 {
     private readonly ISystemConfigurationService _systemConfigService;
+    private readonly ITimeConfigurationService _timeConfigurationService;
 
-    public ConfigurationController(ISystemConfigurationService systemConfigService)
+    public ConfigurationController(ISystemConfigurationService systemConfigService, 
+        ITimeConfigurationService timeConfigurationService)
     {
         _systemConfigService = systemConfigService;
+        _timeConfigurationService = timeConfigurationService;
     }
 
+    #region system_config
     [HttpGet("system")]
     [Authorize(Roles = UserRoles.SuperAdmin)]
     public IActionResult GetSystemConfiguration()
@@ -71,4 +76,34 @@ public sealed class ConfigurationController : ApiController
         _systemConfigService.UpdateMaxAttemptTimesToReviewTopic(value);
         return Ok(OperationResult.Success());
     }
+    #endregion system_config
+
+    #region time_config
+    [HttpGet("time")]
+    [Authorize(Roles = $"{UserRoles.Admin},{UserRoles.SuperAdmin}")]
+    public async Task<IActionResult> GetTimeConfigurations()
+    {
+        var config = await _timeConfigurationService.GetTimeConfigurations();
+
+        return config.IsSuccess ? Ok(config) : HandleFailure(config);
+    }
+
+    [HttpPost("time")]
+    [Authorize(Roles = $"{UserRoles.Admin},{UserRoles.SuperAdmin}")]
+    public async Task<IActionResult> CreateTimeConfiguration(CreateTimeConfigurationRequest request)
+    {
+        var config = await _timeConfigurationService.CreateTimeConfiguration(request, default);
+
+        return config.IsSuccess ? Ok(config) : HandleFailure(config);
+    }
+
+    [HttpPut("time")]
+    [Authorize(Roles = $"{UserRoles.Admin},{UserRoles.SuperAdmin}")]
+    public async Task<IActionResult> UpdateTimeConfiguration(UpdateTimeConfigurationRequest request)
+    {
+        var config = await _timeConfigurationService.UpdateTimeConfiguration(request, default);
+
+        return config.IsSuccess ? Ok(config) : HandleFailure(config);
+    }
+    #endregion time_config
 }

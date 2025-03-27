@@ -17,5 +17,7 @@ public sealed class Capstone : AuditableSoftDeleteEntity
     public ICollection<Student> Students { get; set; } = new List<Student>();
 
     public ICollection<Topic> Topics { get; set; } = new List<Topic>();
-    public ICollection<ReviewCriteria> reviewCriterias { get; set; } = new List<ReviewCriteria>();
+    public ICollection<ReviewCriteria> ReviewCriterias { get; set; } = new List<ReviewCriteria>();
+    public ICollection<TimeConfiguration> TimeConfigurations { get; set; } = new List<TimeConfiguration>();
+
 }

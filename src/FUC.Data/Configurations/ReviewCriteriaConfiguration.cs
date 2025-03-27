@@ -32,7 +32,7 @@ public sealed class ReviewCriteriaConfiguration : IEntityTypeConfiguration<Revie
             .IsRequired().HasDefaultValue(true);
 
         builder.HasOne(rc => rc.Capstone)
-            .WithMany(c => c.reviewCriterias)
+            .WithMany(c => c.ReviewCriterias)
             .HasForeignKey(rc => rc.CapstoneId)
             .OnDelete(DeleteBehavior.Cascade);
 

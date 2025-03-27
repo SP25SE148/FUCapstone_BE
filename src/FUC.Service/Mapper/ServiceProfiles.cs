@@ -3,6 +3,7 @@ using FUC.Data.Entities;
 using FUC.Data.Enums;
 using FUC.Service.DTOs.CampusDTO;
 using FUC.Service.DTOs.CapstoneDTO;
+using FUC.Service.DTOs.ConfigDTO;
 using FUC.Service.DTOs.MajorDTO;
 using FUC.Service.DTOs.MajorGroupDTO;
 using FUC.Service.DTOs.ProjectProgressDTO;
@@ -72,5 +73,12 @@ public class ServiceProfiles : Profile
         CreateMap<FucTask, FucTaskResponse>();
 
         CreateMap<FucTaskHistory, FucTaskHistoryDto>();
+
+        CreateMap<UpdateTimeConfigurationRequest, TimeConfiguration>()
+            .ForMember(dest => dest.TimeUpDate, opt => opt.Condition(src => src.TimeUpDate.HasValue))
+            .ForMember(dest => dest.TimeUpExpirationDate, opt => opt.Condition(src => src.TimeUpExpirationDate.HasValue))
+            .ForMember(dest => dest.RegistTopicDate, opt => opt.Condition(src => src.RegistTopicDate.HasValue))
+            .ForMember(dest => dest.RegistTopicExpiredDate, opt => opt.Condition(src => src.RegistTopicExpiredDate.HasValue))
+            .ForAllMembers(opt => opt.Condition((src, dest, srcMember) => srcMember != null));
     }
 }

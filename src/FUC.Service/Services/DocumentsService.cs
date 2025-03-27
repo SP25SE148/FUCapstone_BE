@@ -13,7 +13,6 @@ using FUC.Service.Extensions.Options;
 using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
-using System.Linq;
 
 namespace FUC.Service.Services;
 
