@@ -26,6 +26,7 @@ public class GroupMemberService(
     IRepository<JoinGroupRequest> joinGroupRequestRepository,
     IRepository<GroupMember> groupMemberRepository,
     IRepository<Student> studentRepository,
+    ISystemConfigurationService systemConfigService,
     IMapper mapper) : IGroupMemberService
 
 {
@@ -131,7 +132,7 @@ public class GroupMemberService(
         {
             RequestId = newGroupMember.Id,
             RequestType = nameof(GroupMember),
-            ExpirationDuration = TimeSpan.FromMinutes(2)
+            ExpirationDuration = TimeSpan.FromMinutes(systemConfigService.GetSystemConfiguration().ExpirationTeamUpDuration)
         });
 
         await uow.CommitAsync();
@@ -444,7 +445,7 @@ public class GroupMemberService(
             {
                 RequestId = newJoinGroupRequest.Id,
                 RequestType = nameof(JoinGroupRequest),
-                ExpirationDuration = TimeSpan.FromMinutes(5)
+                ExpirationDuration = TimeSpan.FromMinutes(systemConfigService.GetSystemConfiguration().ExpirationTeamUpDuration)
             });
 
             await uow.CommitAsync();
@@ -544,18 +545,18 @@ public class GroupMemberService(
     private bool IsCurrentUserGroupLeader(Group group)
     {
         var leader = group.GroupMembers.FirstOrDefault(gm =>
-            gm.StudentId.Equals(currentUser.UserCode) &&
+            gm.StudentId == currentUser.UserCode &&
             gm.IsLeader);
         return leader != null;
     }
 
 
-    private bool IsJoinGroupRequestStatusPending(JoinGroupRequest joinGroupRequest)
+    private static bool IsJoinGroupRequestStatusPending(JoinGroupRequest joinGroupRequest)
     {
         return joinGroupRequest.Status != JoinGroupRequestStatus.Pending;
     }
 
-    private bool IsGroupFull(Group group, int maxMember)
+    private static bool IsGroupFull(Group group, int maxMember)
     {
         return group.GroupMembers.Count(gm => gm.Status == GroupMemberStatus.Accepted) >= maxMember;
     }
@@ -581,11 +582,11 @@ public class GroupMemberService(
                 break;
             case JoinGroupRequestStatus.Cancelled when !isLeader:
                 if (!IsCurrentJoinGroupRequestCorrect(joinGroupRequest))
-                    throw new Exception("Can not update join group request status");
+                    throw new InvalidOperationException("Can not update join group request status");
                 await RejectOrCancelJoinGroupRequest(joinGroupRequest, JoinGroupRequestStatus.Cancelled);
                 break;
             default:
-                throw new Exception("Can not update join group request status");
+                throw new InvalidOperationException("Can not update join group request status");
         }
 
         await uow.CommitAsync();
@@ -593,7 +594,7 @@ public class GroupMemberService(
 
     private bool IsCurrentJoinGroupRequestCorrect(JoinGroupRequest joinGroupRequest)
     {
-        return joinGroupRequest.StudentId.Equals(currentUser.UserCode);
+        return joinGroupRequest.StudentId == currentUser.UserCode;
     }
 
     private async Task ApproveJoinGroupRequest(
@@ -627,7 +628,7 @@ public class GroupMemberService(
         joinGroupRequest.Status = status;
     }
 
-    private bool IsGroupFullAfterApprove(
+    private static bool IsGroupFullAfterApprove(
         Group group,
         int maxMember)
     {

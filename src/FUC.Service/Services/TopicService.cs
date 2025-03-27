@@ -40,7 +40,7 @@ public class TopicService(
     ISemesterService semesterService,
     IRepository<GroupMember> groupMemberRepository,
     ICacheService cache,
-    IOptions<TopicServiceSetting> topicServiceSetting,
+    ISystemConfigurationService systemConfigService,
     IIntegrationEventLogService integrationEventLogService) : ITopicService
 {
     public async Task<OperationResult<Topic>> GetTopicEntityById(Guid topicId, CancellationToken cancellationToken)
@@ -795,7 +795,7 @@ public class TopicService(
             {
                 var assignedSupervisors = new HashSet<string>();
 
-                while (assignedSupervisors.Count < topicServiceSetting.Value.MaxTopicAppraisalsForTopic)
+                while (assignedSupervisors.Count < systemConfigService.GetSystemConfiguration().MaxTopicAppraisalsForTopic)
                 {
                     var availableSupervisors = supervisorAssignments
                         .Where(s => s.Key != topic.MainSupervisorId && !assignedSupervisors.Contains(s.Key))
@@ -891,7 +891,7 @@ public class TopicService(
             var newAttempTime = topic.TopicAppraisals.Max(x => x.AttemptTime);
 
             if (topic.TopicAppraisals.Count(x => x.AttemptTime == newAttempTime)
-                == topicServiceSetting.Value.MaxTopicAppraisalsForTopic)
+                == systemConfigService.GetSystemConfiguration().MaxTopicAppraisalsForTopic)
                 return OperationResult.Failure(new Error("Topic.Error", "This topic has enough appraisal."));
 
             if (!topic.TopicAppraisals.Exists(x => x.AttemptTime == newAttempTime &&
@@ -1086,7 +1086,7 @@ public class TopicService(
                      x.Id != topicAppraisal.Id).ToList()
                      ?? new List<TopicAppraisal>();
 
-            if (topicServiceSetting.Value.MaxTopicAppraisalsForTopic != 1
+            if (systemConfigService.GetSystemConfiguration().MaxTopicAppraisalsForTopic != 1
                 && otherTopicAppraisals.Count == 0)
             {
                 return OperationResult.Failure(new Error("Topic.Error",
@@ -1230,7 +1230,7 @@ public class TopicService(
 
         var query = from s in supervisorRepository.GetQueryable()
                     where coSupervisorEmails.Contains(s.Email) &&
-                          s.CoSupervisors.Count < topicServiceSetting.Value.MaxTopicsForCoSupervisors
+                          s.CoSupervisors.Count < systemConfigService.GetSystemConfiguration().MaxTopicsForCoSupervisors
                     select new { s.Id, s.Email };
 
         (await query.ToListAsync(cancellationToken))

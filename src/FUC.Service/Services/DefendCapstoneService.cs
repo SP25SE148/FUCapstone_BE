@@ -29,6 +29,7 @@ public class DefendCapstoneService(
     ITopicService topicService,
     IGroupService groupService,
     ISupervisorService supervisorService,
+    ISystemConfigurationService systemConfigService,
     IDocumentsService documentsService) : IDefendCapstoneService
 {
     private const int MaxAttemptTimesToDefendCapstone = 2;

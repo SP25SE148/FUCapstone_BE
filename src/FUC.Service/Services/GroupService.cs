@@ -50,6 +50,7 @@ public class GroupService(
     ICapstoneService capstoneService,
     IS3Service s3Service,
     IDocumentsService documentsService,
+    ISystemConfigurationService systemConfigService,
     S3BucketConfiguration s3BucketConfiguration) : IGroupService
 {
     private const int IndexStartProgressingRow = 6;
@@ -421,7 +422,7 @@ public class GroupService(
             {
                 RequestId = topic.Id,
                 RequestType = nameof(TopicRequest),
-                ExpirationDuration = TimeSpan.FromMinutes(5)
+                ExpirationDuration = TimeSpan.FromHours(systemConfigService.GetSystemConfiguration().ExpirationTopicRequestDuration)
             });
 
             await uow.CommitAsync(cancellationToken);

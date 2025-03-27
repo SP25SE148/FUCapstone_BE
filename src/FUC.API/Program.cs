@@ -3,8 +3,10 @@ using FUC.API.Middlewares;
 using FUC.API.SeedData;
 using FUC.Common.Cache;
 using FUC.Data.Extensions;
+using FUC.Service.Abstractions;
 using FUC.Service.Extensions;
 using FUC.Service.Extensions.Options;
+using FUC.Service.Services;
 using Serilog;
 
 Log.Logger = new LoggerConfiguration()
@@ -38,7 +40,8 @@ try
 
     builder.Services.AddSingleton(bucketConfiguration);
 
-    builder.Services.Configure<TopicServiceSetting>(builder.Configuration.GetSection(nameof(TopicServiceSetting)));
+    builder.Services.Configure<SystemConfiguration>(builder.Configuration.GetSection("SystemConfiguration"));
+    builder.Services.AddSingleton<ISystemConfigurationService, SystemConfigurationService>();
 
     // Add services to the container.
     builder.Services.AddServices();
