@@ -10,5 +10,5 @@ public interface ITimeConfigurationService
         CancellationToken cancellationToken);
     Task<OperationResult> CreateTimeConfiguration(CreateTimeConfigurationRequest request,
         CancellationToken cancellationToken);
-    Task<OperationResult<TimeConfigurationDto>> GetCurrentTimeConfiguration(string capstoneId);
+    Task<OperationResult<TimeConfigurationDto>> GetCurrentTimeConfiguration(string campusId);
 }

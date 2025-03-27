@@ -251,12 +251,10 @@ public class GroupMemberService(
             }
 
             // TODO: Send update group member status noti to member
-            // integrationEventLogService.SendEvent(new GroupMemberStatusUpdateMessage
-            // {
-            //     AttemptTime = 1,
-            //     CreatedBy = groupMember.StudentId,
-            //     Status = request.Status.ToString()
-            // });
+            integrationEventLogService.SendEvent(new GroupMemberStatusUpdateMessage
+            {
+                Status = request.Status.ToString()
+            });
 
             await uow.CommitAsync();
 

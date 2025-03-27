@@ -12,32 +12,21 @@ public class TimeConfigurationConfiguration : IEntityTypeConfiguration<TimeConfi
         
         builder.HasKey(x => x.Id);
 
-        builder.Property(b => b.TimeUpDate)
+        builder.Property(b => b.TeamUpDate)
             .HasColumnType("timestamp");
-        builder.Property(b => b.TimeUpExpirationDate)
+        builder.Property(b => b.TeamUpExpirationDate)
             .HasColumnType("timestamp");
         builder.Property(b => b.RegistTopicDate)
             .HasColumnType("timestamp");
         builder.Property(b => b.RegistTopicExpiredDate)
             .HasColumnType("timestamp");
 
-        builder.Property(b => b.SemesterId)
+        builder.Property(b => b.CampusId)
             .IsRequired();
 
-        builder.Property(b => b.CapstoneId)
-            .IsRequired();
-
-        builder.HasIndex(b => new { b.CapstoneId, b.SemesterId})
-            .IsUnique();
-
-        builder.HasOne(b => b.Semester)
+        builder.HasOne(b => b.Campus)
             .WithMany(s => s.TimeConfigurations)
-            .HasForeignKey(b => b.SemesterId)
-            .OnDelete(DeleteBehavior.Cascade);
-
-        builder.HasOne(b => b.Capstone)
-            .WithMany(s => s.TimeConfigurations)
-            .HasForeignKey(b => b.CapstoneId)
+            .HasForeignKey(b => b.CampusId)
             .OnDelete(DeleteBehavior.Cascade);
     }
 }

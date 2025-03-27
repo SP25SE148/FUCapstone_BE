@@ -19,4 +19,6 @@ public sealed class Campus : AuditableSoftDeleteEntity
 
     public ICollection<DefendCapstoneProjectInformationCalendar>
         DefendCapstoneProjectInformationCalendars { get; set; } = new List<DefendCapstoneProjectInformationCalendar>();
+    public ICollection<TimeConfiguration> TimeConfigurations { get; set; } = new List<TimeConfiguration>();
+
 }

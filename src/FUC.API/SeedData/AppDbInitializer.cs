@@ -91,6 +91,22 @@ public static class AppDbInitializer
                 }
             }
 
+            if (!context.Set<TemplateDocument>().Any())
+            {
+                foreach (var campus in campuses!)
+                {
+                    context.Set<TimeConfiguration>().Add(new TimeConfiguration
+                    {
+                        CampusId = campus.Id,
+                        IsActived = false,
+                        RegistTopicDate = DateTime.Now,
+                        RegistTopicExpiredDate = DateTime.Now,
+                        TeamUpDate = DateTime.Now,
+                        TeamUpExpirationDate = DateTime.Now,
+                    });
+                }
+            }
+
             if (!context.Set<TemplateDocument>().Any() && templates is not null)
             {
                 await context.Set<TemplateDocument>().AddRangeAsync(templates);

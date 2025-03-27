@@ -346,7 +346,7 @@ public class GroupService(
     {
         try
         {
-            var timeConfig = await timeConfigurationService.GetCurrentTimeConfiguration(currentUser.CapstoneId);
+            var timeConfig = await timeConfigurationService.GetCurrentTimeConfiguration(currentUser.CampusId);
 
             if (timeConfig.IsFailure)
                 return OperationResult.Failure<Guid>(timeConfig.Error);

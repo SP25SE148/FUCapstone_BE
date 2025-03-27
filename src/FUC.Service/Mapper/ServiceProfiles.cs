@@ -75,8 +75,8 @@ public class ServiceProfiles : Profile
         CreateMap<FucTaskHistory, FucTaskHistoryDto>();
 
         CreateMap<UpdateTimeConfigurationRequest, TimeConfiguration>()
-            .ForMember(dest => dest.TimeUpDate, opt => opt.Condition(src => src.TimeUpDate.HasValue))
-            .ForMember(dest => dest.TimeUpExpirationDate, opt => opt.Condition(src => src.TimeUpExpirationDate.HasValue))
+            .ForMember(dest => dest.TeamUpDate, opt => opt.Condition(src => src.TeamUpDate.HasValue))
+            .ForMember(dest => dest.TeamUpExpirationDate, opt => opt.Condition(src => src.TeamUpExpirationDate.HasValue))
             .ForMember(dest => dest.RegistTopicDate, opt => opt.Condition(src => src.RegistTopicDate.HasValue))
             .ForMember(dest => dest.RegistTopicExpiredDate, opt => opt.Condition(src => src.RegistTopicExpiredDate.HasValue))
             .ForAllMembers(opt => opt.Condition((src, dest, srcMember) => srcMember != null));

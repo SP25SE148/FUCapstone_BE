@@ -19,49 +19,35 @@ public class TimeConfigurationService(
 {
     public async Task<OperationResult<IList<TimeConfigurationDto>>> GetTimeConfigurations()
     {
-        var currentSemester = await semesterService.GetCurrentSemesterAsync();  
-
-        if (currentSemester.IsFailure) 
-            return OperationResult.Failure<IList<TimeConfigurationDto>>(currentSemester.Error);
-
         var result = await repository.FindAsync(
-            x => (currentUser.CapstoneId == "all" || x.CapstoneId == currentUser.CapstoneId) &&
-                x.SemesterId == currentSemester.Value.Id,
+            x => currentUser.CampusId == "all" || x.CampusId == currentUser.CampusId,
             include: null,
             orderBy: null,
             selector: x => new TimeConfigurationDto
             {
                 Id = x.Id,
-                CapstoneId = x.CapstoneId,  
-                SemesterId = x.SemesterId,
+                CampusId = x.CampusId,  
                 RegistTopicDate = x.RegistTopicDate,    
                 RegistTopicExpiredDate = x.RegistTopicExpiredDate,
-                TimeUpDate = x.TimeUpDate,  
-                TimeUpExpirationDate = x.TimeUpExpirationDate,  
+                TeamUpDate = x.TeamUpDate,  
+                TeamUpExpirationDate = x.TeamUpExpirationDate,  
             });
 
         return OperationResult.Success(result);
     }
 
-    public async Task<OperationResult<TimeConfigurationDto>> GetCurrentTimeConfiguration(string capstoneId)
+    public async Task<OperationResult<TimeConfigurationDto>> GetCurrentTimeConfiguration(string campusId)
     {
-        var currentSemester = await semesterService.GetCurrentSemesterAsync();
-
-        if (currentSemester.IsFailure)
-            return OperationResult.Failure<TimeConfigurationDto>(currentSemester.Error);
-
         var result = await repository.GetAsync(
-            x => x.CapstoneId == capstoneId &&
-                x.SemesterId == currentSemester.Value.Id,
+            x => x.CampusId == campusId,
             selector: x => new TimeConfigurationDto
             {
                 Id = x.Id,
-                CapstoneId = x.CapstoneId,
-                SemesterId = x.SemesterId,
+                CampusId = x.CampusId,
                 RegistTopicDate = x.RegistTopicDate,
                 RegistTopicExpiredDate = x.RegistTopicExpiredDate,
-                TimeUpDate = x.TimeUpDate,
-                TimeUpExpirationDate = x.TimeUpExpirationDate,
+                TeamUpDate = x.TeamUpDate,
+                TeamUpExpirationDate = x.TeamUpExpirationDate,
             });
 
         if (result is null)
@@ -85,17 +71,13 @@ public class TimeConfigurationService(
 
         ArgumentNullException.ThrowIfNull(timeConfig);
 
-        if (timeConfig.SemesterId != currentSemester.Value.Id)
-            return OperationResult.Failure(new Error("TimeConfiguration.Error", 
-                "Only update the timeconfig of CurrentSemester"));
-
-        if (request.TimeUpDate.HasValue && 
-            CheckConfigurationDateIsValid(request.TimeUpDate.Value, currentSemester.Value))
+        if (request.TeamUpDate.HasValue && 
+            CheckConfigurationDateIsValid(request.TeamUpDate.Value, currentSemester.Value))
             return OperationResult.Failure(new Error("TimeConfiguration.Error",
                 $"TimeUpDate need to in the duration of Semester {currentSemester.Value.Id}"));
 
-        if (request.TimeUpExpirationDate.HasValue && 
-            CheckConfigurationDateIsValid(request.TimeUpExpirationDate.Value, currentSemester.Value))
+        if (request.TeamUpExpirationDate.HasValue && 
+            CheckConfigurationDateIsValid(request.TeamUpExpirationDate.Value, currentSemester.Value))
             return OperationResult.Failure(new Error("TimeConfiguration.Error",
                 $"TimeUpExpirationDate need to in the duration of Semester {currentSemester.Value.Id}"));
 
@@ -126,11 +108,11 @@ public class TimeConfigurationService(
         if (currentSemester.IsFailure)
             return OperationResult.Failure(currentSemester.Error);
 
-        if (CheckConfigurationDateIsValid(request.TimeUpDate, currentSemester.Value))
+        if (CheckConfigurationDateIsValid(request.TeamUpDate, currentSemester.Value))
             return OperationResult.Failure(new Error("TimeConfiguration.Error", 
                 $"TimeUpDate need to in the duration of Semester {currentSemester.Value.Id}"));
 
-        if (CheckConfigurationDateIsValid(request.TimeUpExpirationDate, currentSemester.Value))
+        if (CheckConfigurationDateIsValid(request.TeamUpExpirationDate, currentSemester.Value))
             return OperationResult.Failure(new Error("TimeConfiguration.Error", 
                 $"TimeUpExpirationDate need to in the duration of Semester {currentSemester.Value.Id}"));
 
@@ -142,20 +124,19 @@ public class TimeConfigurationService(
             return OperationResult.Failure(new Error("TimeConfiguration.Error", 
                 $"RegistTopicExpiredDate need to in the duration of Semester {currentSemester.Value.Id}"));
 
-        if (string.IsNullOrEmpty(request.CapstoneId))
+        if (string.IsNullOrEmpty(request.CampusId))
         {
-            request.CapstoneId = currentUser.CapstoneId;
+            request.CampusId = currentUser.CampusId;
         }
 
         var timeConfig = new TimeConfiguration
         {
             RegistTopicDate = request.RegistTopicDate,
-            RegistTopicExpiredDate = request.RegistTopicExpiredDate,    
-            TimeUpExpirationDate = request.TimeUpExpirationDate,    
-            TimeUpDate = request.TimeUpDate,    
+            RegistTopicExpiredDate = request.RegistTopicExpiredDate,
+            TeamUpExpirationDate = request.TeamUpExpirationDate,
+            TeamUpDate = request.TeamUpDate,    
             IsActived = request.IsActived,  
-            CapstoneId = request.CapstoneId,    
-            SemesterId = currentSemester.Value.Id,
+            CampusId = request.CampusId,    
         };
 
         repository.Insert(timeConfig);

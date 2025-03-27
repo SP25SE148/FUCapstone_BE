@@ -16,6 +16,4 @@ public sealed class Semester : AuditableSoftDeleteEntity
 
     public ICollection<DefendCapstoneProjectInformationCalendar>
         DefendCapstoneProjectInformationCalendars { get; set; } = new List<DefendCapstoneProjectInformationCalendar>();
-
-    public ICollection<TimeConfiguration> TimeConfigurations { get; set; } = new List<TimeConfiguration>();
 }
