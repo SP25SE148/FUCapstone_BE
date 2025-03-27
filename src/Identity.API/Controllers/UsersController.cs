@@ -157,20 +157,22 @@ public class UsersController(ILogger<UsersController> logger,
     }
 
     [HttpPost("import/students")]
-    [Authorize(Roles = $"{UserRoles.SuperAdmin},{UserRoles.Admin},{UserRoles.Manager}")]
+    [Authorize(Roles = $"{UserRoles.Admin},{UserRoles.Manager}")]
     public async Task<IActionResult> ImportStudents(IFormFile file)
     {
         var email = User.FindFirst(ClaimTypes.Email)!.Value;
-        var result = await ImportProcessingtUsers(UserRoles.Student, file, email);
+        var result = await ImportProcessingtUsers(UserRoles.Student, file, email, 
+            User.FindFirst("CampusId")!.Value);
         return result.IsSuccess ? Ok(result) : HandleFailure(result);
     }
 
     [HttpPost("import/supervisors")]
-    [Authorize(Roles = $"{UserRoles.SuperAdmin},{UserRoles.Admin},{UserRoles.Manager}")]
+    [Authorize(Roles = $"{UserRoles.Admin},{UserRoles.Manager}")]
     public async Task<IActionResult> ImportSupervisors(IFormFile file)
     {
         var result = await ImportProcessingtUsers(UserRoles.Supervisor, file,
-            User.FindFirst(ClaimTypes.Email)!.Value);
+            User.FindFirst(ClaimTypes.Email)!.Value,
+            User.FindFirst("CampusId")!.Value);
         return result.IsSuccess ? Ok(result) : HandleFailure(result);
     }
 
@@ -194,7 +196,8 @@ public class UsersController(ILogger<UsersController> logger,
             ? Ok(result)
             : HandleFailure(result);
     }
-    private async Task<OperationResult> ImportProcessingtUsers(string userType, IFormFile file, string emailImporter)
+
+    private async Task<OperationResult> ImportProcessingtUsers(string userType, IFormFile file, string emailImporter, string campusCode)
     {
         logger.LogInformation("Start processing Users file");
         if (!IsValidFile(userType, file))
@@ -210,19 +213,17 @@ public class UsersController(ILogger<UsersController> logger,
             {
                 IXLWorksheet workSheet = wb.Worksheet(1);
 
-                return await ProcessRows(workSheet, userType, emailImporter);
+                return await ProcessRows(workSheet, userType, emailImporter, campusCode);
             }
         }
     }
 
-    private async Task<OperationResult> ProcessRows(IXLWorksheet workSheet, string userType, string emailImporter)
+    private async Task<OperationResult> ProcessRows(IXLWorksheet workSheet, string userType, string emailImporter, string campusCode)
     {
         var attempTime = 1;
         var numberOfUsersInBatchSize = 0;
         List<UserSync> users = new List<UserSync>();
 
-        // Get campusCode in cell(B,2)
-        var campusCode = workSheet.Cell(2, 2).GetValue<string>();
         if (string.IsNullOrEmpty(campusCode))
         {
             logger.LogError("Can not parse campusCode");
