@@ -296,7 +296,6 @@ public class GroupService(
                 capstone.Value.MinMember ||
                 group.GroupMembers.Where(gm => gm.Status.Equals(GroupMemberStatus.Accepted)).ToList().Count >
                 capstone.Value.MaxMember)
-                // TODO: Send Noti to leader group
                 return OperationResult.Failure(new Error("Error.InvalidTeamSize",
                     $"Group {group.Id} have invalid team size !"));
 
@@ -313,10 +312,6 @@ public class GroupService(
                 }
             }
 
-            var groupCodeList = (await groupRepository.FindAsync(g => string.IsNullOrEmpty(g.GroupCode)))
-                .Select(g => g.GroupCode).ToList();
-            var random = new Random();
-
             if (group.Status.Equals(GroupStatus.InProgress))
             {
                 var currentSemesterCode = await semesterService.GetCurrentSemesterAsync();
@@ -331,8 +326,18 @@ public class GroupService(
                 group.GroupCode = $"G{group.SemesterId}{group.MajorId}{groupMemberCode}";
             }
 
+            // Send notification to all groupMember
+            integrationEventLogService.SendEvent(new GroupStatusUpdatedEvent
+            {
+                GroupCode = group.GroupCode,
+                StudentCodes = group.GroupMembers
+                    .Where(x => x.Status == GroupMemberStatus.Accepted)
+                    .Select(x => x.StudentId).ToList(),
+                GroupId = group.Id
+            });
+
             await uow.CommitAsync();
-            //TODO: send notification to leader
+            
             return OperationResult.Success();
         }
         catch (Exception e)
@@ -426,8 +431,18 @@ public class GroupService(
                 GroupId = groupMember.GroupId,
                 TopicId = topic.Id
             };
+
             topicRequestRepository.Insert(topicRequest);
             await uow.SaveChangesAsync(cancellationToken);
+
+            integrationEventLogService.SendEvent(new TopicRequestCreatedEvent
+            {
+                GroupId = request.GroupId,
+                GroupCode = groupMember.Group.GroupCode,
+                SupervisorOfTopic= topic.MainSupervisorId,
+                TopicShortName = topic.Abbreviation,
+                TopicId = topicRequest.TopicId
+            });
 
             integrationEventLogService.SendEvent(new ExpirationRequestEvent
             {

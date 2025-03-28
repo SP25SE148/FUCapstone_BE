@@ -2,7 +2,7 @@
 
 namespace FUC.Common.Contracts;
 
-public class GroupMemberStatusUpdateMessage : IntegrationEvent
+public sealed class GroupMemberStatusUpdatedEvent : IntegrationEvent
 {
     public Guid GroupMemberId { get; set; }
     public string LeaderCode { get; set; }
