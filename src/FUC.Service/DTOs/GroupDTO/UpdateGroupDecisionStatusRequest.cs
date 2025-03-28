@@ -10,6 +10,7 @@ public class UpdateGroupDecisionStatusRequest
 public sealed class UpdateGroupDecisionStatusBySupervisorRequest : UpdateGroupDecisionStatusRequest
 {
     public DecisionStatus DecisionStatus { get; set; }
+    public string? Comment { get; set; }
 }
 
 public sealed class UpdateGroupDecisionStatusByPresidentRequest

@@ -2,6 +2,7 @@
 using ClosedXML.Excel;
 using DocumentFormat.OpenXml.Drawing.Charts;
 using FUC.Common.Abstractions;
+using FUC.Common.Constants;
 using FUC.Common.Shared;
 using FUC.Data;
 using FUC.Data.Data;
@@ -91,10 +92,8 @@ public sealed class ReviewCalendarService(
                 TopicCode = r.ReviewCalender.Topic.Code!,
                 TopicEnglishName = r.ReviewCalender.Topic.EnglishName,
                 MainSupervisorCode = r.ReviewCalender.Topic.MainSupervisorId,
-                ReviewersCode = r.ReviewCalender.Reviewers.Select(r => r.SupervisorId).ToList(),
                 CoSupervisorsCode = r.ReviewCalender.Topic.CoSupervisors.Select(c => c.SupervisorId).ToList(),
                 Comment = r.ReviewCalender.Reviewers.Select(r => r.Comment).ToList(),
-                Suggestion = r.ReviewCalender.Reviewers.Select(r => r.Suggestion).ToList()
             });
         return reviewCalendars.Count > 0
             ? reviewCalendars.ToList()
@@ -128,6 +127,11 @@ public sealed class ReviewCalendarService(
             : OperationResult.Failure<IEnumerable<ReviewCalendarResponse>>(Error.NullValue);
     }
 
+    public Task<OperationResult> GetReviewCriteria()
+    {
+        throw new NotImplementedException();
+    }
+
     public async Task<OperationResult> UpdateReviewCalendar(UpdateReviewerSuggestionAndCommentRequest request)
     {
         try
@@ -152,8 +156,82 @@ public sealed class ReviewCalendarService(
         }
     }
 
+    public async Task<OperationResult<IEnumerable<ReviewCalendarResultResponse>>> GetReviewCalendarResultByStudentId()
+    {
+        var group = await groupService.GetGroupInformationByGroupSelfId();
+        if (group.IsFailure)
+            return OperationResult.Failure<IEnumerable<ReviewCalendarResultResponse>>(Error.NullValue);
+        var reviewCalendar = await reviewCalendarRepository.FindAsync(rc => rc.GroupId == group.Value.Id,
+            include: rc => rc.Include(rc => rc.Reviewers),
+            orderBy: rc => rc.OrderBy(rc => rc.Attempt));
+        var reviewCalendarResultResponse = MapReviewCalendarsToResponses(reviewCalendar);
+        return reviewCalendar.Any()
+            ? reviewCalendarResultResponse.ToList()
+            : OperationResult.Failure<IEnumerable<ReviewCalendarResultResponse>>(Error.NullValue);
+    }
+
+    public async Task<OperationResult<IEnumerable<ReviewCalendarResultResponse>>> GetReviewCalendarResultByReviewerId()
+    {
+        var reviewCalendarResultDetailResponse = await (from rc in reviewCalendarRepository.GetQueryable()
+            join r in reviewerRepository.GetQueryable() on rc.Id equals r.ReviewCalenderId
+            where r.SupervisorId == currentUser.UserCode
+            orderby rc.Attempt
+            select new ReviewCalendarResultResponse()
+            {
+                Attempt = rc.Attempt,
+                ReviewCalendarResultDetailList = rc.Reviewers.Select(r => new ReviewCalendarResultDetailResponse
+                {
+                    Suggestion = r.Suggestion ?? "undefined",
+                    Comment = r.Comment ?? "undefined",
+                    Author = r.SupervisorId
+                }).ToList()
+            }).ToListAsync();
+
+        return reviewCalendarResultDetailResponse.Count() > 0
+            ? reviewCalendarResultDetailResponse.ToList()
+            : OperationResult.Failure<IEnumerable<ReviewCalendarResultResponse>>(Error.NullValue);
+    }
+
+    public async Task<OperationResult<IEnumerable<ReviewCalendarResultResponse>>>
+        GetReviewCalendarResultByGroupId(Guid groupId)
+    {
+        var reviewCalendar = await reviewCalendarRepository.FindAsync(rc => rc.GroupId == groupId,
+            include: rc => rc.Include(rc => rc.Reviewers),
+            orderBy: rc => rc.OrderBy(rc => rc.Attempt));
+        var reviewCalendarResultResponse = MapReviewCalendarsToResponses(reviewCalendar);
+        return reviewCalendar.Any()
+            ? reviewCalendarResultResponse.ToList()
+            : OperationResult.Failure<IEnumerable<ReviewCalendarResultResponse>>(Error.NullValue);
+    }
+
+    public async Task<OperationResult<IEnumerable<ReviewCalendarResultResponse>>> GetReviewCalendarResultByManagerId()
+    {
+        var reviewCalendar = await reviewCalendarRepository.FindAsync(rc => rc.CreatedBy == currentUser.Email,
+            include: rc => rc.Include(rc => rc.Reviewers),
+            orderBy: rc => rc.OrderBy(rc => rc.Attempt));
+        var reviewCalendarResultResponse = MapReviewCalendarsToResponses(reviewCalendar);
+        return reviewCalendar.Any()
+            ? reviewCalendarResultResponse.ToList()
+            : OperationResult.Failure<IEnumerable<ReviewCalendarResultResponse>>(Error.NullValue);
+    }
+
 
     #region private method
+
+    private IEnumerable<ReviewCalendarResultResponse> MapReviewCalendarsToResponses(
+        IEnumerable<ReviewCalendar> reviewCalendars)
+    {
+        return reviewCalendars.Select(rc => new ReviewCalendarResultResponse
+        {
+            Attempt = rc.Attempt,
+            ReviewCalendarResultDetailList = rc.Reviewers.Select(r => new ReviewCalendarResultDetailResponse
+            {
+                Suggestion = r.Suggestion ?? "undefined",
+                Comment = r.Comment ?? "undefined",
+                Author = r.SupervisorId
+            }).ToList()
+        });
+    }
 
     private static bool IsReviewerValidToEnterSuggestionAndComment(Reviewer? reviewer)
     {
@@ -309,9 +387,7 @@ public sealed class ReviewCalendarService(
             TopicCode = calendar.Topic.Code!,
             TopicEnglishName = calendar.Topic.EnglishName,
             MainSupervisorCode = calendar.Topic.MainSupervisorId,
-            ReviewersCode = calendar.Reviewers.Select(r => r.SupervisorId).ToList(),
             CoSupervisorsCode = calendar.Topic.CoSupervisors.Select(c => c.SupervisorId).ToList(),
-            Suggestion = calendar.Reviewers.Select(x => x.Suggestion).ToList(),
             Comment = calendar.Reviewers.Select(x => x.Comment).ToList(),
         };
 

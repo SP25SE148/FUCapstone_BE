@@ -50,6 +50,7 @@ public class GroupService(
     ICapstoneService capstoneService,
     IS3Service s3Service,
     IDocumentsService documentsService,
+    IRepository<DefendCapstoneProjectDecision> defendCapstoneDecisionRepository,
     ISystemConfigurationService systemConfigService,
     ITimeConfigurationService timeConfigurationService,
     S3BucketConfiguration s3BucketConfiguration) : IGroupService
@@ -67,7 +68,8 @@ public class GroupService(
             predicate: s =>
                 s.Id == currentUser.UserCode &&
                 s.IsEligible &&
-                !s.IsDeleted,
+                !s.IsDeleted &&
+                s.Status.Equals(StudentStatus.InProgress),
             include: s =>
                 s.Include(s => s.GroupMembers)
                     .ThenInclude(gm => gm.Group)
@@ -80,8 +82,7 @@ public class GroupService(
             return OperationResult.Failure<Guid>(Error.NullValue);
 
         // Check if Leader is eligible to create group 
-        if (leader.Status.Equals(StudentStatus.Passed) ||
-            leader.GroupMembers.Count > 0 &&
+        if (leader.GroupMembers.Count > 0 &&
             leader.GroupMembers.Any(s => s.Status.Equals(GroupMemberStatus.Accepted)))
             return OperationResult.Failure<Guid>(new Error("Error.InEligible", "Leader is ineligible to create group"));
 
@@ -351,9 +352,11 @@ public class GroupService(
             if (timeConfig.IsFailure)
                 return OperationResult.Failure<Guid>(timeConfig.Error);
 
-            if (timeConfig.Value.IsActived && 
-                (timeConfig.Value.RegistTopicDate > DateTime.Now || timeConfig.Value.RegistTopicExpiredDate < DateTime.Now))
-                return OperationResult.Failure<Guid>(new Error("TopicRequest.Error", "You need request topic in right time."));
+            if (timeConfig.Value.IsActived &&
+                (timeConfig.Value.RegistTopicDate > DateTime.Now ||
+                 timeConfig.Value.RegistTopicExpiredDate < DateTime.Now))
+                return OperationResult.Failure<Guid>(new Error("TopicRequest.Error",
+                    "You need request topic in right time."));
 
             var groupMember = await groupMemberRepository
                 .GetAsync(
@@ -1438,13 +1441,18 @@ public class GroupService(
                 GroupCode = gm.Group.GroupCode,
                 TopicCode = gm.Group.Topic.Code,
                 MajorName = gm.Group.MajorId,
-                SemesterName = gm.Group.SemesterId
+                SemesterName = gm.Group.SemesterId,
+                AverageGPA = gm.Group.GroupMembers.Any(gm => gm.Status == GroupMemberStatus.Accepted)
+                    ? gm.Group.GroupMembers.Average(gm => gm.Student.GPA)
+                    : 0
             },
             gm => gm.AsSplitQuery()
                 .Include(gm => gm.Student)
                 .Include(gm => gm.Group)
                 .ThenInclude(g => g.Topic)
-                .Include(g => g.Group.Supervisor));
+                .Include(g => g.Group.Supervisor)
+                .Include(gm => gm.Group.GroupMembers.Where(gm => gm.Status == GroupMemberStatus.Accepted))
+                .ThenInclude(gm => gm.Student));
 
         if (group is null)
         {
@@ -1552,11 +1560,13 @@ public class GroupService(
     {
         try
         {
-            var group = await groupRepository.GetAsync(g => g.Id == request.GroupId,
+            var group = await groupRepository.GetAsync(
+                g => g.Id == request.GroupId && g.SupervisorId == currentUser.UserCode,
                 true,
                 g =>
                     g.Include(g => g.Supervisor)
                         .Include(g => g.Capstone)
+                        .Include(g => g.DefendCapstoneProjectDecision)
                         .Include(g => g.ReviewCalendars.Where(rc => rc.Status == ReviewCalendarStatus.Done)));
 
             if (IsGroupValidForUpdateDecisionStatus(group))
@@ -1567,13 +1577,20 @@ public class GroupService(
                 return OperationResult.Failure(new Error("Error.UpdateFailed", "Can not update group decision"));
 
             // check if group is re defend capstone project
-            if (group.Decision != DecisionStatus.Undefined || group.IsReDefendCapstoneProject)
+            if (group.IsReDefendCapstoneProject)
             {
                 return OperationResult.Failure(new Error("Error.UpdateFailed", "Can not update group decision"));
             }
 
-            group.Decision = request.DecisionStatus;
-            groupRepository.Update(group);
+            var defendCapstoneProjectDecision = new DefendCapstoneProjectDecision
+            {
+                Id = Guid.NewGuid(),
+                SupervisorId = group.SupervisorId,
+                GroupId = group.Id,
+                Comment = request.Comment,
+                Decision = request.DecisionStatus
+            };
+            defendCapstoneDecisionRepository.Insert(defendCapstoneProjectDecision);
             await uow.SaveChangesAsync();
             return OperationResult.Success();
         }
@@ -1614,17 +1631,17 @@ public class GroupService(
             if (president.DefendCapstoneProjectInformationCalendar.TopicId != group!.TopicId)
                 return OperationResult.Failure(new Error("Error.UpdateFailed", "Can not update group decision"));
 
-            if (group!.Decision == DecisionStatus.Undefined)
+            if (group.DefendCapstoneProjectDecision is null)
                 return OperationResult.Failure(new Error("Error.UpdateFailed",
-                    "Can not update group decision while group decision is undefined"));
+                    "Can not update group decision while group decision is null"));
             switch (isReDefendCapstoneProject)
             {
                 case false:
                     group!.IsReDefendCapstoneProject = false;
                     group.Status = GroupStatus.Completed;
                     break;
-                case true when group!.Decision == DecisionStatus.Attempt1:
-                    group.Decision = DecisionStatus.Attempt2;
+                case true when group.DefendCapstoneProjectDecision.Decision == DecisionStatus.Attempt1:
+                    group.DefendCapstoneProjectDecision.Decision = DecisionStatus.Attempt2;
                     group.IsReDefendCapstoneProject = true;
                     break;
                 default:
@@ -1647,6 +1664,7 @@ public class GroupService(
     {
         return group != null &&
                group.Status == GroupStatus.InProgress &&
-               group.ReviewCalendars.Count >= group.Capstone.ReviewCount;
+               group.ReviewCalendars.Count >= group.Capstone.ReviewCount &&
+               group.DefendCapstoneProjectDecision == null;
     }
 }

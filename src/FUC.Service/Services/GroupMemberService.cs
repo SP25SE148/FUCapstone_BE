@@ -37,7 +37,7 @@ public class GroupMemberService(
                 s.Id == currentUser.UserCode &&
                 s.IsEligible &&
                 !s.IsDeleted &&
-                !s.Status.Equals(StudentStatus.Passed),
+                s.Status.Equals(StudentStatus.InProgress),
             include: s =>
                 s.Include(s => s.GroupMembers)
                     .ThenInclude(gm => gm.Group)
@@ -82,7 +82,7 @@ public class GroupMemberService(
                             s.CampusId == leader.CampusId &&
                             s.CapstoneId == leader.CapstoneId &&
                             s.IsEligible &&
-                            !s.Status.Equals(StudentStatus.Passed) &&
+                            s.Status.Equals(StudentStatus.InProgress) &&
                             !s.IsDeleted,
             include: s => s.Include(s => s.GroupMembers),
             orderBy: default,
@@ -132,7 +132,8 @@ public class GroupMemberService(
         {
             RequestId = newGroupMember.Id,
             RequestType = nameof(GroupMember),
-            ExpirationDuration = TimeSpan.FromMinutes(systemConfigService.GetSystemConfiguration().ExpirationTeamUpDuration)
+            ExpirationDuration =
+                TimeSpan.FromMinutes(systemConfigService.GetSystemConfiguration().ExpirationTeamUpDuration)
         });
 
         await uow.CommitAsync();
@@ -249,11 +250,11 @@ public class GroupMemberService(
                     return OperationResult.Failure(new Error("Error.UpdateFailed",
                         $"Can not update status with group member id {groupMember.Id}!!"));
             }
-            
+
             integrationEventLogService.SendEvent(new GroupMemberStatusUpdateMessage
             {
                 GroupMemberId = groupMember.Id,
-                LeaderCode = await GetLeaderIdOfGroup(groupMember.GroupId),  
+                LeaderCode = await GetLeaderIdOfGroup(groupMember.GroupId),
                 Status = request.Status.ToString(),
                 MemberCode = currentUser.UserCode
             });
@@ -445,7 +446,8 @@ public class GroupMemberService(
             {
                 RequestId = newJoinGroupRequest.Id,
                 RequestType = nameof(JoinGroupRequest),
-                ExpirationDuration = TimeSpan.FromMinutes(systemConfigService.GetSystemConfiguration().ExpirationTeamUpDuration)
+                ExpirationDuration =
+                    TimeSpan.FromMinutes(systemConfigService.GetSystemConfiguration().ExpirationTeamUpDuration)
             });
 
             await uow.CommitAsync();
@@ -671,7 +673,7 @@ public class GroupMemberService(
             x => x.GroupId == groupId && x.IsLeader,
             selector: x => x.StudentId);
 
-        ArgumentNullException.ThrowIfNull(leaderId);    
+        ArgumentNullException.ThrowIfNull(leaderId);
 
         return leaderId;
     }

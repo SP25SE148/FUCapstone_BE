@@ -1,4 +1,5 @@
-﻿using FUC.Data.Abstractions;
+﻿using System.Collections;
+using FUC.Data.Abstractions;
 
 namespace FUC.Data.Entities;
 
@@ -26,4 +27,7 @@ public class Supervisor : AuditableSoftDeleteEntity
 
     public ICollection<DefendCapstoneProjectCouncilMember> DefendCapstoneProjectMemberCouncils { get; set; } =
         new List<DefendCapstoneProjectCouncilMember>();
+
+    public ICollection<DefendCapstoneProjectDecision> DefendCapstoneProjectDecisions { get; set; } =
+        new List<DefendCapstoneProjectDecision>();
 }
