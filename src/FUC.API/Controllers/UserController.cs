@@ -201,4 +201,44 @@ public sealed class UserController(
             ? Ok(result)
             : HandleFailure(result);
     }
+
+    [HttpGet("review-calendar-result/student")]
+    [Authorize(Roles = UserRoles.Student)]
+    public async Task<IActionResult> GetReviewCalendarResultByStudentAsync()
+    {
+        var result = await reviewCalendarService.GetReviewCalendarResultByStudentId();
+        return result.IsSuccess
+            ? Ok(result)
+            : HandleFailure(result);
+    }
+
+    [HttpGet("review-calendar-result/reviewer")]
+    [Authorize(Roles = UserRoles.Supervisor)]
+    public async Task<IActionResult> GetReviewCalendarResultByReviewerAsync()
+    {
+        var result = await reviewCalendarService.GetReviewCalendarResultByReviewerId();
+        return result.IsSuccess
+            ? Ok(result)
+            : HandleFailure(result);
+    }
+
+    [HttpGet("review-calendar-result/manager")]
+    [Authorize(Roles = UserRoles.Manager)]
+    public async Task<IActionResult> GetReviewCalendarResultByManagerAsync()
+    {
+        var result = await reviewCalendarService.GetReviewCalendarResultByManagerId();
+        return result.IsSuccess
+            ? Ok(result)
+            : HandleFailure(result);
+    }
+
+    [HttpGet("review-calendar-result/{groupId}")]
+    [Authorize(Roles = UserRoles.Supervisor)]
+    public async Task<IActionResult> GetReviewCalendarResultBySupervisorAsync(Guid groupId)
+    {
+        var result = await reviewCalendarService.GetReviewCalendarResultByGroupId(groupId);
+        return result.IsSuccess
+            ? Ok(result)
+            : HandleFailure(result);
+    }
 }

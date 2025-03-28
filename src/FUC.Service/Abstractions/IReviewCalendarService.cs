@@ -14,11 +14,15 @@ public interface IReviewCalendarService
     Task<OperationResult> GetReviewCriteria();
     Task<OperationResult> UpdateReviewCalendar(UpdateReviewerSuggestionAndCommentRequest request);
 
-    Task<OperationResult<IEnumerable<ReviewCalendarResultResponse>>> GetReviewCalendarResultByStudentId();
-    Task<OperationResult<IEnumerable<ReviewCalendarResultResponse>>> GetReviewCalendarResultByReviewerId();
+    Task<OperationResult<IEnumerable<ReviewCalendarResultResponse>>>
+        GetReviewCalendarResultByStudentId(); // use for student
 
     Task<OperationResult<IEnumerable<ReviewCalendarResultResponse>>>
-        GetReviewCalendarResultByGroupId(Guid groupId); // user for supervisor 
+        GetReviewCalendarResultByReviewerId(); // use for reviewer
 
-    Task<OperationResult<IEnumerable<ReviewCalendarResultResponse>>> GetReviewCalendarResultByManagerId();
+    Task<OperationResult<IEnumerable<ReviewCalendarResultResponse>>>
+        GetReviewCalendarResultByGroupId(Guid groupId); // use for supervisor 
+
+    Task<OperationResult<IEnumerable<ReviewCalendarResultResponse>>>
+        GetReviewCalendarResultByManagerId(); // use for manager
 }
