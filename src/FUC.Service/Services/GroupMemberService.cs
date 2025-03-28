@@ -32,7 +32,9 @@ public class GroupMemberService(
 {
     public async Task<OperationResult<Guid>> CreateGroupMemberByLeaderAsync(CreateGroupMemberByLeaderRequest request)
     {
-        Student? leader = await studentRepository.GetAsync(
+        try
+        {
+            Student? leader = await studentRepository.GetAsync(
             predicate: s =>
                 s.Id == currentUser.UserCode &&
                 s.IsEligible &&
@@ -44,89 +46,82 @@ public class GroupMemberService(
                     .Include(s => s.Capstone),
             orderBy: default,
             cancellationToken: default);
-        // Check if leader is null 
-        if (leader is null)
-            return OperationResult.Failure<Guid>(Error.NullValue);
+            // Check if leader is null 
+            if (leader is null)
+                return OperationResult.Failure<Guid>(Error.NullValue);
 
-        // Check if Leader is eligible to send add member request 
-        if (leader.GroupMembers.FirstOrDefault(gm => gm.IsLeader) is null ||
-            !leader.GroupMembers.Any(s => s.Status.Equals(GroupMemberStatus.Accepted)) ||
-            !leader.GroupMembers.Any(s => s.IsLeader))
-            return OperationResult.Failure<Guid>(new Error("Error.InEligible",
-                $"User with id {currentUser.UserCode} is ineligible to add member"));
-
-
-        // get number of members group's leader
-        Guid groupIdOfLeader = leader.GroupMembers.FirstOrDefault(s => s.IsLeader)!.GroupId;
-        int numOfMembers = (await groupMemberRepository.FindAsync(
-            gm => gm.GroupId.Equals(groupIdOfLeader) &&
-                  (gm.Status.Equals(GroupMemberStatus.Accepted) ||
-                   gm.Status.Equals(GroupMemberStatus.UnderReview)))).Count;
-        // Check if the team size is invalid 
-        if (numOfMembers + 1 > leader.Capstone.MaxMember)
-            return OperationResult.Failure<Guid>(new Error("Error.MemberRequestSizeInvalid",
-                "The member request size is invalid"));
+            // Check if Leader is eligible to send add member request 
+            if (leader.GroupMembers.FirstOrDefault(gm => gm.IsLeader) is null ||
+                !leader.GroupMembers.Any(s => s.Status.Equals(GroupMemberStatus.Accepted)) ||
+                !leader.GroupMembers.Any(s => s.IsLeader))
+                return OperationResult.Failure<Guid>(new Error("Error.InEligible",
+                    $"User with id {currentUser.UserCode} is ineligible to add member"));
 
 
-        Guid groupId = leader.GroupMembers.FirstOrDefault(s => s.IsLeader)!.GroupId;
-        // create group member for member  
-        await uow.BeginTransactionAsync();
-        //check if memberId value is duplicate with leaderId 
-        if (request.MemberEmail.Equals(leader.Id))
-            return OperationResult.Failure<Guid>(new Error("Error.DuplicateValue",
-                $"The member id with {request.MemberEmail} was duplicate with leader id {leader.Id}"));
+            // get number of members group's leader
+            Guid groupIdOfLeader = leader.GroupMembers.FirstOrDefault(s => s.IsLeader)!.GroupId;
+            int numOfMembers = (await groupMemberRepository.FindAsync(
+                gm => gm.GroupId.Equals(groupIdOfLeader) &&
+                      (gm.Status.Equals(GroupMemberStatus.Accepted) ||
+                       gm.Status.Equals(GroupMemberStatus.UnderReview)))).Count;
+            // Check if the team size is invalid 
+            if (numOfMembers + 1 > leader.Capstone.MaxMember)
+                return OperationResult.Failure<Guid>(new Error("Error.MemberRequestSizeInvalid",
+                    "The member request size is invalid"));
 
-        // check if member is eligible to send join group request
-        Student? member = await studentRepository.GetAsync(
-            predicate: s => s.Email.ToLower().Equals(request.MemberEmail.ToLower()) &&
-                            s.CampusId == leader.CampusId &&
-                            s.CapstoneId == leader.CapstoneId &&
-                            s.IsEligible &&
-                            s.Status.Equals(StudentStatus.InProgress) &&
-                            !s.IsDeleted,
-            include: s => s.Include(s => s.GroupMembers),
-            orderBy: default,
-            cancellationToken: default);
-        if (member is null ||
-            member.GroupMembers.Any(s => s.Status.Equals(GroupMemberStatus.Accepted)))
-            return OperationResult.Failure<Guid>(new Error("Error.InEligible",
-                $"Member with email {request.MemberEmail} is ineligible !!"));
 
-        if (member.GroupMembers.Any(s => s.GroupId == groupIdOfLeader &&
-                                         s.Status.Equals(GroupMemberStatus.UnderReview)))
-            return OperationResult.Failure<Guid>(new Error("Error.CreateGroupMemberFail",
-                $"Can not send request to member with email {member.Email} because the leader already send request to this member"));
-        // create group member for member
-        var newGroupMember = new GroupMember
-        {
-            GroupId = groupId,
-            StudentId = member.Id,
-            IsLeader = false
-        };
+            Guid groupId = leader.GroupMembers.FirstOrDefault(s => s.IsLeader)!.GroupId;
 
-        groupMemberRepository.Insert(newGroupMember);
+            // create group member for member  
+            await uow.BeginTransactionAsync();
 
-        await uow.SaveChangesAsync();
+            //check if memberId value is duplicate with leaderId 
+            if (request.MemberEmail.Equals(leader.Id))
+                return OperationResult.Failure<Guid>(new Error("Error.DuplicateValue",
+                    $"The member id with {request.MemberEmail} was duplicate with leader id {leader.Id}"));
 
-        var groupMemberNotification = new List<GroupMemberNotification>
-        {
-            new GroupMemberNotification
+            // check if member is eligible to send join group request
+            Student? member = await studentRepository.GetAsync(
+                predicate: s => s.Email.ToLower().Equals(request.MemberEmail.ToLower()) &&
+                                s.CampusId == leader.CampusId &&
+                                s.CapstoneId == leader.CapstoneId &&
+                                s.IsEligible &&
+                                !s.Status.Equals(StudentStatus.Passed) &&
+                                !s.IsDeleted,
+                include: s => s.Include(s => s.GroupMembers),
+                orderBy: default,
+                cancellationToken: default);
+
+            if (member is null ||
+                member.GroupMembers.Any(s => s.Status.Equals(GroupMemberStatus.Accepted)))
+                return OperationResult.Failure<Guid>(new Error("Error.InEligible",
+                    $"Member with email {request.MemberEmail} is ineligible !!"));
+
+            if (member.GroupMembers.Any(s => s.GroupId == groupIdOfLeader &&
+                                             s.Status.Equals(GroupMemberStatus.UnderReview)))
+                return OperationResult.Failure<Guid>(new Error("Error.CreateGroupMemberFail",
+                    $"Can not send request to member with email {member.Email} because the leader already send request to this member"));
+
+            // create group member for member
+            var newGroupMember = new GroupMember
             {
                 GroupId = groupId,
-                MemberEmail = member.Email,
-                MemberId = member.Id,
-                GroupMemberId = newGroupMember.Id
-            }
-        };
+                StudentId = member.Id,
+                IsLeader = false
+            };
 
-        integrationEventLogService.SendEvent(new GroupMemberNotificationMessage
-        {
-            GroupMemberNotifications = groupMemberNotification,
-            CreateBy = leader.Id,
-            LeaderEmail = leader.Email,
-            LeaderName = leader.FullName,
-            AttemptTime = 1
-        });
+            groupMemberRepository.Insert(newGroupMember);
+
+            await uow.SaveChangesAsync();
+
+            integrationEventLogService.SendEvent(new GroupMemberCreatedEvent
+            {
+                GroupId = groupId,
+                MemberId = member.Id,
+                GroupMemberId = newGroupMember.Id,
+                LeaderId = currentUser.UserCode,
+                LeaderName = currentUser.Name,
+            });
 
         integrationEventLogService.SendEvent(new ExpirationRequestEvent
         {
@@ -136,8 +131,17 @@ public class GroupMemberService(
                 TimeSpan.FromMinutes(systemConfigService.GetSystemConfiguration().ExpirationTeamUpDuration)
         });
 
-        await uow.CommitAsync();
-        return groupId;
+            await uow.CommitAsync();
+            return groupId;
+        }
+        catch (Exception ex)
+        {
+            logger.LogError("Fail to create groupMember with error: {Message}", ex.Message);
+
+            await uow.RollbackAsync();
+
+            return OperationResult.Failure<Guid>(new Error("GroupMember.Error", "Fail to create group member."));
+        }
     }
 
     public async Task<OperationResult> UpdateGroupMemberStatusAsync(UpdateGroupMemberRequest request)
@@ -251,7 +255,7 @@ public class GroupMemberService(
                         $"Can not update status with group member id {groupMember.Id}!!"));
             }
 
-            integrationEventLogService.SendEvent(new GroupMemberStatusUpdateMessage
+            integrationEventLogService.SendEvent(new GroupMemberStatusUpdatedEvent
             {
                 GroupMemberId = groupMember.Id,
                 LeaderCode = await GetLeaderIdOfGroup(groupMember.GroupId),
@@ -275,22 +279,22 @@ public class GroupMemberService(
         var groupMemberRequestResponse = new GroupMemberRequestResponse();
 
         var groupMembers = await (from gm in groupMemberRepository.GetQueryable()
-            where gm.StudentId == currentUser.UserCode
-            join s in studentRepository.GetQueryable() on gm.CreatedBy equals s.Email
-            orderby s.GPA, gm.CreatedDate
-            select new GroupMemberResponse
-            {
-                Id = gm.Id,
-                Status = gm.Status.ToString(),
-                GroupId = gm.GroupId,
-                StudentId = s.Id,
-                StudentFullName = s.FullName,
-                StudentEmail = s.Email,
-                IsLeader = gm.IsLeader,
-                CreatedDate = gm.CreatedDate,
-                CreatedBy = gm.CreatedBy,
-                GPA = s.GPA
-            }).ToListAsync();
+                                  where gm.StudentId == currentUser.UserCode
+                                  join s in studentRepository.GetQueryable() on gm.CreatedBy equals s.Email
+                                  orderby s.GPA, gm.CreatedDate
+                                  select new GroupMemberResponse
+                                  {
+                                      Id = gm.Id,
+                                      Status = gm.Status.ToString(),
+                                      GroupId = gm.GroupId,
+                                      StudentId = s.Id,
+                                      StudentFullName = s.FullName,
+                                      StudentEmail = s.Email,
+                                      IsLeader = gm.IsLeader,
+                                      CreatedDate = gm.CreatedDate,
+                                      CreatedBy = gm.CreatedBy,
+                                      GPA = s.GPA
+                                  }).ToListAsync();
 
 
         groupMemberRequestResponse.GroupMemberRequested = groupMembers.Where(gm => !gm.IsLeader).ToList();
@@ -440,8 +444,17 @@ public class GroupMemberService(
 
             joinGroupRequestRepository.Insert(newJoinGroupRequest);
 
-            // TODO: Send notification
+            // Send notification
+            integrationEventLogService.SendEvent(new JoinGroupRequestCreatedEvent
+            {
+                LeaderCode = group.Value.GroupMemberList.First(x => x.IsLeader).StudentId,
+                MemberCode = student.Id,
+                MemberName = student.FullName,
+                GroupId = group.Value.Id,
+                Id = newJoinGroupRequest.Id,
+            });
 
+            // Send expiration of request
             integrationEventLogService.SendEvent(new ExpirationRequestEvent
             {
                 RequestId = newJoinGroupRequest.Id,
@@ -511,7 +524,6 @@ public class GroupMemberService(
         var group = joinGroupRequest.Group;
         var student = joinGroupRequest.Student;
 
-
         // check join group request status is not pending
         if (IsJoinGroupRequestStatusPending(joinGroupRequest))
             return OperationResult.Failure(new Error("Error.UpdateFailed",
@@ -574,24 +586,43 @@ public class GroupMemberService(
     {
         await uow.BeginTransactionAsync();
 
-        switch (request.Status)
+        try
         {
-            case JoinGroupRequestStatus.Approved when isLeader:
-                await ApproveJoinGroupRequest(joinGroupRequest, request, group, student, maxMember);
-                break;
-            case JoinGroupRequestStatus.Rejected when isLeader:
-                await RejectOrCancelJoinGroupRequest(joinGroupRequest, JoinGroupRequestStatus.Rejected);
-                break;
-            case JoinGroupRequestStatus.Cancelled when !isLeader:
-                if (!IsCurrentJoinGroupRequestCorrect(joinGroupRequest))
+            switch (request.Status)
+            {
+                case JoinGroupRequestStatus.Approved when isLeader:
+                    await ApproveJoinGroupRequest(joinGroupRequest, request, group, student, maxMember);
+                    break;
+                case JoinGroupRequestStatus.Rejected when isLeader:
+                    RejectOrCancelJoinGroupRequest(joinGroupRequest, JoinGroupRequestStatus.Rejected);
+                    break;
+                case JoinGroupRequestStatus.Cancelled when !isLeader:
+                    if (!IsCurrentJoinGroupRequestCorrect(joinGroupRequest))
+                        throw new InvalidOperationException("Can not update join group request status");
+                    RejectOrCancelJoinGroupRequest(joinGroupRequest, JoinGroupRequestStatus.Cancelled);
+                    break;
+                default:
                     throw new InvalidOperationException("Can not update join group request status");
-                await RejectOrCancelJoinGroupRequest(joinGroupRequest, JoinGroupRequestStatus.Cancelled);
-                break;
-            default:
-                throw new InvalidOperationException("Can not update join group request status");
-        }
+            }
 
-        await uow.CommitAsync();
+            integrationEventLogService.SendEvent(new JoinGroupRequestStatusUpdatedEvent
+            {
+                GroupId = group.Id,
+                JoinGroupRequestId = joinGroupRequest.Id,
+                LeaderCode = currentUser.Id,
+                LeaderName = currentUser.Name,
+                MemberCode = student.Id,
+                Status = request.Status.ToString(),
+            });
+
+            await uow.CommitAsync();
+        }
+        catch(Exception) 
+        {
+            await uow.RollbackAsync();
+
+            throw;
+        }
     }
 
     private bool IsCurrentJoinGroupRequestCorrect(JoinGroupRequest joinGroupRequest)
@@ -618,12 +649,12 @@ public class GroupMemberService(
 
         if (IsGroupFullAfterApprove(group, maxMember))
         {
-            await CancelPendingInviteMemberRequests(group);
+            CancelPendingInviteMemberRequests(group);
             await RejectOtherPendingJoinGroupRequests(group, request.Id);
         }
     }
 
-    private async Task RejectOrCancelJoinGroupRequest(
+    private static void RejectOrCancelJoinGroupRequest(
         JoinGroupRequest joinGroupRequest,
         JoinGroupRequestStatus status)
     {
@@ -637,7 +668,7 @@ public class GroupMemberService(
         return group.GroupMembers.Count(gm => gm.Status == GroupMemberStatus.Accepted) + 1 >= maxMember;
     }
 
-    private async Task CancelPendingInviteMemberRequests(Group group)
+    private void CancelPendingInviteMemberRequests(Group group)
     {
         var membersToCancel = group.GroupMembers.Where(gm => gm.Status == GroupMemberStatus.UnderReview).ToList();
         foreach (var groupMember in membersToCancel)
