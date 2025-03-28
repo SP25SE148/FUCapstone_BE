@@ -86,7 +86,7 @@ public class GroupMemberService(
                                 s.CampusId == leader.CampusId &&
                                 s.CapstoneId == leader.CapstoneId &&
                                 s.IsEligible &&
-                                !s.Status.Equals(StudentStatus.Passed) &&
+                                !s.Status.Equals(StudentStatus.InProgress) &&
                                 !s.IsDeleted,
                 include: s => s.Include(s => s.GroupMembers),
                 orderBy: default,
