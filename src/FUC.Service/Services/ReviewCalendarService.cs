@@ -1,4 +1,5 @@
 ﻿using System.Linq.Expressions;
+using Amazon.Internal;
 using ClosedXML.Excel;
 using DocumentFormat.OpenXml.Drawing.Charts;
 using FUC.Common.Abstractions;
@@ -31,6 +32,7 @@ public sealed class ReviewCalendarService(
     ISupervisorService supervisorService,
     ICurrentUser currentUser,
     ISystemConfigurationService systemConfigurationService,
+    IRepository<ReviewCriteria> reviewCriteriaRepository,
     IRepository<ReviewCalendar> reviewCalendarRepository) : IReviewCalendarService
 {
     public async Task<OperationResult> ImportReviewCalendar(IFormFile file)
@@ -127,11 +129,6 @@ public sealed class ReviewCalendarService(
             : OperationResult.Failure<IEnumerable<ReviewCalendarResponse>>(Error.NullValue);
     }
 
-    public Task<OperationResult> GetReviewCriteria()
-    {
-        throw new NotImplementedException();
-    }
-
     public async Task<OperationResult> UpdateReviewCalendar(UpdateReviewerSuggestionAndCommentRequest request)
     {
         try
@@ -218,6 +215,25 @@ public sealed class ReviewCalendarService(
         return reviewCalendar.Any()
             ? reviewCalendarResultResponse.ToList()
             : OperationResult.Failure<IEnumerable<ReviewCalendarResultResponse>>(Error.NullValue);
+    }
+
+    public async Task<OperationResult<IEnumerable<ReviewCriteriaResponse>>> GetReviewCalendarByAttemptAsync(int attempt)
+    {
+        var reviewCriteria = await reviewCriteriaRepository.FindAsync(
+            rc => rc.Attempt == attempt && rc.IsActive == true,
+            null,
+            null,
+            selector: rc => new ReviewCriteriaResponse
+            {
+                Id = rc.Id,
+                Attempt = rc.Attempt,
+                Description = rc.Description,
+                Name = rc.Name,
+                Requirement = rc.Requirement
+            });
+        return reviewCriteria.Any()
+            ? reviewCriteria.ToList()
+            : OperationResult.Failure<IEnumerable<ReviewCriteriaResponse>>(Error.NullValue);
     }
 
 

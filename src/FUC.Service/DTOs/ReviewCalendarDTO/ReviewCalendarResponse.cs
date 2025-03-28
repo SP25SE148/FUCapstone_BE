@@ -29,3 +29,12 @@ public sealed class ReviewCalendarResultDetailResponse
     public string? Comment { get; set; }
     public string? Author { get; set; }
 }
+
+public sealed class ReviewCriteriaResponse
+{
+    public Guid Id { get; set; }
+    public int Attempt { get; set; }
+    public string Name { get; set; }
+    public string Description { get; set; }
+    public string Requirement { get; set; }
+}

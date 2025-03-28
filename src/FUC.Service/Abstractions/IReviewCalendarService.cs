@@ -11,7 +11,6 @@ public interface IReviewCalendarService
     Task<OperationResult<IEnumerable<ReviewCalendarResponse>>> GetReviewCalendarBySupervisorId();
     Task<OperationResult<IEnumerable<ReviewCalendarResponse>>> GetReviewCalendarByStudentId();
     Task<OperationResult<IEnumerable<ReviewCalendarResponse>>> GetReviewCalendarByManagerId();
-    Task<OperationResult> GetReviewCriteria();
     Task<OperationResult> UpdateReviewCalendar(UpdateReviewerSuggestionAndCommentRequest request);
 
     Task<OperationResult<IEnumerable<ReviewCalendarResultResponse>>>
@@ -25,4 +24,6 @@ public interface IReviewCalendarService
 
     Task<OperationResult<IEnumerable<ReviewCalendarResultResponse>>>
         GetReviewCalendarResultByManagerId(); // use for manager
+
+    Task<OperationResult<IEnumerable<ReviewCriteriaResponse>>> GetReviewCalendarByAttemptAsync(int attempt);
 }

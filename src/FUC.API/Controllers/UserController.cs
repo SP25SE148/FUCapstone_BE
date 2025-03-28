@@ -241,4 +241,13 @@ public sealed class UserController(
             ? Ok(result)
             : HandleFailure(result);
     }
+
+    [HttpGet("review-criteria/{attempt}")]
+    public async Task<IActionResult> GetReviewCriteriaAsync(int attempt)
+    {
+        var result = await reviewCalendarService.GetReviewCalendarByAttemptAsync(attempt);
+        return result.IsSuccess
+            ? Ok(result)
+            : HandleFailure(result);
+    }
 }
