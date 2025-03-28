@@ -93,7 +93,7 @@ public sealed class ReviewCalendarService(
                 TopicEnglishName = r.ReviewCalender.Topic.EnglishName,
                 MainSupervisorCode = r.ReviewCalender.Topic.MainSupervisorId,
                 CoSupervisorsCode = r.ReviewCalender.Topic.CoSupervisors.Select(c => c.SupervisorId).ToList(),
-                Comment = r.ReviewCalender.Reviewers.Select(r => r.Comment).ToList(),
+                Status = r.ReviewCalender.Status.ToString()
             });
         return reviewCalendars.Count > 0
             ? reviewCalendars.ToList()
@@ -195,9 +195,14 @@ public sealed class ReviewCalendarService(
     public async Task<OperationResult<IEnumerable<ReviewCalendarResultResponse>>>
         GetReviewCalendarResultByGroupId(Guid groupId)
     {
-        var reviewCalendar = await reviewCalendarRepository.FindAsync(rc => rc.GroupId == groupId,
+        var group = await groupService.GetGroupByIdAsync(groupId);
+        if (group.Value.SupervisorId != currentUser.UserCode)
+            return OperationResult.Failure<IEnumerable<ReviewCalendarResultResponse>>(new Error("GetFailed",
+                "Can not get group which is not yours"));
+        var reviewCalendar = await reviewCalendarRepository.FindAsync(rc => rc.GroupId == group.Value.Id,
             include: rc => rc.Include(rc => rc.Reviewers),
             orderBy: rc => rc.OrderBy(rc => rc.Attempt));
+
         var reviewCalendarResultResponse = MapReviewCalendarsToResponses(reviewCalendar);
         return reviewCalendar.Any()
             ? reviewCalendarResultResponse.ToList()
@@ -388,7 +393,7 @@ public sealed class ReviewCalendarService(
             TopicEnglishName = calendar.Topic.EnglishName,
             MainSupervisorCode = calendar.Topic.MainSupervisorId,
             CoSupervisorsCode = calendar.Topic.CoSupervisors.Select(c => c.SupervisorId).ToList(),
-            Comment = calendar.Reviewers.Select(x => x.Comment).ToList(),
+            Status = calendar.Status.ToString()
         };
 
     private Func<IQueryable<ReviewCalendar>, IIncludableQueryable<ReviewCalendar, object>>
