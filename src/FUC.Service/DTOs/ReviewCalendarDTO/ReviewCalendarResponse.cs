@@ -14,7 +14,18 @@ public sealed class ReviewCalendarResponse
     public int Slot { get; set; }
     public string Room { get; set; }
     public DateTime Date { get; set; }
-    public IReadOnlyCollection<string> ReviewersCode { get; set; }
-    public IReadOnlyCollection<string?> Suggestion { get; set; }
     public IReadOnlyCollection<string?> Comment { get; set; }
+}
+
+public sealed class ReviewCalendarResultResponse
+{
+    public int Attempt { get; set; }
+    public IReadOnlyCollection<ReviewCalendarResultDetailResponse> ReviewCalendarResultDetailList { get; set; }
+}
+
+public sealed class ReviewCalendarResultDetailResponse
+{
+    public string? Suggestion { get; set; }
+    public string? Comment { get; set; }
+    public string? Author { get; set; }
 }

@@ -29,4 +29,5 @@ internal static class TableNames
     internal const string JoinGroupRequest = nameof(JoinGroupRequest);
     internal const string DefendCapstoneProjectCouncilMember = nameof(DefendCapstoneProjectCouncilMember);
     internal const string DefendCapstoneProjectInformationCalendar = nameof(DefendCapstoneProjectInformationCalendar);
+    internal const string DefendCapstoneProjectDecision = nameof(DefendCapstoneProjectDecision);
 }

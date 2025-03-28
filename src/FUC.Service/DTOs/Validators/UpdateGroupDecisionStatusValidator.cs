@@ -12,7 +12,6 @@ public class UpdateGroupDecisionStatusValidator : AbstractValidator<UpdateGroupD
         RuleFor(x => x.GroupId).NotEmpty().WithMessage("group id is not empty");
         RuleFor(x => x.DecisionStatus)
             .NotEmpty()
-            .NotEqual(DecisionStatus.Undefined)
-            .WithMessage("decision status can not be empty or undefined");
+            .WithMessage("decision status can not be empty");
     }
 }

@@ -2,7 +2,7 @@
 
 public enum StudentStatus
 {
-    Passed,
-    NotPassed,
+    Completed,
+    InCompleted,
     InProgress
 }

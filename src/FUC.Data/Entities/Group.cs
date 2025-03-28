@@ -16,14 +16,13 @@ public sealed class Group : AuditableSoftDeleteEntity
     public string GroupCode { get; set; } = string.Empty;
     public GroupStatus Status { get; set; }
 
-    public DecisionStatus Decision { get; set; }
-
     public bool IsReDefendCapstoneProject { get; set; }
     public Major Major { get; set; } = null!;
     public Semester Semester { get; set; } = null!;
     public Campus Campus { get; set; } = null!;
     public Capstone Capstone { get; set; } = null!;
     public Supervisor? Supervisor { get; set; } = null!;
+    public DefendCapstoneProjectDecision DefendCapstoneProjectDecision { get; set; } = null;
     public ICollection<GroupMember> GroupMembers { get; set; } = new List<GroupMember>();
     public ICollection<TopicRequest> TopicRequests { get; set; } = new List<TopicRequest>();
     public ICollection<ReviewCalendar> ReviewCalendars { get; set; } = new List<ReviewCalendar>();
