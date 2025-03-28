@@ -31,6 +31,7 @@ public class TimeConfigurationService(
                 RegistTopicExpiredDate = x.RegistTopicExpiredDate,
                 TeamUpDate = x.TeamUpDate,  
                 TeamUpExpirationDate = x.TeamUpExpirationDate,  
+                IsActived = x.IsActived
             });
 
         return OperationResult.Success(result);
@@ -48,6 +49,7 @@ public class TimeConfigurationService(
                 RegistTopicExpiredDate = x.RegistTopicExpiredDate,
                 TeamUpDate = x.TeamUpDate,
                 TeamUpExpirationDate = x.TeamUpExpirationDate,
+                IsActived = x.IsActived 
             });
 
         if (result is null)
