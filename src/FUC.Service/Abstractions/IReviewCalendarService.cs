@@ -18,7 +18,6 @@ public interface IReviewCalendarService
 
     Task<OperationResult<IEnumerable<ReviewCalendarResultResponse>>>
         GetReviewCalendarResultByReviewerId(); // use for reviewer
-
     Task<OperationResult<IEnumerable<ReviewCalendarResultResponse>>>
         GetReviewCalendarResultByGroupId(Guid groupId); // use for supervisor 
 
