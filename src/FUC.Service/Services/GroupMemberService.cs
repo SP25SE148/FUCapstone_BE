@@ -71,10 +71,8 @@ public class GroupMemberService(
 
 
             Guid groupId = leader.GroupMembers.FirstOrDefault(s => s.IsLeader)!.GroupId;
-
             // create group member for member  
             await uow.BeginTransactionAsync();
-
             //check if memberId value is duplicate with leaderId 
             if (request.MemberEmail.Equals(leader.Id))
                 return OperationResult.Failure<Guid>(new Error("Error.DuplicateValue",
@@ -86,12 +84,11 @@ public class GroupMemberService(
                                 s.CampusId == leader.CampusId &&
                                 s.CapstoneId == leader.CapstoneId &&
                                 s.IsEligible &&
-                                !s.Status.Equals(StudentStatus.InProgress) &&
+                                s.Status.Equals(StudentStatus.InProgress) &&
                                 !s.IsDeleted,
                 include: s => s.Include(s => s.GroupMembers),
                 orderBy: default,
                 cancellationToken: default);
-
             if (member is null ||
                 member.GroupMembers.Any(s => s.Status.Equals(GroupMemberStatus.Accepted)))
                 return OperationResult.Failure<Guid>(new Error("Error.InEligible",
@@ -101,7 +98,6 @@ public class GroupMemberService(
                                              s.Status.Equals(GroupMemberStatus.UnderReview)))
                 return OperationResult.Failure<Guid>(new Error("Error.CreateGroupMemberFail",
                     $"Can not send request to member with email {member.Email} because the leader already send request to this member"));
-
             // create group member for member
             var newGroupMember = new GroupMember
             {
@@ -123,13 +119,13 @@ public class GroupMemberService(
                 LeaderName = currentUser.Name,
             });
 
-        integrationEventLogService.SendEvent(new ExpirationRequestEvent
-        {
-            RequestId = newGroupMember.Id,
-            RequestType = nameof(GroupMember),
-            ExpirationDuration =
-                TimeSpan.FromMinutes(systemConfigService.GetSystemConfiguration().ExpirationTeamUpDuration)
-        });
+            integrationEventLogService.SendEvent(new ExpirationRequestEvent
+            {
+                RequestId = newGroupMember.Id,
+                RequestType = nameof(GroupMember),
+                ExpirationDuration =
+                    TimeSpan.FromMinutes(systemConfigService.GetSystemConfiguration().ExpirationTeamUpDuration)
+            });
 
             await uow.CommitAsync();
             return groupId;
@@ -617,7 +613,7 @@ public class GroupMemberService(
 
             await uow.CommitAsync();
         }
-        catch(Exception) 
+        catch (Exception)
         {
             await uow.RollbackAsync();
 
