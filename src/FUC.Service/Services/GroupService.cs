@@ -518,9 +518,13 @@ public class GroupService(
     {
         var topicRequest = await topicRequestRepository.GetAsync(tr => tr.Id.Equals(request.TopicRequestId) &&
                                                                        tr.SupervisorId == currentUser.UserCode,
-            true,
-            tr => tr.Include(tr => tr.Group)
+            false,
+            tr => tr.AsSingleQuery()
+                .Include(tr => tr.Group)
+                    .ThenInclude(g => g.GroupMembers
+                    .Where(x => x.Status == GroupMemberStatus.Accepted))
                 .Include(tr => tr.Topic));
+
         // check if topic request is null
         if (topicRequest is null)
             return OperationResult.Failure(Error.NullValue);
@@ -555,8 +559,17 @@ public class GroupService(
                 topicRequestRepository.Update(topicRequest);
             }
 
-            await uow.CommitAsync();
             // send noti to group leader
+            integrationEventLogService.SendEvent(new TopicRequestStatusUpdatedEvent
+            {
+                TopicId = topicRequest.TopicId,
+                TopicShortName = topicRequest.Topic.EnglishName,
+                Status = request.Status.ToString(),
+                SupervisorOfTopicName = currentUser.Name,
+                StudentCodes = topicRequest.Group.GroupMembers.Select(x => x.StudentId).ToList()
+            });
+
+            await uow.CommitAsync();
 
             return OperationResult.Success();
         }
@@ -570,8 +583,7 @@ public class GroupService(
 
     private static Func<IQueryable<Group>, IIncludableQueryable<Group, object>> CreateIncludeForGroupResponse()
     {
-        return g =>
-            g.Include(g => g.GroupMembers)
+        return g => g.Include(g => g.GroupMembers)
                 .ThenInclude(gm => gm.Student)
                 .Include(g => g.Supervisor);
     }

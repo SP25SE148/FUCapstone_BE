@@ -16,11 +16,11 @@ public sealed class TopicRequestCreatedEvent : IntegrationEvent
     public string TopicShortName { get; set; }
 }
 
-public sealed class TopicRequestStatusUpdatedMessage : IntegrationEvent
+public sealed class TopicRequestStatusUpdatedEvent : IntegrationEvent
 {
     public Guid TopicId { get; set; }
-    public Guid GroupId { get; set; }
-    public string SupervisorOfTopic { get; set; }
+    public List<string> StudentCodes { get; set; }
+    public string SupervisorOfTopicName { get; set; }
     public string TopicShortName { get; set; }
     public string Status { get; set; }
 }
