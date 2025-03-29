@@ -332,7 +332,7 @@ public class GroupStatusUpdatedEventConsumer : BaseEventConsumer<GroupStatusUpda
 
     protected override async Task ProcessMessage(GroupStatusUpdatedEvent message)
     {
-        _logger.LogInformation("Starting to send notification for GroupStatusUpdatedEvent with grouipCode {Id}", message.GroupCode);
+        _logger.LogInformation("Starting to send notification for GroupStatusUpdatedEvent with groupCode {Id}", message.GroupCode);
 
         foreach (var student in message.StudentCodes)
         {
@@ -478,5 +478,50 @@ public class TopicRequestCreatedEventConsumer : BaseEventConsumer<TopicRequestCr
 
         await _hub.Clients.Clients(connections).ReceiveNewNotification
             ($"Group {message.GroupCode} want to register your {message.TopicShortName} topic.");
+    }
+}
+
+public class TopicRequestStatusUpdatedEventConsumer : BaseEventConsumer<TopicRequestStatusUpdatedEvent>
+{
+    private readonly ILogger<TopicRequestStatusUpdatedEventConsumer> _logger;
+    private readonly UsersTracker _usersTracker;
+    private readonly ProcessorDbContext _processorDbContext;
+    private readonly IHubContext<NotificationHub, INotificationClient> _hub;
+
+    public TopicRequestStatusUpdatedEventConsumer(
+        ILogger<TopicRequestStatusUpdatedEventConsumer> logger,
+        UsersTracker usersTracker,
+        IHubContext<NotificationHub, INotificationClient> hub,
+        ProcessorDbContext processorDbContext,
+        IOptions<EventConsumerConfiguration> options) : base(logger, options)
+    {
+        _logger = logger;
+        _usersTracker = usersTracker;
+        _hub = hub;
+        _processorDbContext = processorDbContext;
+    }
+
+    protected override async Task ProcessMessage(TopicRequestStatusUpdatedEvent message)
+    {
+        _logger.LogInformation("Starting to send notification for TopicRequestStatusUpdatedEvent with topic {Id}", message.TopicId);
+
+        foreach (var student in message.StudentCodes)
+        {
+            var connections = await _usersTracker.GetConnectionForUser(student);
+
+            _processorDbContext.Notifications.Add(new Notification
+            {
+                UserCode = student,
+                ReferenceTarget = message.TopicId.ToString(),
+                Content = $"Supervisor {message.SupervisorOfTopicName} has {message.Status} your registration of topic {message.TopicShortName}.",
+                IsRead = false,
+                Type = nameof(TopicRequestStatusUpdatedEvent)
+            });
+
+            await _processorDbContext.SaveChangesAsync();
+
+            await _hub.Clients.Clients(connections).ReceiveNewNotification
+                ($"Supervisor {message.SupervisorOfTopicName} has {message.Status} your registration of topic {message.TopicShortName}.");
+        }
     }
 }
