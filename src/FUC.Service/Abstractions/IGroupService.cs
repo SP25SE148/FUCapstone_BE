@@ -71,8 +71,14 @@ public interface IGroupService
         CancellationToken cancellationToken);
 
     Task<OperationResult<string>> PresentGroupDocumentFileOfGroup(Guid groupId, CancellationToken cancellationToken);
-    Task<OperationResult> UpdateGroupDecisionBySupervisorIdAsync(UpdateGroupDecisionStatusBySupervisorRequest request);
+
+    Task<OperationResult<Guid>> UpdateGroupDecisionBySupervisorIdAsync(
+        UpdateGroupDecisionStatusBySupervisorRequest request);
+
     Task<OperationResult> UpdateGroupDecisionByPresidentIdAsync(Guid groupId, bool isReDefendCapstoneProject);
-    Task<OperationResult> UpdateProjectProgress(UpdateProjectProgressRequest request, CancellationToken cancellationToken);
+
+    Task<OperationResult> UpdateProjectProgress(UpdateProjectProgressRequest request,
+        CancellationToken cancellationToken);
+
     Task<OperationResult<GroupDecisionResponse>> GetGroupDecisionByGroupIdAsync(Guid groupId);
 }

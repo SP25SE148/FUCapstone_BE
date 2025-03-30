@@ -19,14 +19,14 @@ public static class AppDbInitializer
         var semesterData = await File.ReadAllTextAsync("SeedData/Semester.json");
         var businessAreaData = await File.ReadAllTextAsync("SeedData/BusinessArea.json");
         var templateData = await File.ReadAllTextAsync("SeedData/Template.json");
-        
+
         var options = new JsonSerializerOptions { PropertyNameCaseInsensitive = true };
 
         var majorGroups = JsonSerializer.Deserialize<List<MajorGroup>>(majorGroupData, options);
         var campuses = JsonSerializer.Deserialize<List<Campus>>(campusData, options);
         var semesters = JsonSerializer.Deserialize<List<Semester>>(semesterData, options);
-        var businessAreas = JsonSerializer.Deserialize<List<BusinessArea>>(businessAreaData, options); 
-        var templates = JsonSerializer.Deserialize<List<TemplateDocument>>(templateData, options); 
+        var businessAreas = JsonSerializer.Deserialize<List<BusinessArea>>(businessAreaData, options);
+        var templates = JsonSerializer.Deserialize<List<TemplateDocument>>(templateData, options);
 
         using (var serviceScope = applicationBuilder.ApplicationServices.CreateScope())
         {
@@ -58,7 +58,7 @@ public static class AppDbInitializer
             {
                 await context.Set<BusinessArea>().AddRangeAsync(businessAreas);
             }
-     
+
             if (!context.Set<MajorGroup>().Any() && majorGroups is not null)
             {
                 foreach (var majorGroup in majorGroups)
@@ -69,9 +69,12 @@ public static class AppDbInitializer
                         foreach (var capstone in major.Capstones)
                         {
                             await context.Set<Capstone>().AddAsync(capstone);
+                            await context.Set<ReviewCriteria>().AddRangeAsync(capstone.ReviewCriterias);
                         }
+
                         await context.Set<Major>().AddAsync(major);
                     }
+
                     await context.Set<MajorGroup>().AddAsync(majorGroup);
                 }
             }
@@ -80,7 +83,7 @@ public static class AppDbInitializer
             {
                 await context.Set<Campus>().AddRangeAsync(campuses);
             }
-            
+
             if (!context.Set<Semester>().Any() && semesters is not null)
             {
                 foreach (var semester in semesters)
@@ -113,7 +116,6 @@ public static class AppDbInitializer
             }
 
             await context.SaveChangesAsync();
-
         }
     }
 

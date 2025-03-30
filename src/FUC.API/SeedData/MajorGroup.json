@@ -15,7 +15,114 @@
             "MinMember": 4,
             "MaxMember": 5,
             "ReviewCount": 3,
-            "DurationWeeks": 14
+            "DurationWeeks": 14,
+            "ReviewCriterias": [
+              {
+                "Attempt": 1,
+                "Name": "Code Quality",
+                "Description": "Evaluate the quality of code.",
+                "Requirement": "Follow coding standards.",
+                "IsActive": true
+              },
+              {
+                "Attempt": 2,
+                "Name": "Functionality",
+                "Description": "Ensure the project meets functional requirements.",
+                "Requirement": "All core features must be implemented.",
+                "IsActive": true
+              },
+              {
+                "Attempt": 3,
+                "Name": "User Experience",
+                "Description": "Assess the usability and design of the project.",
+                "Requirement": "Intuitive UI/UX design.",
+                "IsActive": true
+              },
+              {
+                "Attempt": 1,
+                "Name": "Documentation",
+                "Description": "Check completeness of documentation.",
+                "Requirement": "Include user guide and developer guide.",
+                "IsActive": true
+              },
+              {
+                "Attempt": 2,
+                "Name": "Testing",
+                "Description": "Evaluate the testing coverage and effectiveness.",
+                "Requirement": "Unit and integration tests must be provided.",
+                "IsActive": true
+              },
+              {
+                "Attempt": 3,
+                "Name": "Security",
+                "Description": "Assess security measures in the project.",
+                "Requirement": "Implement authentication and authorization.",
+                "IsActive": true
+              },
+              {
+                "Attempt": 1,
+                "Name": "Performance",
+                "Description": "Check system performance under load.",
+                "Requirement": "Handle at least 100 concurrent users.",
+                "IsActive": true
+              },
+              {
+                "Attempt": 2,
+                "Name": "Scalability",
+                "Description": "Evaluate how well the system scales.",
+                "Requirement": "Should be deployable to cloud with auto-scaling.",
+                "IsActive": true
+              },
+              {
+                "Attempt": 3,
+                "Name": "Maintainability",
+                "Description": "Assess the ease of maintenance and extension.",
+                "Requirement": "Follow SOLID principles and modular design.",
+                "IsActive": true
+              },
+              {
+                "Attempt": 1,
+                "Name": "Innovation",
+                "Description": "Assess the novelty of the project idea.",
+                "Requirement": "Should provide unique or improved functionality.",
+                "IsActive": true
+              },
+              {
+                "Attempt": 2,
+                "Name": "Integration",
+                "Description": "Evaluate integration with third-party services.",
+                "Requirement": "Use APIs efficiently and securely.",
+                "IsActive": true
+              },
+              {
+                "Attempt": 3,
+                "Name": "Deployment",
+                "Description": "Check deployment process and CI/CD pipelines.",
+                "Requirement": "Automated deployment should be in place.",
+                "IsActive": true
+              },
+              {
+                "Attempt": 1,
+                "Name": "Team Collaboration",
+                "Description": "Evaluate how well the team collaborated.",
+                "Requirement": "Use version control and task tracking.",
+                "IsActive": true
+              },
+              {
+                "Attempt": 2,
+                "Name": "Presentation",
+                "Description": "Assess the clarity and professionalism of the final presentation.",
+                "Requirement": "Should be well-structured and engaging.",
+                "IsActive": true
+              },
+              {
+                "Attempt": 3,
+                "Name": "Business Viability",
+                "Description": "Analyze the business potential of the project.",
+                "Requirement": "Provide a business model or market analysis.",
+                "IsActive": true
+              }
+            ]
           },
           {
             "Id": "SAP490",
