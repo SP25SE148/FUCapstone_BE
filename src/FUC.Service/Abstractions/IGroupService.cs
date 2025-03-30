@@ -1,9 +1,7 @@
 ﻿using FUC.Common.Shared;
-using FUC.Data.Enums;
 using FUC.Service.DTOs.GroupDTO;
 using FUC.Service.DTOs.ProjectProgressDTO;
 using FUC.Service.DTOs.TopicRequestDTO;
-using Microsoft.AspNetCore.Http;
 
 namespace FUC.Service.Abstractions;
 
@@ -81,4 +79,6 @@ public interface IGroupService
         CancellationToken cancellationToken);
 
     Task<OperationResult<GroupDecisionResponse>> GetGroupDecisionByGroupIdAsync(Guid groupId);
+    Task<OperationResult> MergeGroupForRemainStudents(CancellationToken cancellationToken);
+    Task<OperationResult> AssignRemainStudentForGroup(AssignRemainStudentForGroupRequest request, CancellationToken cancellationToken);
 }

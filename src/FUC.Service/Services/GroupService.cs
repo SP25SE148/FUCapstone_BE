@@ -3,7 +3,6 @@ using Amazon.S3;
 using Amazon.S3.Model;
 using AutoMapper;
 using ClosedXML.Excel;
-using DocumentFormat.OpenXml.Drawing.Diagrams;
 using FUC.Common.Abstractions;
 using FUC.Common.Constants;
 using FUC.Common.Contracts;
@@ -23,7 +22,6 @@ using FUC.Service.DTOs.TopicDTO;
 using FUC.Service.DTOs.TopicRequestDTO;
 using FUC.Service.Extensions.Options;
 using FUC.Service.Helpers;
-using FUC.Service.Infrastructure;
 using MassTransit.Initializers;
 using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
@@ -316,15 +314,8 @@ public class GroupService(
             if (group.Status.Equals(GroupStatus.InProgress))
             {
                 var currentSemesterCode = await semesterService.GetCurrentSemesterAsync();
-                var nextGroupNumber = await groupRepository.CountAsync(
-                    g => g.Status == GroupStatus.InProgress &&
-                         g.SemesterId == currentSemesterCode.Value.Id &&
-                         g.CampusId == group.CampusId &&
-                         g.CapstoneId == group.CapstoneId) + 1;
-
-                var groupMemberCode = nextGroupNumber.ToString($"D{Math.Max(3, nextGroupNumber.ToString().Length)}");
-
-                group.GroupCode = $"G{group.SemesterId}{group.MajorId}{groupMemberCode}";
+                
+                group.GroupCode = await GenerateGroupCode(group, currentSemesterCode.Value);
             }
 
             // Send notification to all groupMember
@@ -345,6 +336,19 @@ public class GroupService(
             logger.LogError("Update status failed with message: {Message}", e.Message);
             return OperationResult.Failure(new Error("Error.UpdateFailed", "can not update group status"));
         }
+    }
+
+    private async Task<string> GenerateGroupCode(Group group, Semester currentSemesterCode)
+    {
+        var nextGroupNumber = await groupRepository.CountAsync(
+                            g => g.Status == GroupStatus.InProgress &&
+                                 g.SemesterId == currentSemesterCode.Id &&
+                                 g.CampusId == group.CampusId &&
+                                 g.CapstoneId == group.CapstoneId) + 1;
+
+        var groupMemberCode = nextGroupNumber.ToString($"D{Math.Max(3, nextGroupNumber.ToString().Length)}");
+
+        return $"G{group.SemesterId}{group.MajorId}{groupMemberCode}";
     }
 
     public async Task<OperationResult<Guid>> CreateTopicRequestAsync(TopicRequest_Request request,
@@ -1801,5 +1805,141 @@ public class GroupService(
                group.Status == GroupStatus.InProgress &&
                group.ReviewCalendars.Count >= group.Capstone.ReviewCount &&
                group.DefendCapstoneProjectDecision == null;
+    }
+
+    public async Task<OperationResult> MergeGroupForRemainStudents(CancellationToken cancellationToken)
+    {
+        try
+        {
+            var capstone = await capstoneService.GetCapstoneByIdAsync(currentUser.CapstoneId);
+
+            if (capstone.IsFailure)
+                return OperationResult.Failure(capstone.Error);
+
+            var semester = await semesterService.GetCurrentSemesterAsync();
+
+            if (semester.IsFailure)
+                return OperationResult.Failure(semester.Error);
+
+            var remainStudents = await studentRepository.FindAsync(
+                x => x.CampusId == currentUser.CampusId &&
+                x.CapstoneId == currentUser.CapstoneId &&
+                !x.GroupMembers.Any(x => x.Status == GroupMemberStatus.Accepted),
+                include: x => x.Include(x => x.GroupMembers),
+                cancellationToken);
+
+            if (remainStudents.Count == 0)
+                return OperationResult.Success();
+
+            if (remainStudents.Count < capstone.Value.MinMember)
+                return OperationResult.Failure(new Error("Group.Error", "The number of remain students are not enough the valid capstone number."));
+
+            var remainStudentsAfterGroupThemWithBusinessArea = new List<Student>();
+
+            await uow.BeginTransactionAsync(cancellationToken);
+
+            foreach (var g in remainStudents.GroupBy(x => x.BusinessAreaId))
+            {
+                remainStudentsAfterGroupThemWithBusinessArea.AddRange(await GroupTheStudentsTogether(g.ToList(), capstone.Value.MinMember, semester.Value));
+            }
+
+            _ = await GroupTheStudentsTogether(remainStudentsAfterGroupThemWithBusinessArea, capstone.Value.MinMember, semester.Value);
+
+            await uow.CommitAsync(cancellationToken);
+
+            return OperationResult.Success();
+        }
+        catch (Exception ex)
+        {
+            logger.LogError("Merge groups failed with error {Message}.", ex.Message);
+
+            await uow.RollbackAsync(cancellationToken);
+
+            return OperationResult.Failure(new Error("Group.Error", "Merge groups failed."));
+        }
+    }
+
+    private async Task<List<Student>> GroupTheStudentsTogether(List<Student> students, int MinNumberOfStudentsInGroup, Semester semester)
+    {
+        if (students.Count == 0 ||students.Count < MinNumberOfStudentsInGroup)
+        {
+            return students;
+        }
+
+        students = students.OrderBy(x => x.GPA).ToList();
+
+        int numberOfGroups = (int)Math.Floor((decimal) students.Count / MinNumberOfStudentsInGroup);
+
+        for (int i = 0; i < numberOfGroups; i++)
+        {
+            var studentsGroup = students
+                .Skip(i)
+                .Take(MinNumberOfStudentsInGroup);
+
+            var group = new Group
+            {
+                CampusId = currentUser.CampusId,
+                CapstoneId = currentUser.CapstoneId,
+                MajorId = currentUser.MajorId,
+                SemesterId = semester.Id,
+                GroupMembers = studentsGroup.Select(x => new GroupMember
+                {
+                    StudentId = x.Id,
+                    Status = GroupMemberStatus.Accepted,
+                    IsLeader = x.GPA == studentsGroup.Max(x => x.GPA),
+                }).ToList(),
+            };
+
+            group.GroupCode = await GenerateGroupCode(group, semester);
+
+            await uow.SaveChangesAsync();
+        }
+
+        return students.TakeLast(students.Count % MinNumberOfStudentsInGroup)
+            .ToList();
+    }
+
+    public async Task<OperationResult> AssignRemainStudentForGroup(AssignRemainStudentForGroupRequest request, CancellationToken cancellationToken)
+    {
+        var group = await groupRepository.GetAsync(x => x.Id == request.GroupId,
+            include: x => x.Include(x => x.GroupMembers),
+            orderBy: null,
+            cancellationToken);
+
+        ArgumentNullException.ThrowIfNull(group);
+
+        if (group.CampusId != currentUser.CampusId || group.MajorId != currentUser.MajorId || group.CapstoneId != currentUser.CapstoneId)
+            return OperationResult.Failure(new Error("Group.Error", "Group is not on your area."));
+
+        var capstone = await capstoneService.GetCapstoneByIdAsync(group.CapstoneId);
+
+        if (capstone.IsFailure)
+            return OperationResult.Failure(capstone.Error);
+
+        if (group.GroupMembers.Count(x => x.Status == GroupMemberStatus.Accepted) == capstone.Value.MaxMember)
+            return OperationResult.Failure(new Error("Group.Error", "Group size is max you can not add more student."));
+
+        var student = await studentRepository.GetAsync(x => x.Id == request.StudentId,
+            include: x => x.Include(x => x.GroupMembers.Where(x => x.Status == GroupMemberStatus.Accepted)),
+            orderBy: null,
+            cancellationToken);
+
+        ArgumentNullException.ThrowIfNull(student);
+
+        if (student.GroupMembers.Count > 0)
+            return OperationResult.Failure(new Error("Group.Error", "The student was in the other group."));
+
+        if (student.CampusId != currentUser.CampusId || student.MajorId != currentUser.MajorId || student.CapstoneId != currentUser.CapstoneId)
+            return OperationResult.Failure(new Error("Group.Error", "Student is not on your area."));
+
+        group.GroupMembers.Add(new GroupMember
+        {
+            Status = GroupMemberStatus.Accepted,
+            StudentId = student.Id,
+        });
+
+        await uow.SaveChangesAsync(cancellationToken);
+
+        return OperationResult.Success();
     }
 }

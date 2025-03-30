@@ -1,6 +1,4 @@
-﻿using FUC.Data.Enums;
-
-namespace FUC.Service.DTOs.StudentDTO;
+﻿namespace FUC.Service.DTOs.StudentDTO;
 
 public sealed record StudentResponseDTO
 {
@@ -13,7 +11,6 @@ public sealed record StudentResponseDTO
     public string CampusId { get; init; } = string.Empty;
     public string CampusName { get; init; } = string.Empty;
     public string Email { get; init; } = string.Empty;
-    public bool IsEligible { get; init; }
     public string Status { get; init; } = string.Empty;
     public float Gpa { get; set; }
     public string BusinessArea { get; set; } = string.Empty;

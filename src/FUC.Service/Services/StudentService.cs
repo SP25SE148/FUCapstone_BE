@@ -33,6 +33,37 @@ public sealed class StudentService(
             : OperationResult.Failure<IEnumerable<StudentResponseDTO>>(Error.NullValue);
     }
 
+    public async Task<OperationResult<IList<StudentResponseDTO>>> GetRemainStudentsAsync(
+       CancellationToken cancellationToken)
+    {
+        var students = await studentRepository.FindAsync(
+            predicate: x => (currentUser.CampusId == "all" || x.CampusId == currentUser.CampusId) &&
+                 (currentUser.MajorId == "all" || x.MajorId == currentUser.MajorId) &&
+                 (currentUser.CapstoneId == "all" || x.CapstoneId == currentUser.CapstoneId) &&
+                 !x.GroupMembers.Any(x => x.Status == Data.Enums.GroupMemberStatus.Accepted),
+            include: CreateIncludeForStudentResponse(),
+            orderBy: x => x.OrderBy(x => x.Id),
+            selector: x => new StudentResponseDTO
+            {
+                Id = x.Id,
+                FullName = x.FullName,
+                MajorId = x.MajorId,    
+                MajorName = x.Major.Name,
+                CapstoneId = x.CapstoneId,  
+                CapstoneName = x.Capstone.Name,
+                CampusId = x.CampusId,
+                CampusName = x.Campus.Name, 
+                Email = x.Email,    
+                Status = x.Status.ToString(),  
+                BusinessArea = x.BusinessArea.Name,
+                Gpa = x.GPA,
+                IsHaveBeenJoinGroup = false,
+            },
+            cancellationToken);
+
+        return OperationResult.Success(students);
+    }
+
     public async Task<OperationResult<StudentResponseDTO>> GetStudentByIdAsync(string id)
     {
         Student? student = await studentRepository.GetAsync(s => s.Id.ToLower().Equals(id.ToLower()),

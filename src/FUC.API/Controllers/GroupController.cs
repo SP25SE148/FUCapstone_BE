@@ -123,6 +123,28 @@ public class GroupController(
             : HandleFailure(result);
     }
 
+    [HttpPost("merge/remain")]
+    [Authorize(Roles = nameof(UserRoles.Manager))]
+    public async Task<IActionResult> MergeGroupForRemainStudents()
+    {
+        var result = await groupService.MergeGroupForRemainStudents(default);
+
+        return !result.IsFailure
+            ? Ok(result)
+            : HandleFailure(result);
+    }
+
+    [HttpPost("assign/remain")]
+    [Authorize(Roles = nameof(UserRoles.Manager))]
+    public async Task<IActionResult> AssignRemainStudentForGroup(AssignRemainStudentForGroupRequest request)
+    {
+        var result = await groupService.AssignRemainStudentForGroup(request, default);
+
+        return !result.IsFailure
+            ? Ok(result)
+            : HandleFailure(result);
+    }
+
     #endregion
 
     #region Group Member Endpoint

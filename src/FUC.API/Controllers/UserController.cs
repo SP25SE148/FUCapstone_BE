@@ -34,6 +34,17 @@ public sealed class UserController(
             : HandleFailure(result);
     }
 
+    [HttpGet("get-remain-students")]
+    [Authorize(Roles = $"{UserRoles.SuperAdmin}, {UserRoles.Admin}, {UserRoles.Manager}")]
+    public async Task<IActionResult> GetRemainStudenstAsync()
+    {
+        var result = await studentService.GetRemainStudentsAsync(default);
+
+        return result.IsSuccess
+            ? Ok(result)
+            : HandleFailure(result);
+    }
+
     [HttpGet("get-all-supervisor")]
     [Authorize(Roles = $"{UserRoles.SuperAdmin}, {UserRoles.Admin}, {UserRoles.Manager}")]
     public async Task<IActionResult> GetAllSupervisorAsync()
