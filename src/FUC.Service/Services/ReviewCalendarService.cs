@@ -234,7 +234,7 @@ public sealed class ReviewCalendarService(
             : OperationResult.Failure<IEnumerable<ReviewCalendarResultResponse>>(Error.NullValue);
     }
 
-    public async Task<OperationResult<IEnumerable<ReviewCriteriaResponse>>> GetReviewCalendarByAttemptAsync(int attempt)
+    public async Task<OperationResult<IEnumerable<ReviewCriteriaResponse>>> GetReviewCriteriaByAttemptAsync(int attempt)
     {
         var reviewCriteria = await reviewCriteriaRepository.FindAsync(
             rc => rc.Attempt == attempt && rc.IsActive == true,

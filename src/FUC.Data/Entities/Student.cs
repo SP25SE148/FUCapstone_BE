@@ -13,7 +13,6 @@ public sealed class Student : AuditableSoftDeleteEntity
     public Guid? BusinessAreaId { get; set; }
     public string Email { get; set; }
     public float GPA { get; set; }
-    public bool IsEligible { get; set; }
     public StudentStatus Status { get; set; }
 
     public Major Major { get; set; } = null!;

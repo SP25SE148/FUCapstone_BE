@@ -28,3 +28,11 @@ public sealed record GroupManageBySupervisorResponse
     public string? GroupCode { get; init; } = string.Empty;
     public string EnglishName { get; set; } = string.Empty;
 }
+
+public sealed record GroupDecisionResponse
+{
+    public Guid GroupId { get; set; }
+    public string GroupCode { get; set; }
+    public string Decision { get; set; }
+    public string? Comment { get; set; }
+}

@@ -245,7 +245,7 @@ public sealed class UserController(
     [HttpGet("review-criteria/{attempt}")]
     public async Task<IActionResult> GetReviewCriteriaAsync(int attempt)
     {
-        var result = await reviewCalendarService.GetReviewCalendarByAttemptAsync(attempt);
+        var result = await reviewCalendarService.GetReviewCriteriaByAttemptAsync(attempt);
         return result.IsSuccess
             ? Ok(result)
             : HandleFailure(result);
