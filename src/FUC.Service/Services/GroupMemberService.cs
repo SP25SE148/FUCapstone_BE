@@ -277,22 +277,22 @@ public class GroupMemberService(
         var groupMemberRequestResponse = new GroupMemberRequestResponse();
 
         var groupMembers = await (from gm in groupMemberRepository.GetQueryable()
-            where gm.StudentId == currentUser.UserCode
-            join s in studentRepository.GetQueryable() on gm.CreatedBy equals s.Email
-            orderby s.GPA, gm.CreatedDate
-            select new GroupMemberResponse
-            {
-                Id = gm.Id,
-                Status = gm.Status.ToString(),
-                GroupId = gm.GroupId,
-                StudentId = s.Id,
-                StudentFullName = s.FullName,
-                StudentEmail = s.Email,
-                IsLeader = gm.IsLeader,
-                CreatedDate = gm.CreatedDate,
-                CreatedBy = gm.CreatedBy,
-                GPA = s.GPA
-            }).ToListAsync();
+                                  where gm.StudentId == currentUser.UserCode
+                                  join s in studentRepository.GetQueryable() on gm.CreatedBy equals s.Email
+                                  orderby s.GPA, gm.CreatedDate
+                                  select new GroupMemberResponse
+                                  {
+                                      Id = gm.Id,
+                                      Status = gm.Status.ToString(),
+                                      GroupId = gm.GroupId,
+                                      StudentId = s.Id,
+                                      StudentFullName = s.FullName,
+                                      StudentEmail = s.Email,
+                                      IsLeader = gm.IsLeader,
+                                      CreatedDate = gm.CreatedDate,
+                                      CreatedBy = gm.CreatedBy,
+                                      GPA = s.GPA
+                                  }).ToListAsync();
 
 
         groupMemberRequestResponse.GroupMemberRequested = groupMembers.Where(gm => !gm.IsLeader).ToList();

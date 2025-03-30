@@ -338,7 +338,6 @@ public class GroupService(
             });
 
             await uow.CommitAsync();
-
             return OperationResult.Success();
         }
         catch (Exception e)
