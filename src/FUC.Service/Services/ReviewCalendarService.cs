@@ -4,6 +4,8 @@ using ClosedXML.Excel;
 using DocumentFormat.OpenXml.Drawing.Charts;
 using FUC.Common.Abstractions;
 using FUC.Common.Constants;
+using FUC.Common.Contracts;
+using FUC.Common.IntegrationEventLog.Services;
 using FUC.Common.Shared;
 using FUC.Data;
 using FUC.Data.Data;
@@ -33,7 +35,9 @@ public sealed class ReviewCalendarService(
     ICurrentUser currentUser,
     ISystemConfigurationService systemConfigurationService,
     IRepository<ReviewCriteria> reviewCriteriaRepository,
-    IRepository<ReviewCalendar> reviewCalendarRepository) : IReviewCalendarService
+    IRepository<ReviewCalendar> reviewCalendarRepository,
+    ISystemConfigurationService systemConfigService,
+    IIntegrationEventLogService integrationEventLogService) : IReviewCalendarService
 {
     public async Task<OperationResult> ImportReviewCalendar(IFormFile file)
     {
@@ -51,6 +55,19 @@ public sealed class ReviewCalendarService(
             var reviewCalendars = await ParseReviewCalendarsFromFile(file, currentSemester.Value.Id);
             reviewCalendarRepository.InsertRange(reviewCalendars);
             await uow.SaveChangesAsync();
+            // send review calendar created event
+            foreach (var reviewCalendar in reviewCalendars)
+            {
+                integrationEventLogService.SendEvent(new ExpirationRequestEvent
+                {
+                    RequestId = reviewCalendar.Id,
+                    RequestType = nameof(ReviewCalendarExpirationEvent),
+                    ExpirationDuration =
+                        TimeSpan.FromMinutes(systemConfigService.GetSystemConfiguration()
+                            .ExpirationReviewCalendarDuration)
+                });
+            }
+
             return OperationResult.Success();
         }
         catch (Exception e)
@@ -95,7 +112,8 @@ public sealed class ReviewCalendarService(
                 TopicEnglishName = r.ReviewCalender.Topic.EnglishName,
                 MainSupervisorCode = r.ReviewCalender.Topic.MainSupervisorId,
                 CoSupervisorsCode = r.ReviewCalender.Topic.CoSupervisors.Select(c => c.SupervisorId).ToList(),
-                Status = r.ReviewCalender.Status.ToString()
+                Status = r.ReviewCalender.Status.ToString(),
+                Reviewers = r.ReviewCalender.Reviewers.Select(r => r.Supervisor.FullName).ToList()
             });
         return reviewCalendars.Count > 0
             ? reviewCalendars.ToList()
@@ -141,7 +159,6 @@ public sealed class ReviewCalendarService(
                 return OperationResult.Failure(Error.NullValue);
             reviewer!.Suggestion = request.Suggestion;
             reviewer.Comment = request.Comment;
-            reviewer.ReviewCalender.Status = ReviewCalendarStatus.Done;
             await uow.SaveChangesAsync();
             return OperationResult.Success();
         }
@@ -217,7 +234,7 @@ public sealed class ReviewCalendarService(
             : OperationResult.Failure<IEnumerable<ReviewCalendarResultResponse>>(Error.NullValue);
     }
 
-    public async Task<OperationResult<IEnumerable<ReviewCriteriaResponse>>> GetReviewCalendarByAttemptAsync(int attempt)
+    public async Task<OperationResult<IEnumerable<ReviewCriteriaResponse>>> GetReviewCriteriaByAttemptAsync(int attempt)
     {
         var reviewCriteria = await reviewCriteriaRepository.FindAsync(
             rc => rc.Attempt == attempt && rc.IsActive == true,
@@ -409,7 +426,8 @@ public sealed class ReviewCalendarService(
             TopicEnglishName = calendar.Topic.EnglishName,
             MainSupervisorCode = calendar.Topic.MainSupervisorId,
             CoSupervisorsCode = calendar.Topic.CoSupervisors.Select(c => c.SupervisorId).ToList(),
-            Status = calendar.Status.ToString()
+            Status = calendar.Status.ToString(),
+            Reviewers = calendar.Reviewers.Select(r => r.Supervisor.FullName).ToList()
         };
 
     private Func<IQueryable<ReviewCalendar>, IIncludableQueryable<ReviewCalendar, object>>
@@ -417,7 +435,7 @@ public sealed class ReviewCalendarService(
         => rc =>
             rc.Include(rc => rc.Group)
                 .Include(rc => rc.Topic).ThenInclude(t => t.CoSupervisors)
-                .Include(rc => rc.Reviewers);
+                .Include(rc => rc.Reviewers).ThenInclude(r => r.Supervisor);
 
     #endregion
 }

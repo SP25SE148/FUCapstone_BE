@@ -30,6 +30,16 @@ public class GroupController(
             : HandleFailure(result);
     }
 
+    [HttpGet("decision/{groupId}")]
+    [Authorize(Roles = $"{UserRoles.Student},{UserRoles.Supervisor}")]
+    public async Task<IActionResult> GetGroupDecisionAsync(Guid groupId)
+    {
+        var result = await groupService.GetGroupDecisionByGroupIdAsync(groupId);
+        return result.IsSuccess
+            ? Ok(result)
+            : HandleFailure(result);
+    }
+
     [HttpPut]
     [Authorize(Roles = nameof(UserRoles.Student))]
     public async Task<IActionResult> CreateGroupCodeAsync()

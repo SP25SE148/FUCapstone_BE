@@ -18,11 +18,12 @@ public interface IReviewCalendarService
 
     Task<OperationResult<IEnumerable<ReviewCalendarResultResponse>>>
         GetReviewCalendarResultByReviewerId(); // use for reviewer
+
     Task<OperationResult<IEnumerable<ReviewCalendarResultResponse>>>
         GetReviewCalendarResultByGroupId(Guid groupId); // use for supervisor 
 
     Task<OperationResult<IEnumerable<ReviewCalendarResultResponse>>>
         GetReviewCalendarResultByManagerId(); // use for manager
 
-    Task<OperationResult<IEnumerable<ReviewCriteriaResponse>>> GetReviewCalendarByAttemptAsync(int attempt);
+    Task<OperationResult<IEnumerable<ReviewCriteriaResponse>>> GetReviewCriteriaByAttemptAsync(int attempt);
 }

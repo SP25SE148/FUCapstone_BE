@@ -253,7 +253,7 @@ public class DefendCapstoneService(
             var topicResult = await topicService.GetTopicByCode(topicCode, cancellationToken);
             if (topicResult.IsFailure ||
                 topicResult.Value.Status != TopicStatus.Approved ||
-                !topicResult.Value.IsAssignedToGroup ||
+                topicResult.Value.IsAssignedToGroup == false ||
                 topicResult.Value.CapstoneId != currentUser.CapstoneId ||
                 topicResult.Value.CampusId != currentUser.CampusId)
                 throw new InvalidOperationException("Topic is not available for defend phase.");

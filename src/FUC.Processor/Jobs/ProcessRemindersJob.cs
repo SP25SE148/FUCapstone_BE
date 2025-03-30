@@ -39,10 +39,10 @@ public class ProcessRemindersJob : IJob
         _logger.LogInformation("Starting ProcessReminderJob at {Date}.", DateTime.Now);
 
         var tasks = new List<Task>
-            {
-                ExecuteRemindersAsync(context.CancellationToken),
-                ExecuteRecurrentRemindersAsync(context.CancellationToken)
-            };
+        {
+            ExecuteRemindersAsync(context.CancellationToken),
+            ExecuteRecurrentRemindersAsync(context.CancellationToken)
+        };
 
         await Task.WhenAll(tasks);
 
@@ -76,14 +76,15 @@ public class ProcessRemindersJob : IJob
 
             foreach (var reminder in reminders)
             {
-                await ProcessReminderAsync(reminder, reminderedQueue, _processorDbContext ,cancellationToken);
+                await ProcessReminderAsync(reminder, reminderedQueue, _processorDbContext, cancellationToken);
             }
 
             if (!reminderedQueue.IsEmpty)
             {
                 await _processorDbContext.Database.ExecuteSqlInterpolatedAsync($"""
-                DELETE FROM "Reminders" WHERE "Id" = ANY({reminderedQueue.ToArray()});
-                """, cancellationToken: cancellationToken);
+                                                                                DELETE FROM "Reminders" WHERE "Id" = ANY({reminderedQueue.ToArray()});
+                                                                                """,
+                    cancellationToken: cancellationToken);
             }
 
             await _processorDbContext.Database.CommitTransactionAsync(cancellationToken);
@@ -114,8 +115,8 @@ public class ProcessRemindersJob : IJob
 
             var recurrentReminders = await _processorDbContext.RecurrentReminders
                 .Where(r => r.RecurringDay == DateTime.Now.DayOfWeek &&
-                r.RemindTime >= currentTime.Subtract(buffer) &&
-                r.RemindTime <= currentTime.Add(buffer))
+                            r.RemindTime >= currentTime.Subtract(buffer) &&
+                            r.RemindTime <= currentTime.Add(buffer))
                 .Take(100)
                 .ToListAsync(cancellationToken);
 
@@ -135,8 +136,9 @@ public class ProcessRemindersJob : IJob
             if (reminderedQueue.Count < 1)
             {
                 await _processorDbContext.Database.ExecuteSqlInterpolatedAsync($"""
-                DELETE FROM "RecurrentReminders" WHERE "Id" = ANY({reminderedQueue.ToArray()});
-                """, cancellationToken: cancellationToken);
+                                                                                DELETE FROM "RecurrentReminders" WHERE "Id" = ANY({reminderedQueue.ToArray()});
+                                                                                """,
+                    cancellationToken: cancellationToken);
             }
 
             await _processorDbContext.Database.CommitTransactionAsync(cancellationToken);
@@ -184,7 +186,12 @@ public class ProcessRemindersJob : IJob
                     });
 
                     break;
-
+                case nameof(ReviewCalendarExpirationEvent):
+                    _integrationEventLogService.SendEvent(new ReviewCalendarExpirationEvent
+                    {
+                        ReviewCalendarId = Guid.Parse(reminder.RemindFor)
+                    });
+                    break;
                 case nameof(FucTaskCreatedEvent):
                     var target = reminder.Content!.Split("/");
 
@@ -294,9 +301,9 @@ public class ProcessRemindersJob : IJob
 
                     ArgumentNullException.ThrowIfNull(supervisorTarget);
 
-                    if (!await _emailService.SendMailAsync("[FUC_WEEKLY_EVALUATION]", 
-                        $"You have to done weekly evaluation today.", 
-                        supervisorTarget.Email))
+                    if (!await _emailService.SendMailAsync("[FUC_WEEKLY_EVALUATION]",
+                            $"You have to done weekly evaluation today.",
+                            supervisorTarget.Email))
                         throw new InvalidOperationException("Fail to send email.");
 
                     var supervisorConnections = await _usersTracker.GetConnectionForUser(recurrentReminder.RemindFor);
@@ -323,23 +330,24 @@ public class ProcessRemindersJob : IJob
                             CreatedDate = DateTime.Now,
                         });
 
-                        studentsConnections.AddRange(await _usersTracker.GetConnectionForUser(recurrentReminder.RemindFor));
+                        studentsConnections.AddRange(
+                            await _usersTracker.GetConnectionForUser(recurrentReminder.RemindFor));
                     }
 
                     var studentEmails = await processorDbContext.Users
                         .Where(x => studentCodes.Contains(x.UserCode))
-                        .Select(x => x.Email)   
+                        .Select(x => x.Email)
                         .ToArrayAsync(cancellationToken);
 
                     ArgumentNullException.ThrowIfNull(studentEmails);
 
                     if (!await _emailService.SendMailAsync("[FUC_WEEKLY_EVALUATION]",
-                        $"You have to done weekly evaluation today.",
-                        studentEmails))
+                            $"You have to done weekly evaluation today.",
+                            studentEmails))
                         throw new InvalidOperationException("Fail to send email.");
 
                     await _hub.Clients.Clients(studentsConnections)
-                           .ReceiveNewNotification($"You have to done weekly summary evaluation today.");
+                        .ReceiveNewNotification($"You have to done weekly summary evaluation today.");
 
                     break;
 

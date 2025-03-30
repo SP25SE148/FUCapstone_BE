@@ -2,6 +2,7 @@
 
 public enum DecisionStatus
 {
-    Attempt1,
-    Attempt2
+    Disagree_to_defense,
+    Agree_to_defense,
+    Revised_for_the_second_defense
 }

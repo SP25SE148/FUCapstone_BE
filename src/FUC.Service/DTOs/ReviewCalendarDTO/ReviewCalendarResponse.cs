@@ -10,6 +10,7 @@ public sealed class ReviewCalendarResponse
     public string TopicEnglishName { get; set; }
     public string MainSupervisorCode { get; set; }
     public IReadOnlyCollection<string> CoSupervisorsCode { get; set; }
+    public IReadOnlyCollection<string> Reviewers { get; set; }
     public int Attempt { get; set; }
     public int Slot { get; set; }
     public string Room { get; set; }

@@ -11,12 +11,14 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 
 namespace FUC.Service.Consumers;
+
 public class UsersSyncMessageConsumer : BaseEventConsumer<UsersSyncMessage>
 {
     private readonly ILogger<UsersSyncMessageConsumer> _logger;
     private readonly FucDbContext _dbContext;
 
-    public UsersSyncMessageConsumer(ILogger<UsersSyncMessageConsumer> logger, IServiceProvider serviceProvider) : base(logger, 
+    public UsersSyncMessageConsumer(ILogger<UsersSyncMessageConsumer> logger, IServiceProvider serviceProvider) : base(
+        logger,
         serviceProvider.GetRequiredService<IOptions<EventConsumerConfiguration>>())
     {
         _logger = logger;
@@ -42,7 +44,6 @@ public class UsersSyncMessageConsumer : BaseEventConsumer<UsersSyncMessage>
                     CapstoneId = x.CapstoneId.ToUpper(),
                     CampusId = x.CampusId.ToUpper(),
                     Email = x.Email,
-                    IsEligible = true,
                     Status = StudentStatus.InProgress,
                     CreatedBy = message.CreatedBy,
                     CreatedDate = DateTime.Now

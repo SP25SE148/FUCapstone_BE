@@ -3,6 +3,7 @@ using Amazon.S3;
 using Amazon.S3.Model;
 using AutoMapper;
 using ClosedXML.Excel;
+using DocumentFormat.OpenXml.Drawing.Diagrams;
 using FUC.Common.Abstractions;
 using FUC.Common.Constants;
 using FUC.Common.Contracts;
@@ -22,6 +23,7 @@ using FUC.Service.DTOs.TopicDTO;
 using FUC.Service.DTOs.TopicRequestDTO;
 using FUC.Service.Extensions.Options;
 using FUC.Service.Helpers;
+using FUC.Service.Infrastructure;
 using MassTransit.Initializers;
 using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
@@ -67,7 +69,6 @@ public class GroupService(
         Student? leader = await studentRepository.GetAsync(
             predicate: s =>
                 s.Id == currentUser.UserCode &&
-                s.IsEligible &&
                 !s.IsDeleted &&
                 s.Status.Equals(StudentStatus.InProgress),
             include: s =>
@@ -337,7 +338,6 @@ public class GroupService(
             });
 
             await uow.CommitAsync();
-            
             return OperationResult.Success();
         }
         catch (Exception e)
@@ -439,7 +439,7 @@ public class GroupService(
             {
                 GroupId = request.GroupId,
                 GroupCode = groupMember.Group.GroupCode,
-                SupervisorOfTopic= topic.MainSupervisorId,
+                SupervisorOfTopic = topic.MainSupervisorId,
                 TopicShortName = topic.Abbreviation,
                 TopicId = topicRequest.TopicId
             });
@@ -521,7 +521,7 @@ public class GroupService(
             false,
             tr => tr.AsSingleQuery()
                 .Include(tr => tr.Group)
-                    .ThenInclude(g => g.GroupMembers
+                .ThenInclude(g => g.GroupMembers
                     .Where(x => x.Status == GroupMemberStatus.Accepted))
                 .Include(tr => tr.Topic));
 
@@ -584,8 +584,8 @@ public class GroupService(
     private static Func<IQueryable<Group>, IIncludableQueryable<Group, object>> CreateIncludeForGroupResponse()
     {
         return g => g.Include(g => g.GroupMembers)
-                .ThenInclude(gm => gm.Student)
-                .Include(g => g.Supervisor);
+            .ThenInclude(gm => gm.Student)
+            .Include(g => g.Supervisor);
     }
 
     private static Expression<Func<Group, GroupResponse>> CreateSelectorForGroupResponse()
@@ -1593,6 +1593,7 @@ public class GroupService(
                 g =>
                     g.Include(g => g.Supervisor)
                         .Include(g => g.Capstone)
+                        .Include(g => g.GroupMembers.Where(gm => gm.Status == GroupMemberStatus.Accepted))
                         .Include(g => g.DefendCapstoneProjectDecision)
                         .Include(g => g.ReviewCalendars.Where(rc => rc.Status == ReviewCalendarStatus.Done)));
 
@@ -1609,6 +1610,40 @@ public class GroupService(
                 return OperationResult.Failure(new Error("Error.UpdateFailed", "Can not update group decision"));
             }
 
+            // get ineligible student list 
+            var studentTasks = request.DisagreedToDefenseStudentIds.Select(async x =>
+            {
+                var student = await studentRepository.GetAsync(s => s.Id == x, true);
+
+                return student ?? throw new ArgumentNullException();
+            });
+
+            var students = await Task.WhenAll(studentTasks);
+
+            var numOfInEligibleStudent = group.GroupMembers.Count(gm => students.Any(s => s.Id == gm.StudentId));
+
+            if (numOfInEligibleStudent >= group.GroupMembers.Count &&
+                request.DecisionStatus != DecisionStatus.Disagree_to_defense)
+                throw new ArgumentException(
+                    $"Can not update group decision status while all of student are disagree to defense but decision status is not {DecisionStatus.Disagree_to_defense.ToString()}!!");
+            await uow.BeginTransactionAsync();
+            foreach (Student student in students)
+            {
+                student.Status = StudentStatus.InCompleted;
+                studentRepository.Update(student);
+            }
+
+            if (numOfInEligibleStudent >= group.GroupMembers.Count)
+            {
+                group.Status = GroupStatus.InCompleted;
+                groupRepository.Update(group);
+            }
+            else if ((float)numOfInEligibleStudent / group.GroupMembers.Count > 0.5)
+            {
+                throw new ArgumentException(
+                    $"Can not update group decision status while more than 40% of student are disagree to defense !!");
+            }
+
             var defendCapstoneProjectDecision = new DefendCapstoneProjectDecision
             {
                 Id = Guid.NewGuid(),
@@ -1618,7 +1653,8 @@ public class GroupService(
                 Decision = request.DecisionStatus
             };
             defendCapstoneDecisionRepository.Insert(defendCapstoneProjectDecision);
-            await uow.SaveChangesAsync();
+
+            await uow.CommitAsync();
             return OperationResult.Success();
         }
         catch (Exception e)
@@ -1667,8 +1703,8 @@ public class GroupService(
                     group!.IsReDefendCapstoneProject = false;
                     group.Status = GroupStatus.Completed;
                     break;
-                case true when group.DefendCapstoneProjectDecision.Decision == DecisionStatus.Attempt1:
-                    group.DefendCapstoneProjectDecision.Decision = DecisionStatus.Attempt2;
+                case true when group.DefendCapstoneProjectDecision.Decision == DecisionStatus.Agree_to_defense:
+                    group.DefendCapstoneProjectDecision.Decision = DecisionStatus.Revised_for_the_second_defense;
                     group.IsReDefendCapstoneProject = true;
                     break;
                 default:
@@ -1684,6 +1720,34 @@ public class GroupService(
             logger.LogError("Update group decision status failed with error {Message}.", e.Message);
             return OperationResult.Failure(new Error("Error.UpdateFailed", "Update group decision status failed"));
         }
+    }
+
+    public async Task<OperationResult<GroupDecisionResponse>> GetGroupDecisionByGroupIdAsync(Guid groupId)
+    {
+        var groupDecision = await defendCapstoneDecisionRepository.GetAsync(dc => dc.GroupId == groupId,
+            include: dc => dc
+                .Include(dc => dc.Group).ThenInclude(g => g.GroupMembers)
+                .Include(dc => dc.Supervisor));
+
+        if (groupDecision is null)
+        {
+            return OperationResult.Failure<GroupDecisionResponse>(Error.NullValue);
+        }
+
+        if (currentUser.Role == UserRoles.Supervisor && groupDecision.SupervisorId != currentUser.UserCode)
+            return OperationResult.Failure<GroupDecisionResponse>(new Error("GetFailed",
+                "Can not get group decision while you are not mentor of this group"));
+        if (currentUser.Role == UserRoles.Student &&
+            groupDecision.Group.GroupMembers.Any(gm => gm.StudentId != currentUser.UserCode))
+            return OperationResult.Failure<GroupDecisionResponse>(new Error("GetFailed",
+                "Can not get group decision while you are not member of this group"));
+        return new GroupDecisionResponse
+        {
+            GroupId = groupDecision.GroupId,
+            Comment = groupDecision.Comment,
+            Decision = groupDecision.Decision.ToString(),
+            GroupCode = groupDecision.Group.GroupCode
+        };
     }
 
 

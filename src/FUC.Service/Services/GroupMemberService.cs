@@ -1,5 +1,4 @@
 ﻿using System.Linq.Expressions;
-using AutoMapper;
 using FUC.Common.Abstractions;
 using FUC.Common.Contracts;
 using FUC.Common.IntegrationEventLog.Services;
@@ -26,8 +25,7 @@ public class GroupMemberService(
     IRepository<JoinGroupRequest> joinGroupRequestRepository,
     IRepository<GroupMember> groupMemberRepository,
     IRepository<Student> studentRepository,
-    ISystemConfigurationService systemConfigService,
-    IMapper mapper) : IGroupMemberService
+    ISystemConfigurationService systemConfigService) : IGroupMemberService
 
 {
     public async Task<OperationResult<Guid>> CreateGroupMemberByLeaderAsync(CreateGroupMemberByLeaderRequest request)
@@ -35,17 +33,16 @@ public class GroupMemberService(
         try
         {
             Student? leader = await studentRepository.GetAsync(
-            predicate: s =>
-                s.Id == currentUser.UserCode &&
-                s.IsEligible &&
-                !s.IsDeleted &&
-                s.Status.Equals(StudentStatus.InProgress),
-            include: s =>
-                s.Include(s => s.GroupMembers)
-                    .ThenInclude(gm => gm.Group)
-                    .Include(s => s.Capstone),
-            orderBy: default,
-            cancellationToken: default);
+                predicate: s =>
+                    s.Id == currentUser.UserCode &&
+                    !s.IsDeleted &&
+                    s.Status.Equals(StudentStatus.InProgress),
+                include: s =>
+                    s.Include(s => s.GroupMembers)
+                        .ThenInclude(gm => gm.Group)
+                        .Include(s => s.Capstone),
+                orderBy: default,
+                cancellationToken: default);
             // Check if leader is null 
             if (leader is null)
                 return OperationResult.Failure<Guid>(Error.NullValue);
@@ -83,7 +80,6 @@ public class GroupMemberService(
                 predicate: s => s.Email.ToLower().Equals(request.MemberEmail.ToLower()) &&
                                 s.CampusId == leader.CampusId &&
                                 s.CapstoneId == leader.CapstoneId &&
-                                s.IsEligible &&
                                 s.Status.Equals(StudentStatus.InProgress) &&
                                 !s.IsDeleted,
                 include: s => s.Include(s => s.GroupMembers),
@@ -213,27 +209,33 @@ public class GroupMemberService(
                     if (!groupMember.Status.Equals(GroupMemberStatus.Accepted))
                         return OperationResult.Failure(new Error("Error.UpdateFailed",
                             $"Can not left group from the other status different {GroupMemberStatus.Accepted.ToString()} status"));
-                    if (!groupMember.IsLeader)
+                    if (groupMember.IsLeader)
                     {
-                        return OperationResult.Failure(new Error("Error.UpdateFailed",
-                            "Can not left group while member is not a leader"));
-                    }
-
-                    // auto change another group member status to left group and then noti to members
-                    var groupMembers = await groupMemberRepository.FindAsync(
-                        gm => gm.GroupId == groupMember.GroupId && gm.Status == GroupMemberStatus.Accepted,
-                        null,
-                        true);
-                    if (groupMembers.Count > 0)
-                    {
-                        foreach (GroupMember member in groupMembers)
+                        // auto change another group member status to left group and then noti to members
+                        var groupMembers = await groupMemberRepository.FindAsync(
+                            gm => gm.GroupId == groupMember.GroupId && gm.Status == GroupMemberStatus.Accepted,
+                            null,
+                            true);
+                        if (groupMembers.Count > 0)
                         {
-                            member.Status = GroupMemberStatus.LeftGroup;
-                            groupMemberRepository.Update(member);
+                            foreach (GroupMember member in groupMembers)
+                            {
+                                member.Status = GroupMemberStatus.LeftGroup;
+                                groupMemberRepository.Update(member);
+                            }
                         }
                     }
+                    else
+                    {
+                        var leader =
+                            await groupMemberRepository.GetAsync(
+                                gm => gm.IsLeader && gm.StudentId == currentUser.UserCode, default) ??
+                            throw new ArgumentException("Can not kick member while you are not leader");
 
-                    groupMemberRepository.Update(groupMember);
+                        groupMember.Status = GroupMemberStatus.LeftGroup;
+                        groupMemberRepository.Update(groupMember);
+                    }
+
                     break;
                 case GroupMemberStatus.Cancelled:
                     var groupMemberLeader = await groupMemberRepository.GetAsync(

@@ -42,7 +42,9 @@ public interface IGroupService
 
     Task<OperationResult<List<FucTaskResponse>>> GetTasks(Guid projectProgressId, CancellationToken cancellationToken);
     Task<OperationResult<FucTaskDetailResponse>> GetTasksDetail(Guid taskId, CancellationToken cancellationToken);
-    Task<OperationResult<DashBoardFucTasksOfGroup>> DashBoardTaskOfGroup(Guid projectProgressId, CancellationToken cancellationToken);
+
+    Task<OperationResult<DashBoardFucTasksOfGroup>> DashBoardTaskOfGroup(Guid projectProgressId,
+        CancellationToken cancellationToken);
 
     Task<OperationResult> CreateWeeklyEvaluations(CreateWeeklyEvaluationRequest request,
         CancellationToken cancellationToken);
@@ -71,4 +73,5 @@ public interface IGroupService
     Task<OperationResult<string>> PresentGroupDocumentFileOfGroup(Guid groupId, CancellationToken cancellationToken);
     Task<OperationResult> UpdateGroupDecisionBySupervisorIdAsync(UpdateGroupDecisionStatusBySupervisorRequest request);
     Task<OperationResult> UpdateGroupDecisionByPresidentIdAsync(Guid groupId, bool isReDefendCapstoneProject);
+    Task<OperationResult<GroupDecisionResponse>> GetGroupDecisionByGroupIdAsync(Guid groupId);
 }

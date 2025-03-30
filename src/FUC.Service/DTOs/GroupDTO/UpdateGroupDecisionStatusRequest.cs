@@ -11,6 +11,7 @@ public sealed class UpdateGroupDecisionStatusBySupervisorRequest : UpdateGroupDe
 {
     public DecisionStatus DecisionStatus { get; set; }
     public string? Comment { get; set; }
+    public IReadOnlyList<string>? DisagreedToDefenseStudentIds { get; set; }
 }
 
 public sealed class UpdateGroupDecisionStatusByPresidentRequest
