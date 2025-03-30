@@ -716,16 +716,17 @@ public class GroupService(
         }
     }
 
-    public async Task<OperationResult> UpdateProjectProgress(UpdateProjectProgressRequest request, CancellationToken cancellationToken)
+    public async Task<OperationResult> UpdateProjectProgress(UpdateProjectProgressRequest request,
+        CancellationToken cancellationToken)
     {
         try
         {
             var projectProgress = await projectProgressRepository.GetAsync(
-            x => x.Id == request.Id,
-            include: x => x.Include(x => x.Group)
-                .ThenInclude(x => x.GroupMembers.Where(x => x.Status == GroupMemberStatus.Accepted)),
-            orderBy: null,
-            cancellationToken);
+                x => x.Id == request.Id,
+                include: x => x.Include(x => x.Group)
+                    .ThenInclude(x => x.GroupMembers.Where(x => x.Status == GroupMemberStatus.Accepted)),
+                orderBy: null,
+                cancellationToken);
 
             ArgumentNullException.ThrowIfNull(projectProgress);
 
@@ -1624,7 +1625,7 @@ public class GroupService(
         return await documentsService.PresentGroupDocumentFilePresignedUrl(key);
     }
 
-    public async Task<OperationResult> UpdateGroupDecisionBySupervisorIdAsync(
+    public async Task<OperationResult<Guid>> UpdateGroupDecisionBySupervisorIdAsync(
         UpdateGroupDecisionStatusBySupervisorRequest request)
     {
         try
@@ -1639,17 +1640,17 @@ public class GroupService(
                         .Include(g => g.DefendCapstoneProjectDecision)
                         .Include(g => g.ReviewCalendars.Where(rc => rc.Status == ReviewCalendarStatus.Done)));
 
-            if (IsGroupValidForUpdateDecisionStatus(group))
-                return OperationResult.Failure(new Error("Error.UpdateFailed",
+            if (!IsGroupValidForUpdateDecisionStatus(group))
+                return OperationResult.Failure<Guid>(new Error("Error.UpdateFailed",
                     "can not update group decision status because group is not valid"));
 
             if (group!.SupervisorId != currentUser.UserCode)
-                return OperationResult.Failure(new Error("Error.UpdateFailed", "Can not update group decision"));
+                return OperationResult.Failure<Guid>(new Error("Error.UpdateFailed", "Can not update group decision"));
 
             // check if group is re defend capstone project
             if (group.IsReDefendCapstoneProject)
             {
-                return OperationResult.Failure(new Error("Error.UpdateFailed", "Can not update group decision"));
+                return OperationResult.Failure<Guid>(new Error("Error.UpdateFailed", "Can not update group decision"));
             }
 
             // get ineligible student list 
@@ -1697,17 +1698,18 @@ public class GroupService(
             defendCapstoneDecisionRepository.Insert(defendCapstoneProjectDecision);
 
             await uow.CommitAsync();
-            return OperationResult.Success();
+            return OperationResult.Success(defendCapstoneProjectDecision.Id);
         }
         catch (Exception e)
         {
             logger.LogError("Update group decision status failed with error {Message}.", e.Message);
-            return OperationResult.Failure(new Error("Error.UpdateFailed", "Update group decision status failed"));
+            return OperationResult.Failure<Guid>(new Error("Error.UpdateFailed",
+                "Update group decision status failed"));
         }
     }
 
-    public async Task<OperationResult> UpdateGroupDecisionByPresidentIdAsync(
-        Guid groupId, bool isReDefendCapstoneProject)
+    public async Task<OperationResult> UpdateGroupDecisionByPresidentIdAsync(Guid groupId,
+        bool isReDefendCapstoneProject)
     {
         try
         {
