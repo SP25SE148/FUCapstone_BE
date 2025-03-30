@@ -716,6 +716,45 @@ public class GroupService(
         }
     }
 
+    public async Task<OperationResult> UpdateProjectProgress(UpdateProjectProgressRequest request, CancellationToken cancellationToken)
+    {
+        try
+        {
+            var projectProgress = await projectProgressRepository.GetAsync(
+            x => x.Id == request.Id,
+            include: x => x.Include(x => x.Group)
+                .ThenInclude(x => x.GroupMembers.Where(x => x.Status == GroupMemberStatus.Accepted)),
+            orderBy: null,
+            cancellationToken);
+
+            ArgumentNullException.ThrowIfNull(projectProgress);
+
+            mapper.Map(request, projectProgress);
+
+            projectProgressRepository.Update(projectProgress);
+
+            integrationEventLogService.SendEvent(new ProjectProgressUpdatedEvent
+            {
+                GroupId = projectProgress.GroupId,
+                ProjectProgressId = projectProgress.Id,
+                Type = nameof(ProjectProgressUpdatedEvent),
+                RemindDate = (DayOfWeek)Enum.Parse(typeof(DayOfWeek), projectProgress.MeetingDate, true),
+                StudentCodes = projectProgress.Group.GroupMembers.Select(x => x.StudentId).ToList()
+            });
+
+            await uow.CommitAsync(cancellationToken);
+
+            return OperationResult.Success();
+        }
+        catch (Exception ex)
+        {
+            logger.LogError("Fail to update the ProjectProgress with Error: {Message}", ex.Message);
+            await uow.RollbackAsync(cancellationToken);
+
+            return OperationResult.Failure(new Error("ProjectProgress.Error", "Update project progress fail."));
+        }
+    }
+
     public async Task<OperationResult<FucTaskResponse>> CreateTask(CreateTaskRequest request,
         CancellationToken cancellationToken)
     {

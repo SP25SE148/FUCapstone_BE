@@ -1,6 +1,5 @@
 ﻿using FUC.Common.Abstractions;
 using FUC.Common.Contracts;
-using FUC.Common.Helpers;
 using FUC.Common.Options;
 using FUC.Processor.Data;
 using FUC.Processor.Hubs;
@@ -89,7 +88,6 @@ public class ProjectProgressCreatedEventConsumer : BaseEventConsumer<ProjectProg
                     Type = message.Type,
                     IsRead = false,
                     UserCode = student,
-                    CreatedDate = DateTime.Now,
                 });
 
                 await _processorDbContext.SaveChangesAsync();
@@ -116,7 +114,77 @@ public class ProjectProgressCreatedEventConsumer : BaseEventConsumer<ProjectProg
         }
         catch (Exception ex)
         {
-            _logger.LogError("Fail to consume the created FucTask event Id {EventId} with error {Message}.", message.Id, ex.Message);
+            _logger.LogError("Fail to consume ProjectProgressCreatedEvent Id {EventId} with error {Message}.", message.Id, ex.Message);
+            await _processorDbContext.Database.RollbackTransactionAsync();
+            throw;
+        }
+    }
+}
+
+public class ProjectProgressUpdatedEventConsumer : BaseEventConsumer<ProjectProgressUpdatedEvent>
+{
+    private readonly ILogger<ProjectProgressUpdatedEventConsumer> _logger;
+    private readonly ProcessorDbContext _processorDbContext;
+    private readonly IHubContext<NotificationHub, INotificationClient> _hub;
+    private readonly UsersTracker _usersTracker;
+
+    public ProjectProgressUpdatedEventConsumer(ILogger<ProjectProgressUpdatedEventConsumer> logger,
+        ProcessorDbContext processorDbContext,
+        UsersTracker usersTracker,
+        IHubContext<NotificationHub, INotificationClient> hub,
+        IOptions<EventConsumerConfiguration> options) : base(logger, options)
+    {
+        _logger = logger;
+        _usersTracker = usersTracker;
+        _hub = hub;
+        _processorDbContext = processorDbContext;
+    }
+
+    protected override async Task ProcessMessage(ProjectProgressUpdatedEvent message)
+    {
+        try
+        {
+            _logger.LogInformation("--> Consume event for {RequestType} with GroupId {Id} - Event {EventId}",
+            message.Type,
+            message.ProjectProgressId,
+            message.Id);
+
+            await _processorDbContext.Database.BeginTransactionAsync();
+
+            var recurrentReminderForMeeting = await _processorDbContext.RecurrentReminders
+                .FirstAsync(x => x.Content == $"{message.GroupId}/{message.ProjectProgressId}" &&
+                            x.ReminderType == message.Type);
+
+            recurrentReminderForMeeting.RecurringDay = message.RemindDate;
+
+   
+            _processorDbContext.Update(recurrentReminderForMeeting);
+
+            foreach (var student in message.StudentCodes)
+            {
+                _processorDbContext.Notifications.Add(new Notification
+                {
+                    Content = $"Our meeting date was changes to {message.RemindDate.ToString()}.",
+                    ReferenceTarget = recurrentReminderForMeeting.Content,
+                    Type = message.Type,
+                    IsRead = false,
+                    UserCode = student,
+                });
+
+                await _processorDbContext.SaveChangesAsync();
+
+                var connections = await _usersTracker.GetConnectionForUser(student);
+
+                
+                    await _hub.Clients.Clients(connections)
+                        .ReceiveNewNotification($"Our meeting date was changes to {message.RemindDate.ToString()}.");
+            }
+
+            await _processorDbContext.Database.CommitTransactionAsync();
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError("Fail to consume the ProjectProgressUpdatedEvent Id {EventId} with error {Message}.", message.Id, ex.Message);
             await _processorDbContext.Database.RollbackTransactionAsync();
             throw;
         }

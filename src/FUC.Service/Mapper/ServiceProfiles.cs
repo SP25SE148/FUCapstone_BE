@@ -80,5 +80,8 @@ public class ServiceProfiles : Profile
             .ForMember(dest => dest.RegistTopicDate, opt => opt.Condition(src => src.RegistTopicDate.HasValue))
             .ForMember(dest => dest.RegistTopicExpiredDate, opt => opt.Condition(src => src.RegistTopicExpiredDate.HasValue))
             .ForAllMembers(opt => opt.Condition((src, dest, srcMember) => srcMember != null));
+
+        CreateMap<UpdateProjectProgressRequest, ProjectProgress>()
+            .ForAllMembers(opt => opt.Condition((src, dest, srcMember) => srcMember != null));
     }
 }

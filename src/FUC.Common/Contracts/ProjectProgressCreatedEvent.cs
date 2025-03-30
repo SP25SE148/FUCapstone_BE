@@ -14,3 +14,12 @@ public class ProjectProgressCreatedEvent : IntegrationEvent
     public TimeSpan RemindTime { get; set; }
     public DateTime? EndDate { get; set; }
 }
+
+public class ProjectProgressUpdatedEvent : IntegrationEvent
+{
+    public Guid GroupId { get; set; }
+    public Guid ProjectProgressId { get; set; }
+    public required string Type { get; set; }
+    public DayOfWeek RemindDate { get; set; }
+    public required List<string> StudentCodes { get; set; } = new();
+}

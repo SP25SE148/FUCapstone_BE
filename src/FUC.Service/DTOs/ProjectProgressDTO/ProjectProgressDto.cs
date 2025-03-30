@@ -20,3 +20,10 @@ public class ProjectProgressWeekDto
     public string? MeetingLocation { get; set; }
     public string? MeetingContent { get; set; }
 }
+
+public class UpdateProjectProgressRequest
+{
+    public Guid Id { get; set; }
+    public string? MeetingDate { get; set; }
+    public string? Slot { get; set; }
+}
