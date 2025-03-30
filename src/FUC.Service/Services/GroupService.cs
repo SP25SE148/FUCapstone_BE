@@ -518,7 +518,7 @@ public class GroupService(
     {
         var topicRequest = await topicRequestRepository.GetAsync(tr => tr.Id.Equals(request.TopicRequestId) &&
                                                                        tr.SupervisorId == currentUser.UserCode,
-            false,
+            true,
             tr => tr.AsSingleQuery()
                 .Include(tr => tr.Group)
                 .ThenInclude(g => g.GroupMembers
@@ -556,6 +556,7 @@ public class GroupService(
                 // assign supervisor to group
                 topicRequest.Group.TopicId = topicRequest.Topic.Id;
                 topicRequest.Group.SupervisorId = topicRequest.Topic.MainSupervisorId;
+                topicRequest.Topic.IsAssignedToGroup = true;
                 topicRequestRepository.Update(topicRequest);
             }
 
@@ -1470,7 +1471,9 @@ public class GroupService(
                 MajorName = gm.Group.MajorId,
                 SemesterName = gm.Group.SemesterId,
                 AverageGPA = gm.Group.GroupMembers.Any(gm => gm.Status == GroupMemberStatus.Accepted)
-                    ? gm.Group.GroupMembers.Average(gm => gm.Student.GPA)
+                    ? gm.Group.GroupMembers.Where(m => m.Status == GroupMemberStatus.Accepted)
+                        .Select(m => m.Student.GPA)
+                        .Average()
                     : 0
             },
             gm => gm.AsSplitQuery()
