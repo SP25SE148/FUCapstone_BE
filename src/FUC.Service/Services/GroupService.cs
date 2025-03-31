@@ -1,4 +1,4 @@
-﻿using System.Linq.Expressions;
+﻿                    using System.Linq.Expressions;
 using Amazon.S3;
 using Amazon.S3.Model;
 using AutoMapper;
@@ -733,6 +733,8 @@ public class GroupService(
                 cancellationToken);
 
             ArgumentNullException.ThrowIfNull(projectProgress);
+
+            await uow.BeginTransactionAsync(cancellationToken); 
 
             mapper.Map(request, projectProgress);
 
