@@ -9,6 +9,7 @@ public sealed class DefendCapstoneProjectInformationCalendar : AuditableEntity
     public required string TopicCode { get; set; }
     public string CampusId { get; set; }
     public string SemesterId { get; set; }
+    public string CapstoneId { get; set; }
     public int DefendAttempt { get; set; }
     public string Location { get; set; } // Room
     public int Slot { get; set; }
@@ -17,8 +18,9 @@ public sealed class DefendCapstoneProjectInformationCalendar : AuditableEntity
 
     public Campus Campus { get; set; } = null!;
     public Semester Semester { get; set; } = null!;
+    public Capstone Capstone { get; set; } = null!;
     public Topic Topic { get; set; } = null!;
 
-    public ICollection<DefendCapstoneProjectCouncilMember> DefendCapstoneProjectMemberCouncils { get; set; } =
-        new List<DefendCapstoneProjectCouncilMember>();
+    public ICollection<DefendCapstoneProjectCouncilMember> 
+        DefendCapstoneProjectMemberCouncils { get; set; } = new List<DefendCapstoneProjectCouncilMember>();
 }

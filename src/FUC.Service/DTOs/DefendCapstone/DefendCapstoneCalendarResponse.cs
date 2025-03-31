@@ -9,6 +9,7 @@ public class DefendCapstoneCalendarResponse
     public string GroupCode { get; set; }
     public string CampusId { get; set; }
     public string SemesterId { get; set; }
+    public string CapstoneId { get; set; }
     public int DefendAttempt { get; set; }
     public string Location { get; set; } // Room
     public int Slot { get; set; }

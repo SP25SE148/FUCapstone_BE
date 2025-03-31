@@ -168,10 +168,21 @@ public sealed class UserController(
     }
 
     [HttpGet("defend/calendar")]
-    [Authorize(Roles = $"{UserRoles.Supervisor},{UserRoles.Manager}")]
+    [Authorize(Roles = $"{UserRoles.Supervisor}")]
     public async Task<IActionResult> GetDefendCalendarAsync()
     {
         var result = await defendCapstoneService.GetDefendCalendersByCouncilMember(default);
+
+        return result.IsSuccess
+            ? Ok(result)
+            : HandleFailure(result);
+    }
+
+    [HttpGet("defend/calendar/manager")]
+    [Authorize(Roles = $"{UserRoles.Manager}")]
+    public async Task<IActionResult> GetDefendCalendarByManagerAsync()
+    {
+        var result = await defendCapstoneService.GetDefendCalendersByManager(default);
 
         return result.IsSuccess
             ? Ok(result)

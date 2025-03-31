@@ -10,9 +10,6 @@ public interface IDefendCapstoneService
     Task<OperationResult> UploadDefendCapstoneProjectCalendar(IFormFile file,
         CancellationToken cancellationToken);
 
-    // Task<OperationResult<List<(DateTime, List<DefendCapstoneCalendarResponse>)>>>
-    //     GetDefendCalendersByCouncilMember(CancellationToken cancellationToken);
-
     Task<OperationResult<Dictionary<DateTime, List<DefendCapstoneCalendarResponse>>>> GetDefendCalendersByCouncilMember(
         CancellationToken cancellationToken);
 
@@ -25,4 +22,7 @@ public interface IDefendCapstoneService
 
     Task<OperationResult> UpdateStatusOfGroupAfterDefend(UpdateGroupDecisionStatusByPresidentRequest request,
         CancellationToken cancellationToken);
+
+    Task<OperationResult<Dictionary<DateTime, List<DefendCapstoneCalendarResponse>>>>
+        GetDefendCalendersByManager(CancellationToken cancellationToken);
 }
