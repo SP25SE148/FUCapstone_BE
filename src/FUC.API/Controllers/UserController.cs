@@ -223,16 +223,6 @@ public sealed class UserController(
             : HandleFailure(result);
     }
 
-    [HttpGet("review-calendar-result/reviewer")]
-    [Authorize(Roles = UserRoles.Supervisor)]
-    public async Task<IActionResult> GetReviewCalendarResultByReviewerAsync()
-    {
-        var result = await reviewCalendarService.GetReviewCalendarResultByReviewerId();
-        return result.IsSuccess
-            ? Ok(result)
-            : HandleFailure(result);
-    }
-
     [HttpGet("review-calendar-result/manager")]
     [Authorize(Roles = UserRoles.Manager)]
     public async Task<IActionResult> GetReviewCalendarResultByManagerAsync()

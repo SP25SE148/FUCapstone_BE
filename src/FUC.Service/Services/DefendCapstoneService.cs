@@ -58,10 +58,69 @@ public class DefendCapstoneService(
         }
     }
 
-    public async Task<OperationResult<List<(DateTime, List<DefendCapstoneCalendarResponse>)>>>
+    // public async Task<OperationResult<List<(DateTime, List<DefendCapstoneCalendarResponse>)>>>
+    //     GetDefendCalendersByCouncilMember(CancellationToken cancellationToken)
+    // {
+    //     var result = new List<(DateTime, List<DefendCapstoneCalendarResponse>)>();
+    //
+    //     var defendCalendarsIdsOfMember = await defendCapstoneCouncilMemberRepository.FindAsync(
+    //         x => x.SupervisorId == currentUser.UserCode,
+    //         include: null,
+    //         orderBy: null,
+    //         selector: x => x.DefendCapstoneProjectInformationCalendarId,
+    //         cancellationToken);
+    //
+    //     if (defendCalendarsIdsOfMember is null || defendCalendarsIdsOfMember.Count == 0)
+    //         return result;
+    //
+    //     var calendars = await defendCapstoneCalendarRepository.FindAsync(
+    //         x => defendCalendarsIdsOfMember.Contains(x.Id),
+    //         include: x => x.AsSplitQuery()
+    //             .Include(x => x.DefendCapstoneProjectMemberCouncils)
+    //             .ThenInclude(x => x.Supervisor)
+    //             .Include(x => x.Topic)
+    //             .ThenInclude(x => x.Group),
+    //         cancellationToken);
+    //
+    //     if (calendars is null || calendars.Count == 0)
+    //         return result;
+    //
+    //     foreach (var calendar in calendars.GroupBy(x => x.DefenseDate))
+    //     {
+    //         result.Add((calendar.Key, calendar.Select(x => new DefendCapstoneCalendarResponse
+    //             {
+    //                 Id = x.Id,
+    //                 TopicId = x.TopicId,
+    //                 GroupId = x.Topic.Group.Id,
+    //                 DefenseDate = x.DefenseDate,
+    //                 DefendAttempt = x.DefendAttempt,
+    //                 Location = x.Location,
+    //                 Slot = x.Slot,
+    //                 CampusId = x.CampusId,
+    //                 SemesterId = x.SemesterId,
+    //                 TopicCode = x.TopicCode,
+    //                 GroupCode = x.Topic.Group.GroupCode,
+    //                 CouncilMembers = x.DefendCapstoneProjectMemberCouncils.Select(x =>
+    //                     new DefendCapstoneCouncilMemberDto
+    //                     {
+    //                         Id = x.Id,
+    //                         IsPresident = x.IsPresident,
+    //                         IsSecretary = x.IsSecretary,
+    //                         SupervisorId = x.SupervisorId,
+    //                         SupervisorName = x.Supervisor.FullName,
+    //                         DefendCapstoneProjectInformationCalendarId = x.DefendCapstoneProjectInformationCalendarId
+    //                     }).ToList(),
+    //             })
+    //             .OrderBy(x => x.Slot)
+    //             .ToList()));
+    //     }
+    //
+    //     return result.OrderBy(x => x.Item1).ToList();
+    // }
+    public async Task<OperationResult<Dictionary<DateTime, List<DefendCapstoneCalendarResponse>>>>
         GetDefendCalendersByCouncilMember(CancellationToken cancellationToken)
     {
-        var result = new List<(DateTime, List<DefendCapstoneCalendarResponse>)>();
+        var result = new Dictionary<DateTime, List<DefendCapstoneCalendarResponse>>();
 
         var defendCalendarsIdsOfMember = await defendCapstoneCouncilMemberRepository.FindAsync(
             x => x.SupervisorId == currentUser.UserCode,
@@ -87,7 +146,7 @@ public class DefendCapstoneService(
 
         foreach (var calendar in calendars.GroupBy(x => x.DefenseDate))
         {
-            result.Add((calendar.Key, calendar.Select(x => new DefendCapstoneCalendarResponse
+            result[calendar.Key] = calendar.Select(x => new DefendCapstoneCalendarResponse
                 {
                     Id = x.Id,
                     TopicId = x.TopicId,
@@ -112,10 +171,10 @@ public class DefendCapstoneService(
                         }).ToList(),
                 })
                 .OrderBy(x => x.Slot)
-                .ToList()));
+                .ToList();
         }
 
-        return result.OrderBy(x => x.Item1).ToList();
+        return result;
     }
 
     public async Task<OperationResult> UploadThesisCouncilMeetingMinutesForDefendCapstone(
@@ -263,7 +322,7 @@ public class DefendCapstoneService(
 
             for (; memberColumn < row.Cells().Count(); memberColumn++)
             {
-                if (!string.IsNullOrEmpty(workSheet.Cell(2, memberColumn).GetValue<string>()))
+                if (!string.IsNullOrEmpty(workSheet.Cell(5, memberColumn).GetValue<string>()))
                 {
                     var memberInfo = await GetMemberInformationAsync(row, topicResult.Value, memberColumn);
 

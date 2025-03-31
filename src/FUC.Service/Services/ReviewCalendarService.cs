@@ -184,35 +184,13 @@ public sealed class ReviewCalendarService(
             : OperationResult.Failure<IEnumerable<ReviewCalendarResultResponse>>(Error.NullValue);
     }
 
-    public async Task<OperationResult<IEnumerable<ReviewCalendarResultResponse>>> GetReviewCalendarResultByReviewerId()
-    {
-        var reviewCalendarResultDetailResponse = await (from rc in reviewCalendarRepository.GetQueryable()
-            join r in reviewerRepository.GetQueryable() on rc.Id equals r.ReviewCalenderId
-            where r.SupervisorId == currentUser.UserCode
-            orderby rc.Attempt
-            select new ReviewCalendarResultResponse()
-            {
-                Attempt = rc.Attempt,
-                ReviewCalendarResultDetailList = rc.Reviewers.Select(r => new ReviewCalendarResultDetailResponse
-                {
-                    Suggestion = r.Suggestion ?? "undefined",
-                    Comment = r.Comment ?? "undefined",
-                    Author = r.SupervisorId
-                }).ToList()
-            }).ToListAsync();
-
-        return reviewCalendarResultDetailResponse.Count() > 0
-            ? reviewCalendarResultDetailResponse.ToList()
-            : OperationResult.Failure<IEnumerable<ReviewCalendarResultResponse>>(Error.NullValue);
-    }
-
     public async Task<OperationResult<IEnumerable<ReviewCalendarResultResponse>>>
         GetReviewCalendarResultByGroupId(Guid groupId)
     {
         var group = await groupService.GetGroupByIdAsync(groupId);
-        if (group.Value.SupervisorId != currentUser.UserCode)
-            return OperationResult.Failure<IEnumerable<ReviewCalendarResultResponse>>(new Error("GetFailed",
-                "Can not get group which is not yours"));
+        // if (group.Value.SupervisorId != currentUser.UserCode)
+        //     return OperationResult.Failure<IEnumerable<ReviewCalendarResultResponse>>(new Error("GetFailed",
+        //         "Can not get group which is not yours"));
         var reviewCalendar = await reviewCalendarRepository.FindAsync(rc => rc.GroupId == group.Value.Id,
             include: rc => rc.Include(rc => rc.Reviewers),
             orderBy: rc => rc.OrderBy(rc => rc.Attempt));
