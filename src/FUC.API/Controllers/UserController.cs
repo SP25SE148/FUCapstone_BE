@@ -134,7 +134,7 @@ public sealed class UserController(
 
     [HttpPost("defend/calendar")]
     [Authorize(Roles = UserRoles.Manager)]
-    public async Task<IActionResult> ImportDefendCapstoneCalendarAsync([FromForm] IFormFile file)
+    public async Task<IActionResult> ImportDefendCapstoneCalendarAsync(IFormFile file)
     {
         var result = await defendCapstoneService.UploadDefendCapstoneProjectCalendar(file, default);
 

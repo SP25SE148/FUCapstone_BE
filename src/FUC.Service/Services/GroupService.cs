@@ -1935,8 +1935,11 @@ public class GroupService(
         for (int i = 0; i < numberOfGroups; i++)
         {
             var studentsGroup = students
-                .Skip(i)
-                .Take(MinNumberOfStudentsInGroup);
+                .Skip(i * MinNumberOfStudentsInGroup)
+                .Take(MinNumberOfStudentsInGroup)
+                .ToList();
+
+            var leaderId = ChooseLeaderIdFromRemainStudents(studentsGroup);
 
             var group = new Group
             {
@@ -1948,7 +1951,7 @@ public class GroupService(
                 {
                     StudentId = x.Id,
                     Status = GroupMemberStatus.Accepted,
-                    IsLeader = x.GPA == studentsGroup.Max(x => x.GPA),
+                    IsLeader =  x.Id == leaderId,
                 }).ToList(),
             };
 
@@ -1959,6 +1962,13 @@ public class GroupService(
 
         return students.TakeLast(students.Count % MinNumberOfStudentsInGroup)
             .ToList();
+    }
+
+    private static string ChooseLeaderIdFromRemainStudents(List<Student> students)
+    {
+        var maxScore = students.Max(x => x.GPA);
+
+        return students.First(x => x.GPA == maxScore).Id;
     }
 
     public async Task<OperationResult> AssignRemainStudentForGroup(AssignRemainStudentForGroupRequest request,
