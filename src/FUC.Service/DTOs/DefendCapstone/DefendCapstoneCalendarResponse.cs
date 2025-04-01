@@ -1,4 +1,7 @@
-﻿namespace FUC.Service.DTOs.DefendCapstone;
+﻿using FUC.Service.DTOs.GroupDTO;
+using FUC.Service.DTOs.TopicDTO;
+
+namespace FUC.Service.DTOs.DefendCapstone;
 
 public class DefendCapstoneCalendarResponse
 {
@@ -25,4 +28,14 @@ public class DefendCapstoneCouncilMemberDto
     public string SupervisorName { get; set; }
     public bool IsPresident { get; set; }
     public bool IsSecretary { get; set; }
+}
+
+public class DefendCapstoneCalendarDetailResponse : DefendCapstoneCalendarResponse
+{
+    public string SupervisorId { get; set; }
+    public string SupervisorName { get; set; }
+    public string TopicEngName { get; set; }
+    public string TopicVietName { get; set; }
+    public string Abbreviation { get; set; }
+    public string Description { get; set; }
 }
