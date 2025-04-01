@@ -26,6 +26,6 @@ public interface IDefendCapstoneService
     Task<OperationResult<Dictionary<DateTime, List<DefendCapstoneCalendarResponse>>>>
         GetDefendCalendersByManager(CancellationToken cancellationToken);
 
-    Task<OperationResult<DefendCapstoneCalendarResponse>> GetDefendCapstoneCalendarByIdAsync(
+    Task<OperationResult<DefendCapstoneCalendarDetailResponse>> GetDefendCapstoneCalendarByIdAsync(
         Guid defendCapstoneCalendarId);
 }

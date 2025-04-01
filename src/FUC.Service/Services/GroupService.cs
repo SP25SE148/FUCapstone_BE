@@ -349,7 +349,7 @@ public class GroupService(
             if (group.Status.Equals(GroupStatus.InProgress))
             {
                 var currentSemesterCode = await semesterService.GetCurrentSemesterAsync();
-                
+
                 group.GroupCode = await GenerateGroupCode(group, currentSemesterCode.Value);
             }
 
@@ -376,10 +376,10 @@ public class GroupService(
     private async Task<string> GenerateGroupCode(Group group, Semester currentSemesterCode)
     {
         var nextGroupNumber = await groupRepository.CountAsync(
-                            g => g.Status == GroupStatus.InProgress &&
-                                 g.SemesterId == currentSemesterCode.Id &&
-                                 g.CampusId == group.CampusId &&
-                                 g.CapstoneId == group.CapstoneId) + 1;
+            g => g.Status == GroupStatus.InProgress &&
+                 g.SemesterId == currentSemesterCode.Id &&
+                 g.CampusId == group.CampusId &&
+                 g.CapstoneId == group.CapstoneId) + 1;
 
         var groupMemberCode = nextGroupNumber.ToString($"D{Math.Max(3, nextGroupNumber.ToString().Length)}");
 
@@ -662,7 +662,7 @@ public class GroupService(
                     StudentEmail = m.Student.Email,
                     GPA = m.Student.GPA,
                 }),
-            CurrentNumberOfGroupPerMax = 
+            CurrentNumberOfGroupPerMax =
                 $"{g.GroupMembers.Count(m => m.Status == GroupMemberStatus.Accepted)}/{maxNumberOfStudentsOfGroup}",
         };
     }
@@ -771,7 +771,7 @@ public class GroupService(
 
             ArgumentNullException.ThrowIfNull(projectProgress);
 
-            await uow.BeginTransactionAsync(cancellationToken); 
+            await uow.BeginTransactionAsync(cancellationToken);
 
             mapper.Map(request, projectProgress);
 
@@ -1683,7 +1683,8 @@ public class GroupService(
                         .Include(g => g.DefendCapstoneProjectDecision)
                         .Include(g => g.ReviewCalendars.Where(rc => rc.Status == ReviewCalendarStatus.Done)));
 
-            if (!IsGroupValidForUpdateDecisionStatus(group))
+            if (!IsGroupValidForUpdateDecisionStatus(group) &&
+                group.DefendCapstoneProjectDecision != null)
                 return OperationResult.Failure<Guid>(new Error("Error.UpdateFailed",
                     "can not update group decision status because group is not valid"));
 
@@ -1842,8 +1843,7 @@ public class GroupService(
     {
         return group != null &&
                group.Status == GroupStatus.InProgress &&
-               group.ReviewCalendars.Count >= group.Capstone.ReviewCount &&
-               group.DefendCapstoneProjectDecision == null;
+               group.ReviewCalendars.Count >= group.Capstone.ReviewCount;
     }
 
     public async Task<OperationResult> MergeGroupForRemainStudents(CancellationToken cancellationToken)
@@ -1862,8 +1862,8 @@ public class GroupService(
 
             var remainStudents = await studentRepository.FindAsync(
                 x => x.CampusId == currentUser.CampusId &&
-                x.CapstoneId == currentUser.CapstoneId &&
-                !x.GroupMembers.Any(x => x.Status == GroupMemberStatus.Accepted),
+                     x.CapstoneId == currentUser.CapstoneId &&
+                     !x.GroupMembers.Any(x => x.Status == GroupMemberStatus.Accepted),
                 include: x => x.Include(x => x.GroupMembers),
                 cancellationToken);
 
@@ -1871,7 +1871,8 @@ public class GroupService(
                 return OperationResult.Success();
 
             if (remainStudents.Count < capstone.Value.MinMember)
-                return OperationResult.Failure(new Error("Group.Error", "The number of remain students are not enough the valid capstone number."));
+                return OperationResult.Failure(new Error("Group.Error",
+                    "The number of remain students are not enough the valid capstone number."));
 
             var remainStudentsAfterGroupThemWithBusinessArea = new List<Student>();
 
@@ -1879,10 +1880,12 @@ public class GroupService(
 
             foreach (var g in remainStudents.GroupBy(x => x.BusinessAreaId))
             {
-                remainStudentsAfterGroupThemWithBusinessArea.AddRange(await GroupTheStudentsTogether(g.ToList(), capstone.Value.MinMember, semester.Value));
+                remainStudentsAfterGroupThemWithBusinessArea.AddRange(
+                    await GroupTheStudentsTogether(g.ToList(), capstone.Value.MinMember, semester.Value));
             }
 
-            _ = await GroupTheStudentsTogether(remainStudentsAfterGroupThemWithBusinessArea, capstone.Value.MinMember, semester.Value);
+            _ = await GroupTheStudentsTogether(remainStudentsAfterGroupThemWithBusinessArea, capstone.Value.MinMember,
+                semester.Value);
 
             await uow.CommitAsync(cancellationToken);
 
@@ -1898,16 +1901,17 @@ public class GroupService(
         }
     }
 
-    private async Task<List<Student>> GroupTheStudentsTogether(List<Student> students, int MinNumberOfStudentsInGroup, Semester semester)
+    private async Task<List<Student>> GroupTheStudentsTogether(List<Student> students, int MinNumberOfStudentsInGroup,
+        Semester semester)
     {
-        if (students.Count == 0 ||students.Count < MinNumberOfStudentsInGroup)
+        if (students.Count == 0 || students.Count < MinNumberOfStudentsInGroup)
         {
             return students;
         }
 
         students = students.OrderBy(x => x.GPA).ToList();
 
-        int numberOfGroups = (int)Math.Floor((decimal) students.Count / MinNumberOfStudentsInGroup);
+        int numberOfGroups = (int)Math.Floor((decimal)students.Count / MinNumberOfStudentsInGroup);
 
         for (int i = 0; i < numberOfGroups; i++)
         {
@@ -1938,7 +1942,8 @@ public class GroupService(
             .ToList();
     }
 
-    public async Task<OperationResult> AssignRemainStudentForGroup(AssignRemainStudentForGroupRequest request, CancellationToken cancellationToken)
+    public async Task<OperationResult> AssignRemainStudentForGroup(AssignRemainStudentForGroupRequest request,
+        CancellationToken cancellationToken)
     {
         var group = await groupRepository.GetAsync(x => x.Id == request.GroupId,
             include: x => x.Include(x => x.GroupMembers),
@@ -1947,7 +1952,8 @@ public class GroupService(
 
         ArgumentNullException.ThrowIfNull(group);
 
-        if (group.CampusId != currentUser.CampusId || group.MajorId != currentUser.MajorId || group.CapstoneId != currentUser.CapstoneId)
+        if (group.CampusId != currentUser.CampusId || group.MajorId != currentUser.MajorId ||
+            group.CapstoneId != currentUser.CapstoneId)
             return OperationResult.Failure(new Error("Group.Error", "Group is not on your area."));
 
         var capstone = await capstoneService.GetCapstoneByIdAsync(group.CapstoneId);
@@ -1968,7 +1974,8 @@ public class GroupService(
         if (student.GroupMembers.Count > 0)
             return OperationResult.Failure(new Error("Group.Error", "The student was in the other group."));
 
-        if (student.CampusId != currentUser.CampusId || student.MajorId != currentUser.MajorId || student.CapstoneId != currentUser.CapstoneId)
+        if (student.CampusId != currentUser.CampusId || student.MajorId != currentUser.MajorId ||
+            student.CapstoneId != currentUser.CapstoneId)
             return OperationResult.Failure(new Error("Group.Error", "Student is not on your area."));
 
         group.GroupMembers.Add(new GroupMember

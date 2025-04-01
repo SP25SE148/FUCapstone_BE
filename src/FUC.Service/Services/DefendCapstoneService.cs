@@ -136,7 +136,7 @@ public class DefendCapstoneService(
                 include: x => x.AsSplitQuery()
                     .Include(x => x.DefendCapstoneProjectMemberCouncils)
                     .Include(x => x.Topic)
-                        .ThenInclude(x => x.Group),
+                    .ThenInclude(x => x.Group),
                 orderBy: null,
                 cancellationToken);
 
@@ -230,7 +230,7 @@ public class DefendCapstoneService(
             request.IsReDefendCapstoneProject);
     }
 
-    public async Task<OperationResult<DefendCapstoneCalendarResponse>> GetDefendCapstoneCalendarByIdAsync(
+    public async Task<OperationResult<DefendCapstoneCalendarDetailResponse>> GetDefendCapstoneCalendarByIdAsync(
         Guid defendCapstoneCalendarId)
     {
         var calendar = await defendCapstoneCalendarRepository.GetAsync(
@@ -239,17 +239,18 @@ public class DefendCapstoneService(
                 .Include(x => x.DefendCapstoneProjectMemberCouncils)
                 .ThenInclude(x => x.Supervisor)
                 .Include(x => x.Topic)
-                .ThenInclude(x => x.Group));
+                .ThenInclude(x => x.Group)
+                .ThenInclude(x => x.Supervisor));
 
         if (calendar is null)
-            return OperationResult.Failure<DefendCapstoneCalendarResponse>(new Error("Error.NotFound",
+            return OperationResult.Failure<DefendCapstoneCalendarDetailResponse>(new Error("Error.NotFound",
                 "Defend capstone calendar not found"));
 
         if (calendar.DefendCapstoneProjectMemberCouncils.All(x => x.SupervisorId != currentUser.UserCode))
-            return OperationResult.Failure<DefendCapstoneCalendarResponse>(new Error("Error.NotFound",
+            return OperationResult.Failure<DefendCapstoneCalendarDetailResponse>(new Error("Error.NotFound",
                 "Can not get this calendar because you are not in the Council."));
 
-        var response = new DefendCapstoneCalendarResponse
+        var response = new DefendCapstoneCalendarDetailResponse()
         {
             Id = calendar.Id,
             TopicId = calendar.TopicId,
@@ -272,6 +273,13 @@ public class DefendCapstoneService(
                     SupervisorName = x.Supervisor.FullName,
                     DefendCapstoneProjectInformationCalendarId = x.DefendCapstoneProjectInformationCalendarId
                 }).ToList(),
+            CapstoneId = calendar.CapstoneId,
+            SupervisorId = calendar.Topic.Group.SupervisorId!,
+            SupervisorName = calendar.Topic.Group.Supervisor!.FullName,
+            Abbreviation = calendar.Topic.Abbreviation,
+            Description = calendar.Topic.Description,
+            TopicEngName = calendar.Topic.EnglishName,
+            TopicVietName = calendar.Topic.VietnameseName
         };
 
         return OperationResult.Success(response);
