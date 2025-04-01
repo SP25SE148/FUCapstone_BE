@@ -262,4 +262,14 @@ public sealed class UserController(
             ? Ok(result)
             : HandleFailure(result);
     }
+
+    [HttpGet("defend/calendar/{id}")]
+    [Authorize(Roles = UserRoles.Supervisor)]
+    public async Task<IActionResult> GetDefendCalendarByIdAsync(Guid id)
+    {
+        var result = await defendCapstoneService.GetDefendCapstoneCalendarByIdAsync(id);
+        return result.IsSuccess
+            ? Ok(result)
+            : HandleFailure(result);
+    }
 }
