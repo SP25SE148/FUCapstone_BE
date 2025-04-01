@@ -192,7 +192,7 @@ public sealed class UserController(
     [HttpPost("defend/thesis")]
     [Authorize(Roles = $"{UserRoles.Supervisor}")]
     public async Task<IActionResult> UploadThesisCouncilMeetingMinutesForDefendCapstone(
-        [FromBody] UploadThesisCouncilMeetingMinutesRequest request)
+        [FromForm] UploadThesisCouncilMeetingMinutesRequest request)
     {
         var result = await defendCapstoneService
             .UploadThesisCouncilMeetingMinutesForDefendCapstone(request, default);

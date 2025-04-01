@@ -133,8 +133,10 @@ public class DefendCapstoneService(
 
             var calendar = await defendCapstoneCalendarRepository.GetAsync(
                 x => x.Id == request.DefendCapstoneCalendarId,
-                include: x => x.Include(x => x.DefendCapstoneProjectMemberCouncils)
-                    .Include(x => x.Topic),
+                include: x => x.AsSplitQuery()
+                    .Include(x => x.DefendCapstoneProjectMemberCouncils)
+                    .Include(x => x.Topic)
+                        .ThenInclude(x => x.Group),
                 orderBy: null,
                 cancellationToken);
 
@@ -146,7 +148,7 @@ public class DefendCapstoneService(
                     "Only who has the permission can do this action."));
 
             var key =
-                $"{calendar.CampusId}/{calendar.SemesterId}/{calendar.Topic.CapstoneId}/{calendar.TopicCode}/{calendar.DefendAttempt}";
+                $"{calendar.CampusId}/{calendar.SemesterId}/{calendar.Topic.CapstoneId}/{calendar.TopicCode}/{calendar.DefendAttempt}/{calendar.Topic.Group.GroupCode}";
 
             await unitOfWork.BeginTransactionAsync(cancellationToken);
 
