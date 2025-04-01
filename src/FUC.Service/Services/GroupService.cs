@@ -593,7 +593,7 @@ public class GroupService(
             .Include(g => g.Supervisor);
     }
 
-    private static Expression<Func<Group, GroupResponse>> CreateSelectorForGroupResponse()
+    private static Expression<Func<Group, GroupResponse>> CreateSelectorForGroupResponse(int maxNumberOfStudentsOfGroup)
     {
         return g => new GroupResponse
         {
@@ -626,7 +626,9 @@ public class GroupService(
                     CreatedDate = m.CreatedDate,
                     StudentEmail = m.Student.Email,
                     GPA = m.Student.GPA,
-                })
+                }),
+            CurrentNumberOfGroupPerMax = 
+                $"{g.GroupMembers.Count(m => m.Status == GroupMemberStatus.Accepted)}/{maxNumberOfStudentsOfGroup}",
         };
     }
 
