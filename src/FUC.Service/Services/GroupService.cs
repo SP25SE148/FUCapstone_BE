@@ -1,4 +1,4 @@
-﻿                    using System.Linq.Expressions;
+﻿using System.Linq.Expressions;
 using Amazon.S3;
 using Amazon.S3.Model;
 using AutoMapper;

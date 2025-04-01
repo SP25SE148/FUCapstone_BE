@@ -184,12 +184,20 @@ public static class AppDbInitializer
                 bucketConfiguration.SupervisorsTemplateKey = activedKey.FileUrl;
 
                 // THESIS_COUNCIL_MEETING_MINUTES_TEMPLATE_KEY
-                //activedKey = records.Find(
-                //    r => r.FileUrl.StartsWith(bucketConfiguration.ThesisCouncilMeetingMinutesTemplateKey));
+                activedKey = records.Find(
+                    r => r.FileUrl.StartsWith(bucketConfiguration.ThesisCouncilMeetingMinutesTemplateKey));
 
-                //ArgumentNullException.ThrowIfNull(activedKey);
+                ArgumentNullException.ThrowIfNull(activedKey);
 
-                //bucketConfiguration.ThesisCouncilMeetingMinutesTemplateKey = activedKey.FileUrl;
+                bucketConfiguration.ThesisCouncilMeetingMinutesTemplateKey = activedKey.FileUrl;
+
+                // TOPIC_REGISTRATION_TEMPLATE_KEY
+                activedKey = records.Find(
+                    r => r.FileUrl.StartsWith(bucketConfiguration.TopicRegistrationTemplateKey));
+
+                ArgumentNullException.ThrowIfNull(activedKey);
+
+                bucketConfiguration.TopicRegistrationTemplateKey = activedKey.FileUrl;
             }
             catch (Exception ex)
             {

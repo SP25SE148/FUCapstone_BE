@@ -6,6 +6,7 @@ public class S3BucketConfiguration
     public string FUCTemplateBucket { get; set; } = string.Empty;
     public string FUCGroupDocumentBucket { get; set; } = string.Empty;
     public string FUCThesisBucket { get; set; } = string.Empty;
+
     public string EvaluationProjectProgressKey { get; set; } = string.Empty;
     public string ReviewsCalendarsKey { get; set; } = string.Empty;
     public string DefenseCalendarKey { get; set; } = string.Empty;
@@ -13,4 +14,5 @@ public class S3BucketConfiguration
     public string StudentsTemplateKey { get; set; } = string.Empty;
     public string SupervisorsTemplateKey { get; set; } = string.Empty;
     public string ThesisCouncilMeetingMinutesTemplateKey { get; set; } = string.Empty;
+    public string TopicRegistrationTemplateKey { get; set; } = string.Empty;
 }

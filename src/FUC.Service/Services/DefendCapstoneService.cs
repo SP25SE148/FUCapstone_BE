@@ -140,13 +140,15 @@ public class DefendCapstoneService(
 
             ArgumentNullException.ThrowIfNull(calendar);
 
-            if (calendar.DefendCapstoneProjectMemberCouncils
+            if (!calendar.DefendCapstoneProjectMemberCouncils
                 .Any(x => x.SupervisorId == currentUser.UserCode && (x.IsPresident || x.IsSecretary)))
                 return OperationResult.Failure(new Error("DefendCapstone.Error",
                     "Only who has the permission can do this action."));
 
             var key =
                 $"{calendar.CampusId}/{calendar.SemesterId}/{calendar.Topic.CapstoneId}/{calendar.TopicCode}/{calendar.DefendAttempt}";
+
+            await unitOfWork.BeginTransactionAsync(cancellationToken);
 
             calendar.IsUploadedThesisMinute = true;
 
@@ -155,7 +157,7 @@ public class DefendCapstoneService(
             if ((await documentsService.CreateThesisDocument(request.File, key, cancellationToken)).IsFailure)
                 throw new InvalidOperationException("Upload thesis fail.");
 
-            await unitOfWork.SaveChangesAsync(cancellationToken);
+            await unitOfWork.CommitAsync(cancellationToken);
 
             return OperationResult.Success();
         }
@@ -163,6 +165,9 @@ public class DefendCapstoneService(
         {
             logger.LogError("Can not upload the thesis Id {Thesis} with error: {Message}",
                 request.DefendCapstoneCalendarId, ex.Message);
+
+            await unitOfWork.RollbackAsync(cancellationToken);  
+
             return OperationResult.Failure(new Error("DefendCapstone.Error", "Can not upload thesis document."));
         }
     }
