@@ -131,10 +131,15 @@ public class GroupService(
 
     public async Task<OperationResult<IEnumerable<GroupResponse>>> GetAllGroupAsync()
     {
+        var capstoneResult = await capstoneService.GetCapstoneByIdAsync(currentUser.CapstoneId);
+
+        if (capstoneResult.IsFailure)
+            return OperationResult.Failure<IEnumerable<GroupResponse>>(capstoneResult.Error);
+
         var groups = await groupRepository.GetAllAsync(
             CreateIncludeForGroupResponse(),
             g => g.OrderBy(group => group.CreatedDate),
-            CreateSelectorForGroupResponse());
+            CreateSelectorForGroupResponse(capstoneResult.Value.MaxMember));
         foreach (var group in groups)
         {
             group.TopicResponse = await topicService.GetTopicByTopicCode(group.TopicCode);
@@ -147,11 +152,16 @@ public class GroupService(
 
     public async Task<OperationResult<IEnumerable<GroupResponse>>> GetAllGroupBySemesterIdAsync(string semesterId)
     {
+        var capstoneResult = await capstoneService.GetCapstoneByIdAsync(currentUser.CapstoneId);
+
+        if (capstoneResult.IsFailure)
+            return OperationResult.Failure<IEnumerable<GroupResponse>>(capstoneResult.Error);
+
         var groups = await groupRepository.FindAsync(
             g => g.SemesterId == semesterId,
             CreateIncludeForGroupResponse(),
             g => g.OrderBy(group => group.CreatedDate),
-            CreateSelectorForGroupResponse()
+            CreateSelectorForGroupResponse(capstoneResult.Value.MaxMember)
         );
         foreach (var group in groups)
         {
@@ -165,11 +175,16 @@ public class GroupService(
 
     public async Task<OperationResult<IEnumerable<GroupResponse>>> GetAllGroupByMajorIdAsync(string majorId)
     {
+        var capstoneResult = await capstoneService.GetCapstoneByIdAsync(currentUser.CapstoneId);
+
+        if (capstoneResult.IsFailure)
+            return OperationResult.Failure<IEnumerable<GroupResponse>>(capstoneResult.Error);
+
         var groups = await groupRepository.FindAsync(
             g => g.MajorId == majorId,
             CreateIncludeForGroupResponse(),
             g => g.OrderBy(group => group.CreatedDate),
-            CreateSelectorForGroupResponse());
+            CreateSelectorForGroupResponse(capstoneResult.Value.MaxMember));
         foreach (var group in groups)
         {
             group.TopicResponse = await topicService.GetTopicByTopicCode(group.TopicCode);
@@ -182,11 +197,16 @@ public class GroupService(
 
     public async Task<OperationResult<IEnumerable<GroupResponse>>> GetAllGroupByCapstoneIdAsync(string capstoneId)
     {
+        var capstoneResult = await capstoneService.GetCapstoneByIdAsync(currentUser.CapstoneId);
+
+        if (capstoneResult.IsFailure)
+            return OperationResult.Failure<IEnumerable<GroupResponse>>(capstoneResult.Error);
+
         var groups = await groupRepository.FindAsync(
             g => g.CapstoneId == capstoneId,
             CreateIncludeForGroupResponse(),
             g => g.OrderBy(group => group.CreatedDate),
-            CreateSelectorForGroupResponse());
+            CreateSelectorForGroupResponse(capstoneResult.Value.MaxMember));
         foreach (var group in groups)
         {
             group.TopicResponse = await topicService.GetTopicByTopicCode(group.TopicCode);
@@ -199,11 +219,16 @@ public class GroupService(
 
     public async Task<OperationResult<IEnumerable<GroupResponse>>> GetAllGroupByCampusIdAsync(string campusId)
     {
+        var capstoneResult = await capstoneService.GetCapstoneByIdAsync(currentUser.CapstoneId);
+
+        if (capstoneResult.IsFailure)
+            return OperationResult.Failure<IEnumerable<GroupResponse>>(capstoneResult.Error);
+
         var groups = await groupRepository.FindAsync(
             g => g.CampusId == campusId,
             CreateIncludeForGroupResponse(),
             g => g.OrderBy(group => group.CreatedDate),
-            CreateSelectorForGroupResponse());
+            CreateSelectorForGroupResponse(capstoneResult.Value.MaxMember));
         foreach (var group in groups)
         {
             group.TopicResponse = await topicService.GetTopicByTopicCode(group.TopicCode);
@@ -233,7 +258,7 @@ public class GroupService(
             include: g => g.Include(g => g.GroupMembers.Where(s => s.Status == GroupMemberStatus.Accepted))
                 .ThenInclude(gm => gm.Student),
             orderBy: x => x.OrderBy(g => g.GroupCode),
-            CreateSelectorForGroupResponse(),
+            CreateSelectorForGroupResponse(capstoneResult.Value.MaxMember),
             cancellationToken);
 
         return groups.Count > 0
@@ -243,10 +268,15 @@ public class GroupService(
 
     public async Task<OperationResult<GroupResponse>> GetGroupByIdAsync(Guid id)
     {
+        var capstoneResult = await capstoneService.GetCapstoneByIdAsync(currentUser.CapstoneId);
+
+        if (capstoneResult.IsFailure)
+            return OperationResult.Failure<GroupResponse>(capstoneResult.Error);
+
         var group = (await groupRepository.FindAsync(g => g.Id == id,
             CreateIncludeForGroupResponse(),
             g => g.OrderBy(group => group.CreatedDate),
-            CreateSelectorForGroupResponse())).FirstOrDefault();
+            CreateSelectorForGroupResponse(capstoneResult.Value.MaxMember))).FirstOrDefault();
         if (group is null)
             return OperationResult.Failure<GroupResponse>(Error.NullValue);
         group.TopicResponse = await topicService.GetTopicByTopicCode(group.TopicCode);
@@ -255,9 +285,14 @@ public class GroupService(
 
     public async Task<OperationResult<GroupResponse>> GetGroupByGroupCodeAsync(string groupCode)
     {
+        var capstoneResult = await capstoneService.GetCapstoneByIdAsync(currentUser.CapstoneId);
+
+        if (capstoneResult.IsFailure)
+            return OperationResult.Failure<GroupResponse>(capstoneResult.Error);
+
         var groupResponse = await groupRepository.GetAsync(
             g => g.GroupCode == groupCode,
-            CreateSelectorForGroupResponse(),
+            CreateSelectorForGroupResponse(capstoneResult.Value.MaxMember),
             CreateIncludeForGroupResponse());
 
         return groupResponse != null
