@@ -88,31 +88,31 @@ public class DefendCapstoneService(
         foreach (var calendar in calendars.GroupBy(x => x.DefenseDate).OrderBy(x => x.Key))
         {
             result[calendar.Key] = calendar.Select(x => new DefendCapstoneCalendarResponse
-            {
-                Id = x.Id,
-                TopicId = x.TopicId,
-                GroupId = x.Topic.Group.Id,
-                DefenseDate = x.DefenseDate,
-                DefendAttempt = x.DefendAttempt,
-                Location = x.Location,
-                Slot = x.Slot,
-                CampusId = x.CampusId,
-                SemesterId = x.SemesterId,
-                CapstoneId = x.CapstoneId,
-                TopicCode = x.TopicCode,
-                GroupCode = x.Topic.Group.GroupCode,
-                CouncilMembers = x.DefendCapstoneProjectMemberCouncils.Select(x =>
-                    new DefendCapstoneCouncilMemberDto
-                    {
-                        Id = x.Id,
-                        IsPresident = x.IsPresident,
-                        IsSecretary = x.IsSecretary,
-                        SupervisorId = x.SupervisorId,
-                        SupervisorName = x.Supervisor.FullName,
-                        DefendCapstoneProjectInformationCalendarId = 
-                            x.DefendCapstoneProjectInformationCalendarId
-                    }).ToList(),
-            })
+                {
+                    Id = x.Id,
+                    TopicId = x.TopicId,
+                    GroupId = x.Topic.Group.Id,
+                    DefenseDate = x.DefenseDate,
+                    DefendAttempt = x.DefendAttempt,
+                    Location = x.Location,
+                    Slot = x.Slot,
+                    CampusId = x.CampusId,
+                    SemesterId = x.SemesterId,
+                    CapstoneId = x.CapstoneId,
+                    TopicCode = x.TopicCode,
+                    GroupCode = x.Topic.Group.GroupCode,
+                    CouncilMembers = x.DefendCapstoneProjectMemberCouncils.Select(x =>
+                        new DefendCapstoneCouncilMemberDto
+                        {
+                            Id = x.Id,
+                            IsPresident = x.IsPresident,
+                            IsSecretary = x.IsSecretary,
+                            SupervisorId = x.SupervisorId,
+                            SupervisorName = x.Supervisor.FullName,
+                            DefendCapstoneProjectInformationCalendarId =
+                                x.DefendCapstoneProjectInformationCalendarId
+                        }).ToList(),
+                })
                 .OrderBy(x => x.Slot)
                 .ToList();
         }
@@ -141,7 +141,7 @@ public class DefendCapstoneService(
             ArgumentNullException.ThrowIfNull(calendar);
 
             if (!calendar.DefendCapstoneProjectMemberCouncils
-                .Any(x => x.SupervisorId == currentUser.UserCode && (x.IsPresident || x.IsSecretary)))
+                    .Any(x => x.SupervisorId == currentUser.UserCode && (x.IsPresident || x.IsSecretary)))
                 return OperationResult.Failure(new Error("DefendCapstone.Error",
                     "Only who has the permission can do this action."));
 
@@ -166,7 +166,7 @@ public class DefendCapstoneService(
             logger.LogError("Can not upload the thesis Id {Thesis} with error: {Message}",
                 request.DefendCapstoneCalendarId, ex.Message);
 
-            await unitOfWork.RollbackAsync(cancellationToken);  
+            await unitOfWork.RollbackAsync(cancellationToken);
 
             return OperationResult.Failure(new Error("DefendCapstone.Error", "Can not upload thesis document."));
         }
@@ -218,14 +218,61 @@ public class DefendCapstoneService(
             return OperationResult.Failure(new Error("DefendCapstone.Error",
                 "The thesis file of that was not uploaded."));
 
-        if (calendar.DefendCapstoneProjectMemberCouncils
-            .Any(x => x.SupervisorId == currentUser.UserCode && x.IsPresident))
+        if (!calendar.DefendCapstoneProjectMemberCouncils
+                .Any(x => x.SupervisorId == currentUser.UserCode && x.IsPresident))
             return OperationResult.Failure<string>(new Error("DefendCapstone.Error",
                 "You can not get this thesis because you are not in the Council."));
 
         // Update status of group
         return await groupService.UpdateGroupDecisionByPresidentIdAsync(calendar.Topic.Group.Id,
             request.IsReDefendCapstoneProject);
+    }
+
+    public async Task<OperationResult<DefendCapstoneCalendarResponse>> GetDefendCapstoneCalendarByIdAsync(
+        Guid defendCapstoneCalendarId)
+    {
+        var calendar = await defendCapstoneCalendarRepository.GetAsync(
+            x => x.Id == defendCapstoneCalendarId,
+            include: x => x.AsSplitQuery()
+                .Include(x => x.DefendCapstoneProjectMemberCouncils)
+                .ThenInclude(x => x.Supervisor)
+                .Include(x => x.Topic)
+                .ThenInclude(x => x.Group));
+
+        if (calendar is null)
+            return OperationResult.Failure<DefendCapstoneCalendarResponse>(new Error("Error.NotFound",
+                "Defend capstone calendar not found"));
+
+        if (calendar.DefendCapstoneProjectMemberCouncils.All(x => x.SupervisorId != currentUser.UserCode))
+            return OperationResult.Failure<DefendCapstoneCalendarResponse>(new Error("Error.NotFound",
+                "Can not get this calendar because you are not in the Council."));
+
+        var response = new DefendCapstoneCalendarResponse
+        {
+            Id = calendar.Id,
+            TopicId = calendar.TopicId,
+            GroupId = calendar.Topic.Group.Id,
+            DefenseDate = calendar.DefenseDate,
+            DefendAttempt = calendar.DefendAttempt,
+            Location = calendar.Location,
+            Slot = calendar.Slot,
+            CampusId = calendar.CampusId,
+            SemesterId = calendar.SemesterId,
+            TopicCode = calendar.TopicCode,
+            GroupCode = calendar.Topic.Group.GroupCode,
+            CouncilMembers = calendar.DefendCapstoneProjectMemberCouncils.Select(x =>
+                new DefendCapstoneCouncilMemberDto
+                {
+                    Id = x.Id,
+                    IsPresident = x.IsPresident,
+                    IsSecretary = x.IsSecretary,
+                    SupervisorId = x.SupervisorId,
+                    SupervisorName = x.Supervisor.FullName,
+                    DefendCapstoneProjectInformationCalendarId = x.DefendCapstoneProjectInformationCalendarId
+                }).ToList(),
+        };
+
+        return OperationResult.Success(response);
     }
 
     private async Task<List<DefendCapstoneProjectInformationCalendar>> ParseDefendCapstoneCalendarsFromFile(
@@ -268,7 +315,7 @@ public class DefendCapstoneService(
             var presidentAndSecretary = await GetPresidentAndSecretaryAsync(row, topicResult.Value);
             var defendCapstoneProjectCalendarDetail = GetDefendCapstoneProjectCalendarDetail(row);
 
-            for (; memberColumn < row.Cells().Count(); memberColumn++)
+            for (; memberColumn <= row.Cells().Count(); memberColumn++)
             {
                 if (!string.IsNullOrEmpty(workSheet.Cell(5, memberColumn).GetValue<string>()))
                 {
@@ -439,7 +486,8 @@ public class DefendCapstoneService(
         var currentSemester = await semesterService.GetCurrentSemesterAsync();
 
         if (currentSemester.IsFailure)
-            return OperationResult.Failure<Dictionary<DateTime, List<DefendCapstoneCalendarResponse>>>(currentSemester.Error);
+            return OperationResult.Failure<Dictionary<DateTime, List<DefendCapstoneCalendarResponse>>>(currentSemester
+                .Error);
 
         var calendars = await defendCapstoneCalendarRepository.FindAsync(
             x => x.CampusId == currentUser.CampusId &&
@@ -458,31 +506,31 @@ public class DefendCapstoneService(
         foreach (var calendar in calendars.GroupBy(x => x.DefenseDate).OrderBy(x => x.Key))
         {
             result[calendar.Key] = calendar.Select(x => new DefendCapstoneCalendarResponse
-            {
-                Id = x.Id,
-                TopicId = x.TopicId,
-                GroupId = x.Topic.Group.Id,
-                DefenseDate = x.DefenseDate,
-                DefendAttempt = x.DefendAttempt,
-                Location = x.Location,
-                Slot = x.Slot,
-                CampusId = x.CampusId,
-                SemesterId = x.SemesterId,
-                CapstoneId = x.CapstoneId,
-                TopicCode = x.TopicCode,
-                GroupCode = x.Topic.Group.GroupCode,
-                CouncilMembers = x.DefendCapstoneProjectMemberCouncils.Select(x =>
-                    new DefendCapstoneCouncilMemberDto
-                    {
-                        Id = x.Id,
-                        IsPresident = x.IsPresident,
-                        IsSecretary = x.IsSecretary,
-                        SupervisorId = x.SupervisorId,
-                        SupervisorName = x.Supervisor.FullName,
-                        DefendCapstoneProjectInformationCalendarId = 
-                            x.DefendCapstoneProjectInformationCalendarId
-                    }).ToList(),
-            })
+                {
+                    Id = x.Id,
+                    TopicId = x.TopicId,
+                    GroupId = x.Topic.Group.Id,
+                    DefenseDate = x.DefenseDate,
+                    DefendAttempt = x.DefendAttempt,
+                    Location = x.Location,
+                    Slot = x.Slot,
+                    CampusId = x.CampusId,
+                    SemesterId = x.SemesterId,
+                    CapstoneId = x.CapstoneId,
+                    TopicCode = x.TopicCode,
+                    GroupCode = x.Topic.Group.GroupCode,
+                    CouncilMembers = x.DefendCapstoneProjectMemberCouncils.Select(x =>
+                        new DefendCapstoneCouncilMemberDto
+                        {
+                            Id = x.Id,
+                            IsPresident = x.IsPresident,
+                            IsSecretary = x.IsSecretary,
+                            SupervisorId = x.SupervisorId,
+                            SupervisorName = x.Supervisor.FullName,
+                            DefendCapstoneProjectInformationCalendarId =
+                                x.DefendCapstoneProjectInformationCalendarId
+                        }).ToList(),
+                })
                 .OrderBy(x => x.Slot)
                 .ToList();
         }
