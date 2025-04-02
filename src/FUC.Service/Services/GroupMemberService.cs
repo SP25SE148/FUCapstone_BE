@@ -175,16 +175,48 @@ public class GroupMemberService(
                 return OperationResult.Failure(new Error("Error.NotFound",
                     $"The group member with id {request.Id} was not found !!"));
 
+
+            await uow.BeginTransactionAsync();
+
+            if (request.Status == GroupMemberStatus.LeftGroup)
+            {
+                if (!groupMember.Status.Equals(GroupMemberStatus.Accepted))
+                    return OperationResult.Failure(new Error("Error.UpdateFailed",
+                        $"Can not left group from the other status different {GroupMemberStatus.Accepted.ToString()} status"));
+                if (groupMember.IsLeader)
+                {
+                    // auto change another group member status to left group and then noti to members
+                    var groupMembers = await groupMemberRepository.FindAsync(
+                        gm => gm.GroupId == groupMember.GroupId && gm.Status == GroupMemberStatus.Accepted,
+                        null,
+                        true);
+                    if (groupMembers.Count > 0)
+                    {
+                        foreach (GroupMember member in groupMembers)
+                        {
+                            member.Status = GroupMemberStatus.LeftGroup;
+                            groupMemberRepository.Update(member);
+                        }
+                    }
+                }
+                else
+                {
+                    var leader =
+                        await groupMemberRepository.GetAsync(
+                            gm => gm.IsLeader && gm.StudentId == currentUser.UserCode, default) ??
+                        throw new ArgumentException("Can not kick member while you are not leader");
+
+                    groupMember.Status = GroupMemberStatus.LeftGroup;
+                    groupMember.Student.Status = StudentStatus.InCompleted;
+                    groupMemberRepository.Update(groupMember);
+                }
+            }
+
             // check if the group status is not in pending status
             if (!groupMember.Group.Status.Equals(GroupStatus.Pending))
                 return OperationResult.Failure(new Error("Error.UpdateFailed",
                     $"Can not update group member status with group status is different from {GroupStatus.Pending.ToString()}"));
 
-            // get the member quantities in group  
-            int groupMemberQuantities = (await groupMemberRepository.FindAsync(gm =>
-                gm.GroupId == request.GroupId && gm.Status.Equals(GroupMemberStatus.Accepted))).Count;
-
-            await uow.BeginTransactionAsync();
 
             // Update status for requests
             switch (request.Status)
@@ -204,39 +236,6 @@ public class GroupMemberService(
                             memberRequest.Status = GroupMemberStatus.Rejected;
                             groupMemberRepository.Update(memberRequest);
                         }
-                    }
-
-                    break;
-                case GroupMemberStatus.LeftGroup:
-                    if (!groupMember.Status.Equals(GroupMemberStatus.Accepted))
-                        return OperationResult.Failure(new Error("Error.UpdateFailed",
-                            $"Can not left group from the other status different {GroupMemberStatus.Accepted.ToString()} status"));
-                    if (groupMember.IsLeader)
-                    {
-                        // auto change another group member status to left group and then noti to members
-                        var groupMembers = await groupMemberRepository.FindAsync(
-                            gm => gm.GroupId == groupMember.GroupId && gm.Status == GroupMemberStatus.Accepted,
-                            null,
-                            true);
-                        if (groupMembers.Count > 0)
-                        {
-                            foreach (GroupMember member in groupMembers)
-                            {
-                                member.Status = GroupMemberStatus.LeftGroup;
-                                groupMemberRepository.Update(member);
-                            }
-                        }
-                    }
-                    else
-                    {
-                        var leader =
-                            await groupMemberRepository.GetAsync(
-                                gm => gm.IsLeader && gm.StudentId == currentUser.UserCode, default) ??
-                            throw new ArgumentException("Can not kick member while you are not leader");
-
-                        groupMember.Status = GroupMemberStatus.LeftGroup;
-                        groupMember.Student.Status = StudentStatus.InCompleted;
-                        groupMemberRepository.Update(groupMember);
                     }
 
                     break;

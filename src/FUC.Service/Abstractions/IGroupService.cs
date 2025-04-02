@@ -1,4 +1,5 @@
 ﻿using FUC.Common.Shared;
+using FUC.Data.Enums;
 using FUC.Service.DTOs.GroupDTO;
 using FUC.Service.DTOs.ProjectProgressDTO;
 using FUC.Service.DTOs.TopicRequestDTO;
@@ -74,7 +75,8 @@ public interface IGroupService
     Task<OperationResult<Guid>> UpdateGroupDecisionBySupervisorIdAsync(
         UpdateGroupDecisionStatusBySupervisorRequest request);
 
-    Task<OperationResult> UpdateGroupDecisionByPresidentIdAsync(Guid groupId, bool isReDefendCapstoneProject);
+    Task<OperationResult> UpdateGroupDecisionByPresidentIdAsync(Guid groupId, Guid calendarId,
+        bool isReDefendCapstoneProject);
 
     Task<OperationResult> UpdateProjectProgress(UpdateProjectProgressRequest request,
         CancellationToken cancellationToken);
@@ -84,4 +86,6 @@ public interface IGroupService
 
     Task<OperationResult> AssignRemainStudentForGroup(AssignRemainStudentForGroupRequest request,
         CancellationToken cancellationToken);
+
+    Task<OperationResult> GetGroupDecisionsByStatus(DecisionStatus status);
 }
