@@ -1,6 +1,7 @@
 ﻿using FUC.API.Abstractions;
 using FUC.Common.Constants;
 using FUC.Common.Shared;
+using FUC.Data.Enums;
 using FUC.Service.Abstractions;
 using FUC.Service.DTOs.GroupDTO;
 using FUC.Service.DTOs.GroupMemberDTO;
@@ -398,6 +399,14 @@ public class GroupController(
     {
         var result = await groupService.PresentGroupDocumentFileOfGroup(groupId, default);
 
+        return result.IsSuccess ? Ok(result) : HandleFailure(result);
+    }
+
+    [HttpGet("group-decision/{status}")]
+    [Authorize(Roles = $"{UserRoles.Manager}")]
+    public async Task<IActionResult> GetGroupDecision(DecisionStatus status)
+    {
+        var result = await groupService.GetGroupDecisionsByStatus(status);
         return result.IsSuccess ? Ok(result) : HandleFailure(result);
     }
 
