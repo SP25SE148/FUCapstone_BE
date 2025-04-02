@@ -45,6 +45,7 @@ public class GroupService(
     IRepository<WeeklyEvaluation> weeklyEvaluationRepository,
     IRepository<Student> studentRepository,
     IRepository<Group> groupRepository,
+    IRepository<CoSupervisor> coSupervisorRepository,
     ITopicService topicService,
     IRepository<DefendCapstoneProjectCouncilMember> defendCapstoneProjectCouncilMemberRepository,
     ICapstoneService capstoneService,
@@ -1502,12 +1503,16 @@ public class GroupService(
         Guid groupId,
         CancellationToken cancellationToken)
     {
-        var group = await groupRepository.GetAsync(
-            x => x.Id == groupId &&
-                 x.SupervisorId == supervisorId,
-            cancellationToken);
+        var group = await groupRepository.GetAsync(x => x.Id == groupId, cancellationToken);
+        if (group is null)
+            return false;
 
-        return group != null;
+        return group.SupervisorId == supervisorId ||
+               group.Topic != null &&
+                await coSupervisorRepository.AnyAsync(
+                    x => x.SupervisorId == currentUser.UserCode && 
+                    x.TopicId == group.TopicId,
+                    cancellationToken);
     }
 
     private async Task<bool> CheckStudentsInSameGroup(List<string> studentIds, Guid groupId,

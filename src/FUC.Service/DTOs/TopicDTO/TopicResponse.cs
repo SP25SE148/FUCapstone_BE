@@ -28,6 +28,7 @@ public class TopicResponse
 
 public sealed class CoSupervisorDto
 {
+    public string SupervisorCode { get; set; }
     public string SupervisorName { get; set; }
     public string SupervisorEmail { get; set; }
 }

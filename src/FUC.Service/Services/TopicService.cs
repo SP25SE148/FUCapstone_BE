@@ -95,6 +95,7 @@ public class TopicService(
                 CapstoneId = topic.CapstoneId,
                 CoSupervisors = topic.CoSupervisors.Select(x => new CoSupervisorDto
                 {
+                    SupervisorCode = x.SupervisorId,
                     SupervisorEmail = x.Supervisor.Email,
                     SupervisorName = x.Supervisor.FullName,
                 }).ToList(),
@@ -161,6 +162,7 @@ public class TopicService(
                 CapstoneId = x.CapstoneId,
                 CoSupervisors = x.CoSupervisors.Select(x => new CoSupervisorDto
                 {
+                    SupervisorCode = x.SupervisorId,
                     SupervisorEmail = x.Supervisor.Email,
                     SupervisorName = x.Supervisor.FullName,
                 }).ToList(),
@@ -213,6 +215,7 @@ public class TopicService(
                 CapstoneId = x.CapstoneId,
                 CoSupervisors = x.CoSupervisors.Select(x => new CoSupervisorDto
                 {
+                    SupervisorCode = x.SupervisorId,
                     SupervisorEmail = x.Supervisor.Email,
                     SupervisorName = x.Supervisor.FullName,
                 }).ToList(),
@@ -265,6 +268,48 @@ public class TopicService(
                 CapstoneId = x.CapstoneId,
                 CoSupervisors = x.CoSupervisors.Select(x => new CoSupervisorDto
                 {
+                    SupervisorCode = x.SupervisorId,
+                    SupervisorEmail = x.Supervisor.Email,
+                    SupervisorName = x.Supervisor.FullName,
+                }).ToList(),
+                CreatedDate = x.CreatedDate,
+            });
+
+        return OperationResult.Success(topics);
+    }
+
+    public async Task<OperationResult<IList<TopicResponse>>> GetTopicsByCoSupervisor()
+    {
+        var topics = await topicRepository.FindAsync(
+            x => x.CoSupervisors.Any(x => x.SupervisorId == currentUser.UserCode),
+            x => x.AsSplitQuery()
+                .Include(x => x.MainSupervisor)
+                .Include(x => x.BusinessArea)
+                .Include(x => x.CoSupervisors)
+                .ThenInclude(c => c.Supervisor),
+            x => x.OrderByDescending(x => x.CreatedDate),
+            x => new TopicResponse
+            {
+                Id = x.Id.ToString(),
+                Code = x.Code ?? "undefined",
+                MainSupervisorId = x.MainSupervisorId,
+                MainSupervisorEmail = x.MainSupervisor.Email,
+                MainSupervisorName = x.MainSupervisor.FullName,
+                EnglishName = x.EnglishName,
+                VietnameseName = x.VietnameseName,
+                Abbreviation = x.Abbreviation,
+                Description = x.Description,
+                FileName = x.FileName,
+                FileUrl = x.FileUrl,
+                Status = x.Status.ToString(),
+                DifficultyLevel = x.DifficultyLevel.ToString(),
+                BusinessAreaName = x.BusinessArea.Name,
+                CampusId = x.CampusId,
+                SemesterId = x.SemesterId,
+                CapstoneId = x.CapstoneId,
+                CoSupervisors = x.CoSupervisors.Select(x => new CoSupervisorDto
+                {
+                    SupervisorCode = x.SupervisorId,
                     SupervisorEmail = x.Supervisor.Email,
                     SupervisorName = x.Supervisor.FullName,
                 }).ToList(),
@@ -322,6 +367,7 @@ public class TopicService(
                 CapstoneId = x.CapstoneId,
                 CoSupervisors = x.CoSupervisors.Select(x => new CoSupervisorDto
                 {
+                    SupervisorCode = x.SupervisorId,
                     SupervisorEmail = x.Supervisor.Email,
                     SupervisorName = x.Supervisor.FullName,
                 }).ToList(),
@@ -355,6 +401,7 @@ public class TopicService(
                 MainSupervisorName = t.MainSupervisor.FullName,
                 CoSupervisors = t.CoSupervisors.Select(c => new CoSupervisorDto()
                 {
+                    SupervisorCode = c.SupervisorId,
                     SupervisorEmail = c.Supervisor.Email,
                     SupervisorName = c.Supervisor.FullName
                 }).ToList()
@@ -1264,6 +1311,120 @@ public class TopicService(
         return businessAreas.Count != 0
             ? OperationResult.Success(businessAreas)
             : OperationResult.Failure<List<BusinessAreaResponse>>(Error.NullValue);
+    }
+
+    public async Task<OperationResult> AssignNewSupervisorForTopic(AssignNewSupervisorForTopicRequest request, CancellationToken cancellationToken)
+    {
+        try
+        {
+            var topic = await topicRepository.GetAsync(x => x.Id == request.TopicId,
+            include: x => x.Include(x => x.Group),
+            orderBy: null,
+            cancellationToken);
+
+            ArgumentNullException.ThrowIfNull(topic);
+
+            var supervior = await supervisorRepository.GetAsync(x => x.Id == request.SupervisorId, cancellationToken);
+
+            ArgumentNullException.ThrowIfNull(supervior);
+
+            await unitOfWork.BeginTransactionAsync(cancellationToken);
+
+            if (topic.IsAssignedToGroup && topic.Group != null)
+            {
+                topic.Group.SupervisorId = supervior.Id;
+            }
+
+            topic.MainSupervisorId = supervior.Id;
+
+            topicRepository.Update(topic);
+
+            await unitOfWork.CommitAsync(cancellationToken);
+
+            return OperationResult.Success();
+        }
+        catch(Exception ex)
+        {
+            logger.LogError("Fail to assign supervisor {SupCode} with topic {TopicId} with error {Message}", request.SupervisorId, request.TopicId, ex.Message);
+
+            await unitOfWork.RollbackAsync(cancellationToken);
+
+            return OperationResult.Failure(new Error("Topic.Error", "Fail to assign new supervisor for this topic"));
+        }
+    }
+
+    public async Task<OperationResult> AddCoSupervisorForTopic(AssignNewSupervisorForTopicRequest request, CancellationToken cancellationToken)
+    {
+        try
+        {
+            var topic = await topicRepository.GetAsync(x => x.Id == request.TopicId,
+            include: x => x.Include(x => x.CoSupervisors),
+            orderBy: null,
+            cancellationToken);
+
+            ArgumentNullException.ThrowIfNull(topic);
+
+            var supervior = await supervisorRepository.GetAsync(x => x.Id == request.SupervisorId, cancellationToken);
+
+            ArgumentNullException.ThrowIfNull(supervior);
+
+            await unitOfWork.BeginTransactionAsync(cancellationToken);
+
+            topic.CoSupervisors.Add(new CoSupervisor
+            {
+                SupervisorId = supervior.Id,    
+            });
+
+            topicRepository.Update(topic);
+
+            await unitOfWork.CommitAsync(cancellationToken);
+
+            return OperationResult.Success();
+        }
+        catch (Exception ex)
+        {
+            logger.LogError("Fail to assign CoSupervisor {SupCode} with topic {TopicId} with error {Message}", request.SupervisorId, request.TopicId, ex.Message);
+
+            await unitOfWork.RollbackAsync(cancellationToken);
+
+            return OperationResult.Failure(new Error("Topic.Error", "Fail to add new coSupervisor for this topic"));
+        }
+    }
+
+    public async Task<OperationResult> RemoveCoSupervisorForTopic(RemoveCoSupervisorForTopicRequest request, CancellationToken cancellationToken)
+    {
+        try
+        {
+            var topic = await topicRepository.GetAsync(x => x.Id == request.TopicId,
+            include: x => x.Include(x => x.CoSupervisors),
+            orderBy: null,
+            cancellationToken);
+
+            ArgumentNullException.ThrowIfNull(topic);
+
+            var coSupervisor = topic.CoSupervisors.FirstOrDefault(x => x.SupervisorId == request.SupervisorId);
+
+            if (coSupervisor == null)
+                return OperationResult.Success();
+
+            await unitOfWork.BeginTransactionAsync(cancellationToken);
+
+            topic.CoSupervisors.Remove(coSupervisor);
+
+            topicRepository.Update(topic);
+
+            await unitOfWork.CommitAsync(cancellationToken);
+
+            return OperationResult.Success();
+        }
+        catch (Exception ex)
+        {
+            logger.LogError("Fail to remove CoSupervisor {SupCode} with topic {TopicId} with error {Message}", request.SupervisorId, request.TopicId, ex.Message);
+
+            await unitOfWork.RollbackAsync(cancellationToken);
+
+            return OperationResult.Failure(new Error("Topic.Error", "Fail to remove coSupervisor for this topic"));
+        }
     }
 
     private async Task<float> GetAverageGPAOfGroupByStudent(string studentId, CancellationToken cancellationToken)

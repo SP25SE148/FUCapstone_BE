@@ -153,11 +153,47 @@ public class TopicsController(ITopicService topicService) : ApiController
             ? Ok(result)
             : HandleFailure(result);
     }
-  
+
     [HttpGet("business")]
     public async Task<IActionResult> GetAllBusinessAreas()
     {
         var result = await topicService.GetAllBusinessAreas();
+
+        return result.IsSuccess ? Ok(result) : HandleFailure(result);
+    }
+
+    [HttpPut("assign/supervisor")]
+    [Authorize(Roles = $"{UserRoles.Manager}")]
+    public async Task<IActionResult> AssignNewSupervisorForTopic([FromBody] AssignNewSupervisorForTopicRequest request)
+    {
+        var result = await topicService.AssignNewSupervisorForTopic(request, default);
+
+        return result.IsSuccess ? Ok(result) : HandleFailure(result);
+    }
+
+    [HttpGet("cosupervisor")]
+    [Authorize(Roles = $"{UserRoles.Supervisor}")]
+    public async Task<IActionResult> GetTopicsByCoSupervisor()
+    {
+        var result = await topicService.GetTopicsByCoSupervisor();
+
+        return result.IsSuccess ? Ok(result) : HandleFailure(result);
+    }
+
+    [HttpPost("cosupervisor")]
+    [Authorize(Roles = $"{UserRoles.Manager}")]
+    public async Task<IActionResult> AddCoSupervisorForTopic([FromBody] AssignNewSupervisorForTopicRequest request)
+    {
+        var result = await topicService.AddCoSupervisorForTopic(request, default);
+
+        return result.IsSuccess ? Ok(result) : HandleFailure(result);
+    }
+
+    [HttpDelete("cosupervisor")]
+    [Authorize(Roles = $"{UserRoles.Manager}")]
+    public async Task<IActionResult> RemoveCoSupervisorForTopic([FromBody] RemoveCoSupervisorForTopicRequest request)
+    {
+        var result = await topicService.RemoveCoSupervisorForTopic(request, default);
 
         return result.IsSuccess ? Ok(result) : HandleFailure(result);
     }

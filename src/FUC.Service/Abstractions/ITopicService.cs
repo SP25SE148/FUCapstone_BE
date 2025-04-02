@@ -32,4 +32,8 @@ public interface ITopicService
     Task<OperationResult> AppraisalTopic(AppraisalTopicRequest request, CancellationToken cancellationToken);
     Task<OperationResult<Topic>> GetTopicEntityById(Guid topicId, CancellationToken cancellationToken);
     Task<OperationResult<Topic>> GetTopicByCode(string topicCode, CancellationToken cancellationToken);
+    Task<OperationResult> AssignNewSupervisorForTopic(AssignNewSupervisorForTopicRequest request, CancellationToken cancellationToken);
+    Task<OperationResult<IList<TopicResponse>>> GetTopicsByCoSupervisor();
+    Task<OperationResult> AddCoSupervisorForTopic(AssignNewSupervisorForTopicRequest request, CancellationToken cancellationToken);
+    Task<OperationResult> RemoveCoSupervisorForTopic(RemoveCoSupervisorForTopicRequest request, CancellationToken cancellationToken);
 }
