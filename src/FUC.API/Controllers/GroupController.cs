@@ -105,6 +105,7 @@ public class GroupController(
     }
 
     [HttpGet("{id}")]
+    [Authorize(Roles = $"{UserRoles.Supervisor}")]
     public async Task<IActionResult> GetGroupByIdAsync(Guid id)
     {
         var result = await groupService.GetGroupByIdAsync(id);

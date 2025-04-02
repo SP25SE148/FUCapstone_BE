@@ -273,10 +273,9 @@ public class GroupService(
         if (capstoneResult.IsFailure)
             return OperationResult.Failure<GroupResponse>(capstoneResult.Error);
 
-        var group = (await groupRepository.FindAsync(g => g.Id == id,
-            CreateIncludeForGroupResponse(),
-            g => g.OrderBy(group => group.CreatedDate),
-            CreateSelectorForGroupResponse(capstoneResult.Value.MaxMember))).FirstOrDefault();
+        var group = await groupRepository.GetAsync(g => g.Id == id && g.SupervisorId == currentUser.UserCode,
+            CreateSelectorForGroupResponse(capstoneResult.Value.MaxMember),
+            CreateIncludeForGroupResponse());
         if (group is null)
             return OperationResult.Failure<GroupResponse>(Error.NullValue);
         group.TopicResponse = await topicService.GetTopicByTopicCode(group.TopicCode);
@@ -392,10 +391,10 @@ public class GroupService(
     private async Task<int> CountInProgressGroups(string campusId, string semesterId, string capstoneId)
     {
         return await groupRepository.CountAsync(
-                            g => g.Status == GroupStatus.InProgress &&
-                                 g.CampusId == campusId &&
-                                 g.SemesterId == semesterId &&
-                                 g.CapstoneId == capstoneId);
+            g => g.Status == GroupStatus.InProgress &&
+                 g.CampusId == campusId &&
+                 g.SemesterId == semesterId &&
+                 g.CapstoneId == capstoneId);
     }
 
     public async Task<OperationResult<Guid>> CreateTopicRequestAsync(TopicRequest_Request request,
@@ -1106,22 +1105,22 @@ public class GroupService(
             return OperationResult.Failure<List<EvaluationProjectProgressResponse>>(Error.NullValue);
 
         var query = from eva in weeklyEvaluationRepository.GetQueryable()
-                    where studentsInGroup.Select(x => x.Item1).ToList().Contains(eva.StudentId)
-                    group eva by eva.StudentId
+            where studentsInGroup.Select(x => x.Item1).ToList().Contains(eva.StudentId)
+            group eva by eva.StudentId
             into g
-                    select new
-                    {
-                        StudentId = g.Key,
-                        Evaluations = g.Select(e => new EvaluationWeekResponse
-                        {
-                            WeekNumber = e.ProjectProgressWeek.WeekNumber,
-                            ContributionPercentage = e.ContributionPercentage,
-                            Comments = e.Comments,
-                            MeetingContent = e.ProjectProgressWeek.MeetingContent ?? "",
-                            Summary = e.ProjectProgressWeek.ProgressWeekSummary,
-                            Status = e.Status.ToString()
-                        }).OrderBy(x => x.WeekNumber).ToList()
-                    };
+            select new
+            {
+                StudentId = g.Key,
+                Evaluations = g.Select(e => new EvaluationWeekResponse
+                {
+                    WeekNumber = e.ProjectProgressWeek.WeekNumber,
+                    ContributionPercentage = e.ContributionPercentage,
+                    Comments = e.Comments,
+                    MeetingContent = e.ProjectProgressWeek.MeetingContent ?? "",
+                    Summary = e.ProjectProgressWeek.ProgressWeekSummary,
+                    Status = e.Status.ToString()
+                }).OrderBy(x => x.WeekNumber).ToList()
+            };
 
         var weeklyEvaluationsForGroup = await query.ToListAsync(cancellationToken);
 
@@ -1129,21 +1128,21 @@ public class GroupService(
             return OperationResult.Failure<List<EvaluationProjectProgressResponse>>(Error.NullValue);
 
         var result = from student in studentsInGroup
-                     join evaluation in weeklyEvaluationsForGroup
-                         on student.Item1 equals evaluation.StudentId into evalGroup
-                     from eval in evalGroup.DefaultIfEmpty()
-                     let evaluations = eval?.Evaluations ?? new List<EvaluationWeekResponse>()
-                     let evaluationsCount = evaluations.Count
-                     select new EvaluationProjectProgressResponse
-                     {
-                         StudentCode = student.Item1,
-                         StudentName = student.Item2,
-                         StudentRole = student.Item3 ? "leader" : "member",
-                         EvaluationWeeks = evaluations,
-                         AverageContributionPercentage = evaluationsCount == 0
-                             ? 0
-                             : evaluations.Sum(x => x.ContributionPercentage) / evaluationsCount
-                     };
+            join evaluation in weeklyEvaluationsForGroup
+                on student.Item1 equals evaluation.StudentId into evalGroup
+            from eval in evalGroup.DefaultIfEmpty()
+            let evaluations = eval?.Evaluations ?? new List<EvaluationWeekResponse>()
+            let evaluationsCount = evaluations.Count
+            select new EvaluationProjectProgressResponse
+            {
+                StudentCode = student.Item1,
+                StudentName = student.Item2,
+                StudentRole = student.Item3 ? "leader" : "member",
+                EvaluationWeeks = evaluations,
+                AverageContributionPercentage = evaluationsCount == 0
+                    ? 0
+                    : evaluations.Sum(x => x.ContributionPercentage) / evaluationsCount
+            };
 
         return result.ToList();
     }
@@ -1774,6 +1773,7 @@ public class GroupService(
                 g =>
                     g.Include(g => g.Supervisor)
                         .Include(g => g.Capstone)
+                        .Include(g => g.DefendCapstoneProjectDecision)
                         .Include(g => g.ReviewCalendars.Where(rc => rc.Status == ReviewCalendarStatus.Done)));
             var president = await defendCapstoneProjectCouncilMemberRepository.GetAsync(
                 cm => cm.SupervisorId == currentUser.UserCode && cm.IsPresident,
@@ -1787,7 +1787,7 @@ public class GroupService(
                 return OperationResult.Failure(new Error("Error.Updated",
                     "Can not update group decision on invalid date time"));
 
-            if (IsGroupValidForUpdateDecisionStatus(group))
+            if (!IsGroupValidForUpdateDecisionStatus(group))
                 return OperationResult.Failure(new Error("Error.UpdateFailed",
                     "can not update group decision status because group is not valid"));
 
@@ -1889,17 +1889,20 @@ public class GroupService(
             var remainStudentsAfterGroupThemWithBusinessArea = new List<Student>();
             var newGroups = new List<Group>();
 
-            var currentNumberOfGroups = await CountInProgressGroups(currentUser.CampusId, semester.Value.Id, currentUser.CapstoneId);
+            var currentNumberOfGroups =
+                await CountInProgressGroups(currentUser.CampusId, semester.Value.Id, currentUser.CapstoneId);
 
             await uow.BeginTransactionAsync(cancellationToken);
 
             foreach (var g in remainStudents.GroupBy(x => x.BusinessAreaId))
             {
                 remainStudentsAfterGroupThemWithBusinessArea
-                    .AddRange(await GroupTheStudentsTogether(g.ToList(), newGroups, currentNumberOfGroups, capstone.Value.MinMember, semester.Value));
+                    .AddRange(await GroupTheStudentsTogether(g.ToList(), newGroups, currentNumberOfGroups,
+                        capstone.Value.MinMember, semester.Value));
             }
 
-            _ = await GroupTheStudentsTogether(remainStudentsAfterGroupThemWithBusinessArea, newGroups, currentNumberOfGroups, capstone.Value.MinMember, semester.Value);
+            _ = await GroupTheStudentsTogether(remainStudentsAfterGroupThemWithBusinessArea, newGroups,
+                currentNumberOfGroups, capstone.Value.MinMember, semester.Value);
 
             groupRepository.InsertRange(newGroups);
 
@@ -1917,10 +1920,10 @@ public class GroupService(
         }
     }
 
-    private async Task<List<Student>> GroupTheStudentsTogether(List<Student> students, 
-        List<Group> newGroups, 
-        int currentNumberOfGroups, 
-        int MinNumberOfStudentsInGroup, 
+    private async Task<List<Student>> GroupTheStudentsTogether(List<Student> students,
+        List<Group> newGroups,
+        int currentNumberOfGroups,
+        int MinNumberOfStudentsInGroup,
         Semester semester)
     {
         if (students.Count == 0 || students.Count < MinNumberOfStudentsInGroup)
@@ -1951,7 +1954,7 @@ public class GroupService(
                 {
                     StudentId = x.Id,
                     Status = GroupMemberStatus.Accepted,
-                    IsLeader =  x.Id == leaderId,
+                    IsLeader = x.Id == leaderId,
                 }).ToList(),
             };
 

@@ -22,6 +22,8 @@ public interface IGroupService
 
     Task<OperationResult> UpdateGroupStatusAsync();
 
+    Task<OperationResult<GroupResponse>> GetGroupInformationByGroupSelfId();
+
     Task<OperationResult<Guid>> CreateTopicRequestAsync(TopicRequest_Request request,
         CancellationToken cancellationToken);
 
@@ -57,7 +59,6 @@ public interface IGroupService
         CancellationToken cancellationToken);
 
     Task<OperationResult<byte[]>> ExportProgressEvaluationOfGroup(Guid groupId, CancellationToken cancellationToken);
-    Task<OperationResult<GroupResponse>> GetGroupInformationByGroupSelfId();
 
     Task<OperationResult<IList<GroupManageBySupervisorResponse>>> GetGroupsWhichMentorBySupervisor(
         CancellationToken cancellationToken);
@@ -80,5 +81,7 @@ public interface IGroupService
 
     Task<OperationResult<GroupDecisionResponse>> GetGroupDecisionByGroupIdAsync(Guid groupId);
     Task<OperationResult> MergeGroupForRemainStudents(CancellationToken cancellationToken);
-    Task<OperationResult> AssignRemainStudentForGroup(AssignRemainStudentForGroupRequest request, CancellationToken cancellationToken);
+
+    Task<OperationResult> AssignRemainStudentForGroup(AssignRemainStudentForGroupRequest request,
+        CancellationToken cancellationToken);
 }
