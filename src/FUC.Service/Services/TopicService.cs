@@ -795,11 +795,11 @@ public class TopicService(
             }
 
             var supervisorIdList = await (from s in supervisorRepository.GetQueryable()
-                where supervisorEmail.Contains(s.Email) &&
-                      s.IsAvailable &&
-                      s.MajorId == currentUser.MajorId &&
-                      s.CampusId == currentUser.CampusId
-                select s.Id).ToListAsync(cancellationToken);
+                                          where supervisorEmail.Contains(s.Email) &&
+                                                s.IsAvailable &&
+                                                s.MajorId == currentUser.MajorId &&
+                                                s.CampusId == currentUser.CampusId
+                                          select s.Id).ToListAsync(cancellationToken);
 
             if (supervisorIdList.Count == 0)
             {
@@ -1277,9 +1277,9 @@ public class TopicService(
         var result = new List<(string, string)>();
 
         var query = from s in supervisorRepository.GetQueryable()
-            where coSupervisorEmails.Contains(s.Email) &&
-                  s.CoSupervisors.Count < systemConfigService.GetSystemConfiguration().MaxTopicsForCoSupervisors
-            select new { s.Id, s.Email };
+                    where coSupervisorEmails.Contains(s.Email) &&
+                          s.CoSupervisors.Count < systemConfigService.GetSystemConfiguration().MaxTopicsForCoSupervisors
+                    select new { s.Id, s.Email };
 
         (await query.ToListAsync(cancellationToken))
             .ForEach(s => result.Add((s.Id.ToString(), s.Email)));
@@ -1300,12 +1300,12 @@ public class TopicService(
     public async Task<OperationResult<List<BusinessAreaResponse>>> GetAllBusinessAreas()
     {
         var queryable = from ba in businessRepository.GetQueryable()
-            select new BusinessAreaResponse
-            {
-                Id = ba.Id,
-                Description = ba.Description,
-                Name = ba.Name
-            };
+                        select new BusinessAreaResponse
+                        {
+                            Id = ba.Id,
+                            Description = ba.Description,
+                            Name = ba.Name
+                        };
         var businessAreas = await queryable.ToListAsync();
 
         return businessAreas.Count != 0
@@ -1318,7 +1318,9 @@ public class TopicService(
         try
         {
             var topic = await topicRepository.GetAsync(x => x.Id == request.TopicId,
-            include: x => x.Include(x => x.Group),
+            include: x => x.AsSplitQuery()
+                .Include(x => x.Group)
+                .Include(x => x.CoSupervisors),
             orderBy: null,
             cancellationToken);
 
@@ -1335,6 +1337,13 @@ public class TopicService(
                 topic.Group.SupervisorId = supervior.Id;
             }
 
+            var coSupervisor = topic.CoSupervisors.FirstOrDefault(x => x.SupervisorId == request.SupervisorId);
+
+            if (coSupervisor != null)
+            {
+                topic.CoSupervisors.Remove(coSupervisor);
+            }
+
             topic.MainSupervisorId = supervior.Id;
 
             topicRepository.Update(topic);
@@ -1343,7 +1352,7 @@ public class TopicService(
 
             return OperationResult.Success();
         }
-        catch(Exception ex)
+        catch (Exception ex)
         {
             logger.LogError("Fail to assign supervisor {SupCode} with topic {TopicId} with error {Message}", request.SupervisorId, request.TopicId, ex.Message);
 
@@ -1368,11 +1377,17 @@ public class TopicService(
 
             ArgumentNullException.ThrowIfNull(supervior);
 
+            if (topic.MainSupervisorId == request.SupervisorId)
+                return OperationResult.Failure(new Error("Topic.Error", $"Supervisor {request.SupervisorId} is the main supervisor of Topic."));
+
+            if (topic.CoSupervisors.Any(x => x.SupervisorId == request.SupervisorId))
+                return OperationResult.Failure(new Error("Topic.Error", $"Supervisor {request.SupervisorId} was in Topic."));
+
             await unitOfWork.BeginTransactionAsync(cancellationToken);
 
             topic.CoSupervisors.Add(new CoSupervisor
             {
-                SupervisorId = supervior.Id,    
+                SupervisorId = supervior.Id,
             });
 
             topicRepository.Update(topic);
@@ -1396,6 +1411,7 @@ public class TopicService(
         try
         {
             var topic = await topicRepository.GetAsync(x => x.Id == request.TopicId,
+            isEnabledTracking: true,
             include: x => x.Include(x => x.CoSupervisors),
             orderBy: null,
             cancellationToken);
