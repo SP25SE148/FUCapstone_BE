@@ -24,18 +24,19 @@ public class SupervisorAppraisalRemovedEventConsumer : BaseEventConsumer<Supervi
     {
         _logger = logger;
         _usersTracker = usersTracker;
-        _hub = hub; 
-        _processorDbContext = processorDbContext;   
+        _hub = hub;
+        _processorDbContext = processorDbContext;
     }
 
     protected override async Task ProcessMessage(SupervisorAppraisalRemovedEvent message)
     {
-        _logger.LogInformation("Starting to send notification for SupervisorAppraisalRemovedEvent with supervisor {Id}", message.SupervisorId);
+        _logger.LogInformation("Starting to send notification for SupervisorAppraisalRemovedEvent with supervisor {Id}",
+            message.SupervisorId);
 
         var connections = await _usersTracker.GetConnectionForUser(message.SupervisorId);
 
-        _processorDbContext.Notifications.Add(new Notification 
-        { 
+        _processorDbContext.Notifications.Add(new Notification
+        {
             UserCode = message.SupervisorId,
             ReferenceTarget = message.TopicId.ToString(),
             Content = $"You was removed for appraisal of Topic: {message.TopicEnglishName}",
@@ -75,8 +76,8 @@ public class ReAssignAppraisalTopicEventConsumer : BaseEventConsumer<ReAssignApp
             message.TopicId);
 
         var supervisorsConnections = new List<string>();
-        
-        foreach(var supvisorId in message.SupervisorIds)
+
+        foreach (var supvisorId in message.SupervisorIds)
         {
             var connections = await _usersTracker.GetConnectionForUser(supvisorId);
 
@@ -161,7 +162,9 @@ public class AssignedSupervisorForAppraisalEventConsumer : BaseEventConsumer<Ass
 
     protected override async Task ProcessMessage(AssignedSupervisorForAppraisalEvent message)
     {
-        _logger.LogInformation("Starting to send notification for AssignedSupervisorForAppraisalEvent with supervisor {Id}", message.SupervisorId);
+        _logger.LogInformation(
+            "Starting to send notification for AssignedSupervisorForAppraisalEvent with supervisor {Id}",
+            message.SupervisorId);
 
         var connections = await _usersTracker.GetConnectionForUser(message.SupervisorId);
 
@@ -181,7 +184,9 @@ public class AssignedSupervisorForAppraisalEventConsumer : BaseEventConsumer<Ass
     }
 }
 
-public class AssignedAvailableSupervisorForAppraisalEventConsumer : BaseEventConsumer<AssignedAvailableSupervisorForAppraisalEvent>
+public class
+    AssignedAvailableSupervisorForAppraisalEventConsumer : BaseEventConsumer<
+    AssignedAvailableSupervisorForAppraisalEvent>
 {
     private readonly ILogger<AssignedAvailableSupervisorForAppraisalEventConsumer> _logger;
     private readonly UsersTracker _usersTracker;
@@ -203,9 +208,11 @@ public class AssignedAvailableSupervisorForAppraisalEventConsumer : BaseEventCon
 
     protected override async Task ProcessMessage(AssignedAvailableSupervisorForAppraisalEvent message)
     {
-        _logger.LogInformation("Starting to send notification for AssignedAvailableSupervisorForAppraisalEvent with message {Id}", message.Id);
+        _logger.LogInformation(
+            "Starting to send notification for AssignedAvailableSupervisorForAppraisalEvent with message {Id}",
+            message.Id);
 
-        foreach(var supervisorId in message.SupervisorIds)
+        foreach (var supervisorId in message.SupervisorIds)
         {
             var connections = await _usersTracker.GetConnectionForUser(supervisorId);
 
@@ -248,7 +255,8 @@ public class GroupMemberStatusUpdateMessageConsumer : BaseEventConsumer<GroupMem
 
     protected override async Task ProcessMessage(GroupMemberStatusUpdatedEvent message)
     {
-        _logger.LogInformation("Starting to send notification for GroupMemberStatusUpdateMessage with studentId {Id}", message.LeaderCode);
+        _logger.LogInformation("Starting to send notification for GroupMemberStatusUpdateMessage with studentId {Id}",
+            message.LeaderCode);
 
         var connections = await _usersTracker.GetConnectionForUser(message.LeaderCode);
 
@@ -290,7 +298,8 @@ public class JoinGroupRequestCreatedEventConsumer : BaseEventConsumer<JoinGroupR
 
     protected override async Task ProcessMessage(JoinGroupRequestCreatedEvent message)
     {
-        _logger.LogInformation("Starting to send notification for JoinGroupRequestCreatedEvent with studentId {Id}", message.LeaderCode);
+        _logger.LogInformation("Starting to send notification for JoinGroupRequestCreatedEvent with studentId {Id}",
+            message.LeaderCode);
 
         var connections = await _usersTracker.GetConnectionForUser(message.LeaderCode);
 
@@ -332,7 +341,8 @@ public class GroupStatusUpdatedEventConsumer : BaseEventConsumer<GroupStatusUpda
 
     protected override async Task ProcessMessage(GroupStatusUpdatedEvent message)
     {
-        _logger.LogInformation("Starting to send notification for GroupStatusUpdatedEvent with groupCode {Id}", message.GroupCode);
+        _logger.LogInformation("Starting to send notification for GroupStatusUpdatedEvent with groupCode {Id}",
+            message.GroupCode);
 
         foreach (var student in message.StudentCodes)
         {
@@ -377,7 +387,8 @@ public class GroupMemberCreatedEventConsumer : BaseEventConsumer<GroupMemberCrea
 
     protected override async Task ProcessMessage(GroupMemberCreatedEvent message)
     {
-        _logger.LogInformation("Starting to send notification for GroupMemberCreatedEventConsumer with studentId {Id}", message.MemberId);
+        _logger.LogInformation("Starting to send notification for GroupMemberCreatedEventConsumer with studentId {Id}",
+            message.MemberId);
 
         var connections = await _usersTracker.GetConnectionForUser(message.MemberId);
 
@@ -419,7 +430,9 @@ public class JoinGroupRequestStatusUpdatedEventConsumer : BaseEventConsumer<Join
 
     protected override async Task ProcessMessage(JoinGroupRequestStatusUpdatedEvent message)
     {
-        _logger.LogInformation("Starting to send notification for JoinGroupRequestStatusUpdatedEvent with studentId {Id}", message.MemberCode);
+        _logger.LogInformation(
+            "Starting to send notification for JoinGroupRequestStatusUpdatedEvent with studentId {Id}",
+            message.MemberCode);
 
         var connections = await _usersTracker.GetConnectionForUser(message.MemberCode);
 
@@ -427,7 +440,8 @@ public class JoinGroupRequestStatusUpdatedEventConsumer : BaseEventConsumer<Join
         {
             UserCode = message.MemberCode,
             ReferenceTarget = string.Join("/", message.GroupId, message.JoinGroupRequestId),
-            Content = $"Leader {message.LeaderName} - {message.LeaderCode} was {message.Status} your join group request.",
+            Content =
+                $"Leader {message.LeaderName} - {message.LeaderCode} was {message.Status} your join group request.",
             IsRead = false,
             Type = nameof(JoinGroupRequestStatusUpdatedEvent)
         });
@@ -461,7 +475,8 @@ public class TopicRequestCreatedEventConsumer : BaseEventConsumer<TopicRequestCr
 
     protected override async Task ProcessMessage(TopicRequestCreatedEvent message)
     {
-        _logger.LogInformation("Starting to send notification for TopicRequestCreatedEvent with Supervisor {Id}", message.SupervisorOfTopic);
+        _logger.LogInformation("Starting to send notification for TopicRequestCreatedEvent with Supervisor {Id}",
+            message.SupervisorOfTopic);
 
         var connections = await _usersTracker.GetConnectionForUser(message.SupervisorOfTopic);
 
@@ -503,7 +518,8 @@ public class TopicRequestStatusUpdatedEventConsumer : BaseEventConsumer<TopicReq
 
     protected override async Task ProcessMessage(TopicRequestStatusUpdatedEvent message)
     {
-        _logger.LogInformation("Starting to send notification for TopicRequestStatusUpdatedEvent with topic {Id}", message.TopicId);
+        _logger.LogInformation("Starting to send notification for TopicRequestStatusUpdatedEvent with topic {Id}",
+            message.TopicId);
 
         foreach (var student in message.StudentCodes)
         {
@@ -513,7 +529,8 @@ public class TopicRequestStatusUpdatedEventConsumer : BaseEventConsumer<TopicReq
             {
                 UserCode = student,
                 ReferenceTarget = message.TopicId.ToString(),
-                Content = $"Supervisor {message.SupervisorOfTopicName} has {message.Status} your registration of topic {message.TopicShortName}.",
+                Content =
+                    $"Supervisor {message.SupervisorOfTopicName} has {message.Status} your registration of topic {message.TopicShortName}.",
                 IsRead = false,
                 Type = nameof(TopicRequestStatusUpdatedEvent)
             });
@@ -522,6 +539,48 @@ public class TopicRequestStatusUpdatedEventConsumer : BaseEventConsumer<TopicReq
 
             await _hub.Clients.Clients(connections).ReceiveNewNotification
                 ($"Supervisor {message.SupervisorOfTopicName} has {message.Status} your registration of topic {message.TopicShortName}.");
+        }
+    }
+}
+
+public class GroupDecisionUpdatedEventConsumer : BaseEventConsumer<GroupDecisionUpdatedEvent>
+{
+    private readonly ILogger<GroupDecisionUpdatedEventConsumer> _logger;
+    private readonly UsersTracker _usersTracker;
+    private readonly ProcessorDbContext _processorDbContext;
+    private readonly IHubContext<NotificationHub, INotificationClient> _hub;
+
+    public GroupDecisionUpdatedEventConsumer(
+        ILogger<GroupDecisionUpdatedEventConsumer> logger,
+        UsersTracker usersTracker,
+        IHubContext<NotificationHub, INotificationClient> hub,
+        ProcessorDbContext processorDbContext,
+        IOptions<EventConsumerConfiguration> options) : base(logger, options)
+    {
+        _usersTracker = usersTracker;
+        _logger = logger;
+        _processorDbContext = processorDbContext;
+        _hub = hub;
+    }
+
+    protected override async Task ProcessMessage(GroupDecisionUpdatedEvent message)
+    {
+        _logger.LogInformation("Starting to send notification for GroupDecisionUpdatedEvent with group {Id}",
+            message.GroupId);
+        foreach (var memberCode in message.MemberCode)
+        {
+            var connections = await _usersTracker.GetConnectionForUser(memberCode);
+            var noti = new Notification
+            {
+                UserCode = memberCode,
+                ReferenceTarget = message.GroupId.ToString(),
+                Content = $"Group {message.GroupCode} was decided to  {message.Decision} by your mentor.",
+                IsRead = false,
+                Type = nameof(GroupDecisionUpdatedEvent)
+            };
+            _processorDbContext.Notifications.Add(noti);
+            await _processorDbContext.SaveChangesAsync();
+            await _hub.Clients.Clients(connections).ReceiveNewNotification(noti.Content);
         }
     }
 }

@@ -100,6 +100,7 @@ public class DefendCapstoneService(
                     SemesterId = x.SemesterId,
                     CapstoneId = x.CapstoneId,
                     TopicCode = x.TopicCode,
+                    Status = x.Status.ToString(),
                     GroupCode = x.Topic.Group.GroupCode,
                     CouncilMembers = x.DefendCapstoneProjectMemberCouncils.Select(x =>
                         new DefendCapstoneCouncilMemberDto
@@ -226,7 +227,7 @@ public class DefendCapstoneService(
                 "You can not get this thesis because you are not in the Council."));
 
         // Update status of group
-        return await groupService.UpdateGroupDecisionByPresidentIdAsync(calendar.Topic.Group.Id,
+        return await groupService.UpdateGroupDecisionByPresidentIdAsync(calendar.Topic.Group.Id, calendar.Id,
             request.IsReDefendCapstoneProject);
     }
 

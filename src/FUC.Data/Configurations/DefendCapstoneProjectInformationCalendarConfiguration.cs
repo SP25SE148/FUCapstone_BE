@@ -1,5 +1,6 @@
 ﻿using FUC.Data.Constants;
 using FUC.Data.Entities;
+using FUC.Data.Enums;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
@@ -24,6 +25,11 @@ public class
             .HasColumnType("timestamp");
         builder.Property(g => g.UpdatedDate)
             .HasColumnType("timestamp");
+        builder.Property(gm => gm.Status)
+            .HasConversion(
+                v => v.ToString(),
+                v => (DefendCapstoneProjectCalendarStatus)Enum.Parse(typeof(DefendCapstoneProjectCalendarStatus), v))
+            .HasDefaultValue(DefendCapstoneProjectCalendarStatus.NotStarted);
 
         builder.HasOne(x => x.Campus)
             .WithMany(y => y.DefendCapstoneProjectInformationCalendars)

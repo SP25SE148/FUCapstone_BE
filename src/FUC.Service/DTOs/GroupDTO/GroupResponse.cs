@@ -34,6 +34,10 @@ public sealed record GroupDecisionResponse
 {
     public Guid GroupId { get; set; }
     public string GroupCode { get; set; }
+
+    public Guid TopicId { get; set; }
+
+    public string TopicCode { get; set; }
     public string Decision { get; set; }
     public string? Comment { get; set; }
 }
