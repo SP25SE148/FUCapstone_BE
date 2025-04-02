@@ -1938,6 +1938,7 @@ public class GroupService(
                 CapstoneId = currentUser.CapstoneId,
                 MajorId = currentUser.MajorId,
                 SemesterId = semester.Id,
+                Status = GroupStatus.InProgress,
                 GroupMembers = studentsGroup.Select(x => new GroupMember
                 {
                     StudentId = x.Id,

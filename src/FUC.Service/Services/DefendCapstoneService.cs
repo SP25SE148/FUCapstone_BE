@@ -192,7 +192,7 @@ public class DefendCapstoneService(
                 "You do not have the permission."));
 
         if (currentUser.Role == UserRoles.Supervisor &&
-            calendar.DefendCapstoneProjectMemberCouncils.Any(x => x.SupervisorId == currentUser.UserCode))
+            !calendar.DefendCapstoneProjectMemberCouncils.Any(x => x.SupervisorId == currentUser.UserCode))
             return OperationResult.Failure<string>(new Error("DefendCapstone.Error",
                 "You can not get this thesis because you are not in the Council."));
 

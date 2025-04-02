@@ -120,7 +120,7 @@ public class GroupMemberService(
                 RequestId = newGroupMember.Id,
                 RequestType = nameof(GroupMember),
                 ExpirationDuration =
-                    TimeSpan.FromMinutes(systemConfigService.GetSystemConfiguration().ExpirationTeamUpDuration)
+                    TimeSpan.FromHours(systemConfigService.GetSystemConfiguration().ExpirationTeamUpDuration)
             });
 
             await uow.CommitAsync();
@@ -460,7 +460,7 @@ public class GroupMemberService(
                 RequestId = newJoinGroupRequest.Id,
                 RequestType = nameof(JoinGroupRequest),
                 ExpirationDuration =
-                    TimeSpan.FromMinutes(systemConfigService.GetSystemConfiguration().ExpirationTeamUpDuration)
+                    TimeSpan.FromHours(systemConfigService.GetSystemConfiguration().ExpirationTeamUpDuration)
             });
 
             await uow.CommitAsync();
