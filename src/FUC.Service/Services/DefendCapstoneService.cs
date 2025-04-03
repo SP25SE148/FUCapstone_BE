@@ -286,14 +286,22 @@ public class DefendCapstoneService(
         return OperationResult.Success(response);
     }
 
-    public async Task<OperationResult<DefendCapstoneCalendarDetailResponse>> GetDefendCapstoneCalendarByGroupself()
+    public async Task<OperationResult<IEnumerable<DefendCapstoneCalendarDetailResponse>>>
+        GetDefendCapstoneCalendarByGroupSelf()
     {
         var group = await groupService.GetGroupInformationByGroupSelfId();
         if (group.IsFailure)
-            return OperationResult.Failure<DefendCapstoneCalendarDetailResponse>(Error.NullValue);
-        var defendCapstoneCalendar =
-            await defendCapstoneCalendarRepository.GetAsync(
+            return OperationResult.Failure<IEnumerable<DefendCapstoneCalendarDetailResponse>>(Error.NullValue);
+        var defendCapstoneCalendars =
+            await defendCapstoneCalendarRepository.FindAsync(
                 dc => dc.TopicId == Guid.Parse(group.Value.TopicResponse.Id),
+                include: x => x.AsSplitQuery()
+                    .Include(x => x.DefendCapstoneProjectMemberCouncils)
+                    .ThenInclude(x => x.Supervisor)
+                    .Include(x => x.Topic)
+                    .ThenInclude(x => x.Group)
+                    .ThenInclude(x => x.Supervisor),
+                orderBy: dc => dc.OrderBy(dc => dc.CreatedBy),
                 selector: calendar => new DefendCapstoneCalendarDetailResponse()
                 {
                     Id = calendar.Id,
@@ -324,15 +332,11 @@ public class DefendCapstoneService(
                     Description = calendar.Topic.Description,
                     TopicEngName = calendar.Topic.EnglishName,
                     TopicVietName = calendar.Topic.VietnameseName
-                },
-                include: x => x.AsSplitQuery()
-                    .Include(x => x.DefendCapstoneProjectMemberCouncils)
-                    .ThenInclude(x => x.Supervisor)
-                    .Include(x => x.Topic)
-                    .ThenInclude(x => x.Group)
-                    .ThenInclude(x => x.Supervisor));
+                });
 
-        return defendCapstoneCalendar ?? OperationResult.Failure<DefendCapstoneCalendarDetailResponse>(Error.NullValue);
+        return defendCapstoneCalendars.Any()
+            ? defendCapstoneCalendars.ToList()
+            : OperationResult.Failure<IEnumerable<DefendCapstoneCalendarDetailResponse>>(Error.NullValue);
     }
 
     private async Task<List<DefendCapstoneProjectInformationCalendar>> ParseDefendCapstoneCalendarsFromFile(

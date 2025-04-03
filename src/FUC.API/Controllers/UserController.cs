@@ -281,7 +281,8 @@ public sealed class UserController(
     {
         var result = await groupService.ExportGroupDecisionByStatus(status);
         return result.IsSuccess
-            ? Ok(result)
+            ? File(result.Value, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+                "group_decision.xlsx")
             : HandleFailure(result);
     }
 
@@ -289,7 +290,7 @@ public sealed class UserController(
     [Authorize(Roles = UserRoles.Student)]
     public async Task<IActionResult> GetDefendCapstoneCalendarByGroupSelf()
     {
-        var result = await defendCapstoneService.GetDefendCapstoneCalendarByGroupself();
+        var result = await defendCapstoneService.GetDefendCapstoneCalendarByGroupSelf();
         return result.IsSuccess
             ? Ok(result)
             : HandleFailure(result);
