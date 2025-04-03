@@ -380,6 +380,15 @@ public class GroupController(
         return result.IsSuccess ? Ok(result) : HandleFailure(result);
     }
 
+    [Authorize(Roles = UserRoles.Supervisor)]
+    [HttpGet("co-manage")]
+    public async Task<IActionResult> GetGroupManageByCoSupervisor()
+    {
+        var result = await groupService.GetGroupsWhichMentorByCoSupervisor(default);
+
+        return result.IsSuccess ? Ok(result) : HandleFailure(result);
+    }
+
     #endregion ProjectProgress
 
     #region GroupDocument

@@ -64,6 +64,9 @@ public interface IGroupService
     Task<OperationResult<IList<GroupManageBySupervisorResponse>>> GetGroupsWhichMentorBySupervisor(
         CancellationToken cancellationToken);
 
+    Task<OperationResult<IList<GroupManageBySupervisorResponse>>> GetGroupsWhichMentorByCoSupervisor(
+        CancellationToken cancellationToken);
+
     Task<OperationResult> UpdateProjectProgressWeek(UpdateProjectProgressWeekRequest request,
         CancellationToken cancellationToken);
 

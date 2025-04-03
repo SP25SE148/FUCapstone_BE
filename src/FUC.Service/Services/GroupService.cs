@@ -620,7 +620,7 @@ public class GroupService(
             CapstoneName = g.CapstoneId,
             MajorName = g.MajorId,
             SemesterName = g.SemesterId,
-            TopicCode = g.Topic.Code ?? "undefined",
+            TopicCode = g.Topic != null ? g.Topic.Code : "undefined",
             AverageGPA = g.GroupMembers.Any(m => m.Status == GroupMemberStatus.Accepted)
                 ? g.GroupMembers.Where(m => m.Status == GroupMemberStatus.Accepted)
                     .Select(m => m.Student.GPA)
@@ -1593,6 +1593,41 @@ public class GroupService(
                  x.Status == GroupStatus.InProgress &&
                  x.SemesterId == currentSemester.Value.Id,
             include: x => x.Include(x => x.Topic),
+            orderBy: x => x.OrderBy(x => x.GroupCode),
+            selector: x => new GroupManageBySupervisorResponse
+            {
+                GroupId = x.Id,
+                GroupCode = x.GroupCode,
+                EnglishName = x.Topic!.EnglishName,
+                TopicCode = x.Topic.Code,
+                SemesterCode = x.SemesterId
+            },
+            cancellationToken);
+
+        if (groups == null || groups.Count == 0)
+            ArgumentNullException.ThrowIfNull(groups);
+
+        return OperationResult.Success(groups);
+    }
+
+    public async Task<OperationResult<IList<GroupManageBySupervisorResponse>>> GetGroupsWhichMentorByCoSupervisor(
+        CancellationToken cancellationToken)
+    {
+        string coSupervisorId = currentUser.UserCode;
+
+        var currentSemester = await semesterService.GetCurrentSemesterAsync();
+
+        if (currentSemester.IsFailure)
+            return OperationResult.Failure<IList<GroupManageBySupervisorResponse>>(currentSemester.Error);
+
+        var groups = await groupRepository.FindAsync(
+            x => x.Topic != null && 
+                 x.Topic.CoSupervisors.Any(x => x.SupervisorId == coSupervisorId) &&
+                 x.Status == GroupStatus.InProgress &&
+                 x.SemesterId == currentSemester.Value.Id,
+            include: x => x.AsSplitQuery()
+                    .Include(x => x.Topic)
+                    .ThenInclude(x => x.CoSupervisors),
             orderBy: x => x.OrderBy(x => x.GroupCode),
             selector: x => new GroupManageBySupervisorResponse
             {
