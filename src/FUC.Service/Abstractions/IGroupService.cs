@@ -90,5 +90,6 @@ public interface IGroupService
     Task<OperationResult> AssignRemainStudentForGroup(AssignRemainStudentForGroupRequest request,
         CancellationToken cancellationToken);
 
-    Task<OperationResult> GetGroupDecisionsByStatus(DecisionStatus status);
+    Task<OperationResult<IEnumerable<GroupDecisionResponse>>> GetGroupDecisionsByStatus(DecisionStatus status);
+    Task<OperationResult<byte[]>> ExportGroupDecisionByStatus(DecisionStatus status);
 }

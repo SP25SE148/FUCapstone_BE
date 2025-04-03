@@ -36,7 +36,7 @@ public sealed record GroupDecisionResponse
     public string GroupCode { get; set; }
 
     public Guid TopicId { get; set; }
-
+    public string SupervisorName { get; set; }
     public string TopicCode { get; set; }
     public string Decision { get; set; }
     public string? Comment { get; set; }

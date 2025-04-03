@@ -3,7 +3,6 @@ using Amazon.S3;
 using Amazon.S3.Model;
 using AutoMapper;
 using ClosedXML.Excel;
-using DocumentFormat.OpenXml;
 using FUC.Common.Abstractions;
 using FUC.Common.Constants;
 using FUC.Common.Contracts;
@@ -23,12 +22,12 @@ using FUC.Service.DTOs.TopicDTO;
 using FUC.Service.DTOs.TopicRequestDTO;
 using FUC.Service.Extensions.Options;
 using FUC.Service.Helpers;
-using MassTransit.Initializers;
 using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Query;
 using Microsoft.Extensions.Logging;
 using Group = FUC.Data.Entities.Group;
+using ClosedXML.Excel;
 
 namespace FUC.Service.Services;
 
@@ -246,16 +245,17 @@ public class GroupService(
     public async Task<OperationResult<GroupResponse>> GetGroupByIdAsync(Guid id)
     {
         var group = await groupRepository.GetAsync(g => g.Id == id &&
-            (g.SupervisorId == currentUser.UserCode ||
-            g.Topic != null && g.Topic.CoSupervisors.Any(x => x.SupervisorId == currentUser.UserCode)),
+                                                        (g.SupervisorId == currentUser.UserCode ||
+                                                         g.Topic != null && g.Topic.CoSupervisors.Any(x =>
+                                                             x.SupervisorId == currentUser.UserCode)),
             CreateSelectorForGroupResponse(),
-           g => g.AsSplitQuery()
-            .Include(g => g.GroupMembers.Where(gm => gm.Status == GroupMemberStatus.Accepted))
+            g => g.AsSplitQuery()
+                .Include(g => g.GroupMembers.Where(gm => gm.Status == GroupMemberStatus.Accepted))
                 .ThenInclude(gm => gm.Student)
-            .Include(g => g.Supervisor)
-            .Include(x => x.Topic)
+                .Include(g => g.Supervisor)
+                .Include(x => x.Topic)
                 .ThenInclude(t => t.CoSupervisors)
-            .Include(g => g.Capstone));
+                .Include(g => g.Capstone));
         if (group is null)
             return OperationResult.Failure<GroupResponse>(Error.NullValue);
         group.TopicResponse = await topicService.GetTopicByTopicCode(group.TopicCode);
@@ -611,7 +611,7 @@ public class GroupService(
     {
         return g => g.AsSplitQuery()
             .Include(g => g.GroupMembers)
-                .ThenInclude(gm => gm.Student)
+            .ThenInclude(gm => gm.Student)
             .Include(g => g.Supervisor)
             .Include(g => g.Capstone);
     }
@@ -1630,13 +1630,13 @@ public class GroupService(
             return OperationResult.Failure<IList<GroupManageBySupervisorResponse>>(currentSemester.Error);
 
         var groups = await groupRepository.FindAsync(
-            x => x.Topic != null && 
+            x => x.Topic != null &&
                  x.Topic.CoSupervisors.Any(x => x.SupervisorId == coSupervisorId) &&
                  x.Status == GroupStatus.InProgress &&
                  x.SemesterId == currentSemester.Value.Id,
             include: x => x.AsSplitQuery()
-                    .Include(x => x.Topic)
-                    .ThenInclude(x => x.CoSupervisors),
+                .Include(x => x.Topic)
+                .ThenInclude(x => x.CoSupervisors),
             orderBy: x => x.OrderBy(x => x.GroupCode),
             selector: x => new GroupManageBySupervisorResponse
             {
@@ -1857,6 +1857,7 @@ public class GroupService(
             include: dc => dc
                 .Include(dc => dc.Group).ThenInclude(g => g.GroupMembers)
                 .Include(dc => dc.Group.Topic)
+                .Include(dc => dc.Group.Supervisor)
                 .Include(dc => dc.Supervisor));
 
         if (groupDecision is null)
@@ -1878,7 +1879,8 @@ public class GroupService(
             Decision = groupDecision.Decision.ToString(),
             GroupCode = groupDecision.Group.GroupCode,
             TopicId = (Guid)groupDecision.Group.TopicId!,
-            TopicCode = groupDecision.Group.Topic.Code
+            TopicCode = groupDecision.Group.Topic.Code,
+            SupervisorName = groupDecision.Group.Supervisor.FullName
         };
     }
 
@@ -2056,12 +2058,14 @@ public class GroupService(
         return OperationResult.Success();
     }
 
-    public async Task<OperationResult> GetGroupDecisionsByStatus(DecisionStatus status)
+    public async Task<OperationResult<IEnumerable<GroupDecisionResponse>>> GetGroupDecisionsByStatus(
+        DecisionStatus status)
     {
         var groups = await defendCapstoneDecisionRepository.FindAsync(dc => dc.Decision == status,
             include: dc => dc
                 .Include(dc => dc.Group).ThenInclude(g => g.GroupMembers)
                 .Include(dc => dc.Group.Topic)
+                .Include(dc => dc.Group.Supervisor)
                 .Include(dc => dc.Supervisor),
             orderBy: dc => dc.OrderBy(dc => dc.CreatedDate),
             selector: dc => new GroupDecisionResponse
@@ -2071,9 +2075,53 @@ public class GroupService(
                 Decision = dc.Decision.ToString(),
                 GroupCode = dc.Group.GroupCode,
                 TopicId = (Guid)dc.Group.TopicId!,
-                TopicCode = dc.Group.Topic.Code
+                TopicCode = dc.Group.Topic.Code,
+                SupervisorName = dc.Group.Supervisor.FullName
             });
 
-        return OperationResult.Success(groups);
+        return groups.ToList();
+    }
+
+    public async Task<OperationResult<byte[]>> ExportGroupDecisionByStatus(DecisionStatus status)
+    {
+        var groupDecisions = await GetGroupDecisionsByStatus(status);
+        if (groupDecisions.IsFailure)
+            return OperationResult.Failure<byte[]>(Error.NullValue);
+        // create excel
+        int stt = 1;
+        using (var workbook = new XLWorkbook())
+        {
+            var worksheet = workbook.Worksheets.Add("Decisions");
+
+            var rowRange = worksheet.Range("A1:E1");
+            rowRange.Style.Font.FontName = "Arial";
+            rowRange.Style.Font.FontSize = 12;
+            rowRange.Style.Font.FontColor = XLColor.Black;
+            rowRange.Style.Font.Bold = true;
+
+            worksheet.Cell("A1").Value = "STT";
+            worksheet.Cell("B1").Value = "Group Code";
+            worksheet.Cell("C1").Value = "Topic Code";
+            worksheet.Cell("D1").Value = "Supervisor Name";
+            worksheet.Cell("E1").Value = "Decision";
+
+            int row = 2;
+            foreach (var decision in groupDecisions.Value)
+            {
+                worksheet.Cell($"A{row}").Value = stt++;
+                worksheet.Cell($"B{row}").Value = decision.GroupCode;
+                worksheet.Cell($"C{row}").Value = decision.TopicCode;
+                worksheet.Cell($"D{row}").Value = decision.SupervisorName;
+                worksheet.Cell($"E{row}").Value = decision.Decision;
+                row++;
+            }
+
+            using (var stream = new MemoryStream())
+            {
+                workbook.SaveAs(stream);
+                stream.Position = 0;
+                return stream.ToArray();
+            }
+        }
     }
 }
