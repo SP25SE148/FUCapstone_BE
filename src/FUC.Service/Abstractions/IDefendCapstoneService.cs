@@ -28,4 +28,6 @@ public interface IDefendCapstoneService
 
     Task<OperationResult<DefendCapstoneCalendarDetailResponse>> GetDefendCapstoneCalendarByIdAsync(
         Guid defendCapstoneCalendarId);
+
+    Task<OperationResult<DefendCapstoneCalendarDetailResponse>> GetDefendCapstoneCalendarByGroupself();
 }

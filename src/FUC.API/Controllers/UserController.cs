@@ -2,6 +2,7 @@
 using FUC.Common.Abstractions;
 using FUC.Common.Constants;
 using FUC.Common.Shared;
+using FUC.Data.Enums;
 using FUC.Service.Abstractions;
 using FUC.Service.DTOs.DefendCapstone;
 using FUC.Service.DTOs.GroupDTO;
@@ -269,6 +270,26 @@ public sealed class UserController(
     public async Task<IActionResult> GetDefendCalendarByIdAsync(Guid id)
     {
         var result = await defendCapstoneService.GetDefendCapstoneCalendarByIdAsync(id);
+        return result.IsSuccess
+            ? Ok(result)
+            : HandleFailure(result);
+    }
+
+    [HttpGet("export/defend-calendar/{status}")]
+    [Authorize(Roles = UserRoles.Manager)]
+    public async Task<IActionResult> ExportDefendCalendarByStatus(DecisionStatus status)
+    {
+        var result = await groupService.ExportGroupDecisionByStatus(status);
+        return result.IsSuccess
+            ? Ok(result)
+            : HandleFailure(result);
+    }
+
+    [HttpGet("student/defend-calendar")]
+    [Authorize(Roles = UserRoles.Student)]
+    public async Task<IActionResult> GetDefendCapstoneCalendarByGroupSelf()
+    {
+        var result = await defendCapstoneService.GetDefendCapstoneCalendarByGroupself();
         return result.IsSuccess
             ? Ok(result)
             : HandleFailure(result);

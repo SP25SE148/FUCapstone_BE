@@ -286,6 +286,55 @@ public class DefendCapstoneService(
         return OperationResult.Success(response);
     }
 
+    public async Task<OperationResult<DefendCapstoneCalendarDetailResponse>> GetDefendCapstoneCalendarByGroupself()
+    {
+        var group = await groupService.GetGroupInformationByGroupSelfId();
+        if (group.IsFailure)
+            return OperationResult.Failure<DefendCapstoneCalendarDetailResponse>(Error.NullValue);
+        var defendCapstoneCalendar =
+            await defendCapstoneCalendarRepository.GetAsync(
+                dc => dc.TopicId == Guid.Parse(group.Value.TopicResponse.Id),
+                selector: calendar => new DefendCapstoneCalendarDetailResponse()
+                {
+                    Id = calendar.Id,
+                    TopicId = calendar.TopicId,
+                    GroupId = calendar.Topic.Group.Id,
+                    DefenseDate = calendar.DefenseDate,
+                    DefendAttempt = calendar.DefendAttempt,
+                    Location = calendar.Location,
+                    Slot = calendar.Slot,
+                    CampusId = calendar.CampusId,
+                    SemesterId = calendar.SemesterId,
+                    TopicCode = calendar.TopicCode,
+                    GroupCode = calendar.Topic.Group.GroupCode,
+                    CouncilMembers = calendar.DefendCapstoneProjectMemberCouncils.Select(x =>
+                        new DefendCapstoneCouncilMemberDto
+                        {
+                            Id = x.Id,
+                            IsPresident = x.IsPresident,
+                            IsSecretary = x.IsSecretary,
+                            SupervisorId = x.SupervisorId,
+                            SupervisorName = x.Supervisor.FullName,
+                            DefendCapstoneProjectInformationCalendarId = x.DefendCapstoneProjectInformationCalendarId
+                        }).ToList(),
+                    CapstoneId = calendar.CapstoneId,
+                    SupervisorId = calendar.Topic.Group.SupervisorId!,
+                    SupervisorName = calendar.Topic.Group.Supervisor!.FullName,
+                    Abbreviation = calendar.Topic.Abbreviation,
+                    Description = calendar.Topic.Description,
+                    TopicEngName = calendar.Topic.EnglishName,
+                    TopicVietName = calendar.Topic.VietnameseName
+                },
+                include: x => x.AsSplitQuery()
+                    .Include(x => x.DefendCapstoneProjectMemberCouncils)
+                    .ThenInclude(x => x.Supervisor)
+                    .Include(x => x.Topic)
+                    .ThenInclude(x => x.Group)
+                    .ThenInclude(x => x.Supervisor));
+
+        return defendCapstoneCalendar ?? OperationResult.Failure<DefendCapstoneCalendarDetailResponse>(Error.NullValue);
+    }
+
     private async Task<List<DefendCapstoneProjectInformationCalendar>> ParseDefendCapstoneCalendarsFromFile(
         IFormFile file, string currentSemesterId, CancellationToken cancellationToken)
     {
