@@ -245,9 +245,17 @@ public class GroupService(
 
     public async Task<OperationResult<GroupResponse>> GetGroupByIdAsync(Guid id)
     {
-        var group = await groupRepository.GetAsync(g => g.Id == id && g.SupervisorId == currentUser.UserCode,
+        var group = await groupRepository.GetAsync(g => g.Id == id &&
+            (g.SupervisorId == currentUser.UserCode ||
+            g.Topic != null && g.Topic.CoSupervisors.Any(x => x.SupervisorId == currentUser.UserCode)),
             CreateSelectorForGroupResponse(),
-            CreateIncludeForGroupResponse());
+           g => g.AsSplitQuery()
+            .Include(g => g.GroupMembers.Where(gm => gm.Status == GroupMemberStatus.Accepted))
+                .ThenInclude(gm => gm.Student)
+            .Include(g => g.Supervisor)
+            .Include(x => x.Topic)
+                .ThenInclude(t => t.CoSupervisors)
+            .Include(g => g.Capstone));
         if (group is null)
             return OperationResult.Failure<GroupResponse>(Error.NullValue);
         group.TopicResponse = await topicService.GetTopicByTopicCode(group.TopicCode);
@@ -601,8 +609,9 @@ public class GroupService(
 
     private static Func<IQueryable<Group>, IIncludableQueryable<Group, object>> CreateIncludeForGroupResponse()
     {
-        return g => g.Include(g => g.GroupMembers)
-            .ThenInclude(gm => gm.Student)
+        return g => g.AsSplitQuery()
+            .Include(g => g.GroupMembers)
+                .ThenInclude(gm => gm.Student)
             .Include(g => g.Supervisor)
             .Include(g => g.Capstone);
     }
