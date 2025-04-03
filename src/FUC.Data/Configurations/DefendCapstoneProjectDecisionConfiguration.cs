@@ -26,11 +26,11 @@ public class DefendCapstoneProjectDecisionConfiguration : IEntityTypeConfigurati
         builder.HasOne(d => d.Group)
             .WithOne(g => g.DefendCapstoneProjectDecision)
             .HasForeignKey<DefendCapstoneProjectDecision>(d => d.GroupId)
-            .OnDelete(DeleteBehavior.Restrict);
+            .OnDelete(DeleteBehavior.Cascade);
 
         builder.HasOne(d => d.Supervisor)
             .WithMany(s => s.DefendCapstoneProjectDecisions)
             .HasForeignKey(d => d.SupervisorId)
-            .OnDelete(DeleteBehavior.Restrict);
+            .OnDelete(DeleteBehavior.Cascade);
     }
 }

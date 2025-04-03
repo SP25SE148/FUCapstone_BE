@@ -22,12 +22,12 @@ public sealed class TopicAppraisalConfiguration : IEntityTypeConfiguration<Topic
         builder.HasOne(t => t.Supervisor)
             .WithMany(s => s.TopicAppraisals)
             .HasForeignKey(t => t.SupervisorId)
-            .OnDelete(DeleteBehavior.Restrict);
+            .OnDelete(DeleteBehavior.Cascade);
 
         builder.HasOne(t => t.Topic)
             .WithMany(t => t.TopicAppraisals)
             .HasForeignKey(t => t.TopicId)
-            .OnDelete(DeleteBehavior.Restrict);
+            .OnDelete(DeleteBehavior.Cascade);
 
         builder.Property(t => t.CreatedDate)
             .HasColumnType("timestamp");

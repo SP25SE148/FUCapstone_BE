@@ -21,11 +21,11 @@ public class
         builder.HasOne(x => x.DefendCapstoneProjectInformationCalendar)
             .WithMany(y => y.DefendCapstoneProjectMemberCouncils)
             .HasForeignKey(x => x.DefendCapstoneProjectInformationCalendarId)
-            .OnDelete(DeleteBehavior.Restrict);
+            .OnDelete(DeleteBehavior.Cascade);
 
         builder.HasOne(x => x.Supervisor)
             .WithMany(y => y.DefendCapstoneProjectMemberCouncils)
             .HasForeignKey(x => x.SupervisorId)
-            .OnDelete(DeleteBehavior.Restrict);
+            .OnDelete(DeleteBehavior.Cascade);
     }
 }

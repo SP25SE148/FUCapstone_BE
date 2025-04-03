@@ -26,12 +26,12 @@ public sealed class GroupMemberConfiguration : IEntityTypeConfiguration<GroupMem
         builder.HasOne(gm => gm.Group)
             .WithMany(g => g.GroupMembers)
             .HasForeignKey(gm => gm.GroupId)
-            .OnDelete(DeleteBehavior.Restrict);
+            .OnDelete(DeleteBehavior.Cascade);
 
         builder.HasOne(gm => gm.Student)
             .WithMany(s => s.GroupMembers)
             .HasForeignKey(gm => gm.StudentId)
-            .OnDelete(DeleteBehavior.Restrict);
+            .OnDelete(DeleteBehavior.Cascade);
 
         builder.Property(gm => gm.CreatedDate)
             .HasColumnType("timestamp");

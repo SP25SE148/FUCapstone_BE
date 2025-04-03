@@ -17,12 +17,12 @@ public sealed class CoSupervisorConfiguration : IEntityTypeConfiguration<CoSuper
         builder.HasOne(cs => cs.Supervisor)
             .WithMany(s => s.CoSupervisors)
             .HasForeignKey(cs => cs.SupervisorId)
-            .OnDelete(DeleteBehavior.Restrict);
+            .OnDelete(DeleteBehavior.Cascade);
 
         builder.HasOne(cs => cs.Topic)
             .WithMany(t => t.CoSupervisors)
             .HasForeignKey(cs => cs.TopicId)
-            .OnDelete(DeleteBehavior.Restrict);
+            .OnDelete(DeleteBehavior.Cascade);
 
         builder.Property(cs => cs.CreatedDate)
             .HasColumnType("timestamp");

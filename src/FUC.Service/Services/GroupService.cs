@@ -422,7 +422,7 @@ public class GroupService(
                 return OperationResult.Failure<Guid>(new Error("Error.CreateTopicRequestFailed",
                     $"Can not create topic request while this group already have topic request is {TopicRequestStatus.UnderReview.ToString()} or {TopicRequestStatus.Accepted}"));
 
-            var topicResult = await topicService.GetTopicEntityById(request.TopicId, cancellationToken);
+            var topicResult = await topicService.GetTopicEntityById(request.TopicId, false, cancellationToken);
 
             // check if topic is not null
             if (topicResult.IsFailure)
@@ -1669,7 +1669,7 @@ public class GroupService(
 
             ArgumentNullException.ThrowIfNull(group);
 
-            var key = $"{group.CampusId}/{group.SemesterId}/{group.MajorId}/{group.CampusId}/{group.GroupCode}";
+            var key = $"{group.CampusId}/{group.SemesterId}/{group.MajorId}/{group.CapstoneId}/{group.GroupCode}";
 
             return await documentsService.CreateGroupDocument(request.File, key, cancellationToken);
         }
@@ -1690,7 +1690,7 @@ public class GroupService(
 
         ArgumentNullException.ThrowIfNull(group);
 
-        var key = $"{group.CampusId}/{group.SemesterId}/{group.MajorId}/{group.CampusId}/{group.GroupCode}";
+        var key = $"{group.CampusId}/{group.SemesterId}/{group.MajorId}/{group.CapstoneId}/{group.GroupCode}";
 
         return await documentsService.PresentGroupDocumentFilePresignedUrl(key);
     }
@@ -2124,4 +2124,22 @@ public class GroupService(
             }
         }
     }
+
+    public async Task<OperationResult<ExportCompletedStudents>> ArchiveDataCompletedStudents(CancellationToken cancellationToken)
+    {
+        var groups = await groupRepository.FindAsync(
+            x => x.CampusId == currentUser.CampusId &&
+                 x.CapstoneId == currentUser.CapstoneId &&
+                 x.Status == GroupStatus.Completed &&
+                 !x.IsDeleted,
+            cancellationToken);
+
+        return OperationResult.Success(new ExportCompletedStudents { });
+    }
+}
+
+public class ExportCompletedStudents
+{
+    public byte[] Content { get; set; }
+    public string FileName { get; set; }
 }

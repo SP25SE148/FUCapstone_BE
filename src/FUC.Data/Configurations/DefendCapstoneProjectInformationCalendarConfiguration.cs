@@ -34,16 +34,16 @@ public class
         builder.HasOne(x => x.Campus)
             .WithMany(y => y.DefendCapstoneProjectInformationCalendars)
             .HasForeignKey(x => x.CampusId)
-            .OnDelete(DeleteBehavior.Restrict);
+            .OnDelete(DeleteBehavior.Cascade);
 
         builder.HasOne(x => x.Semester)
             .WithMany(y => y.DefendCapstoneProjectInformationCalendars)
             .HasForeignKey(x => x.SemesterId)
-            .OnDelete(DeleteBehavior.Restrict);
+            .OnDelete(DeleteBehavior.Cascade);
 
         builder.HasOne(x => x.Topic)
             .WithMany(y => y.DefendCapstoneProjectInformationCalendars)
             .HasForeignKey(x => x.TopicId)
-            .OnDelete(DeleteBehavior.Restrict);
+            .OnDelete(DeleteBehavior.Cascade);
     }
 }

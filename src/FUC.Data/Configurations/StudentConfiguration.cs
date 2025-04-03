@@ -48,12 +48,12 @@ public sealed class StudentConfiguration : IEntityTypeConfiguration<Student>
         builder.HasMany(s => s.GroupMembers)
             .WithOne(gm => gm.Student)
             .HasForeignKey(gm => gm.StudentId)
-            .OnDelete(DeleteBehavior.Restrict);
+            .OnDelete(DeleteBehavior.Cascade);
 
         builder.HasOne(s => s.BusinessArea)
             .WithMany(b => b.Students)
             .HasForeignKey(s => s.BusinessAreaId)
-            .OnDelete(DeleteBehavior.Restrict);
+            .OnDelete(DeleteBehavior.Cascade);
 
         builder.Property(s => s.CreatedDate)
             .HasColumnType("timestamp");

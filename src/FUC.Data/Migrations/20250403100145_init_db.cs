@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace FUC.Data.Migrations
 {
     /// <inheritdoc />
-    public partial class Db_v01 : Migration
+    public partial class init_db : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -15,7 +15,7 @@ namespace FUC.Data.Migrations
                 name: "BusinessArea",
                 columns: table => new
                 {
-                    Id = table.Column<Guid>(type: "uuid", nullable: false, defaultValue: new Guid("5807892d-4dcb-45cc-8cd9-972985c5ad15")),
+                    Id = table.Column<Guid>(type: "uuid", nullable: false, defaultValue: new Guid("66ec4c48-0334-43e6-ab2d-f009d2e587d1")),
                     Name = table.Column<string>(type: "text", nullable: false),
                     Description = table.Column<string>(type: "text", nullable: false),
                     CreatedDate = table.Column<DateTime>(type: "timestamp", nullable: false),
@@ -111,7 +111,7 @@ namespace FUC.Data.Migrations
                 name: "TemplateDocument",
                 columns: table => new
                 {
-                    Id = table.Column<Guid>(type: "uuid", nullable: false, defaultValue: new Guid("a5b40fc1-2bb6-441f-b872-5da44d7a4a45")),
+                    Id = table.Column<Guid>(type: "uuid", nullable: false, defaultValue: new Guid("7f8222fc-2a18-428e-a239-666b0ca34fda")),
                     FileName = table.Column<string>(type: "text", nullable: false),
                     FileUrl = table.Column<string>(type: "text", nullable: false),
                     ParentId = table.Column<Guid>(type: "uuid", nullable: true),
@@ -244,7 +244,7 @@ namespace FUC.Data.Migrations
                 name: "ReviewCriteria",
                 columns: table => new
                 {
-                    Id = table.Column<Guid>(type: "uuid", nullable: false, defaultValue: new Guid("9ef64adf-65dd-4043-a6ee-b30d67bce2ef")),
+                    Id = table.Column<Guid>(type: "uuid", nullable: false, defaultValue: new Guid("4a0a7f46-01c9-4fed-ad0c-adc3e231e34d")),
                     CapstoneId = table.Column<string>(type: "text", nullable: false),
                     Attempt = table.Column<int>(type: "integer", nullable: false),
                     Name = table.Column<string>(type: "character varying(255)", maxLength: 255, nullable: false),
@@ -281,7 +281,6 @@ namespace FUC.Data.Migrations
                     BusinessAreaId = table.Column<Guid>(type: "uuid", nullable: true),
                     Email = table.Column<string>(type: "text", nullable: false),
                     GPA = table.Column<float>(type: "real", nullable: false),
-                    IsEligible = table.Column<bool>(type: "boolean", nullable: false),
                     Status = table.Column<string>(type: "text", nullable: false, defaultValue: "InProgress"),
                     CreatedDate = table.Column<DateTime>(type: "timestamp", nullable: false),
                     UpdatedDate = table.Column<DateTime>(type: "timestamp", nullable: true),
@@ -298,7 +297,7 @@ namespace FUC.Data.Migrations
                         column: x => x.BusinessAreaId,
                         principalTable: "BusinessArea",
                         principalColumn: "Id",
-                        onDelete: ReferentialAction.Restrict);
+                        onDelete: ReferentialAction.Cascade);
                     table.ForeignKey(
                         name: "FK_Student_Campus_CampusId",
                         column: x => x.CampusId,
@@ -323,7 +322,7 @@ namespace FUC.Data.Migrations
                 name: "Topic",
                 columns: table => new
                 {
-                    Id = table.Column<Guid>(type: "uuid", nullable: false, defaultValue: new Guid("c915e670-101e-42ea-b372-6635777dd8ff")),
+                    Id = table.Column<Guid>(type: "uuid", nullable: false, defaultValue: new Guid("128983e3-a645-4369-9ef3-61d8b55648ba")),
                     MainSupervisorId = table.Column<string>(type: "text", nullable: false),
                     CapstoneId = table.Column<string>(type: "text", nullable: false),
                     SemesterId = table.Column<string>(type: "text", nullable: false),
@@ -385,7 +384,7 @@ namespace FUC.Data.Migrations
                 name: "CoSupervisor",
                 columns: table => new
                 {
-                    Id = table.Column<Guid>(type: "uuid", nullable: false, defaultValue: new Guid("c947df81-e67c-4539-a5bc-134b813ca661")),
+                    Id = table.Column<Guid>(type: "uuid", nullable: false, defaultValue: new Guid("a9246452-7f75-47f1-8dcc-83b398a4cc2d")),
                     SupervisorId = table.Column<string>(type: "text", nullable: false),
                     TopicId = table.Column<Guid>(type: "uuid", nullable: false),
                     CreatedDate = table.Column<DateTime>(type: "timestamp", nullable: false),
@@ -407,7 +406,7 @@ namespace FUC.Data.Migrations
                         column: x => x.TopicId,
                         principalTable: "Topic",
                         principalColumn: "Id",
-                        onDelete: ReferentialAction.Restrict);
+                        onDelete: ReferentialAction.Cascade);
                 });
 
             migrationBuilder.CreateTable(
@@ -419,10 +418,12 @@ namespace FUC.Data.Migrations
                     TopicCode = table.Column<string>(type: "text", nullable: false),
                     CampusId = table.Column<string>(type: "text", nullable: false),
                     SemesterId = table.Column<string>(type: "text", nullable: false),
+                    CapstoneId = table.Column<string>(type: "text", nullable: false),
                     DefendAttempt = table.Column<int>(type: "integer", nullable: false),
                     Location = table.Column<string>(type: "text", nullable: false),
                     Slot = table.Column<int>(type: "integer", nullable: false),
                     IsUploadedThesisMinute = table.Column<bool>(type: "boolean", nullable: false, defaultValue: false),
+                    Status = table.Column<string>(type: "text", nullable: false, defaultValue: "NotStarted"),
                     DefenseDate = table.Column<DateTime>(type: "timestamp", nullable: false),
                     CreatedDate = table.Column<DateTime>(type: "timestamp", nullable: false),
                     UpdatedDate = table.Column<DateTime>(type: "timestamp", nullable: true),
@@ -437,26 +438,32 @@ namespace FUC.Data.Migrations
                         column: x => x.CampusId,
                         principalTable: "Campus",
                         principalColumn: "Id",
-                        onDelete: ReferentialAction.Restrict);
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_DefendCapstoneProjectInformationCalendar_Capstone_CapstoneId",
+                        column: x => x.CapstoneId,
+                        principalTable: "Capstone",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
                     table.ForeignKey(
                         name: "FK_DefendCapstoneProjectInformationCalendar_Semester_SemesterId",
                         column: x => x.SemesterId,
                         principalTable: "Semester",
                         principalColumn: "Id",
-                        onDelete: ReferentialAction.Restrict);
+                        onDelete: ReferentialAction.Cascade);
                     table.ForeignKey(
                         name: "FK_DefendCapstoneProjectInformationCalendar_Topic_TopicId",
                         column: x => x.TopicId,
                         principalTable: "Topic",
                         principalColumn: "Id",
-                        onDelete: ReferentialAction.Restrict);
+                        onDelete: ReferentialAction.Cascade);
                 });
 
             migrationBuilder.CreateTable(
                 name: "Group",
                 columns: table => new
                 {
-                    Id = table.Column<Guid>(type: "uuid", nullable: false, defaultValue: new Guid("327e7b39-3d0e-4291-8eb6-c3b6fe962796")),
+                    Id = table.Column<Guid>(type: "uuid", nullable: false, defaultValue: new Guid("8b75eab4-2190-4668-8159-b08184e90918")),
                     SemesterId = table.Column<string>(type: "text", nullable: false),
                     MajorId = table.Column<string>(type: "text", nullable: false),
                     CampusId = table.Column<string>(type: "text", nullable: false),
@@ -519,9 +526,9 @@ namespace FUC.Data.Migrations
                 name: "TopicAnalysis",
                 columns: table => new
                 {
-                    Id = table.Column<Guid>(type: "uuid", nullable: false, defaultValue: new Guid("a1c28b67-61ba-4b75-a25d-de0db69fba4a")),
+                    Id = table.Column<Guid>(type: "uuid", nullable: false, defaultValue: new Guid("27b511a7-7bd5-461a-af66-476995d32975")),
                     AnalysisResult = table.Column<string>(type: "text", nullable: false),
-                    CreatedDate = table.Column<DateTime>(type: "timestamp", nullable: false, defaultValue: new DateTime(2025, 3, 28, 14, 14, 43, 5, DateTimeKind.Local).AddTicks(264)),
+                    CreatedDate = table.Column<DateTime>(type: "timestamp", nullable: false, defaultValue: new DateTime(2025, 4, 3, 17, 1, 44, 301, DateTimeKind.Local).AddTicks(612)),
                     ProcessedBy = table.Column<string>(type: "text", nullable: false),
                     TopicId = table.Column<Guid>(type: "uuid", nullable: false)
                 },
@@ -540,7 +547,7 @@ namespace FUC.Data.Migrations
                 name: "TopicAppraisal",
                 columns: table => new
                 {
-                    Id = table.Column<Guid>(type: "uuid", nullable: false, defaultValue: new Guid("6b4666a8-6128-4bad-9215-11c94a4418ce")),
+                    Id = table.Column<Guid>(type: "uuid", nullable: false, defaultValue: new Guid("b8e68940-5670-4ea2-80ab-087c7592dc94")),
                     SupervisorId = table.Column<string>(type: "text", nullable: false),
                     TopicId = table.Column<Guid>(type: "uuid", nullable: false),
                     AttemptTime = table.Column<int>(type: "integer", nullable: false),
@@ -561,13 +568,13 @@ namespace FUC.Data.Migrations
                         column: x => x.SupervisorId,
                         principalTable: "Supervisor",
                         principalColumn: "Id",
-                        onDelete: ReferentialAction.Restrict);
+                        onDelete: ReferentialAction.Cascade);
                     table.ForeignKey(
                         name: "FK_TopicAppraisal_Topic_TopicId",
                         column: x => x.TopicId,
                         principalTable: "Topic",
                         principalColumn: "Id",
-                        onDelete: ReferentialAction.Restrict);
+                        onDelete: ReferentialAction.Cascade);
                 });
 
             migrationBuilder.CreateTable(
@@ -592,13 +599,13 @@ namespace FUC.Data.Migrations
                         column: x => x.DefendCapstoneProjectInformationCalendarId,
                         principalTable: "DefendCapstoneProjectInformationCalendar",
                         principalColumn: "Id",
-                        onDelete: ReferentialAction.Restrict);
+                        onDelete: ReferentialAction.Cascade);
                     table.ForeignKey(
                         name: "FK_DefendCapstoneProjectCouncilMember_Supervisor_SupervisorId",
                         column: x => x.SupervisorId,
                         principalTable: "Supervisor",
                         principalColumn: "Id",
-                        onDelete: ReferentialAction.Restrict);
+                        onDelete: ReferentialAction.Cascade);
                 });
 
             migrationBuilder.CreateTable(
@@ -623,20 +630,20 @@ namespace FUC.Data.Migrations
                         column: x => x.GroupId,
                         principalTable: "Group",
                         principalColumn: "Id",
-                        onDelete: ReferentialAction.Restrict);
+                        onDelete: ReferentialAction.Cascade);
                     table.ForeignKey(
                         name: "FK_DefendCapstoneProjectDecision_Supervisor_SupervisorId",
                         column: x => x.SupervisorId,
                         principalTable: "Supervisor",
                         principalColumn: "Id",
-                        onDelete: ReferentialAction.Restrict);
+                        onDelete: ReferentialAction.Cascade);
                 });
 
             migrationBuilder.CreateTable(
                 name: "GroupMember",
                 columns: table => new
                 {
-                    Id = table.Column<Guid>(type: "uuid", nullable: false, defaultValue: new Guid("63b9f8fc-89c9-4d67-af92-1fc6d1bd893f")),
+                    Id = table.Column<Guid>(type: "uuid", nullable: false, defaultValue: new Guid("e7d93f02-fc61-42dd-a074-7c624b38190a")),
                     GroupId = table.Column<Guid>(type: "uuid", nullable: false),
                     StudentId = table.Column<string>(type: "text", nullable: false),
                     IsLeader = table.Column<bool>(type: "boolean", nullable: false),
@@ -654,13 +661,13 @@ namespace FUC.Data.Migrations
                         column: x => x.GroupId,
                         principalTable: "Group",
                         principalColumn: "Id",
-                        onDelete: ReferentialAction.Restrict);
+                        onDelete: ReferentialAction.Cascade);
                     table.ForeignKey(
                         name: "FK_GroupMember_Student_StudentId",
                         column: x => x.StudentId,
                         principalTable: "Student",
                         principalColumn: "Id",
-                        onDelete: ReferentialAction.Restrict);
+                        onDelete: ReferentialAction.Cascade);
                 });
 
             migrationBuilder.CreateTable(
@@ -684,13 +691,13 @@ namespace FUC.Data.Migrations
                         column: x => x.GroupId,
                         principalTable: "Group",
                         principalColumn: "Id",
-                        onDelete: ReferentialAction.Restrict);
+                        onDelete: ReferentialAction.Cascade);
                     table.ForeignKey(
                         name: "FK_JoinGroupRequest_Student_StudentId",
                         column: x => x.StudentId,
                         principalTable: "Student",
                         principalColumn: "Id",
-                        onDelete: ReferentialAction.Restrict);
+                        onDelete: ReferentialAction.Cascade);
                 });
 
             migrationBuilder.CreateTable(
@@ -729,7 +736,7 @@ namespace FUC.Data.Migrations
                 name: "ReviewCalendar",
                 columns: table => new
                 {
-                    Id = table.Column<Guid>(type: "uuid", nullable: false, defaultValue: new Guid("46aeae45-0ea5-4661-8f42-e87f15637013")),
+                    Id = table.Column<Guid>(type: "uuid", nullable: false, defaultValue: new Guid("acc7f64d-9f42-401d-b5b3-7281eeabed73")),
                     TopicId = table.Column<Guid>(type: "uuid", nullable: false),
                     GroupId = table.Column<Guid>(type: "uuid", nullable: false),
                     MajorId = table.Column<string>(type: "text", nullable: false),
@@ -786,7 +793,7 @@ namespace FUC.Data.Migrations
                 name: "TopicRequest",
                 columns: table => new
                 {
-                    Id = table.Column<Guid>(type: "uuid", nullable: false, defaultValue: new Guid("5918ba30-bc1f-4241-859d-1a02b00f5fc6")),
+                    Id = table.Column<Guid>(type: "uuid", nullable: false, defaultValue: new Guid("1fbaec46-d915-425a-b462-ca367e1c53ad")),
                     SupervisorId = table.Column<string>(type: "text", nullable: false),
                     GroupId = table.Column<Guid>(type: "uuid", nullable: false),
                     TopicId = table.Column<Guid>(type: "uuid", nullable: false),
@@ -806,19 +813,19 @@ namespace FUC.Data.Migrations
                         column: x => x.GroupId,
                         principalTable: "Group",
                         principalColumn: "Id",
-                        onDelete: ReferentialAction.Restrict);
+                        onDelete: ReferentialAction.Cascade);
                     table.ForeignKey(
                         name: "FK_TopicRequest_Supervisor_SupervisorId",
                         column: x => x.SupervisorId,
                         principalTable: "Supervisor",
                         principalColumn: "Id",
-                        onDelete: ReferentialAction.Restrict);
+                        onDelete: ReferentialAction.Cascade);
                     table.ForeignKey(
                         name: "FK_TopicRequest_Topic_TopicId",
                         column: x => x.TopicId,
                         principalTable: "Topic",
                         principalColumn: "Id",
-                        onDelete: ReferentialAction.Restrict);
+                        onDelete: ReferentialAction.Cascade);
                 });
 
             migrationBuilder.CreateTable(
@@ -848,14 +855,14 @@ namespace FUC.Data.Migrations
                         column: x => x.ProjectProgressId,
                         principalTable: "ProjectProgress",
                         principalColumn: "Id",
-                        onDelete: ReferentialAction.Restrict);
+                        onDelete: ReferentialAction.Cascade);
                 });
 
             migrationBuilder.CreateTable(
                 name: "Reviewer",
                 columns: table => new
                 {
-                    Id = table.Column<Guid>(type: "uuid", nullable: false, defaultValue: new Guid("ac8bb195-9bf8-401b-8c17-1a6ff684489b")),
+                    Id = table.Column<Guid>(type: "uuid", nullable: false, defaultValue: new Guid("97f183ce-3e18-4d84-a732-c11280876383")),
                     SupervisorId = table.Column<string>(type: "text", nullable: false),
                     ReviewCalenderId = table.Column<Guid>(type: "uuid", nullable: false),
                     Suggestion = table.Column<string>(type: "character varying(500)", maxLength: 500, nullable: true),
@@ -881,7 +888,7 @@ namespace FUC.Data.Migrations
                         column: x => x.SupervisorId,
                         principalTable: "Supervisor",
                         principalColumn: "Id",
-                        onDelete: ReferentialAction.Restrict);
+                        onDelete: ReferentialAction.Cascade);
                 });
 
             migrationBuilder.CreateTable(
@@ -920,19 +927,19 @@ namespace FUC.Data.Migrations
                         column: x => x.ProjectProgressId,
                         principalTable: "ProjectProgress",
                         principalColumn: "Id",
-                        onDelete: ReferentialAction.Restrict);
+                        onDelete: ReferentialAction.Cascade);
                     table.ForeignKey(
                         name: "FK_FucTask_Student_AssigneeId",
                         column: x => x.AssigneeId,
                         principalTable: "Student",
                         principalColumn: "Id",
-                        onDelete: ReferentialAction.Restrict);
+                        onDelete: ReferentialAction.Cascade);
                     table.ForeignKey(
                         name: "FK_FucTask_Student_ReporterId",
                         column: x => x.ReporterId,
                         principalTable: "Student",
                         principalColumn: "Id",
-                        onDelete: ReferentialAction.Restrict);
+                        onDelete: ReferentialAction.Cascade);
                 });
 
             migrationBuilder.CreateTable(
@@ -961,13 +968,13 @@ namespace FUC.Data.Migrations
                         column: x => x.ProjectProgressWeekId,
                         principalTable: "ProjectProgressWeek",
                         principalColumn: "Id",
-                        onDelete: ReferentialAction.Restrict);
+                        onDelete: ReferentialAction.Cascade);
                     table.ForeignKey(
                         name: "FK_WeeklyEvaluation_Student_StudentId",
                         column: x => x.StudentId,
                         principalTable: "Student",
                         principalColumn: "Id",
-                        onDelete: ReferentialAction.Restrict);
+                        onDelete: ReferentialAction.Cascade);
                     table.ForeignKey(
                         name: "FK_WeeklyEvaluation_Supervisor_SupervisorId",
                         column: x => x.SupervisorId,
@@ -1040,6 +1047,11 @@ namespace FUC.Data.Migrations
                 name: "IX_DefendCapstoneProjectInformationCalendar_CampusId",
                 table: "DefendCapstoneProjectInformationCalendar",
                 column: "CampusId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_DefendCapstoneProjectInformationCalendar_CapstoneId",
+                table: "DefendCapstoneProjectInformationCalendar",
+                column: "CapstoneId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_DefendCapstoneProjectInformationCalendar_SemesterId",

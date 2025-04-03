@@ -43,10 +43,15 @@ public class TopicService(
     ISystemConfigurationService systemConfigService,
     IIntegrationEventLogService integrationEventLogService) : ITopicService
 {
-    public async Task<OperationResult<Topic>> GetTopicEntityById(Guid topicId, CancellationToken cancellationToken)
+    public async Task<OperationResult<Topic>> GetTopicEntityById(Guid topicId, 
+        bool isIncludeGroup = false, 
+        CancellationToken cancellationToken = default)
     {
-        var topic = await topicRepository
-            .GetAsync(t => t.Id == topicId, cancellationToken);
+        var topic = await topicRepository.GetAsync(
+            t => t.Id == topicId,
+            include: isIncludeGroup ? (x => x.Include(x => x.Group)) : null,
+            orderBy: null,
+            cancellationToken);
 
         return topic ?? OperationResult.Failure<Topic>(Error.NullValue);
     }

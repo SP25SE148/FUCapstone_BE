@@ -40,17 +40,17 @@ public class FucTaskConfiguration : IEntityTypeConfiguration<FucTask>
         builder.HasOne(t => t.ProjectProgress)
             .WithMany(p => p.FucTasks)
             .HasForeignKey(p => p.ProjectProgressId)  
-            .OnDelete(DeleteBehavior.Restrict);
+            .OnDelete(DeleteBehavior.Cascade);
 
         builder.HasOne(t => t.Assignee)
             .WithMany(s => s.FucTasks)
             .HasForeignKey(t => t.AssigneeId)
-            .OnDelete(DeleteBehavior.Restrict);
+            .OnDelete(DeleteBehavior.Cascade);
 
         builder.HasOne(t => t.Reporter)
             .WithMany(s => s.ReportFucTasks)
             .HasForeignKey (t => t.ReporterId)
-            .OnDelete(DeleteBehavior.Restrict);
+            .OnDelete(DeleteBehavior.Cascade);
 
         builder.Property(t => t.CreatedDate)
             .HasColumnType("timestamp");

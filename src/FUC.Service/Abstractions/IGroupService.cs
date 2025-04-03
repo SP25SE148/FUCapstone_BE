@@ -3,6 +3,7 @@ using FUC.Data.Enums;
 using FUC.Service.DTOs.GroupDTO;
 using FUC.Service.DTOs.ProjectProgressDTO;
 using FUC.Service.DTOs.TopicRequestDTO;
+using FUC.Data.Entities;
 
 namespace FUC.Service.Abstractions;
 

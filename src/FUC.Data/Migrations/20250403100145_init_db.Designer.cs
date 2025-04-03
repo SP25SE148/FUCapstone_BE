@@ -12,8 +12,8 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace FUC.Data.Migrations
 {
     [DbContext(typeof(FucDbContext))]
-    [Migration("20250330100415_fix student entities")]
-    partial class fixstudententities
+    [Migration("20250403100145_init_db")]
+    partial class init_db
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -58,7 +58,7 @@ namespace FUC.Data.Migrations
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uuid")
-                        .HasDefaultValue(new Guid("c980796b-2280-42b6-a4b4-bcc1b5f3aea9"));
+                        .HasDefaultValue(new Guid("66ec4c48-0334-43e6-ab2d-f009d2e587d1"));
 
                     b.Property<string>("CreatedBy")
                         .IsRequired()
@@ -193,7 +193,7 @@ namespace FUC.Data.Migrations
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uuid")
-                        .HasDefaultValue(new Guid("d8628df1-3757-4665-b70f-ac5e3c0a9e58"));
+                        .HasDefaultValue(new Guid("a9246452-7f75-47f1-8dcc-83b398a4cc2d"));
 
                     b.Property<string>("CreatedBy")
                         .IsRequired()
@@ -318,6 +318,10 @@ namespace FUC.Data.Migrations
                         .IsRequired()
                         .HasColumnType("text");
 
+                    b.Property<string>("CapstoneId")
+                        .IsRequired()
+                        .HasColumnType("text");
+
                     b.Property<string>("CreatedBy")
                         .IsRequired()
                         .HasColumnType("text");
@@ -347,6 +351,12 @@ namespace FUC.Data.Migrations
                     b.Property<int>("Slot")
                         .HasColumnType("integer");
 
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("text")
+                        .HasDefaultValue("NotStarted");
+
                     b.Property<string>("TopicCode")
                         .IsRequired()
                         .HasColumnType("text");
@@ -363,6 +373,8 @@ namespace FUC.Data.Migrations
                     b.HasKey("Id");
 
                     b.HasIndex("CampusId");
+
+                    b.HasIndex("CapstoneId");
 
                     b.HasIndex("SemesterId");
 
@@ -495,7 +507,7 @@ namespace FUC.Data.Migrations
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uuid")
-                        .HasDefaultValue(new Guid("d5d3f7ad-45ba-4deb-a267-263014b3fcdc"));
+                        .HasDefaultValue(new Guid("8b75eab4-2190-4668-8159-b08184e90918"));
 
                     b.Property<string>("CampusId")
                         .IsRequired()
@@ -579,7 +591,7 @@ namespace FUC.Data.Migrations
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uuid")
-                        .HasDefaultValue(new Guid("324e6295-d8f1-4b13-a1b6-112df04281e7"));
+                        .HasDefaultValue(new Guid("e7d93f02-fc61-42dd-a074-7c624b38190a"));
 
                     b.Property<string>("CreatedBy")
                         .IsRequired()
@@ -847,7 +859,7 @@ namespace FUC.Data.Migrations
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uuid")
-                        .HasDefaultValue(new Guid("8ec6d2fc-816b-4c1d-b01d-373d44efdd3d"));
+                        .HasDefaultValue(new Guid("acc7f64d-9f42-401d-b5b3-7281eeabed73"));
 
                     b.Property<int>("Attempt")
                         .HasColumnType("integer");
@@ -925,7 +937,7 @@ namespace FUC.Data.Migrations
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uuid")
-                        .HasDefaultValue(new Guid("2ebc63c8-d92c-45f7-acc8-6b8d257bcd6a"));
+                        .HasDefaultValue(new Guid("4a0a7f46-01c9-4fed-ad0c-adc3e231e34d"));
 
                     b.Property<int>("Attempt")
                         .HasColumnType("integer");
@@ -985,7 +997,7 @@ namespace FUC.Data.Migrations
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uuid")
-                        .HasDefaultValue(new Guid("3e85a74a-cc46-416e-89b7-566d4bb9b502"));
+                        .HasDefaultValue(new Guid("97f183ce-3e18-4d84-a732-c11280876383"));
 
                     b.Property<string>("Comment")
                         .HasMaxLength(1000)
@@ -1202,7 +1214,7 @@ namespace FUC.Data.Migrations
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uuid")
-                        .HasDefaultValue(new Guid("3a55c7d6-db18-460a-a857-94b085ee09c4"));
+                        .HasDefaultValue(new Guid("7f8222fc-2a18-428e-a239-666b0ca34fda"));
 
                     b.Property<string>("CreatedBy")
                         .IsRequired()
@@ -1276,7 +1288,7 @@ namespace FUC.Data.Migrations
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uuid")
-                        .HasDefaultValue(new Guid("c31b579e-75a0-4586-9ee7-59a6915426a3"));
+                        .HasDefaultValue(new Guid("128983e3-a645-4369-9ef3-61d8b55648ba"));
 
                     b.Property<string>("Abbreviation")
                         .IsRequired()
@@ -1381,7 +1393,7 @@ namespace FUC.Data.Migrations
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uuid")
-                        .HasDefaultValue(new Guid("02ef524a-879a-4a2a-bedf-39a7eba8f05d"));
+                        .HasDefaultValue(new Guid("27b511a7-7bd5-461a-af66-476995d32975"));
 
                     b.Property<string>("AnalysisResult")
                         .IsRequired()
@@ -1390,7 +1402,7 @@ namespace FUC.Data.Migrations
                     b.Property<DateTime>("CreatedDate")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("timestamp")
-                        .HasDefaultValue(new DateTime(2025, 3, 30, 17, 4, 15, 117, DateTimeKind.Local).AddTicks(7177));
+                        .HasDefaultValue(new DateTime(2025, 4, 3, 17, 1, 44, 301, DateTimeKind.Local).AddTicks(612));
 
                     b.Property<string>("ProcessedBy")
                         .IsRequired()
@@ -1411,7 +1423,7 @@ namespace FUC.Data.Migrations
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uuid")
-                        .HasDefaultValue(new Guid("22d24b58-b77b-4799-8f39-a2bf39ec33f0"));
+                        .HasDefaultValue(new Guid("b8e68940-5670-4ea2-80ab-087c7592dc94"));
 
                     b.Property<string>("AppraisalComment")
                         .HasColumnType("text");
@@ -1465,7 +1477,7 @@ namespace FUC.Data.Migrations
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uuid")
-                        .HasDefaultValue(new Guid("c54fd789-3f60-4c29-a41e-d91e08255b20"));
+                        .HasDefaultValue(new Guid("1fbaec46-d915-425a-b462-ca367e1c53ad"));
 
                     b.Property<string>("CreatedBy")
                         .IsRequired()
@@ -1592,7 +1604,7 @@ namespace FUC.Data.Migrations
                     b.HasOne("FUC.Data.Entities.Topic", "Topic")
                         .WithMany("CoSupervisors")
                         .HasForeignKey("TopicId")
-                        .OnDelete(DeleteBehavior.Restrict)
+                        .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
                     b.Navigation("Supervisor");
@@ -1605,13 +1617,13 @@ namespace FUC.Data.Migrations
                     b.HasOne("FUC.Data.Entities.DefendCapstoneProjectInformationCalendar", "DefendCapstoneProjectInformationCalendar")
                         .WithMany("DefendCapstoneProjectMemberCouncils")
                         .HasForeignKey("DefendCapstoneProjectInformationCalendarId")
-                        .OnDelete(DeleteBehavior.Restrict)
+                        .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
                     b.HasOne("FUC.Data.Entities.Supervisor", "Supervisor")
                         .WithMany("DefendCapstoneProjectMemberCouncils")
                         .HasForeignKey("SupervisorId")
-                        .OnDelete(DeleteBehavior.Restrict)
+                        .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
                     b.Navigation("DefendCapstoneProjectInformationCalendar");
@@ -1624,13 +1636,13 @@ namespace FUC.Data.Migrations
                     b.HasOne("FUC.Data.Entities.Group", "Group")
                         .WithOne("DefendCapstoneProjectDecision")
                         .HasForeignKey("FUC.Data.Entities.DefendCapstoneProjectDecision", "GroupId")
-                        .OnDelete(DeleteBehavior.Restrict)
+                        .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
                     b.HasOne("FUC.Data.Entities.Supervisor", "Supervisor")
                         .WithMany("DefendCapstoneProjectDecisions")
                         .HasForeignKey("SupervisorId")
-                        .OnDelete(DeleteBehavior.Restrict)
+                        .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
                     b.Navigation("Group");
@@ -1643,22 +1655,30 @@ namespace FUC.Data.Migrations
                     b.HasOne("FUC.Data.Entities.Campus", "Campus")
                         .WithMany("DefendCapstoneProjectInformationCalendars")
                         .HasForeignKey("CampusId")
-                        .OnDelete(DeleteBehavior.Restrict)
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("FUC.Data.Entities.Capstone", "Capstone")
+                        .WithMany("DefendCapstoneProjectInformationCalendars")
+                        .HasForeignKey("CapstoneId")
+                        .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
                     b.HasOne("FUC.Data.Entities.Semester", "Semester")
                         .WithMany("DefendCapstoneProjectInformationCalendars")
                         .HasForeignKey("SemesterId")
-                        .OnDelete(DeleteBehavior.Restrict)
+                        .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
                     b.HasOne("FUC.Data.Entities.Topic", "Topic")
                         .WithMany("DefendCapstoneProjectInformationCalendars")
                         .HasForeignKey("TopicId")
-                        .OnDelete(DeleteBehavior.Restrict)
+                        .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
                     b.Navigation("Campus");
+
+                    b.Navigation("Capstone");
 
                     b.Navigation("Semester");
 
@@ -1670,13 +1690,13 @@ namespace FUC.Data.Migrations
                     b.HasOne("FUC.Data.Entities.Student", "Assignee")
                         .WithMany("FucTasks")
                         .HasForeignKey("AssigneeId")
-                        .OnDelete(DeleteBehavior.Restrict)
+                        .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
                     b.HasOne("FUC.Data.Entities.ProjectProgress", "ProjectProgress")
                         .WithMany("FucTasks")
                         .HasForeignKey("ProjectProgressId")
-                        .OnDelete(DeleteBehavior.Restrict)
+                        .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
                     b.HasOne("FUC.Data.Entities.ProjectProgressWeek", null)
@@ -1686,7 +1706,7 @@ namespace FUC.Data.Migrations
                     b.HasOne("FUC.Data.Entities.Student", "Reporter")
                         .WithMany("ReportFucTasks")
                         .HasForeignKey("ReporterId")
-                        .OnDelete(DeleteBehavior.Restrict)
+                        .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
                     b.Navigation("Assignee");
@@ -1761,13 +1781,13 @@ namespace FUC.Data.Migrations
                     b.HasOne("FUC.Data.Entities.Group", "Group")
                         .WithMany("GroupMembers")
                         .HasForeignKey("GroupId")
-                        .OnDelete(DeleteBehavior.Restrict)
+                        .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
                     b.HasOne("FUC.Data.Entities.Student", "Student")
                         .WithMany("GroupMembers")
                         .HasForeignKey("StudentId")
-                        .OnDelete(DeleteBehavior.Restrict)
+                        .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
                     b.Navigation("Group");
@@ -1780,13 +1800,13 @@ namespace FUC.Data.Migrations
                     b.HasOne("FUC.Data.Entities.Group", "Group")
                         .WithMany("JoinGroupRequests")
                         .HasForeignKey("GroupId")
-                        .OnDelete(DeleteBehavior.Restrict)
+                        .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
                     b.HasOne("FUC.Data.Entities.Student", "Student")
                         .WithMany("JoinGroupRequests")
                         .HasForeignKey("StudentId")
-                        .OnDelete(DeleteBehavior.Restrict)
+                        .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
                     b.Navigation("Group");
@@ -1825,7 +1845,7 @@ namespace FUC.Data.Migrations
                     b.HasOne("FUC.Data.Entities.ProjectProgress", "ProjectProgress")
                         .WithMany("ProjectProgressWeeks")
                         .HasForeignKey("ProjectProgressId")
-                        .OnDelete(DeleteBehavior.Restrict)
+                        .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
                     b.Navigation("ProjectProgress");
@@ -1896,7 +1916,7 @@ namespace FUC.Data.Migrations
                     b.HasOne("FUC.Data.Entities.Supervisor", "Supervisor")
                         .WithMany("Reviewers")
                         .HasForeignKey("SupervisorId")
-                        .OnDelete(DeleteBehavior.Restrict)
+                        .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
                     b.Navigation("ReviewCalender");
@@ -1909,7 +1929,7 @@ namespace FUC.Data.Migrations
                     b.HasOne("FUC.Data.Entities.BusinessArea", "BusinessArea")
                         .WithMany("Students")
                         .HasForeignKey("BusinessAreaId")
-                        .OnDelete(DeleteBehavior.Restrict);
+                        .OnDelete(DeleteBehavior.Cascade);
 
                     b.HasOne("FUC.Data.Entities.Campus", "Campus")
                         .WithMany("Students")
@@ -2027,13 +2047,13 @@ namespace FUC.Data.Migrations
                     b.HasOne("FUC.Data.Entities.Supervisor", "Supervisor")
                         .WithMany("TopicAppraisals")
                         .HasForeignKey("SupervisorId")
-                        .OnDelete(DeleteBehavior.Restrict)
+                        .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
                     b.HasOne("FUC.Data.Entities.Topic", "Topic")
                         .WithMany("TopicAppraisals")
                         .HasForeignKey("TopicId")
-                        .OnDelete(DeleteBehavior.Restrict)
+                        .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
                     b.Navigation("Supervisor");
@@ -2046,19 +2066,19 @@ namespace FUC.Data.Migrations
                     b.HasOne("FUC.Data.Entities.Group", "Group")
                         .WithMany("TopicRequests")
                         .HasForeignKey("GroupId")
-                        .OnDelete(DeleteBehavior.Restrict)
+                        .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
                     b.HasOne("FUC.Data.Entities.Supervisor", "Supervisor")
                         .WithMany("TopicRequests")
                         .HasForeignKey("SupervisorId")
-                        .OnDelete(DeleteBehavior.Restrict)
+                        .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
                     b.HasOne("FUC.Data.Entities.Topic", "Topic")
                         .WithMany("TopicRequests")
                         .HasForeignKey("TopicId")
-                        .OnDelete(DeleteBehavior.Restrict)
+                        .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
                     b.Navigation("Group");
@@ -2073,13 +2093,13 @@ namespace FUC.Data.Migrations
                     b.HasOne("FUC.Data.Entities.ProjectProgressWeek", "ProjectProgressWeek")
                         .WithMany("WeeklyEvaluations")
                         .HasForeignKey("ProjectProgressWeekId")
-                        .OnDelete(DeleteBehavior.Restrict)
+                        .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
                     b.HasOne("FUC.Data.Entities.Student", "Student")
                         .WithMany("WeeklyEvaluations")
                         .HasForeignKey("StudentId")
-                        .OnDelete(DeleteBehavior.Restrict)
+                        .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
                     b.HasOne("FUC.Data.Entities.Supervisor", null)
@@ -2117,6 +2137,8 @@ namespace FUC.Data.Migrations
 
             modelBuilder.Entity("FUC.Data.Entities.Capstone", b =>
                 {
+                    b.Navigation("DefendCapstoneProjectInformationCalendars");
+
                     b.Navigation("Groups");
 
                     b.Navigation("ReviewCriterias");

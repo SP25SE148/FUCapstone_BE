@@ -28,17 +28,17 @@ public sealed class TopicRequestConfiguration : IEntityTypeConfiguration<TopicRe
         builder.HasOne(tr => tr.Supervisor)
             .WithMany(s => s.TopicRequests)
             .HasForeignKey(tr => tr.SupervisorId)
-            .OnDelete(DeleteBehavior.Restrict);
+            .OnDelete(DeleteBehavior.Cascade);
 
         builder.HasOne(tr => tr.Group)
             .WithMany(g => g.TopicRequests)
             .HasForeignKey(tr => tr.GroupId)
-            .OnDelete(DeleteBehavior.Restrict);
+            .OnDelete(DeleteBehavior.Cascade);
 
         builder.HasOne(tr => tr.Topic)
             .WithMany(t => t.TopicRequests)
             .HasForeignKey(tr => tr.TopicId)
-            .OnDelete(DeleteBehavior.Restrict);
+            .OnDelete(DeleteBehavior.Cascade);
 
         builder.Property(tr => tr.CreatedDate)
             .HasColumnType("timestamp");

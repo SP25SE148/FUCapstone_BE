@@ -26,12 +26,12 @@ public class WeeklyEvaluationConfiguration : IEntityTypeConfiguration<WeeklyEval
         builder.HasOne(w => w.Student)
             .WithMany(s => s.WeeklyEvaluations)
             .HasForeignKey(w => w.StudentId)
-            .OnDelete(DeleteBehavior.Restrict);
+            .OnDelete(DeleteBehavior.Cascade);
 
         builder.HasOne(w => w.ProjectProgressWeek)
             .WithMany(s => s.WeeklyEvaluations)
             .HasForeignKey(w => w.ProjectProgressWeekId)
-            .OnDelete(DeleteBehavior.Restrict);
+            .OnDelete(DeleteBehavior.Cascade);
 
         builder.Property(t => t.CreatedDate)
             .HasColumnType("timestamp");

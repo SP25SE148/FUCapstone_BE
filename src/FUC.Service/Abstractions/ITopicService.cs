@@ -30,7 +30,7 @@ public interface ITopicService
         RemoveAssignSupervisorAppraisalTopicRequest request, CancellationToken cancellationToken);
     Task<OperationResult<List<TopicAppraisalResponse>>> GetTopicAppraisalByUserId(TopicAppraisalBaseRequest request);
     Task<OperationResult> AppraisalTopic(AppraisalTopicRequest request, CancellationToken cancellationToken);
-    Task<OperationResult<Topic>> GetTopicEntityById(Guid topicId, CancellationToken cancellationToken);
+    Task<OperationResult<Topic>> GetTopicEntityById(Guid topicId, bool isIncludeGroup = false, CancellationToken cancellationToken = default);
     Task<OperationResult<Topic>> GetTopicByCode(string topicCode, CancellationToken cancellationToken);
     Task<OperationResult> AssignNewSupervisorForTopic(AssignNewSupervisorForTopicRequest request, CancellationToken cancellationToken);
     Task<OperationResult<IList<TopicResponse>>> GetTopicsByCoSupervisor();

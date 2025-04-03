@@ -24,6 +24,6 @@ public sealed class BusinessAreaConfiguration : IEntityTypeConfiguration<Busines
         builder.HasMany(b => b.Students)
             .WithOne(s => s.BusinessArea)
             .HasForeignKey(s => s.BusinessAreaId)
-            .OnDelete(DeleteBehavior.Restrict);
+            .OnDelete(DeleteBehavior.Cascade);
     }
 }

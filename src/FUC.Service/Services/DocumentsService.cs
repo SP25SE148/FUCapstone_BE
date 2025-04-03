@@ -493,6 +493,15 @@ public class DocumentsService(
             : result.Value;
     }
 
+    public async Task<OperationResult<string>> PresentTopicRegistrationFilePresignedUrl(string topicKey)
+    {
+        var result = await PresentFilePresignedUrl(s3BucketConfiguration.FUCTopicBucket, topicKey);
+
+        return result.IsFailure
+            ? OperationResult.Failure<string>(new Error("Document.Error", "Can not export topic registration file."))
+            : result.Value;
+    }
+
     private static bool IsValidFile(IFormFile file)
     {
         return file != null && file.Length > 0;

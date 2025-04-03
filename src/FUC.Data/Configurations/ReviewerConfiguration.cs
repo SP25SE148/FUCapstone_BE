@@ -23,7 +23,7 @@ public sealed class ReviewerConfiguration : IEntityTypeConfiguration<Reviewer>
         builder.HasOne(r => r.Supervisor)
             .WithMany(s => s.Reviewers)
             .HasForeignKey(r => r.SupervisorId)
-            .OnDelete(DeleteBehavior.Restrict);
+            .OnDelete(DeleteBehavior.Cascade);
 
         builder.HasOne(r => r.ReviewCalender)
             .WithMany(rc => rc.Reviewers)

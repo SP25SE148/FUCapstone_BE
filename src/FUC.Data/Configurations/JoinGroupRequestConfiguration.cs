@@ -23,12 +23,12 @@ public sealed class JoinGroupRequestConfiguration : IEntityTypeConfiguration<Joi
         builder.HasOne(gr => gr.Group)
             .WithMany(g => g.JoinGroupRequests)
             .HasForeignKey(gr => gr.GroupId)
-            .OnDelete(DeleteBehavior.Restrict);
+            .OnDelete(DeleteBehavior.Cascade);
 
         builder.HasOne(gr => gr.Student)
             .WithMany(s => s.JoinGroupRequests)
             .HasForeignKey(gr => gr.StudentId)
-            .OnDelete(DeleteBehavior.Restrict);
+            .OnDelete(DeleteBehavior.Cascade);
 
         builder.Property(gr => gr.CreatedDate)
             .HasColumnType("timestamp");
