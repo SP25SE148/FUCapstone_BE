@@ -1087,9 +1087,7 @@ public class TopicService(
             CreatedDate = ta.CreatedDate
         }).ToListAsync();
 
-        return response.Count < 1
-            ? OperationResult.Failure<List<TopicAppraisalResponse>>(Error.NullValue)
-            : OperationResult.Success(response);
+        return OperationResult.Success(response);
     }
 
     public async Task<OperationResult> AppraisalTopic(AppraisalTopicRequest request,
@@ -1375,9 +1373,7 @@ public class TopicService(
             };
         var businessAreas = await queryable.ToListAsync();
 
-        return businessAreas.Count != 0
-            ? OperationResult.Success(businessAreas)
-            : OperationResult.Failure<List<BusinessAreaResponse>>(Error.NullValue);
+        return OperationResult.Success(businessAreas);
     }
 
     public async Task<OperationResult> AssignNewSupervisorForTopic(AssignNewSupervisorForTopicRequest request,

@@ -1,4 +1,5 @@
 ﻿using AutoMapper;
+using DocumentFormat.OpenXml.Office2010.ExcelAc;
 using FUC.Common.Shared;
 using FUC.Data;
 using FUC.Data.Data;
@@ -11,9 +12,13 @@ namespace FUC.Service.Services;
 
 public sealed class CampusService(IUnitOfWork<FucDbContext> uow, IMapper mapper) : ICampusService
 {
-    private readonly IUnitOfWork<FucDbContext> _uow = uow ?? throw new  ArgumentNullException(nameof(uow));
-    private readonly IRepository<Campus> _campusRepository = uow.GetRepository<Campus>() ??  throw new ArgumentNullException(nameof(uow));
+    private readonly IUnitOfWork<FucDbContext> _uow = uow ?? throw new ArgumentNullException(nameof(uow));
+
+    private readonly IRepository<Campus> _campusRepository =
+        uow.GetRepository<Campus>() ?? throw new ArgumentNullException(nameof(uow));
+
     private readonly IMapper _mapper = mapper ?? throw new ArgumentNullException(nameof(mapper));
+
     public async Task<OperationResult<string>> CreateCampusAsync(CreateCampusRequest request)
     {
         // check if campus code was exist
@@ -31,7 +36,7 @@ public sealed class CampusService(IUnitOfWork<FucDbContext> uow, IMapper mapper)
             Email = request.Email,
             Phone = request.Phone
         };
-        
+
         _campusRepository.Insert(campus);
         await _uow.SaveChangesAsync();
         return campus.Id;
@@ -50,7 +55,7 @@ public sealed class CampusService(IUnitOfWork<FucDbContext> uow, IMapper mapper)
         campus.Email = request.Email;
         campus.Phone = request.Phone;
         campus.Name = request.Name;
-        
+
         _campusRepository.Update(campus);
         await _uow.SaveChangesAsync();
         return _mapper.Map<CampusResponse>(campus);
@@ -59,17 +64,13 @@ public sealed class CampusService(IUnitOfWork<FucDbContext> uow, IMapper mapper)
     public async Task<OperationResult<IEnumerable<CampusResponse>>> GetAllCampusAsync()
     {
         List<Campus> campusList = await _campusRepository.GetAllAsync();
-        return campusList.Count > 0
-            ? OperationResult.Success(_mapper.Map<IEnumerable<CampusResponse>>(campusList))
-            : OperationResult.Failure<IEnumerable<CampusResponse>>(Error.NullValue);
+        return OperationResult.Success(_mapper.Map<IEnumerable<CampusResponse>>(campusList));
     }
 
     public async Task<OperationResult<IEnumerable<CampusResponse>>> GetAllActiveCampusAsync()
     {
         IList<Campus> campusList = await _campusRepository.FindAsync(c => c.IsDeleted == false);
-        return campusList.Count > 0
-            ? OperationResult.Success(_mapper.Map<IEnumerable<CampusResponse>>(campusList.ToList()))
-            : OperationResult.Failure<IEnumerable<CampusResponse>>(Error.NullValue);
+        return OperationResult.Success(_mapper.Map<IEnumerable<CampusResponse>>(campusList.ToList()));
     }
 
     public async Task<OperationResult<CampusResponse>> GetCampusByIdAsync(string campusId)
@@ -79,7 +80,7 @@ public sealed class CampusService(IUnitOfWork<FucDbContext> uow, IMapper mapper)
             cancellationToken: default);
         return _mapper.Map<CampusResponse>(campus) ?? OperationResult.Failure<CampusResponse>(Error.NullValue);
     }
-    
+
     public async Task<OperationResult> DeleteCampusAsync(string campusId)
     {
         Campus? campus = await _campusRepository.GetAsync(

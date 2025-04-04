@@ -83,9 +83,7 @@ public sealed class ReviewCalendarService(
             CreateIncludeForReviewCalendarResponse(),
             rc => rc.OrderBy(rc => rc.CreatedDate),
             CreateReviewCalendarSelector());
-        return reviewCalendars.Count > 0
-            ? reviewCalendars
-            : OperationResult.Failure<IEnumerable<ReviewCalendarResponse>>(Error.NullValue);
+        return reviewCalendars;
     }
 
     public async Task<OperationResult<IEnumerable<ReviewCalendarResponse>>> GetReviewCalendarBySupervisorId()
@@ -115,9 +113,7 @@ public sealed class ReviewCalendarService(
                 Status = r.ReviewCalender.Status.ToString(),
                 Reviewers = r.ReviewCalender.Reviewers.Select(r => r.Supervisor.FullName).ToList()
             });
-        return reviewCalendars.Count > 0
-            ? reviewCalendars.ToList()
-            : OperationResult.Failure<IEnumerable<ReviewCalendarResponse>>(Error.NullValue);
+        return reviewCalendars.ToList();
     }
 
     public async Task<OperationResult<IEnumerable<ReviewCalendarResponse>>> GetReviewCalendarByStudentId()
@@ -131,9 +127,7 @@ public sealed class ReviewCalendarService(
             CreateIncludeForReviewCalendarResponse(),
             rc => rc.OrderByDescending(rc => rc.Attempt),
             CreateReviewCalendarSelector());
-        return reviewCalendars.Count > 0
-            ? reviewCalendars.ToList()
-            : OperationResult.Failure<IEnumerable<ReviewCalendarResponse>>(Error.NullValue);
+        return reviewCalendars.ToList();
     }
 
     public async Task<OperationResult<IEnumerable<ReviewCalendarResponse>>> GetReviewCalendarByManagerId()
@@ -142,9 +136,7 @@ public sealed class ReviewCalendarService(
             CreateIncludeForReviewCalendarResponse(),
             rc => rc.OrderBy(rc => rc.CreatedDate),
             CreateReviewCalendarSelector());
-        return reviewCalendars.Count > 0
-            ? reviewCalendars.ToList()
-            : OperationResult.Failure<IEnumerable<ReviewCalendarResponse>>(Error.NullValue);
+        return reviewCalendars.ToList();
     }
 
     public async Task<OperationResult> UpdateReviewCalendar(UpdateReviewerSuggestionAndCommentRequest request)
@@ -179,26 +171,19 @@ public sealed class ReviewCalendarService(
             include: rc => rc.Include(rc => rc.Reviewers),
             orderBy: rc => rc.OrderBy(rc => rc.Attempt));
         var reviewCalendarResultResponse = MapReviewCalendarsToResponses(reviewCalendar);
-        return reviewCalendar.Any()
-            ? reviewCalendarResultResponse.ToList()
-            : OperationResult.Failure<IEnumerable<ReviewCalendarResultResponse>>(Error.NullValue);
+        return reviewCalendarResultResponse.ToList();
     }
 
     public async Task<OperationResult<IEnumerable<ReviewCalendarResultResponse>>>
         GetReviewCalendarResultByGroupId(Guid groupId)
     {
         var group = await groupService.GetGroupByIdAsync(groupId);
-        // if (group.Value.SupervisorId != currentUser.UserCode)
-        //     return OperationResult.Failure<IEnumerable<ReviewCalendarResultResponse>>(new Error("GetFailed",
-        //         "Can not get group which is not yours"));
         var reviewCalendar = await reviewCalendarRepository.FindAsync(rc => rc.GroupId == group.Value.Id,
             include: rc => rc.Include(rc => rc.Reviewers),
             orderBy: rc => rc.OrderBy(rc => rc.Attempt));
 
         var reviewCalendarResultResponse = MapReviewCalendarsToResponses(reviewCalendar);
-        return reviewCalendar.Any()
-            ? reviewCalendarResultResponse.ToList()
-            : OperationResult.Failure<IEnumerable<ReviewCalendarResultResponse>>(Error.NullValue);
+        return reviewCalendarResultResponse.ToList();
     }
 
     public async Task<OperationResult<IEnumerable<ReviewCalendarResultResponse>>> GetReviewCalendarResultByManagerId()
@@ -207,9 +192,7 @@ public sealed class ReviewCalendarService(
             include: rc => rc.Include(rc => rc.Reviewers),
             orderBy: rc => rc.OrderBy(rc => rc.Attempt));
         var reviewCalendarResultResponse = MapReviewCalendarsToResponses(reviewCalendar);
-        return reviewCalendar.Any()
-            ? reviewCalendarResultResponse.ToList()
-            : OperationResult.Failure<IEnumerable<ReviewCalendarResultResponse>>(Error.NullValue);
+        return reviewCalendarResultResponse.ToList();
     }
 
     public async Task<OperationResult<IEnumerable<ReviewCriteriaResponse>>> GetReviewCriteriaByAttemptAsync(int attempt)
@@ -226,9 +209,7 @@ public sealed class ReviewCalendarService(
                 Name = rc.Name,
                 Requirement = rc.Requirement
             });
-        return reviewCriteria.Any()
-            ? reviewCriteria.ToList()
-            : OperationResult.Failure<IEnumerable<ReviewCriteriaResponse>>(Error.NullValue);
+        return reviewCriteria.ToList();
     }
 
 

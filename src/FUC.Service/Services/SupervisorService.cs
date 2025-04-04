@@ -29,9 +29,7 @@ public sealed class SupervisorService(
             null,
             cancellationToken);
 
-        return supervisors.Count > 0
-            ? OperationResult.Success(mapper.Map<IEnumerable<SupervisorResponseDTO>>(supervisors))
-            : OperationResult.Failure<IEnumerable<SupervisorResponseDTO>>(Error.NullValue);
+        return OperationResult.Success(mapper.Map<IEnumerable<SupervisorResponseDTO>>(supervisors));
     }
 
     public async Task<OperationResult<SupervisorResponseDTO>> GetSupervisorByIdAsync(string id)

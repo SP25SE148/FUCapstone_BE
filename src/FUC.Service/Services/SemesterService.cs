@@ -10,22 +10,28 @@ using Microsoft.Extensions.Logging;
 
 namespace FUC.Service.Services;
 
-public sealed class SemesterService(ILogger<SemesterService> logger ,
+public sealed class SemesterService(
+    ILogger<SemesterService> logger,
     IMapper mapper,
     IUnitOfWork<FucDbContext> uow) : ISemesterService
 {
     private readonly IUnitOfWork<FucDbContext> _uow = uow ?? throw new ArgumentNullException(nameof(uow));
 
-    private readonly IRepository<Semester> _semesterRepository = uow.GetRepository<Semester>() ?? throw new ArgumentNullException(nameof(uow));
+    private readonly IRepository<Semester> _semesterRepository =
+        uow.GetRepository<Semester>() ?? throw new ArgumentNullException(nameof(uow));
+
     private readonly IMapper _mapper = mapper ?? throw new ArgumentNullException(nameof(mapper));
+
     public async Task<OperationResult<string>> CreateSemesterAsync(CreateSemesterRequest request)
     {
         // check if the semester was existed
         Semester? semester = await _semesterRepository.GetAsync(
             s => s.Id.Equals(request.Id),
-            cancellationToken:default);
-        if (semester is not null) return OperationResult.Failure<string>(new Error("Error.Duplicate",$"The semester with id {semester.Id} was existed"));
-        
+            cancellationToken: default);
+        if (semester is not null)
+            return OperationResult.Failure<string>(new Error("Error.Duplicate",
+                $"The semester with id {semester.Id} was existed"));
+
         // create new semester
         Semester newSemester = new()
         {
@@ -60,17 +66,13 @@ public sealed class SemesterService(ILogger<SemesterService> logger ,
     public async Task<OperationResult<IEnumerable<SemesterResponse>>> GetSemestersAsync()
     {
         List<Semester> semesters = await _semesterRepository.GetAllAsync();
-        return semesters.Count > 0
-            ? OperationResult.Success(_mapper.Map<IEnumerable<SemesterResponse>>(semesters))
-            : OperationResult.Failure<IEnumerable<SemesterResponse>>(Error.NullValue);
+        return OperationResult.Success(_mapper.Map<IEnumerable<SemesterResponse>>(semesters));
     }
 
     public async Task<OperationResult<IEnumerable<SemesterResponse>>> GetAllActiveSemestersAsync()
     {
         IList<Semester> semesters = await _semesterRepository.FindAsync(s => !s.IsDeleted);
-        return semesters.Count > 0
-            ? OperationResult.Success(_mapper.Map<IEnumerable<SemesterResponse>>(semesters))
-            : OperationResult.Failure<IEnumerable<SemesterResponse>>(Error.NullValue);
+        return OperationResult.Success(_mapper.Map<IEnumerable<SemesterResponse>>(semesters));
     }
 
     public async Task<OperationResult<SemesterResponse>> GetSemesterByIdAsync(string semesterId)
@@ -88,7 +90,7 @@ public sealed class SemesterService(ILogger<SemesterService> logger ,
         Semester? semester = await _semesterRepository.GetAsync(
             predicate: s => s.Id.Equals(semesterId)
             , cancellationToken: default);
-        
+
         if (semester is null) return OperationResult.Failure(Error.NullValue);
 
         semester.IsDeleted = true;
@@ -100,8 +102,8 @@ public sealed class SemesterService(ILogger<SemesterService> logger ,
 
     public async Task<OperationResult<Semester>> GetCurrentSemesterAsync()
     {
-        var currentSemester = await _semesterRepository.GetAsync(x => DateTime.Now >= x.StartDate 
-            && DateTime.Now <= x.EndDate, 
+        var currentSemester = await _semesterRepository.GetAsync(x => DateTime.Now >= x.StartDate
+                                                                      && DateTime.Now <= x.EndDate,
             cancellationToken: default);
 
         if (currentSemester is null)

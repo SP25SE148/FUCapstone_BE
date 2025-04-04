@@ -28,33 +28,31 @@ public sealed class StudentService(
             CreateIncludeForStudentResponse(),
             x => x.OrderBy(x => x.Id),
             cancellationToken);
-        return students.Count > 0
-            ? OperationResult.Success(mapper.Map<IEnumerable<StudentResponseDTO>>(students))
-            : OperationResult.Failure<IEnumerable<StudentResponseDTO>>(Error.NullValue);
+        return OperationResult.Success(mapper.Map<IEnumerable<StudentResponseDTO>>(students));
     }
 
     public async Task<OperationResult<IList<StudentResponseDTO>>> GetRemainStudentsAsync(
-       CancellationToken cancellationToken)
+        CancellationToken cancellationToken)
     {
         var students = await studentRepository.FindAsync(
             predicate: x => (currentUser.CampusId == "all" || x.CampusId == currentUser.CampusId) &&
-                 (currentUser.MajorId == "all" || x.MajorId == currentUser.MajorId) &&
-                 (currentUser.CapstoneId == "all" || x.CapstoneId == currentUser.CapstoneId) &&
-                 !x.GroupMembers.Any(x => x.Status == Data.Enums.GroupMemberStatus.Accepted),
+                            (currentUser.MajorId == "all" || x.MajorId == currentUser.MajorId) &&
+                            (currentUser.CapstoneId == "all" || x.CapstoneId == currentUser.CapstoneId) &&
+                            !x.GroupMembers.Any(x => x.Status == Data.Enums.GroupMemberStatus.Accepted),
             include: CreateIncludeForStudentResponse(),
             orderBy: x => x.OrderBy(x => x.Id),
             selector: x => new StudentResponseDTO
             {
                 Id = x.Id,
                 FullName = x.FullName,
-                MajorId = x.MajorId,    
+                MajorId = x.MajorId,
                 MajorName = x.Major.Name,
-                CapstoneId = x.CapstoneId,  
+                CapstoneId = x.CapstoneId,
                 CapstoneName = x.Capstone.Name,
                 CampusId = x.CampusId,
-                CampusName = x.Campus.Name, 
-                Email = x.Email,    
-                Status = x.Status.ToString(),  
+                CampusName = x.Campus.Name,
+                Email = x.Email,
+                Status = x.Status.ToString(),
                 BusinessArea = x.BusinessArea.Name,
                 Gpa = x.GPA,
                 IsHaveBeenJoinGroup = false,

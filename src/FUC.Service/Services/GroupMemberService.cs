@@ -496,9 +496,7 @@ public class GroupMemberService(
         var groupMembers = await groupMemberRepository.FindAsync(
             gm => gm.GroupId == groupId,
             null, true);
-        return groupMembers.Count > 0
-            ? groupMembers.ToList()
-            : OperationResult.Failure<IEnumerable<GroupMember>>(Error.NullValue);
+        return groupMembers.ToList();
     }
 
     /// <summary>

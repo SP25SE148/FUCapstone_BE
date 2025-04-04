@@ -67,9 +67,7 @@ public sealed class CapstoneService(IUnitOfWork<FucDbContext> uow, IMapper mappe
     public async Task<OperationResult<IEnumerable<CapstoneResponse>>> GetAllCapstonesAsync()
     {
         List<Capstone> capstones = await _capstoneRepository.GetAllAsync();
-        return capstones.Count > 0
-            ? OperationResult.Success(_mapper.Map<IEnumerable<CapstoneResponse>>(capstones))
-            : OperationResult.Failure<IEnumerable<CapstoneResponse>>(Error.NullValue);
+        return OperationResult.Success(_mapper.Map<IEnumerable<CapstoneResponse>>(capstones));
     }
 
     public async Task<OperationResult<IEnumerable<CapstoneResponse>>> GetCapstonesByMajorIdAsync(string majorId)
@@ -84,9 +82,7 @@ public sealed class CapstoneService(IUnitOfWork<FucDbContext> uow, IMapper mappe
     public async Task<OperationResult<IEnumerable<CapstoneResponse>>> GetAllActiveCapstonesAsync()
     {
         IList<Capstone> capstones = await _capstoneRepository.FindAsync(c => c.IsDeleted == false);
-        return capstones.Count > 0
-            ? OperationResult.Success(_mapper.Map<IEnumerable<CapstoneResponse>>(capstones))
-            : OperationResult.Failure<IEnumerable<CapstoneResponse>>(Error.NullValue);
+        return OperationResult.Success(_mapper.Map<IEnumerable<CapstoneResponse>>(capstones));
     }
 
     public async Task<OperationResult<CapstoneResponse>> GetCapstoneByIdAsync(string capstoneId)
