@@ -11,7 +11,9 @@ namespace FUC.Service.Services;
 
 public sealed class MajorService(IUnitOfWork<FucDbContext> uow, IMapper mapper) : IMajorService
 {
-    private readonly IRepository<Major> _majorRepository = uow.GetRepository<Major>() ?? throw new ArgumentNullException(nameof(uow));
+    private readonly IRepository<Major> _majorRepository =
+        uow.GetRepository<Major>() ?? throw new ArgumentNullException(nameof(uow));
+
     private readonly IMapper _mapper = mapper ?? throw new ArgumentNullException(nameof(mapper));
 
     public async Task<OperationResult<string>> CreateMajorAsync(CreateMajorRequest request)
@@ -57,17 +59,13 @@ public sealed class MajorService(IUnitOfWork<FucDbContext> uow, IMapper mapper) 
     public async Task<OperationResult<IEnumerable<MajorResponse>>> GetAllMajorsAsync()
     {
         List<Major> majors = await _majorRepository.GetAllAsync();
-        return majors.Count != 0
-            ? OperationResult.Success(_mapper.Map<IEnumerable<MajorResponse>>(majors))
-            : OperationResult.Failure<IEnumerable<MajorResponse>>(Error.NullValue);
+        return OperationResult.Success(_mapper.Map<IEnumerable<MajorResponse>>(majors));
     }
 
     public async Task<OperationResult<IEnumerable<MajorResponse>>> GetAllActiveMajorsAsync()
     {
         IList<Major> majors = await _majorRepository.FindAsync(m => m.IsDeleted == false);
-        return majors.Count != 0
-            ? OperationResult.Success(_mapper.Map<IEnumerable<MajorResponse>>(majors))
-            : OperationResult.Failure<IEnumerable<MajorResponse>>(Error.NullValue);
+        return OperationResult.Success(_mapper.Map<IEnumerable<MajorResponse>>(majors));
     }
 
     public async Task<OperationResult<IEnumerable<MajorResponse>>> GetMajorsByMajorGroupIdAsync(string majorGroupId)
@@ -75,9 +73,7 @@ public sealed class MajorService(IUnitOfWork<FucDbContext> uow, IMapper mapper) 
         IList<Major> majors = await _majorRepository.FindAsync(
             m => m.MajorGroupId.Equals(majorGroupId),
             cancellationToken: default);
-        return majors.Count != 0
-            ? OperationResult.Success(_mapper.Map<IEnumerable<MajorResponse>>(majors))
-            : OperationResult.Failure<IEnumerable<MajorResponse>>(Error.NullValue);
+        return OperationResult.Success(_mapper.Map<IEnumerable<MajorResponse>>(majors));
     }
 
     public async Task<OperationResult<MajorResponse>> GetMajorByIdAsync(string majorId)

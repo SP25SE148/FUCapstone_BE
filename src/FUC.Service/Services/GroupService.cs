@@ -140,9 +140,7 @@ public class GroupService(
             group.TopicResponse = await topicService.GetTopicByTopicCode(group.TopicCode);
         }
 
-        return groups.Count > 0
-            ? groups
-            : OperationResult.Failure<IEnumerable<GroupResponse>>(Error.NullValue);
+        return groups;
     }
 
     public async Task<OperationResult<IEnumerable<GroupResponse>>> GetAllGroupBySemesterIdAsync(string semesterId)
@@ -158,9 +156,7 @@ public class GroupService(
             group.TopicResponse = await topicService.GetTopicByTopicCode(group.TopicCode);
         }
 
-        return groups.Count > 0
-            ? groups.ToList()
-            : OperationResult.Failure<IEnumerable<GroupResponse>>(Error.NullValue);
+        return groups.ToList();
     }
 
     public async Task<OperationResult<IEnumerable<GroupResponse>>> GetAllGroupByMajorIdAsync(string majorId)
@@ -175,9 +171,7 @@ public class GroupService(
             group.TopicResponse = await topicService.GetTopicByTopicCode(group.TopicCode);
         }
 
-        return groups.Count > 0
-            ? groups.ToList()
-            : OperationResult.Failure<IEnumerable<GroupResponse>>(Error.NullValue);
+        return groups.ToList();
     }
 
     public async Task<OperationResult<IEnumerable<GroupResponse>>> GetAllGroupByCapstoneIdAsync(string capstoneId)
@@ -192,9 +186,7 @@ public class GroupService(
             group.TopicResponse = await topicService.GetTopicByTopicCode(group.TopicCode);
         }
 
-        return groups.Count > 0
-            ? groups.ToList()
-            : OperationResult.Failure<IEnumerable<GroupResponse>>(Error.NullValue);
+        return groups.ToList();
     }
 
     public async Task<OperationResult<IEnumerable<GroupResponse>>> GetAllGroupByCampusIdAsync(string campusId)
@@ -209,9 +201,7 @@ public class GroupService(
             group.TopicResponse = await topicService.GetTopicByTopicCode(group.TopicCode);
         }
 
-        return groups.Count > 0
-            ? groups.ToList()
-            : OperationResult.Failure<IEnumerable<GroupResponse>>(Error.NullValue);
+        return groups.ToList();
     }
 
     public async Task<OperationResult<IEnumerable<GroupResponse>>> GetPendingGroupsForStudentJoin(

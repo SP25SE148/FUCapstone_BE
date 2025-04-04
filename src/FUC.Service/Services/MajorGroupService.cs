@@ -8,9 +8,12 @@ using FUC.Service.Abstractions;
 using FUC.Service.DTOs.MajorGroupDTO;
 
 namespace FUC.Service.Services;
+
 public sealed class MajorGroupService(IUnitOfWork<FucDbContext> uow, IMapper mapper) : IMajorGroupService
 {
-    private readonly IRepository<MajorGroup> _majorGroupRepository = uow.GetRepository<MajorGroup>() ?? throw new ArgumentNullException(nameof(uow));
+    private readonly IRepository<MajorGroup> _majorGroupRepository =
+        uow.GetRepository<MajorGroup>() ?? throw new ArgumentNullException(nameof(uow));
+
     private readonly IMapper _mapper = mapper ?? throw new ArgumentNullException(nameof(mapper));
 
     public async Task<OperationResult<string>> CreateMajorGroupAsync(CreateMajorGroupRequest request)
@@ -19,8 +22,9 @@ public sealed class MajorGroupService(IUnitOfWork<FucDbContext> uow, IMapper map
             mg => mg.Id.Equals(request.Id),
             cancellationToken: default);
         if (existingMajorGroup is not null)
-            return OperationResult.Failure<string>(new Error("Error.DuplicateValue", "The MajorGroup Id already exists."));
-        
+            return OperationResult.Failure<string>(new Error("Error.DuplicateValue",
+                "The MajorGroup Id already exists."));
+
         var newMajorGroup = new MajorGroup
         {
             Id = request.Id,
@@ -54,19 +58,14 @@ public sealed class MajorGroupService(IUnitOfWork<FucDbContext> uow, IMapper map
     public async Task<OperationResult<IEnumerable<MajorGroupResponse>>> GetAllMajorGroupsAsync()
     {
         List<MajorGroup> majorGroups = await _majorGroupRepository.GetAllAsync();
-        return majorGroups.Count != 0
-            ? OperationResult.Success(_mapper.Map<IEnumerable<MajorGroupResponse>>(majorGroups))
-            : OperationResult.Failure<IEnumerable<MajorGroupResponse>>(Error.NullValue);
+        return OperationResult.Success(_mapper.Map<IEnumerable<MajorGroupResponse>>(majorGroups));
     }
 
     public async Task<OperationResult<IEnumerable<MajorGroupResponse>>> GetAllActiveMajorGroupsAsync()
     {
         IList<MajorGroup> majorGroups = await _majorGroupRepository.FindAsync(
             m => m.IsDeleted == false);
-        return majorGroups.Count != 0
-            ? OperationResult.Success(_mapper.Map<IEnumerable<MajorGroupResponse>>(majorGroups))
-            : OperationResult.Failure<IEnumerable<MajorGroupResponse>>(Error.NullValue);
-
+        return OperationResult.Success(_mapper.Map<IEnumerable<MajorGroupResponse>>(majorGroups));
     }
 
     public async Task<OperationResult<MajorGroupResponse>> GetMajorGroupByIdAsync(string majorGroupId)
