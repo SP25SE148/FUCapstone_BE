@@ -43,13 +43,13 @@ public class TopicService(
     ISystemConfigurationService systemConfigService,
     IIntegrationEventLogService integrationEventLogService) : ITopicService
 {
-    public async Task<OperationResult<Topic>> GetTopicEntityById(Guid topicId, 
-        bool isIncludeGroup = false, 
+    public async Task<OperationResult<Topic>> GetTopicEntityById(Guid topicId,
+        bool isIncludeGroup = false,
         CancellationToken cancellationToken = default)
     {
         var topic = await topicRepository.GetAsync(
             t => t.Id == topicId,
-            include: isIncludeGroup ? (x => x.Include(x => x.Group)) : null,
+            include: isIncludeGroup ? x => x.Include(x => x.Group) : null,
             orderBy: null,
             cancellationToken);
 
@@ -800,11 +800,11 @@ public class TopicService(
             }
 
             var supervisorIdList = await (from s in supervisorRepository.GetQueryable()
-                                          where supervisorEmail.Contains(s.Email) &&
-                                                s.IsAvailable &&
-                                                s.MajorId == currentUser.MajorId &&
-                                                s.CampusId == currentUser.CampusId
-                                          select s.Id).ToListAsync(cancellationToken);
+                where supervisorEmail.Contains(s.Email) &&
+                      s.IsAvailable &&
+                      s.MajorId == currentUser.MajorId &&
+                      s.CampusId == currentUser.CampusId
+                select s.Id).ToListAsync(cancellationToken);
 
             if (supervisorIdList.Count == 0)
             {
@@ -1282,9 +1282,9 @@ public class TopicService(
         var result = new List<(string, string)>();
 
         var query = from s in supervisorRepository.GetQueryable()
-                    where coSupervisorEmails.Contains(s.Email) &&
-                          s.CoSupervisors.Count < systemConfigService.GetSystemConfiguration().MaxTopicsForCoSupervisors
-                    select new { s.Id, s.Email };
+            where coSupervisorEmails.Contains(s.Email) &&
+                  s.CoSupervisors.Count < systemConfigService.GetSystemConfiguration().MaxTopicsForCoSupervisors
+            select new { s.Id, s.Email };
 
         (await query.ToListAsync(cancellationToken))
             .ForEach(s => result.Add((s.Id.ToString(), s.Email)));
@@ -1305,12 +1305,12 @@ public class TopicService(
     public async Task<OperationResult<List<BusinessAreaResponse>>> GetAllBusinessAreas()
     {
         var queryable = from ba in businessRepository.GetQueryable()
-                        select new BusinessAreaResponse
-                        {
-                            Id = ba.Id,
-                            Description = ba.Description,
-                            Name = ba.Name
-                        };
+            select new BusinessAreaResponse
+            {
+                Id = ba.Id,
+                Description = ba.Description,
+                Name = ba.Name
+            };
         var businessAreas = await queryable.ToListAsync();
 
         return businessAreas.Count != 0
@@ -1318,16 +1318,17 @@ public class TopicService(
             : OperationResult.Failure<List<BusinessAreaResponse>>(Error.NullValue);
     }
 
-    public async Task<OperationResult> AssignNewSupervisorForTopic(AssignNewSupervisorForTopicRequest request, CancellationToken cancellationToken)
+    public async Task<OperationResult> AssignNewSupervisorForTopic(AssignNewSupervisorForTopicRequest request,
+        CancellationToken cancellationToken)
     {
         try
         {
             var topic = await topicRepository.GetAsync(x => x.Id == request.TopicId,
-            include: x => x.AsSplitQuery()
-                .Include(x => x.Group)
-                .Include(x => x.CoSupervisors),
-            orderBy: null,
-            cancellationToken);
+                include: x => x.AsSplitQuery()
+                    .Include(x => x.Group)
+                    .Include(x => x.CoSupervisors),
+                orderBy: null,
+                cancellationToken);
 
             ArgumentNullException.ThrowIfNull(topic);
 
@@ -1359,7 +1360,8 @@ public class TopicService(
         }
         catch (Exception ex)
         {
-            logger.LogError("Fail to assign supervisor {SupCode} with topic {TopicId} with error {Message}", request.SupervisorId, request.TopicId, ex.Message);
+            logger.LogError("Fail to assign supervisor {SupCode} with topic {TopicId} with error {Message}",
+                request.SupervisorId, request.TopicId, ex.Message);
 
             await unitOfWork.RollbackAsync(cancellationToken);
 
@@ -1367,14 +1369,15 @@ public class TopicService(
         }
     }
 
-    public async Task<OperationResult> AddCoSupervisorForTopic(AssignNewSupervisorForTopicRequest request, CancellationToken cancellationToken)
+    public async Task<OperationResult> AddCoSupervisorForTopic(AssignNewSupervisorForTopicRequest request,
+        CancellationToken cancellationToken)
     {
         try
         {
             var topic = await topicRepository.GetAsync(x => x.Id == request.TopicId,
-            include: x => x.Include(x => x.CoSupervisors),
-            orderBy: null,
-            cancellationToken);
+                include: x => x.Include(x => x.CoSupervisors),
+                orderBy: null,
+                cancellationToken);
 
             ArgumentNullException.ThrowIfNull(topic);
 
@@ -1383,10 +1386,12 @@ public class TopicService(
             ArgumentNullException.ThrowIfNull(supervior);
 
             if (topic.MainSupervisorId == request.SupervisorId)
-                return OperationResult.Failure(new Error("Topic.Error", $"Supervisor {request.SupervisorId} is the main supervisor of Topic."));
+                return OperationResult.Failure(new Error("Topic.Error",
+                    $"Supervisor {request.SupervisorId} is the main supervisor of Topic."));
 
             if (topic.CoSupervisors.Any(x => x.SupervisorId == request.SupervisorId))
-                return OperationResult.Failure(new Error("Topic.Error", $"Supervisor {request.SupervisorId} was in Topic."));
+                return OperationResult.Failure(new Error("Topic.Error",
+                    $"Supervisor {request.SupervisorId} was in Topic."));
 
             await unitOfWork.BeginTransactionAsync(cancellationToken);
 
@@ -1403,7 +1408,8 @@ public class TopicService(
         }
         catch (Exception ex)
         {
-            logger.LogError("Fail to assign CoSupervisor {SupCode} with topic {TopicId} with error {Message}", request.SupervisorId, request.TopicId, ex.Message);
+            logger.LogError("Fail to assign CoSupervisor {SupCode} with topic {TopicId} with error {Message}",
+                request.SupervisorId, request.TopicId, ex.Message);
 
             await unitOfWork.RollbackAsync(cancellationToken);
 
@@ -1411,15 +1417,16 @@ public class TopicService(
         }
     }
 
-    public async Task<OperationResult> RemoveCoSupervisorForTopic(RemoveCoSupervisorForTopicRequest request, CancellationToken cancellationToken)
+    public async Task<OperationResult> RemoveCoSupervisorForTopic(RemoveCoSupervisorForTopicRequest request,
+        CancellationToken cancellationToken)
     {
         try
         {
             var topic = await topicRepository.GetAsync(x => x.Id == request.TopicId,
-            isEnabledTracking: true,
-            include: x => x.Include(x => x.CoSupervisors),
-            orderBy: null,
-            cancellationToken);
+                isEnabledTracking: true,
+                include: x => x.Include(x => x.CoSupervisors),
+                orderBy: null,
+                cancellationToken);
 
             ArgumentNullException.ThrowIfNull(topic);
 
@@ -1440,7 +1447,8 @@ public class TopicService(
         }
         catch (Exception ex)
         {
-            logger.LogError("Fail to remove CoSupervisor {SupCode} with topic {TopicId} with error {Message}", request.SupervisorId, request.TopicId, ex.Message);
+            logger.LogError("Fail to remove CoSupervisor {SupCode} with topic {TopicId} with error {Message}",
+                request.SupervisorId, request.TopicId, ex.Message);
 
             await unitOfWork.RollbackAsync(cancellationToken);
 

@@ -244,10 +244,7 @@ public class GroupService(
 
     public async Task<OperationResult<GroupResponse>> GetGroupByIdAsync(Guid id)
     {
-        var group = await groupRepository.GetAsync(g => g.Id == id &&
-                                                        (g.SupervisorId == currentUser.UserCode ||
-                                                         g.Topic != null && g.Topic.CoSupervisors.Any(x =>
-                                                             x.SupervisorId == currentUser.UserCode)),
+        var group = await groupRepository.GetAsync(g => g.Id == id,
             CreateSelectorForGroupResponse(),
             g => g.AsSplitQuery()
                 .Include(g => g.GroupMembers.Where(gm => gm.Status == GroupMemberStatus.Accepted))
@@ -2125,7 +2122,8 @@ public class GroupService(
         }
     }
 
-    public async Task<OperationResult<ExportCompletedStudents>> ArchiveDataCompletedStudents(CancellationToken cancellationToken)
+    public async Task<OperationResult<ExportCompletedStudents>> ArchiveDataCompletedStudents(
+        CancellationToken cancellationToken)
     {
         var groups = await groupRepository.FindAsync(
             x => x.CampusId == currentUser.CampusId &&
