@@ -40,3 +40,9 @@ public class DefendCapstoneCalendarDetailResponse : DefendCapstoneCalendarRespon
     public string Abbreviation { get; set; }
     public string Description { get; set; }
 }
+
+public class DefendCapstoneResultResponse : DefendCapstoneCalendarResponse
+{
+    public string GroupStatus { get; set; }
+    public bool IsReDefendCapstone { get; set; }
+}

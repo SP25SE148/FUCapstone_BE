@@ -1181,20 +1181,22 @@ public class TopicService(
         }
     }
 
-    public async Task<OperationResult> ReAppraisalTopicForMainSupervisorOfTopic(Guid topicId, CancellationToken cancellationToken)
+    public async Task<OperationResult> ReAppraisalTopicForMainSupervisorOfTopic(Guid topicId,
+        CancellationToken cancellationToken)
     {
         try
         {
             var topic = await topicRepository.GetAsync(
-            x => x.Id == topicId,
-            include: x => x.Include(x => x.TopicAppraisals),
-            orderBy: null,
-            cancellationToken);
+                x => x.Id == topicId,
+                include: x => x.Include(x => x.TopicAppraisals),
+                orderBy: null,
+                cancellationToken);
 
             ArgumentNullException.ThrowIfNull(topic);
 
             if (topic.MainSupervisorId != currentUser.UserCode)
-                return OperationResult.Failure(new Error("Topic.Error", "Only main supervisor of topic can do this action."));
+                return OperationResult.Failure(new Error("Topic.Error",
+                    "Only main supervisor of topic can do this action."));
 
             if (topic.Status == TopicStatus.Approved || topic.Status == TopicStatus.Rejected)
                 return OperationResult.Failure(new Error("Topic.Error",
@@ -1212,8 +1214,8 @@ public class TopicService(
                     $"You can not do this action while supervisor appraisaling."));
 
             if (!(currentTopicAppraisals[0].AppraisalDate < topic.UpdatedDate &&
-                topic.UpdatedBy != null &&  
-                topic.UpdatedBy == currentUser.Email))
+                  topic.UpdatedBy != null &&
+                  topic.UpdatedBy == currentUser.Email))
                 return OperationResult.Failure(new Error("Topic.Error",
                     $"You need to update before appraisal."));
 
@@ -1255,7 +1257,7 @@ public class TopicService(
 
             return OperationResult.Success();
         }
-        catch(Exception ex)
+        catch (Exception ex)
         {
             logger.LogError("Re-appraisal topic fail with {Error}", ex.Message);
             await unitOfWork.RollbackAsync(cancellationToken);
@@ -1276,10 +1278,10 @@ public class TopicService(
 
         if (topic.Status == TopicStatus.Approved)
         {
-            topic.Code = await GenerationTopicCode(topic.CampusId, 
+            topic.Code = await GenerationTopicCode(topic.CampusId,
                 topic.Capstone.MajorId,
                 topic.CapstoneId,
-                cancellationToken);    
+                cancellationToken);
         }
 
         integrationEventLogService.SendEvent(new TopicStatusUpdatedEvent
@@ -1514,6 +1516,16 @@ public class TopicService(
 
             return OperationResult.Failure(new Error("Topic.Error", "Fail to remove coSupervisor for this topic"));
         }
+    }
+
+    public async Task<OperationResult<Topic>> GetTopicByGroupIdAsync(Guid groupId)
+    {
+        var topic = await topicRepository.GetAsync(t => t.Group.Id == groupId, include: t =>
+            t.Include(t => t.Group)
+                .ThenInclude(g => g.GroupMembers.Where(gm => gm.Status == GroupMemberStatus.Accepted))
+                .Include(t => t.CoSupervisors));
+
+        return topic ?? OperationResult.Failure<Topic>(Error.NullValue);
     }
 
     private async Task<float> GetAverageGPAOfGroupByStudent(string studentId, CancellationToken cancellationToken)

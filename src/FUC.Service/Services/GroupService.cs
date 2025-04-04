@@ -1852,7 +1852,9 @@ public class GroupService(
     {
         var groupDecision = await defendCapstoneDecisionRepository.GetAsync(dc => dc.GroupId == groupId,
             include: dc => dc
-                .Include(dc => dc.Group).ThenInclude(g => g.GroupMembers)
+                .Include(dc => dc.Group)
+                .ThenInclude(g => g.GroupMembers.Where(gm => gm.Status == GroupMemberStatus.Accepted))
+                .ThenInclude(gm => gm.Student)
                 .Include(dc => dc.Group.Topic)
                 .Include(dc => dc.Group.Supervisor)
                 .Include(dc => dc.Supervisor));
@@ -1866,7 +1868,7 @@ public class GroupService(
             return OperationResult.Failure<GroupDecisionResponse>(new Error("GetFailed",
                 "Can not get group decision while you are not mentor of this group"));
         if (currentUser.Role == UserRoles.Student &&
-            groupDecision.Group.GroupMembers.Any(gm => gm.StudentId != currentUser.UserCode))
+            groupDecision.Group.GroupMembers.Count(gm => gm.StudentId == currentUser.UserCode) < 1)
             return OperationResult.Failure<GroupDecisionResponse>(new Error("GetFailed",
                 "Can not get group decision while you are not member of this group"));
         return new GroupDecisionResponse
@@ -1877,7 +1879,15 @@ public class GroupService(
             GroupCode = groupDecision.Group.GroupCode,
             TopicId = (Guid)groupDecision.Group.TopicId!,
             TopicCode = groupDecision.Group.Topic.Code,
-            SupervisorName = groupDecision.Group.Supervisor.FullName
+            SupervisorName = groupDecision.Group.Supervisor.FullName,
+            StudentDecisionList = groupDecision.Group.GroupMembers.Select(x => new StudentDecision
+            {
+                StudentId = x.StudentId,
+                StudentFullName = x.Student.FullName,
+                Decision = x.Student.Status == StudentStatus.InCompleted
+                    ? DecisionStatus.Disagree_to_defense.ToString()
+                    : groupDecision.Decision.ToString()
+            })
         };
     }
 
@@ -2122,7 +2132,8 @@ public class GroupService(
         }
     }
 
-    public async Task<OperationResult> AssignPendingTopicForGroup(AssignPendingTopicForGroupRequest request, CancellationToken cancellationToken)
+    public async Task<OperationResult> AssignPendingTopicForGroup(AssignPendingTopicForGroupRequest request,
+        CancellationToken cancellationToken)
     {
         var topic = await topicService.GetTopicEntityById(request.TopicId, isIncludeGroup: false, cancellationToken);
 
@@ -2133,7 +2144,7 @@ public class GroupService(
             return OperationResult.Failure(new Error("Topic.Error", "This topic does not assign for group."));
 
         var group = await groupRepository.GetAsync(
-            x => x.Id == request.GroupId, 
+            x => x.Id == request.GroupId,
             isEnabledTracking: true,
             include: null,
             orderBy: null,
