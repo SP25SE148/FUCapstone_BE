@@ -1,4 +1,5 @@
-﻿using ClosedXML.Excel;
+﻿using System.Collections;
+using ClosedXML.Excel;
 using FUC.Common.Abstractions;
 using FUC.Common.Constants;
 using FUC.Common.IntegrationEventLog.Services;
@@ -37,7 +38,7 @@ public class DefendCapstoneService(
     {
         if (!IsValidFile(file))
         {
-            return OperationResult.Failure(new Error("DenfendCapstoneProjectCalendar.Error", "Invalid form file."));
+            return OperationResult.Failure(new Error("DefendCapstoneProjectCalendar.Error", "Invalid form file."));
         }
 
         try
@@ -54,7 +55,7 @@ public class DefendCapstoneService(
         catch (Exception e)
         {
             logger.LogError("import review failed with message: {Message}", e.Message);
-            return OperationResult.Failure(new Error("Error.ImportFailed", "import review failed"));
+            return OperationResult.Failure(new Error("Error.ImportFailed", "import defend calendar failed"));
         }
     }
 
@@ -280,7 +281,8 @@ public class DefendCapstoneService(
             Abbreviation = calendar.Topic.Abbreviation,
             Description = calendar.Topic.Description,
             TopicEngName = calendar.Topic.EnglishName,
-            TopicVietName = calendar.Topic.VietnameseName
+            TopicVietName = calendar.Topic.VietnameseName,
+            Status = calendar.Status.ToString()
         };
 
         return OperationResult.Success(response);
@@ -331,12 +333,69 @@ public class DefendCapstoneService(
                     Abbreviation = calendar.Topic.Abbreviation,
                     Description = calendar.Topic.Description,
                     TopicEngName = calendar.Topic.EnglishName,
-                    TopicVietName = calendar.Topic.VietnameseName
+                    TopicVietName = calendar.Topic.VietnameseName,
+                    Status = calendar.Status.ToString()
                 });
 
         return defendCapstoneCalendars.Any()
             ? defendCapstoneCalendars.ToList()
             : OperationResult.Failure<IEnumerable<DefendCapstoneCalendarDetailResponse>>(Error.NullValue);
+    }
+
+    public async Task<OperationResult<IEnumerable<DefendCapstoneResultResponse>>>
+        GetDefendCapstoneResultByGroupId(Guid groupId)
+    {
+        var topic = await topicService.GetTopicByGroupIdAsync(groupId);
+        if (topic.IsFailure)
+            return OperationResult.Failure<IEnumerable<DefendCapstoneResultResponse>>(new Error("Error.NotFound",
+                "Group not found"));
+        if (currentUser.Role == UserRoles.Student &&
+            topic.Value.Group.GroupMembers.All(gm => gm.StudentId != currentUser.UserCode))
+            return OperationResult.Failure<IEnumerable<DefendCapstoneResultResponse>>(new Error("Error.NotFound",
+                "You are not in this group"));
+
+        if (currentUser.Role == UserRoles.Supervisor &&
+            (topic.Value.MainSupervisorId != currentUser.UserCode ||
+             topic.Value.CoSupervisors.All(c => c.SupervisorId != currentUser.UserCode)))
+            return OperationResult.Failure<IEnumerable<DefendCapstoneResultResponse>>(new Error("Error.NotFound",
+                "You are not the main or co supervisor of this group"));
+        var defendCapstoneResults = await defendCapstoneCalendarRepository.FindAsync(dc => dc.TopicId == topic.Value.Id,
+            x => x.AsSplitQuery()
+                .Include(x => x.DefendCapstoneProjectMemberCouncils)
+                .ThenInclude(x => x.Supervisor)
+                .Include(x => x.Topic)
+                .ThenInclude(x => x.Group)
+                .ThenInclude(x => x.Supervisor),
+            orderBy: dc => dc.OrderBy(dc => dc.CreatedBy),
+            selector: calendar => new DefendCapstoneResultResponse
+            {
+                Id = calendar.Id,
+                TopicId = calendar.TopicId,
+                GroupId = calendar.Topic.Group.Id,
+                DefenseDate = calendar.DefenseDate,
+                DefendAttempt = calendar.DefendAttempt,
+                Location = calendar.Location,
+                Slot = calendar.Slot,
+                CampusId = calendar.CampusId,
+                SemesterId = calendar.SemesterId,
+                TopicCode = calendar.TopicCode,
+                GroupCode = calendar.Topic.Group.GroupCode,
+                CapstoneId = calendar.CapstoneId,
+                Status = calendar.Status.ToString(),
+                GroupStatus = calendar.Topic.Group.Status.ToString(),
+                IsReDefendCapstone = calendar.Topic.Group.IsReDefendCapstoneProject,
+                CouncilMembers = calendar.DefendCapstoneProjectMemberCouncils.Select(x =>
+                    new DefendCapstoneCouncilMemberDto
+                    {
+                        Id = x.Id,
+                        IsPresident = x.IsPresident,
+                        IsSecretary = x.IsSecretary,
+                        SupervisorId = x.SupervisorId,
+                        SupervisorName = x.Supervisor.FullName,
+                        DefendCapstoneProjectInformationCalendarId = x.DefendCapstoneProjectInformationCalendarId
+                    }).ToList()
+            });
+        return defendCapstoneResults.Any() ? defendCapstoneResults.ToList() : null;
     }
 
     private async Task<List<DefendCapstoneProjectInformationCalendar>> ParseDefendCapstoneCalendarsFromFile(

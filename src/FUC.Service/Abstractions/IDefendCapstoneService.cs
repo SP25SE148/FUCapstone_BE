@@ -30,4 +30,6 @@ public interface IDefendCapstoneService
         Guid defendCapstoneCalendarId);
 
     Task<OperationResult<IEnumerable<DefendCapstoneCalendarDetailResponse>>> GetDefendCapstoneCalendarByGroupSelf();
+
+    Task<OperationResult<IEnumerable<DefendCapstoneResultResponse>>> GetDefendCapstoneResultByGroupId(Guid groupId);
 }

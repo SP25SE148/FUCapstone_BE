@@ -40,4 +40,12 @@ public sealed record GroupDecisionResponse
     public string TopicCode { get; set; }
     public string Decision { get; set; }
     public string? Comment { get; set; }
+    public IEnumerable<StudentDecision> StudentDecisionList { get; set; }
+}
+
+public sealed record StudentDecision
+{
+    public string StudentId { get; set; }
+    public string StudentFullName { get; set; }
+    public string Decision { get; set; }
 }

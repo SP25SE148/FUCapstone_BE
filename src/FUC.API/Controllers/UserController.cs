@@ -295,4 +295,14 @@ public sealed class UserController(
             ? Ok(result)
             : HandleFailure(result);
     }
+
+    [HttpGet("defend-calendar/result/{groupId}")]
+    [Authorize(Roles = $"{UserRoles.Supervisor},{UserRoles.Student}")]
+    public async Task<IActionResult> GetDefendCapstoneCalendarResultByGroupId(Guid groupId)
+    {
+        var result = await defendCapstoneService.GetDefendCapstoneResultByGroupId(groupId);
+        return result.IsSuccess
+            ? Ok(result)
+            : HandleFailure(result);
+    }
 }
