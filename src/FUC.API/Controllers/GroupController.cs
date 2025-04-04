@@ -147,6 +147,16 @@ public class GroupController(
             : HandleFailure(result);
     }
 
+    [HttpPost("assign/pending-topic")]
+    [Authorize(Roles = nameof(UserRoles.Manager))]
+    public async Task<IActionResult> AssignPendingTopicForGroup(AssignPendingTopicForGroupRequest request)
+    {
+        var result = await groupService.AssignPendingTopicForGroup(request, default);
+
+        return !result.IsFailure
+            ? Ok(result)
+            : HandleFailure(result);
+    }
     #endregion
 
     #region Group Member Endpoint

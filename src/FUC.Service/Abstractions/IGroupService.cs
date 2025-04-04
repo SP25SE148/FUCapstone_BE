@@ -93,4 +93,5 @@ public interface IGroupService
 
     Task<OperationResult<IEnumerable<GroupDecisionResponse>>> GetGroupDecisionsByStatus(DecisionStatus status);
     Task<OperationResult<byte[]>> ExportGroupDecisionByStatus(DecisionStatus status);
+    Task<OperationResult> AssignPendingTopicForGroup(AssignPendingTopicForGroupRequest request, CancellationToken cancellationToken);
 }

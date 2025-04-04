@@ -2121,4 +2121,39 @@ public class GroupService(
             }
         }
     }
+
+    public async Task<OperationResult> AssignPendingTopicForGroup(AssignPendingTopicForGroupRequest request, CancellationToken cancellationToken)
+    {
+        var topic = await topicService.GetTopicEntityById(request.TopicId, isIncludeGroup: false, cancellationToken);
+
+        if (topic.IsFailure)
+            return OperationResult.Failure(topic.Error);
+
+        if (topic.Value.Status != TopicStatus.Approved || topic.Value.IsAssignedToGroup)
+            return OperationResult.Failure(new Error("Topic.Error", "This topic does not assign for group."));
+
+        var group = await groupRepository.GetAsync(
+            x => x.Id == request.GroupId, 
+            isEnabledTracking: true,
+            include: null,
+            orderBy: null,
+            cancellationToken);
+
+        ArgumentNullException.ThrowIfNull(group);
+
+        if (group.TopicId != null)
+            return OperationResult.Failure(new Error("Group.Error", "This group had topic yet."));
+
+        if (group.Status != GroupStatus.InProgress)
+            return OperationResult.Failure(new Error("Topic.Error", "This group is not valid."));
+
+        group.Topic = topic.Value;
+        group.Topic.IsAssignedToGroup = true;
+
+        groupRepository.Update(group);
+
+        await uow.SaveChangesAsync(cancellationToken);
+
+        return OperationResult.Success();
+    }
 }
