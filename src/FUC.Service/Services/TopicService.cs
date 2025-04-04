@@ -1211,7 +1211,9 @@ public class TopicService(
                 return OperationResult.Failure(new Error("Topic.Error",
                     $"You can not do this action while supervisor appraisaling."));
 
-            if (currentTopicAppraisals[0].CreatedDate > topic.UpdatedDate)
+            if (!(currentTopicAppraisals[0].AppraisalDate < topic.UpdatedDate &&
+                topic.UpdatedBy != null &&  
+                topic.UpdatedBy == currentUser.Email))
                 return OperationResult.Failure(new Error("Topic.Error",
                     $"You need to update before appraisal."));
 
