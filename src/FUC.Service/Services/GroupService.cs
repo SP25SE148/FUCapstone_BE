@@ -27,7 +27,6 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Query;
 using Microsoft.Extensions.Logging;
 using Group = FUC.Data.Entities.Group;
-using ClosedXML.Excel;
 
 namespace FUC.Service.Services;
 
@@ -579,6 +578,7 @@ public class GroupService(
                 topicRequest.Group.TopicId = topicRequest.Topic.Id;
                 topicRequest.Group.SupervisorId = topicRequest.Topic.MainSupervisorId;
                 topicRequest.Topic.IsAssignedToGroup = true;
+                //topicRequest.Topic.GroupCode = topicRequest.Group.GroupCode;
                 topicRequestRepository.Update(topicRequest);
             }
 
@@ -2121,23 +2121,4 @@ public class GroupService(
             }
         }
     }
-
-    public async Task<OperationResult<ExportCompletedStudents>> ArchiveDataCompletedStudents(
-        CancellationToken cancellationToken)
-    {
-        var groups = await groupRepository.FindAsync(
-            x => x.CampusId == currentUser.CampusId &&
-                 x.CapstoneId == currentUser.CapstoneId &&
-                 x.Status == GroupStatus.Completed &&
-                 !x.IsDeleted,
-            cancellationToken);
-
-        return OperationResult.Success(new ExportCompletedStudents { });
-    }
-}
-
-public class ExportCompletedStudents
-{
-    public byte[] Content { get; set; }
-    public string FileName { get; set; }
 }

@@ -1139,7 +1139,7 @@ public class TopicService(
                                                 x.Id != topicAppraisal.Id).ToList()
                                        ?? new List<TopicAppraisal>();
 
-            if (systemConfigService.GetSystemConfiguration().MaxTopicAppraisalsForTopic != 1
+            if (systemConfigService.GetSystemConfiguration().MaxTopicAppraisalsForTopic > 0
                 && otherTopicAppraisals.Count == 0)
             {
                 return OperationResult.Failure(new Error("Topic.Error",
@@ -1164,35 +1164,9 @@ public class TopicService(
             {
                 await UpdateStatusTopicAfterAppraisal(topic, TopicStatus.Considered,
                     cancellationToken);
-                var appraisalSupervisors = new List<string> { topicAppraisal.SupervisorId };
-
-                if (otherTopicAppraisals.Count > 0)
-                    appraisalSupervisors.AddRange(otherTopicAppraisals.Select(x => x.SupervisorId).Distinct());
-
-                var newAppraisals = appraisalSupervisors.Select(s => new TopicAppraisal
-                {
-                    SupervisorId = s,
-                    TopicId = topic.Id,
-                    AttemptTime = topicAppraisal.AttemptTime++,
-                }).ToList();
-
-                if (newAppraisals != null && newAppraisals.Count > 0)
-                {
-                    topic.TopicAppraisals.AddRange(newAppraisals);
-                }
-
-                topicRepository.Update(topic);
-
-                await unitOfWork.SaveChangesAsync(cancellationToken);
-
-                // Notification for re-assign because the supervisor's opinions are not the same or all are consider
-                integrationEventLogService.SendEvent(new ReAssignAppraisalTopicEvent
-                {
-                    SupervisorIds = appraisalSupervisors,
-                    TopicId = topicAppraisal.TopicId,
-                    TopicEnglishName = topic.EnglishName
-                });
             }
+
+            topicRepository.Update(topic);
 
             await unitOfWork.CommitAsync(cancellationToken);
 
@@ -1204,6 +1178,87 @@ public class TopicService(
             await unitOfWork.RollbackAsync(cancellationToken);
 
             return OperationResult.Failure(new Error("Topic.Error", "Appraisal Topic create fail."));
+        }
+    }
+
+    public async Task<OperationResult> ReAppraisalTopicForMainSupervisorOfTopic(Guid topicId, CancellationToken cancellationToken)
+    {
+        try
+        {
+            var topic = await topicRepository.GetAsync(
+            x => x.Id == topicId,
+            include: x => x.Include(x => x.TopicAppraisals),
+            orderBy: null,
+            cancellationToken);
+
+            ArgumentNullException.ThrowIfNull(topic);
+
+            if (topic.MainSupervisorId != currentUser.UserCode)
+                return OperationResult.Failure(new Error("Topic.Error", "Only main supervisor of topic can do this action."));
+
+            if (topic.Status == TopicStatus.Approved || topic.Status == TopicStatus.Rejected)
+                return OperationResult.Failure(new Error("Topic.Error",
+                    $"The status of topic was {topic.Status}, then you can not do this action."));
+
+            if (topic.TopicAppraisals.Count == 0)
+                return OperationResult.Failure(new Error("Topic.Error", $"You can not do this action rightnow!."));
+
+            var currentAttemptTime = topic.TopicAppraisals.Max(x => x.AttemptTime);
+
+            var currentTopicAppraisals = topic.TopicAppraisals.Where(x => x.AttemptTime == currentAttemptTime).ToList();
+
+            if (currentTopicAppraisals.Exists(x => x.Status == TopicAppraisalStatus.Pending))
+                return OperationResult.Failure(new Error("Topic.Error",
+                    $"You can not do this action while supervisor appraisaling."));
+
+            if (currentTopicAppraisals[0].CreatedDate > topic.UpdatedDate)
+                return OperationResult.Failure(new Error("Topic.Error",
+                    $"You need to update before appraisal."));
+
+            if (currentTopicAppraisals.TrueForAll(x => x.Status == TopicAppraisalStatus.Accepted) ||
+                currentTopicAppraisals.TrueForAll(x => x.Status == TopicAppraisalStatus.Rejected))
+                return OperationResult.Failure(new Error("Topic.Error",
+                    $"The status of topic was {topic.Status}, then you can not do this action."));
+
+            await unitOfWork.BeginTransactionAsync(cancellationToken);
+
+            var appraisalSupervisors = new List<string>();
+
+            appraisalSupervisors.AddRange(currentTopicAppraisals.Select(x => x.SupervisorId).Distinct());
+
+            var newAppraisals = appraisalSupervisors.Select(s => new TopicAppraisal
+            {
+                SupervisorId = s,
+                TopicId = topic.Id,
+                AttemptTime = currentAttemptTime + 1,
+            }).ToList();
+
+            if (newAppraisals != null && newAppraisals.Count > 0)
+            {
+                topic.TopicAppraisals.AddRange(newAppraisals);
+            }
+
+            topicRepository.Update(topic);
+
+            await unitOfWork.SaveChangesAsync(cancellationToken);
+
+            integrationEventLogService.SendEvent(new ReAssignAppraisalTopicEvent
+            {
+                SupervisorIds = appraisalSupervisors,
+                TopicId = topic.Id,
+                TopicEnglishName = topic.EnglishName
+            });
+
+            await unitOfWork.CommitAsync(cancellationToken);
+
+            return OperationResult.Success();
+        }
+        catch(Exception ex)
+        {
+            logger.LogError("Re-appraisal topic fail with {Error}", ex.Message);
+            await unitOfWork.RollbackAsync(cancellationToken);
+
+            return OperationResult.Failure(new Error("Topic.Error", "Re-Appraisal Topic fail."));
         }
     }
 
@@ -1219,17 +1274,20 @@ public class TopicService(
 
         if (topic.Status == TopicStatus.Approved)
         {
-            topic.Code = await GenerationTopicCode(topic.CampusId, topic.Capstone.MajorId, topic.CapstoneId,
-                cancellationToken);
-
-            integrationEventLogService.SendEvent(new TopicApprovedEvent
-            {
-                SupervisorId = topic.MainSupervisorId,
-                TopicId = topic.Id,
-                TopicEnglishName = topic.EnglishName,
-                TopicCode = topic.Code,
-            });
+            topic.Code = await GenerationTopicCode(topic.CampusId, 
+                topic.Capstone.MajorId,
+                topic.CapstoneId,
+                cancellationToken);    
         }
+
+        integrationEventLogService.SendEvent(new TopicStatusUpdatedEvent
+        {
+            SupervisorId = topic.MainSupervisorId,
+            TopicId = topic.Id,
+            TopicEnglishName = topic.EnglishName,
+            TopicStatus = topicStatus.ToString(),
+            TopicCode = topic.Code,
+        });
     }
 
     private async Task<string> GenerationTopicCode(string campusId, string majorId, string capstoneId,

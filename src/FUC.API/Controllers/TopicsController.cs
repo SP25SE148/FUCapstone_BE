@@ -197,4 +197,13 @@ public class TopicsController(ITopicService topicService) : ApiController
 
         return result.IsSuccess ? Ok(result) : HandleFailure(result);
     }
+
+    [HttpPost("re-appraisal/{topicId}")]
+    [Authorize(Roles = $"{UserRoles.Supervisor}")]
+    public async Task<IActionResult> ReAppraisalTopicForMainSupervisorOfTopic(Guid topicId)
+    {
+        var result = await topicService.ReAppraisalTopicForMainSupervisorOfTopic(topicId, default);
+
+        return result.IsSuccess ? Ok(result) : HandleFailure(result);
+    }
 }

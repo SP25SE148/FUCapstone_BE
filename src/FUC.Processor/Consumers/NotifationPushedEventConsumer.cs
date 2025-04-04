@@ -100,14 +100,14 @@ public class ReAssignAppraisalTopicEventConsumer : BaseEventConsumer<ReAssignApp
     }
 }
 
-public class TopicApprovedEventConsumer : BaseEventConsumer<TopicApprovedEvent>
+public class TopicStatusUpdatedEventConsumer : BaseEventConsumer<TopicStatusUpdatedEvent>
 {
-    private readonly ILogger<TopicApprovedEventConsumer> _logger;
+    private readonly ILogger<TopicStatusUpdatedEventConsumer> _logger;
     private readonly UsersTracker _usersTracker;
     private readonly ProcessorDbContext _processorDbContext;
     private readonly IHubContext<NotificationHub, INotificationClient> _hub;
 
-    public TopicApprovedEventConsumer(ILogger<TopicApprovedEventConsumer> logger,
+    public TopicStatusUpdatedEventConsumer(ILogger<TopicStatusUpdatedEventConsumer> logger,
         UsersTracker usersTracker,
         IHubContext<NotificationHub, INotificationClient> hub,
         ProcessorDbContext processorDbContext,
@@ -119,7 +119,7 @@ public class TopicApprovedEventConsumer : BaseEventConsumer<TopicApprovedEvent>
         _processorDbContext = processorDbContext;
     }
 
-    protected override async Task ProcessMessage(TopicApprovedEvent message)
+    protected override async Task ProcessMessage(TopicStatusUpdatedEvent message)
     {
         _logger.LogInformation("Starting to send notification for TopicApprovedEvent with topic {Id}", message.TopicId);
 
@@ -129,9 +129,10 @@ public class TopicApprovedEventConsumer : BaseEventConsumer<TopicApprovedEvent>
         {
             UserCode = message.SupervisorId,
             ReferenceTarget = $"{message.TopicId}/{message.TopicCode}",
-            Content = $"Your topic {message.TopicEnglishName} was approved. TopicCode is {message.TopicCode}",
+            Content = $"Your topic {message.TopicEnglishName} was {message.TopicStatus}. " + 
+            (string.IsNullOrEmpty(message.TopicCode) ? string.Empty : $"TopicCode is {message.TopicCode}"),
             IsRead = false,
-            Type = nameof(TopicApprovedEvent)
+            Type = nameof(TopicStatusUpdatedEvent)
         });
 
         await _processorDbContext.SaveChangesAsync();

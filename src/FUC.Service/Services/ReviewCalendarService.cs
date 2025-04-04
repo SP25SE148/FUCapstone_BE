@@ -63,7 +63,7 @@ public sealed class ReviewCalendarService(
                     RequestId = reviewCalendar.Id,
                     RequestType = nameof(ReviewCalendarExpirationEvent),
                     ExpirationDuration =
-                        TimeSpan.FromMinutes(systemConfigService.GetSystemConfiguration()
+                        TimeSpan.FromHours(systemConfigService.GetSystemConfiguration()
                             .ExpirationReviewCalendarDuration)
                 });
             }

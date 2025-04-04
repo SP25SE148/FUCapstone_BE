@@ -36,4 +36,5 @@ public interface ITopicService
     Task<OperationResult<IList<TopicResponse>>> GetTopicsByCoSupervisor();
     Task<OperationResult> AddCoSupervisorForTopic(AssignNewSupervisorForTopicRequest request, CancellationToken cancellationToken);
     Task<OperationResult> RemoveCoSupervisorForTopic(RemoveCoSupervisorForTopicRequest request, CancellationToken cancellationToken);
+    Task<OperationResult> ReAppraisalTopicForMainSupervisorOfTopic(Guid topicId, CancellationToken cancellationToken);
 }
