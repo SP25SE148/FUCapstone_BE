@@ -1,5 +1,4 @@
-﻿using System.Collections;
-using ClosedXML.Excel;
+﻿using ClosedXML.Excel;
 using FUC.Common.Abstractions;
 using FUC.Common.Constants;
 using FUC.Common.IntegrationEventLog.Services;
@@ -286,8 +285,7 @@ public class DefendCapstoneService(
             Abbreviation = calendar.Topic.Abbreviation,
             Description = calendar.Topic.Description,
             TopicEngName = calendar.Topic.EnglishName,
-            TopicVietName = calendar.Topic.VietnameseName,
-            Status = calendar.Status.ToString()
+            TopicVietName = calendar.Topic.VietnameseName
         };
 
         return OperationResult.Success(response);
