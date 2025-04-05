@@ -160,7 +160,7 @@ public class DocumentsController(
             return Unauthorized();
 
         var key =
-            $"{topic.Value.CampusId}/{topic.Value.SemesterId}/{topic.Value.Group.MajorId}/{topic.Value.CapstoneId}/{topic.Value.Group.GroupCode}";
+            $"{topic.Value.CampusId}/{topic.Value.SemesterId}/{topic.Value.Group.MajorId}/{topic.Value.CapstoneId}/{topic.Value.GroupCode}";
 
         var result = await documentsService.PresentGroupDocumentFilePresignedUrl(key);
 
@@ -187,7 +187,7 @@ public class DocumentsController(
         for (int i = 1; i <= systemConfigurationService.GetSystemConfiguration().MaxAttemptTimesToDefendCapstone; i++)
         {
             var key =
-            $"{topic.Value.CampusId}/{topic.Value.SemesterId}/{topic.Value.CapstoneId}/{topic.Value.Code}/{i}/{topic.Value.Group.GroupCode}";
+            $"{topic.Value.CampusId}/{topic.Value.SemesterId}/{topic.Value.CapstoneId}/{topic.Value.Code}/{i}/{topic.Value.GroupCode}";
 
             var result = await documentsService.PresentThesisCouncilMeetingMinutesForTopicPresignedUrl(key);
 

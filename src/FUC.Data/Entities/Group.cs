@@ -17,6 +17,7 @@ public sealed class Group : AuditableSoftDeleteEntity
     public GroupStatus Status { get; set; }
 
     public bool IsReDefendCapstoneProject { get; set; }
+    public bool IsUploadGroupDocument { get; set; } 
     public Major Major { get; set; } = null!;
     public Semester Semester { get; set; } = null!;
     public Campus Campus { get; set; } = null!;

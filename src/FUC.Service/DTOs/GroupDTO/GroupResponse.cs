@@ -14,6 +14,7 @@ public sealed record GroupResponse
     public string CampusName { get; init; } = string.Empty;
     public string? TopicCode { get; init; } = "undefined";
     public string? GroupCode { get; init; } = string.Empty;
+    public bool IsUploadGroupDocument { get; set; }
     public float AverageGPA { get; set; }
     public string CurrentNumberOfGroupPerMax { get; set; } = string.Empty;
     public string Status { get; init; } = string.Empty;

@@ -18,6 +18,7 @@ public sealed class Topic : AuditableSoftDeleteEntity
     public string Description { get; set; }
     public string FileName { get; set; }
     public string FileUrl { get; set; }
+    public string? GroupCode { get; set; }
     public TopicStatus Status { get; set; }
     public bool IsAssignedToGroup { get; set; }
     public DifficultyLevel DifficultyLevel { get; set; }

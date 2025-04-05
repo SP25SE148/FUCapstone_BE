@@ -18,7 +18,8 @@ public sealed class AcademicManagementController(
     IMajorService majorService,
     ICapstoneService capstoneService,
     IMajorGroupService majorGroupService,
-    ISemesterService semesterService) : ApiController
+    ISemesterService semesterService,
+    IArchiveDataApplicationService archiveDataApplicationService) : ApiController
 {
     #region Campus
     // ---- Campus Endpoints ----
@@ -301,5 +302,21 @@ public sealed class AcademicManagementController(
             : HandleFailure(result);
     }
     #endregion
-    
+
+    #region Archive 
+
+    [HttpPost("archive")]
+    [Authorize(Roles = $"{UserRoles.Manager}")]
+    public async Task<IActionResult> ArchiveData()
+    {
+        var result = await archiveDataApplicationService.ArchiveDataCompletedStudents(default);
+
+        return result.IsSuccess
+           ? File(result.Value.Content,
+               "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+               result.Value.FileName)
+           : HandleFailure(result);
+    }
+
+    #endregion Archive
 }

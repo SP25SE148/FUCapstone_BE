@@ -568,7 +568,7 @@ public class GroupService(
                 topicRequest.Group.TopicId = topicRequest.Topic.Id;
                 topicRequest.Group.SupervisorId = topicRequest.Topic.MainSupervisorId;
                 topicRequest.Topic.IsAssignedToGroup = true;
-                //topicRequest.Topic.GroupCode = topicRequest.Group.GroupCode;
+                topicRequest.Topic.GroupCode = topicRequest.Group.GroupCode;
                 topicRequestRepository.Update(topicRequest);
             }
 
@@ -617,6 +617,7 @@ public class GroupService(
             MajorName = g.MajorId,
             SemesterName = g.SemesterId,
             TopicCode = g.Topic != null ? g.Topic.Code : "undefined",
+            IsUploadGroupDocument = g.IsUploadGroupDocument,
             AverageGPA = g.GroupMembers.Any(m => m.Status == GroupMemberStatus.Accepted)
                 ? g.GroupMembers.Where(m => m.Status == GroupMemberStatus.Accepted)
                     .Select(m => m.Student.GPA)
@@ -1532,6 +1533,7 @@ public class GroupService(
                 TopicCode = gm.Group.Topic.Code,
                 MajorName = gm.Group.MajorId,
                 SemesterName = gm.Group.SemesterId,
+                IsUploadGroupDocument = gm.Group.IsUploadGroupDocument,  
                 AverageGPA = gm.Group.GroupMembers.Any(gm => gm.Status == GroupMemberStatus.Accepted)
                     ? gm.Group.GroupMembers.Where(m => m.Status == GroupMemberStatus.Accepted)
                         .Select(m => m.Student.GPA)
@@ -1656,13 +1658,27 @@ public class GroupService(
 
             ArgumentNullException.ThrowIfNull(group);
 
+            await uow.BeginTransactionAsync(cancellationToken);
+
+            group.IsUploadGroupDocument = true;
+
+            groupRepository.Update(group);
+
             var key = $"{group.CampusId}/{group.SemesterId}/{group.MajorId}/{group.CapstoneId}/{group.GroupCode}";
 
-            return await documentsService.CreateGroupDocument(request.File, key, cancellationToken);
+            if ((await documentsService.CreateGroupDocument(request.File, key, cancellationToken)).IsFailure)
+                throw new AmazonS3Exception("Fail to upload into S3.");
+
+            await uow.CommitAsync(cancellationToken);
+
+            return OperationResult.Success();  
+                
         }
         catch (Exception ex)
         {
             logger.LogError("Fail to upload group document with error {Message}.", ex.Message);
+
+            await uow.RollbackAsync(cancellationToken);
 
             return OperationResult.Failure(new Error("Group.Error", "Fail to upload group document."));
         }

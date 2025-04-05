@@ -25,6 +25,9 @@ public sealed class GroupConfiguration : IEntityTypeConfiguration<Group>
         builder.Property(g => g.IsReDefendCapstoneProject)
             .HasDefaultValue(false);
 
+        builder.Property(g => g.IsUploadGroupDocument)
+            .HasDefaultValue(false);
+
         // relationship config
 
         builder.HasOne(g => g.Major)
