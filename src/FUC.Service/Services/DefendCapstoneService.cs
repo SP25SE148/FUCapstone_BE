@@ -356,6 +356,7 @@ public class DefendCapstoneService(
 
         if (currentUser.Role == UserRoles.Supervisor &&
             (topic.Value.MainSupervisorId != currentUser.UserCode ||
+             topic.Value.CoSupervisors.Count > 0 &&
              topic.Value.CoSupervisors.All(c => c.SupervisorId != currentUser.UserCode)))
             return OperationResult.Failure<IEnumerable<DefendCapstoneResultResponse>>(new Error("Error.NotFound",
                 "You are not the main or co supervisor of this group"));
