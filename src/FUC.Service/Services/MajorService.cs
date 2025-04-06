@@ -9,20 +9,20 @@ using FUC.Service.DTOs.MajorDTO;
 
 namespace FUC.Service.Services;
 
-public sealed class MajorService(IUnitOfWork<FucDbContext> uow, IMapper mapper) : IMajorService
+public sealed class MajorService(
+    IUnitOfWork<FucDbContext> uow, 
+    IRepository<Major> majorRepository,
+    IMapper mapper) : IMajorService
 {
-    private readonly IRepository<Major> _majorRepository =
-        uow.GetRepository<Major>() ?? throw new ArgumentNullException(nameof(uow));
-
-    private readonly IMapper _mapper = mapper ?? throw new ArgumentNullException(nameof(mapper));
-
     public async Task<OperationResult<string>> CreateMajorAsync(CreateMajorRequest request)
     {
-        Major? existingMajor = await _majorRepository.GetAsync(
-            m => m.Id.Equals(request.Id),
+        Major? existingMajor = await majorRepository.GetAsync(
+            m => m.Id == request.Id,
             cancellationToken: default);
+
         if (existingMajor is not null)
             return OperationResult.Failure<string>(new Error("Error.DuplicateValue", "The Major Id already exists."));
+
         var newMajor = new Major()
         {
             Id = request.Id,
@@ -31,7 +31,7 @@ public sealed class MajorService(IUnitOfWork<FucDbContext> uow, IMapper mapper) 
             Description = request.Description
         };
 
-        _majorRepository.Insert(newMajor);
+        majorRepository.Insert(newMajor);
         await uow.SaveChangesAsync();
 
         return newMajor.Id;
@@ -39,9 +39,10 @@ public sealed class MajorService(IUnitOfWork<FucDbContext> uow, IMapper mapper) 
 
     public async Task<OperationResult<MajorResponse>> UpdateMajorAsync(UpdateMajorRequest request)
     {
-        Major? major = await _majorRepository.GetAsync(
-            m => m.Id.Equals(request.Id),
+        Major? major = await majorRepository.GetAsync(
+            m => m.Id == request.Id,
             cancellationToken: default);
+
         if (major is null)
             return OperationResult.Failure<MajorResponse>(Error.NullValue);
 
@@ -50,53 +51,57 @@ public sealed class MajorService(IUnitOfWork<FucDbContext> uow, IMapper mapper) 
         major.Name = request.Name;
         major.Description = request.Description;
 
-        _majorRepository.Update(major);
+        majorRepository.Update(major);
         await uow.SaveChangesAsync();
 
-        return _mapper.Map<MajorResponse>(major);
+        return mapper.Map<MajorResponse>(major);
     }
 
     public async Task<OperationResult<IEnumerable<MajorResponse>>> GetAllMajorsAsync()
     {
-        List<Major> majors = await _majorRepository.GetAllAsync();
-        return OperationResult.Success(_mapper.Map<IEnumerable<MajorResponse>>(majors));
+        List<Major> majors = await majorRepository.GetAllAsync();
+        return OperationResult.Success(mapper.Map<IEnumerable<MajorResponse>>(majors));
     }
 
     public async Task<OperationResult<IEnumerable<MajorResponse>>> GetAllActiveMajorsAsync()
     {
-        IList<Major> majors = await _majorRepository.FindAsync(m => m.IsDeleted == false);
-        return OperationResult.Success(_mapper.Map<IEnumerable<MajorResponse>>(majors));
+        IList<Major> majors = await majorRepository.FindAsync(m => !m.IsDeleted);
+        return OperationResult.Success(mapper.Map<IEnumerable<MajorResponse>>(majors));
     }
 
     public async Task<OperationResult<IEnumerable<MajorResponse>>> GetMajorsByMajorGroupIdAsync(string majorGroupId)
     {
-        IList<Major> majors = await _majorRepository.FindAsync(
-            m => m.MajorGroupId.Equals(majorGroupId),
+        IList<Major> majors = await majorRepository.FindAsync(
+            m => m.MajorGroupId == majorGroupId,
             cancellationToken: default);
-        return OperationResult.Success(_mapper.Map<IEnumerable<MajorResponse>>(majors));
+
+        return OperationResult.Success(mapper.Map<IEnumerable<MajorResponse>>(majors));
     }
 
     public async Task<OperationResult<MajorResponse>> GetMajorByIdAsync(string majorId)
     {
-        Major? major = await _majorRepository.GetAsync(
-            m => m.Id.Equals(majorId),
+        Major? major = await majorRepository.GetAsync(
+            m => m.Id == majorId,
             cancellationToken: default);
+
         return major is not null
-            ? _mapper.Map<MajorResponse>(major)
+            ? mapper.Map<MajorResponse>(major)
             : OperationResult.Failure<MajorResponse>(Error.NullValue);
     }
 
     public async Task<OperationResult> DeleteMajorAsync(string majorId)
     {
-        Major? major = await _majorRepository.GetAsync(
-            m => m.Id.Equals(majorId),
+        Major? major = await majorRepository.GetAsync(
+            m => m.Id == majorId,
             cancellationToken: default);
+
         if (major is null)
             return OperationResult.Failure(Error.NullValue);
 
         major.IsDeleted = true;
         major.DeletedAt = DateTime.Now;
-        _majorRepository.Update(major);
+        majorRepository.Update(major);
+
         await uow.SaveChangesAsync();
 
         return OperationResult.Success();

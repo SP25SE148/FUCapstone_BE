@@ -26,7 +26,6 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Query;
 using Microsoft.Extensions.Logging;
-using Group = FUC.Data.Entities.Group;
 
 namespace FUC.Service.Services;
 

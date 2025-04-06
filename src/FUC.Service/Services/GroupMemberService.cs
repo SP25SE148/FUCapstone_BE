@@ -260,7 +260,7 @@ public class GroupMemberService(
                         return OperationResult.Failure(new Error("Error.UpdateFailed",
                             $"Can not update group member status with group status is different from {GroupStatus.Pending.ToString()}"));
                     if (leader is null)
-                        throw new Exception("Can not cancel member while you are not leader");
+                        throw new InvalidOperationException("Can not cancel member while you are not leader");
                     groupMember.Status = GroupMemberStatus.Cancelled;
                     groupMemberRepository.Update(groupMember);
                     break;
@@ -313,12 +313,14 @@ public class GroupMemberService(
 
         groupMemberRequestResponse.GroupMemberRequested = groupMembers.Where(gm => !gm.IsLeader).ToList();
 
-        var leaderGroup = groupMembers.FirstOrDefault(gm => gm.IsLeader);
+        var leaderGroup = groupMembers
+            .Find(gm => gm.IsLeader);
+
         if (leaderGroup != null)
         {
             IList<GroupMemberResponse> groupMembersRequestOfLeader =
                 await groupMemberRepository.FindAsync(
-                    gm => gm.CreatedBy.Equals(leaderGroup.CreatedBy) &&
+                    gm => gm.CreatedBy == leaderGroup.CreatedBy &&
                           !gm.IsLeader,
                     gm => gm.Include(gm => gm.Student),
                     x => x.OrderBy(x => x.CreatedDate),
