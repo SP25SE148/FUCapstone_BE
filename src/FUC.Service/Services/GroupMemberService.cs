@@ -196,6 +196,7 @@ public class GroupMemberService(
                     groupMemberRepository.Update(groupMember);
                     if (request.Status.Equals(GroupMemberStatus.Accepted))
                     {
+                        groupMember.Group.GPA += groupMember.Student.GPA / (groupMember.Group.GroupMembers.Count + 1);
                         var memberRequests = await groupMemberRepository.FindAsync(gm =>
                             gm.StudentId == groupMember.StudentId &&
                             gm.Id != request.Id &&
