@@ -26,13 +26,12 @@ public sealed class TopicConfiguration : IEntityTypeConfiguration<Topic>
             .HasDefaultValue(TopicStatus.Pending);
 
         builder.Property(t => t.IsAssignedToGroup)
-            .HasDefaultValue(false)
-            ;
+            .HasDefaultValue(false);
+
         builder.Property(t => t.DifficultyLevel)
             .HasConversion(
                 v => v.ToString(),
                 v => (DifficultyLevel)Enum.Parse(typeof(DifficultyLevel), v));
-
 
         // relationship config
 

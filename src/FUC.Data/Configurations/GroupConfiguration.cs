@@ -68,7 +68,7 @@ public sealed class GroupConfiguration : IEntityTypeConfiguration<Group>
         builder.HasOne(g => g.Topic)
             .WithOne(t => t.Group)
             .HasForeignKey<Group>(g => g.TopicId)
-            .OnDelete(DeleteBehavior.Restrict);
+            .OnDelete(DeleteBehavior.SetNull);
 
         builder.Property(g => g.CreatedDate)
             .HasColumnType("timestamp");

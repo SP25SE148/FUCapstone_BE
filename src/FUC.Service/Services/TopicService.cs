@@ -1390,15 +1390,16 @@ public class TopicService(
 
             ArgumentNullException.ThrowIfNull(topic);
 
-            var supervior = await supervisorRepository.GetAsync(x => x.Id == request.SupervisorId, cancellationToken);
+            var oldSupervisorId = topic.MainSupervisorId!;
+            var newSupervior = await supervisorRepository.GetAsync(x => x.Id == request.SupervisorId, cancellationToken);
 
-            ArgumentNullException.ThrowIfNull(supervior);
+            ArgumentNullException.ThrowIfNull(newSupervior);
 
             await unitOfWork.BeginTransactionAsync(cancellationToken);
 
             if (topic.IsAssignedToGroup && topic.Group != null)
             {
-                topic.Group.SupervisorId = supervior.Id;
+                topic.Group.SupervisorId = newSupervior.Id;
             }
 
             var coSupervisor = topic.CoSupervisors.FirstOrDefault(x => x.SupervisorId == request.SupervisorId);
@@ -1408,9 +1409,17 @@ public class TopicService(
                 topic.CoSupervisors.Remove(coSupervisor);
             }
 
-            topic.MainSupervisorId = supervior.Id;
+            topic.MainSupervisorId = newSupervior.Id;
 
             topicRepository.Update(topic);
+
+            integrationEventLogService.SendEvent(new NewSupervisorAssignedForTopicEvent 
+            { 
+                NewSupervisorId = newSupervior.Id, 
+                OldSupervisorId = oldSupervisorId,
+                TopicId = topic.Id,
+                TopicShortName = topic.Abbreviation, 
+            });
 
             await unitOfWork.CommitAsync(cancellationToken);
 

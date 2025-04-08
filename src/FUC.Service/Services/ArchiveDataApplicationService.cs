@@ -8,6 +8,7 @@ using FUC.Data.Data;
 using FUC.Data.Entities;
 using FUC.Data.Enums;
 using FUC.Service.Abstractions;
+using FUC.Service.DTOs.ConfigDTO;
 using FUC.Service.DTOs.DocumentDTO;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
@@ -49,13 +50,16 @@ public class ArchiveDataApplicationService : IArchiveDataApplicationService
             if (students.Count == 0)
                 return OperationResult.Failure<ExportCompletedStudents>(Error.NullValue);
 
+            if (await _context.Groups.AnyAsync(x => x.Status == GroupStatus.InProgress, cancellationToken))
+                return OperationResult.Failure<ExportCompletedStudents>(new Error("ArchiveData.Error",
+                    "They have some Inprogress groups, so that can not archive data."));
+
             await _context.Database.BeginTransactionAsync(cancellationToken);
 
             await _context.Groups
                 .Where(x => x.CampusId == _currentUser.CampusId &&
                      x.CapstoneId == _currentUser.CapstoneId &&
-                     x.SemesterId == currentSemester.Value.Id &&
-                     x.Status == GroupStatus.Completed)
+                     x.SemesterId == currentSemester.Value.Id)
                 .ExecuteDeleteAsync(cancellationToken);
 
             await _context.Students
@@ -77,8 +81,8 @@ public class ArchiveDataApplicationService : IArchiveDataApplicationService
 
             await _context.Database.CommitTransactionAsync(cancellationToken);
 
-            return OperationResult.Success(new ExportCompletedStudents 
-            { 
+            return OperationResult.Success(new ExportCompletedStudents
+            {
                 Content = resultFile.Value,
                 FileName = $"Students_{_currentUser.CampusId}_{currentSemester}_{_currentUser.CapstoneId}.xlsx"
             });
@@ -126,9 +130,140 @@ public class ArchiveDataApplicationService : IArchiveDataApplicationService
 
             return ms.ToArray();
         }
-        catch(Exception)
+        catch (Exception)
         {
             return OperationResult.Failure<byte[]>(new Error("ArchiveData.Error", "Fail progress to excel file."));
         }
+    }
+
+    public async Task<OperationResult<SuperAdminDashBoardDto>> PresentSuperAdminDashBoard(CancellationToken cancellationToken)
+    {
+        var currentSemester = await _semesterService.GetCurrentSemesterAsync();
+
+        if (currentSemester.IsFailure)
+            return OperationResult.Failure<SuperAdminDashBoardDto>(currentSemester.Error);
+
+        var students = await _context.Students.ToListAsync(cancellationToken);
+        var supervisors = await _context.Supervisors.ToListAsync(cancellationToken);
+        var numberOfCapstones = await _context.Capstones.CountAsync(cancellationToken);
+
+        var topics = await _context.Topics
+            .Where(x => x.SemesterId == currentSemester.Value.Id)
+            .ToListAsync(cancellationToken);
+
+        var groups = await _context.Groups
+            .Where(x => x.SemesterId == currentSemester.Value.Id)
+            .ToListAsync(cancellationToken);
+
+        var campusIds = await _context
+            .Campuses
+            .OrderBy(x => x.Id)
+            .Select(x => x.Id)
+            .ToListAsync(cancellationToken);
+
+        var data = new Dictionary<string, DashBoardDto>();
+
+        foreach (var id in campusIds)
+        {
+            data[id] = new DashBoardDto
+            {
+                Groups = groups.Count(x => x.CampusId == id),
+                Topics = topics.Count(x => x.CampusId == id),
+                Students = students.Count(x => x.CampusId == id),
+                Supervisors = supervisors.Count(x => x.CampusId == id),
+            };
+        }
+
+        return new SuperAdminDashBoardDto
+        {
+            Students = students.Count,
+            Supervisors = supervisors.Count,
+            Groups = groups.Count,
+            Topics = topics.Count,
+            Capstones = numberOfCapstones,
+            DataPerCampus = data,
+        };
+    }
+
+    public async Task<OperationResult<AdminDashBoardDto>> PresentAdminDashBoard(CancellationToken cancellationToken)
+    {
+        var currentSemester = await _semesterService.GetCurrentSemesterAsync();
+
+        if (currentSemester.IsFailure)
+            return OperationResult.Failure<AdminDashBoardDto>(currentSemester.Error);
+
+        var students = await _context.Students
+            .Where(x => x.CampusId == _currentUser.CampusId)
+            .CountAsync(cancellationToken);
+
+
+        var supervisors = await _context.Supervisors
+            .Where(x => x.CampusId == _currentUser.CampusId)
+            .ToListAsync(cancellationToken);
+
+        var topics = await _context.Topics
+            .Where(x => x.CampusId == _currentUser.CampusId &&
+                        x.SemesterId == currentSemester.Value.Id)
+            .ToListAsync(cancellationToken);
+
+        var groups = await _context.Groups
+            .Where(x => x.CampusId == _currentUser.CampusId &&
+                        x.SemesterId == currentSemester.Value.Id)
+            .CountAsync(cancellationToken);
+
+        return new AdminDashBoardDto
+        {
+            Students = students,
+            Supervisors = supervisors.Count,
+            Topics = topics.Count,
+            Groups = groups,
+            SupervisorsInEachMajor = supervisors
+                .GroupBy(x => x.MajorId)
+                .ToDictionary(g => g.Key, g => g.Count()),
+            TopicsInEachCapstone = topics
+                .GroupBy(x => x.CapstoneId)
+                .ToDictionary(g => g.Key, g => g.Count())
+        };
+    }
+
+    public async Task<OperationResult<ManagerDashBoardDto>> PresentManagerDashBoard(CancellationToken cancellationToken)
+    {
+        var currentSemester = await _semesterService.GetCurrentSemesterAsync();
+
+        if (currentSemester.IsFailure)
+            return OperationResult.Failure<ManagerDashBoardDto>(currentSemester.Error);
+
+        var students = await _context.Students
+            .Where(x => x.CampusId == _currentUser.CampusId && 
+                        x.CapstoneId == _currentUser.CapstoneId)
+            .CountAsync(cancellationToken);
+
+        var supervisors = await _context.Supervisors
+            .Where(x => x.CampusId == _currentUser.CampusId &&
+                        x.MajorId == _currentUser.MajorId)
+            .ToListAsync(cancellationToken);
+
+        var topics = await _context.Topics
+            .Where(x => x.CampusId == _currentUser.CampusId &&
+                        x.SemesterId == currentSemester.Value.Id && 
+                        x.CapstoneId == _currentUser.CapstoneId)
+            .ToListAsync(cancellationToken);
+
+        var groups = await _context.Groups
+            .Where(x => x.CampusId == _currentUser.CampusId &&
+                        x.SemesterId == currentSemester.Value.Id &&
+                        x.CapstoneId == _currentUser.CapstoneId)
+            .CountAsync(cancellationToken);
+
+        return new ManagerDashBoardDto
+        {
+            Students = students,
+            Supervisors = supervisors.Count,
+            Topics = topics.Count,
+            Groups = groups,
+            TopicsInEachStatus = topics
+                .GroupBy(x => x.Status.ToString())
+                .ToDictionary(g => g.Key, g => g.Count())
+        };
     }
 }

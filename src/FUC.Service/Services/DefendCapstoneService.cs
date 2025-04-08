@@ -44,12 +44,17 @@ public class DefendCapstoneService(
         try
         {
             var currentSemester = await semesterService.GetCurrentSemesterAsync();
+
             if (currentSemester.IsFailure)
                 return OperationResult.Failure(new Error("ImportFailed", "Current semester is not on going!!"));
+
             var defendCalendars =
                 await ParseDefendCapstoneCalendarsFromFile(file, currentSemester.Value.Id, cancellationToken);
+
             defendCapstoneCalendarRepository.InsertRange(defendCalendars);
+
             await unitOfWork.SaveChangesAsync(cancellationToken);
+
             return OperationResult.Success();
         }
         catch (Exception e)

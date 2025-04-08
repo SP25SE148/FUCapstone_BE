@@ -29,6 +29,8 @@ public class FucDbContext : DbContext
 
     public DbSet<Supervisor> Supervisors { get; set; }
 
+    public DbSet<Topic> Topics { get; set; }
+
     public DbSet<IntegrationEventLog> IntegrationEventLogs { get; set; }
 
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)

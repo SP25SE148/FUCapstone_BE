@@ -1,4 +1,5 @@
 ﻿using FUC.API.Abstractions;
+using FUC.Common.Abstractions;
 using FUC.Common.Constants;
 using FUC.Common.Shared;
 using FUC.Service.Abstractions;
@@ -19,7 +20,8 @@ public sealed class AcademicManagementController(
     ICapstoneService capstoneService,
     IMajorGroupService majorGroupService,
     ISemesterService semesterService,
-    IArchiveDataApplicationService archiveDataApplicationService) : ApiController
+    IArchiveDataApplicationService archiveDataApplicationService,
+    ICurrentUser currentUser) : ApiController
 {
     #region Campus
     // ---- Campus Endpoints ----
@@ -319,4 +321,33 @@ public sealed class AcademicManagementController(
     }
 
     #endregion Archive
+
+    #region Dashboard
+
+    [HttpGet("dashboard")]
+    [Authorize(Roles = $"{UserRoles.SuperAdmin},{UserRoles.Admin},{UserRoles.Manager}")]
+    public async Task<IActionResult> GetDashboardAsync()
+    {
+        switch (currentUser.Role)
+        {
+            case UserRoles.SuperAdmin:
+                var superAdmin = await archiveDataApplicationService.PresentSuperAdminDashBoard(default);
+
+                return superAdmin.IsSuccess ? Ok(superAdmin) : HandleFailure(superAdmin);   
+
+            case UserRoles.Admin:
+                var admin = await archiveDataApplicationService.PresentAdminDashBoard(default);
+
+                return admin.IsSuccess ? Ok(admin) : HandleFailure(admin);
+
+            case UserRoles.Manager:
+                var manager = await archiveDataApplicationService.PresentManagerDashBoard(default);
+
+                return manager.IsSuccess ? Ok(manager) : HandleFailure(manager);
+
+            default:
+                throw new InvalidOperationException();
+        }
+    }
+    #endregion Dashboard
 }

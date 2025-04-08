@@ -88,6 +88,7 @@ public class GroupService(
         {
             // Create group, group member for leader
             await uow.BeginTransactionAsync();
+
             var newGroup = new Group()
             {
                 Id = Guid.NewGuid(),
@@ -106,7 +107,9 @@ public class GroupService(
                 IsLeader = true,
                 Status = GroupMemberStatus.Accepted
             });
+
             var groupMembers = await groupMemberRepository.FindAsync(gm => gm.StudentId == currentUser.UserCode);
+
             if (groupMembers.Count > 0)
             {
                 foreach (var groupMember in groupMembers)
@@ -117,7 +120,6 @@ public class GroupService(
             }
 
             await uow.CommitAsync();
-
 
             return newGroup.Id;
         }
@@ -134,6 +136,7 @@ public class GroupService(
             CreateIncludeForGroupResponse(),
             g => g.OrderBy(group => group.CreatedDate),
             CreateSelectorForGroupResponse());
+
         foreach (var group in groups)
         {
             group.TopicResponse = await topicService.GetTopicByTopicCode(group.TopicCode);
@@ -165,6 +168,7 @@ public class GroupService(
             CreateIncludeForGroupResponse(),
             g => g.OrderBy(group => group.CreatedDate),
             CreateSelectorForGroupResponse());
+
         foreach (var group in groups)
         {
             group.TopicResponse = await topicService.GetTopicByTopicCode(group.TopicCode);
@@ -180,6 +184,7 @@ public class GroupService(
             CreateIncludeForGroupResponse(),
             g => g.OrderBy(group => group.CreatedDate),
             CreateSelectorForGroupResponse());
+
         foreach (var group in groups)
         {
             group.TopicResponse = await topicService.GetTopicByTopicCode(group.TopicCode);
@@ -195,6 +200,7 @@ public class GroupService(
             CreateIncludeForGroupResponse(),
             g => g.OrderBy(group => group.CreatedDate),
             CreateSelectorForGroupResponse());
+
         foreach (var group in groups)
         {
             group.TopicResponse = await topicService.GetTopicByTopicCode(group.TopicCode);
@@ -241,9 +247,12 @@ public class GroupService(
                 .Include(x => x.Topic)
                 .ThenInclude(t => t.CoSupervisors)
                 .Include(g => g.Capstone));
+
         if (group is null)
             return OperationResult.Failure<GroupResponse>(Error.NullValue);
+
         group.TopicResponse = await topicService.GetTopicByTopicCode(group.TopicCode);
+
         return group;
     }
 
@@ -262,10 +271,12 @@ public class GroupService(
     public async Task<OperationResult> UpdateGroupStatusAsync()
     {
         var capstone = await capstoneService.GetCapstoneByIdAsync(currentUser.CapstoneId);
+
         var groupId =
             (await groupMemberRepository.GetAsync(
                 gm => gm.StudentId == currentUser.UserCode && gm.IsLeader,
                 default))?.GroupId;
+
         if (groupId is null)
             return OperationResult.Failure(Error.NullValue);
 
@@ -339,7 +350,7 @@ public class GroupService(
         return $"G{group.SemesterId}{group.MajorId}{groupMemberCode}";
     }
 
-    private async Task<string> GenerateGroupCode(int currentNumberOfGroup, Group group)
+    private static string GenerateGroupCode(int currentNumberOfGroup, Group group)
     {
         var nextGroupNumber = currentNumberOfGroup + 1;
 
@@ -1943,11 +1954,11 @@ public class GroupService(
             foreach (var g in remainStudents.GroupBy(x => x.BusinessAreaId))
             {
                 remainStudentsAfterGroupThemWithBusinessArea
-                    .AddRange(await GroupTheStudentsTogether(g.ToList(), newGroups, currentNumberOfGroups,
+                    .AddRange(GroupTheStudentsTogether(g.ToList(), newGroups, currentNumberOfGroups,
                         capstone.Value.MinMember, semester.Value));
             }
 
-            _ = await GroupTheStudentsTogether(remainStudentsAfterGroupThemWithBusinessArea, newGroups,
+            _ = GroupTheStudentsTogether(remainStudentsAfterGroupThemWithBusinessArea, newGroups,
                 currentNumberOfGroups, capstone.Value.MinMember, semester.Value);
 
             groupRepository.InsertRange(newGroups);
@@ -1966,7 +1977,7 @@ public class GroupService(
         }
     }
 
-    private async Task<List<Student>> GroupTheStudentsTogether(List<Student> students,
+    private List<Student> GroupTheStudentsTogether(List<Student> students,
         List<Group> newGroups,
         int currentNumberOfGroups,
         int MinNumberOfStudentsInGroup,
@@ -2005,12 +2016,13 @@ public class GroupService(
                 }).ToList(),
             };
 
-            group.GroupCode = await GenerateGroupCode(newGroups.Count + currentNumberOfGroups, group);
+            group.GroupCode = GenerateGroupCode(newGroups.Count + currentNumberOfGroups, group);
 
             newGroups.Add(group);
         }
 
-        return students.TakeLast(students.Count % MinNumberOfStudentsInGroup)
+        return students
+            .TakeLast(students.Count % MinNumberOfStudentsInGroup)
             .ToList();
     }
 

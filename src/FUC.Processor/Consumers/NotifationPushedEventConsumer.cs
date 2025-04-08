@@ -585,3 +585,71 @@ public class GroupDecisionUpdatedEventConsumer : BaseEventConsumer<GroupDecision
         }
     }
 }
+
+public class NewSupervisorAssignedForTopicEventConsumer : BaseEventConsumer<NewSupervisorAssignedForTopicEvent>
+{
+    private readonly ILogger<NewSupervisorAssignedForTopicEventConsumer> _logger;
+    private readonly UsersTracker _usersTracker;
+    private readonly ProcessorDbContext _processorDbContext;
+    private readonly IHubContext<NotificationHub, INotificationClient> _hub;
+
+    public NewSupervisorAssignedForTopicEventConsumer(
+        ILogger<NewSupervisorAssignedForTopicEventConsumer> logger,
+        UsersTracker usersTracker,
+        IHubContext<NotificationHub, INotificationClient> hub,
+        ProcessorDbContext processorDbContext,
+        IOptions<EventConsumerConfiguration> options) : base(logger, options)
+    {
+        _logger = logger;
+        _usersTracker = usersTracker;
+        _hub = hub;
+        _processorDbContext = processorDbContext;
+    }
+
+    protected override async Task ProcessMessage(NewSupervisorAssignedForTopicEvent message)
+    {
+        try
+        {
+            _logger.LogInformation("Starting to send notification for NewSupervisorAssignedForTopicEvent of TopicId {Id}",
+            message.TopicId);
+
+            await _processorDbContext.Database.BeginTransactionAsync();
+
+            var oldSupervisorConnections = await _usersTracker.GetConnectionForUser(message.OldSupervisorId);
+            var newSupervisorConnections = await _usersTracker.GetConnectionForUser(message.NewSupervisorId);
+
+            _processorDbContext.Notifications.Add(new Notification
+            {
+                UserCode = message.OldSupervisorId,
+                ReferenceTarget = message.TopicId.ToString(),
+                Content = $"You - {message.OldSupervisorId} was removed from the Topic: {message.TopicShortName}.",
+                IsRead = false,
+                Type = nameof(NewSupervisorAssignedForTopicEvent)
+            });
+
+            _processorDbContext.Notifications.Add(new Notification
+            {
+                UserCode = message.NewSupervisorId,
+                ReferenceTarget = message.TopicId.ToString(),
+                Content = $"You - {message.NewSupervisorId} was assigned to the Topic: {message.TopicShortName}.",
+                IsRead = false,
+                Type = nameof(NewSupervisorAssignedForTopicEvent)
+            });
+
+            await _processorDbContext.SaveChangesAsync();
+
+            await Task.WhenAll(_hub.Clients.Clients(oldSupervisorConnections).ReceiveNewNotification
+                ($"You - {message.OldSupervisorId} was removed from the Topic: {message.TopicShortName}."),
+                _hub.Clients.Clients(newSupervisorConnections).ReceiveNewNotification
+                ($"You - {message.NewSupervisorId} was assigned to the Topic: {message.TopicShortName}."));
+
+            await _processorDbContext.Database.CommitTransactionAsync();
+        }
+        catch (Exception) 
+        { 
+            await _processorDbContext.Database.RollbackTransactionAsync();
+
+            throw;
+        }
+    }
+}
