@@ -125,7 +125,7 @@ public class DocumentsController(
     }
 
     [HttpGet("topic-registration")]
-    [Authorize(Roles = $"{UserRoles.SuperAdmin},{UserRoles.Admin},{UserRoles.Manager}")]
+    [Authorize(Roles = $"{UserRoles.SuperAdmin},{UserRoles.Admin},{UserRoles.Manager},{UserRoles.Supervisor}")]
     public async Task<IActionResult> PresentTopicRegistrationTemplatePresignedUrl()
     {
         var result = await documentsService.PresentTopicRegistrationTemplatePresignedUrl();

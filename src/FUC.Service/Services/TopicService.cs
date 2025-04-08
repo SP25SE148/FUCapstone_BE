@@ -1389,6 +1389,7 @@ public class TopicService(
         try
         {
             var topic = await topicRepository.GetAsync(x => x.Id == request.TopicId,
+                isEnabledTracking: true,
                 include: x => x.AsSplitQuery()
                     .Include(x => x.Group)
                     .Include(x => x.CoSupervisors),
