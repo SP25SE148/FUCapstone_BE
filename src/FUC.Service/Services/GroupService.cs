@@ -180,7 +180,8 @@ public class GroupService(
     public async Task<OperationResult<IEnumerable<GroupResponse>>> GetAllGroupByCapstoneIdAsync(string capstoneId)
     {
         var groups = await groupRepository.FindAsync(
-            g => g.CapstoneId == capstoneId,
+            g => g.CapstoneId == capstoneId &&
+                 g.CampusId == currentUser.CampusId,
             CreateIncludeForGroupResponse(),
             g => g.OrderBy(group => group.CreatedDate),
             CreateSelectorForGroupResponse());
@@ -1530,8 +1531,8 @@ public class GroupService(
 
         var group = await groupMemberRepository.GetAsync(gm =>
                 gm.StudentId.Equals(currentUser.UserCode) &&
-                gm.Status.Equals(GroupMemberStatus.Accepted) ||
-                gm.Status.Equals(GroupMemberStatus.UnderReview),
+                (gm.Status.Equals(GroupMemberStatus.Accepted) ||
+                 gm.Status.Equals(GroupMemberStatus.UnderReview)),
             gm => new GroupResponse
             {
                 Id = gm.GroupId,
@@ -1544,7 +1545,7 @@ public class GroupService(
                 TopicCode = gm.Group.Topic.Code,
                 MajorName = gm.Group.MajorId,
                 SemesterName = gm.Group.SemesterId,
-                IsUploadGroupDocument = gm.Group.IsUploadGroupDocument,  
+                IsUploadGroupDocument = gm.Group.IsUploadGroupDocument,
                 AverageGPA = gm.Group.GroupMembers.Any(gm => gm.Status == GroupMemberStatus.Accepted)
                     ? gm.Group.GroupMembers.Where(m => m.Status == GroupMemberStatus.Accepted)
                         .Select(m => m.Student.GPA)
@@ -1682,8 +1683,7 @@ public class GroupService(
 
             await uow.CommitAsync(cancellationToken);
 
-            return OperationResult.Success();  
-                
+            return OperationResult.Success();
         }
         catch (Exception ex)
         {
