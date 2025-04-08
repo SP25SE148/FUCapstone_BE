@@ -632,6 +632,7 @@ public class GroupService(
             AverageGPA = g.GroupMembers.Any(m => m.Status == GroupMemberStatus.Accepted)
                 ? g.GroupMembers.Where(m => m.Status == GroupMemberStatus.Accepted)
                     .Select(m => m.Student.GPA)
+                    .Where(x => x != 0)
                     .Average()
                 : 0,
             GroupMemberList = g.GroupMembers
@@ -1549,6 +1550,7 @@ public class GroupService(
                 AverageGPA = gm.Group.GroupMembers.Any(gm => gm.Status == GroupMemberStatus.Accepted)
                     ? gm.Group.GroupMembers.Where(m => m.Status == GroupMemberStatus.Accepted)
                         .Select(m => m.Student.GPA)
+                        .Where(x => x != 0)
                         .Average()
                     : 0
             },
