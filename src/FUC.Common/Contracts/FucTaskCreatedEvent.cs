@@ -9,6 +9,7 @@ public class FucTaskCreatedEvent : IntegrationEvent
     public required string KeyTask { get; set; }
     public required string ReporterName { get; set; }
     public required string ReminderType { get; set; }
+    public required DateTime DueDate { get; set; }
     public TimeSpan RemindTimeOnDueDate { get; set; }
     public int RemindInDaysBeforeDueDate { get; set; }
     public required string NotificationFor { get; set; }

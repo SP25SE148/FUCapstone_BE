@@ -50,7 +50,7 @@ public class FucTaskCreatedEventConsumer : BaseEventConsumer<FucTaskCreatedEvent
             {
                 ReminderType = message.ReminderType,
                 Content = $"{message.ProjectProgressId}/{message.FucTaskId}/{message.KeyTask}",
-                RemindDate = DateTime.Now.StartOfDay()
+                RemindDate = message.DueDate.StartOfDay()
                             .Add(message.RemindTimeOnDueDate),
                 RemindFor = message.NotificationFor,
             });
@@ -62,7 +62,7 @@ public class FucTaskCreatedEventConsumer : BaseEventConsumer<FucTaskCreatedEvent
                 {
                     ReminderType = message.ReminderType,
                     Content = $"{message.ProjectProgressId}/{message.FucTaskId}/{message.KeyTask}",
-                    RemindDate = DateTime.Now.StartOfDay()
+                    RemindDate = message.DueDate.StartOfDay()
                         .Add(message.RemindTimeOnDueDate)
                         .AddDays(-message.RemindInDaysBeforeDueDate),
                     RemindFor = message.NotificationFor,
@@ -76,7 +76,6 @@ public class FucTaskCreatedEventConsumer : BaseEventConsumer<FucTaskCreatedEvent
                 Type = message.ReminderType,
                 IsRead = false,
                 UserCode = message.NotificationFor,
-                CreatedDate = DateTime.Now,
             };
 
             _processorDbContext.Notifications.Add(notification);

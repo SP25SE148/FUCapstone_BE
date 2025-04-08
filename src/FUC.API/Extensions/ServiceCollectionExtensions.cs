@@ -32,7 +32,7 @@ public static class ServiceCollectionExtensions
             });
             c.AddSecurityRequirement(new OpenApiSecurityRequirement
             {
-                { 
+                {
                     new OpenApiSecurityScheme
                     {
                         Reference = new OpenApiReference
@@ -43,7 +43,7 @@ public static class ServiceCollectionExtensions
                         }, Array.Empty<string>()
                     }
                 });
-            }
+        }
         );
 
         services.AddCors();
