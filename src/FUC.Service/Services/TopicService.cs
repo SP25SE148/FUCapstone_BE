@@ -519,11 +519,6 @@ public class TopicService(
             return OperationResult.Failure<Guid>(new Error("Topic.Error", "Someone can not be assigned for topic"));
         }
 
-        if (availableSupportSupervisors.Count > systemConfigService.GetSystemConfiguration().MaxTopicsForCoSupervisors)
-        {
-            return OperationResult.Failure<Guid>(new Error("Topic.Error", "Support supervisors is exceed the limit"));
-        }
-
         var getCurrentSemesterResult = await semesterService.GetCurrentSemesterAsync();
 
         if (getCurrentSemesterResult.IsFailure)
