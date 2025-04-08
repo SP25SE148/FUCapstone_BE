@@ -35,6 +35,7 @@ public class TopicService(
     IRepository<Supervisor> supervisorRepository,
     IRepository<Capstone> capstoneRepository,
     IRepository<BusinessArea> businessRepository,
+    IRepository<CoSupervisor> coSupervisorRepository,
     S3BucketConfiguration s3BucketConfiguration,
     ISemesterService semesterService,
     IRepository<GroupMember> groupMemberRepository,
@@ -910,15 +911,18 @@ public class TopicService(
 
             var topic = await topicRepository.GetAsync(x => x.Id == request.TopicId,
                 isEnabledTracking: true,
-                include: x => x.Include(x => x.TopicAppraisals)
-                    .Include(x => x.Capstone),
+                include: x => x.AsSplitQuery()
+                    .Include(x => x.TopicAppraisals)
+                    .Include(x => x.Capstone)
+                    .Include(x => x.CoSupervisors),
                 orderBy: null,
                 cancellationToken);
 
             if (topic == null || topic.Status != TopicStatus.Pending)
                 return OperationResult.Failure(Error.NullValue);
 
-            if (topic.MainSupervisorId == request.SupervisorId)
+            if (topic.MainSupervisorId == request.SupervisorId || 
+                topic.CoSupervisors.Any(x => x.SupervisorId == request.SupervisorId))
                 return OperationResult.Failure(new Error("Topic.Error",
                     "Can not assign this supervisor for his/her topic."));
 
@@ -1411,6 +1415,7 @@ public class TopicService(
             if (coSupervisor != null)
             {
                 topic.CoSupervisors.Remove(coSupervisor);
+                coSupervisorRepository.Delete(coSupervisor);
             }
 
             topic.MainSupervisorId = newSupervior.Id;
