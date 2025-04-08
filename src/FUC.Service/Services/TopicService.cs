@@ -519,6 +519,11 @@ public class TopicService(
             return OperationResult.Failure<Guid>(new Error("Topic.Error", "Someone can not be assigned for topic"));
         }
 
+        if (availableSupportSupervisors.Count > systemConfigService.GetSystemConfiguration().MaxTopicsForCoSupervisors)
+        {
+            return OperationResult.Failure<Guid>(new Error("Topic.Error", "Support supervisors is exceed the limit"));
+        }
+
         var getCurrentSemesterResult = await semesterService.GetCurrentSemesterAsync();
 
         if (getCurrentSemesterResult.IsFailure)
@@ -1391,7 +1396,8 @@ public class TopicService(
             ArgumentNullException.ThrowIfNull(topic);
 
             var oldSupervisorId = topic.MainSupervisorId!;
-            var newSupervior = await supervisorRepository.GetAsync(x => x.Id == request.SupervisorId, cancellationToken);
+            var newSupervior =
+                await supervisorRepository.GetAsync(x => x.Id == request.SupervisorId, cancellationToken);
 
             ArgumentNullException.ThrowIfNull(newSupervior);
 
@@ -1413,12 +1419,12 @@ public class TopicService(
 
             topicRepository.Update(topic);
 
-            integrationEventLogService.SendEvent(new NewSupervisorAssignedForTopicEvent 
-            { 
-                NewSupervisorId = newSupervior.Id, 
+            integrationEventLogService.SendEvent(new NewSupervisorAssignedForTopicEvent
+            {
+                NewSupervisorId = newSupervior.Id,
                 OldSupervisorId = oldSupervisorId,
                 TopicId = topic.Id,
-                TopicShortName = topic.Abbreviation, 
+                TopicShortName = topic.Abbreviation,
             });
 
             await unitOfWork.CommitAsync(cancellationToken);
@@ -1459,7 +1465,9 @@ public class TopicService(
             if (topic.CoSupervisors.Any(x => x.SupervisorId == request.SupervisorId))
                 return OperationResult.Failure(new Error("Topic.Error",
                     $"Supervisor {request.SupervisorId} was in Topic."));
-
+            if (topic.CoSupervisors.Count == systemConfigService.GetSystemConfiguration().MaxTopicsForCoSupervisors)
+                return OperationResult.Failure(new Error("Topic.Error",
+                    $"The number of co-supervisors of Topic {topic.Abbreviation} has been reached."));
             await unitOfWork.BeginTransactionAsync(cancellationToken);
 
             topic.CoSupervisors.Add(new CoSupervisor
