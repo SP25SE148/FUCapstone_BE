@@ -484,6 +484,15 @@ public class DocumentsService(
             : result.Value;
     }
 
+    public async Task<OperationResult<string>> PresentTopicRegistrationTemplatePresignedUrl()
+    {
+        var result = await PresentFilePresignedUrl(s3BucketConfiguration.FUCTemplateBucket, s3BucketConfiguration.TopicRegistrationTemplateKey);
+
+        return result.IsFailure
+            ? OperationResult.Failure<string>(new Error("Document.Error", "Can not export Topic Registration template."))
+            : result.Value;
+    }
+
     public async Task<OperationResult<string>> PresentThesisCouncilMeetingMinutesForTopicPresignedUrl(string thesisKey)
     {
         var result = await PresentFilePresignedUrl(s3BucketConfiguration.FUCThesisBucket, thesisKey);

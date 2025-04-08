@@ -855,7 +855,9 @@ public class TopicService(
                        systemConfigService.GetSystemConfiguration().MaxTopicAppraisalsForTopic)
                 {
                     var availableSupervisors = supervisorAssignments
-                        .Where(s => s.Key != topic.MainSupervisorId && !assignedSupervisors.Contains(s.Key))
+                        .Where(s => s.Key != topic.MainSupervisorId && 
+                                    ! topic.CoSupervisors.Any(x => x.SupervisorId == s.Key) &&
+                                    !assignedSupervisors.Contains(s.Key))
                         .OrderBy(s => s.Value) // Pick the least assigned
                         .ToList();
 

@@ -124,6 +124,15 @@ public class DocumentsController(
         return result.IsSuccess ? Ok(result) : HandleFailure(result);
     }
 
+    [HttpGet("topic-registration")]
+    [Authorize(Roles = $"{UserRoles.SuperAdmin},{UserRoles.Admin},{UserRoles.Manager}")]
+    public async Task<IActionResult> PresentTopicRegistrationTemplatePresignedUrl()
+    {
+        var result = await documentsService.PresentTopicRegistrationTemplatePresignedUrl();
+
+        return result.IsSuccess ? Ok(result) : HandleFailure(result);
+    }
+
     [HttpGet("topic/{id}/registration")]
     [Authorize(Roles = $"{UserRoles.SuperAdmin},{UserRoles.Admin},{UserRoles.Manager},{UserRoles.Supervisor}")]
     public async Task<IActionResult> PresentTopicRegistrationFilePresignedUrl(Guid topicId)
@@ -145,7 +154,7 @@ public class DocumentsController(
     }
 
     [HttpGet("topic/{id}/group/document")]
-    [Authorize(Roles = $"{UserRoles.SuperAdmin},{UserRoles.Admin},{UserRoles.Manager},{UserRoles.Supervisor}")]
+    [Authorize(Roles = $"{UserRoles.SuperAdmin},{UserRoles.Admin},{UserRoles.Manager},{UserRoles.Supervisor},{UserRoles.Student}")]
     public async Task<IActionResult> PresentGroupDocumentFilePresignedUrl(Guid topicId)
     {
         var topic = await topicService.GetTopicEntityById(topicId, isIncludeGroup: true);

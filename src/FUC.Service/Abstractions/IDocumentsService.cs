@@ -22,6 +22,7 @@ public interface IDocumentsService
     Task<OperationResult<string>> PresentStudentsImportTemplatePresignedUrl();
     Task<OperationResult<string>> PresentSupervisorsImportTemplatePresignedUrl();
     Task<OperationResult<string>> PresentThesisCouncilMeetingMinutesTemplatePresignedUrl();
+    Task<OperationResult<string>> PresentTopicRegistrationTemplatePresignedUrl();
     Task<OperationResult<string>> PresentThesisCouncilMeetingMinutesForTopicPresignedUrl(string thesisKey);
     Task<OperationResult<string>> PresentTopicRegistrationFilePresignedUrl(string topicKey);
 }
