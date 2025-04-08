@@ -197,7 +197,7 @@ public class GroupMemberService(
                     if (request.Status.Equals(GroupMemberStatus.Accepted))
                     {
                         var memberRequests = await groupMemberRepository.FindAsync(gm =>
-                            gm.GroupId == groupMember.GroupId &&
+                            gm.StudentId == groupMember.StudentId &&
                             gm.Id != request.Id &&
                             gm.Status.Equals(GroupMemberStatus.UnderReview), null, true);
                         if (memberRequests.Any())

@@ -85,7 +85,7 @@ public class GroupController(
 
     [HttpGet("get-by-capstone-id/{capstoneId}")]
     [Authorize(Roles = $"{UserRoles.SuperAdmin},{UserRoles.Admin},{UserRoles.Manager}")]
-    public async Task<IActionResult> GetGroupsByCampusId(string capstoneId)
+    public async Task<IActionResult> GetGroupsByCapstoneId(string capstoneId)
     {
         var
             result = await groupService.GetAllGroupByCapstoneIdAsync(capstoneId);
@@ -157,6 +157,7 @@ public class GroupController(
             ? Ok(result)
             : HandleFailure(result);
     }
+
     #endregion
 
     #region Group Member Endpoint
@@ -236,7 +237,7 @@ public class GroupController(
     }
 
     [HttpGet("get-available-topics")]
-    [Authorize(Roles = UserRoles.Student)]
+    [Authorize(Roles = $"{UserRoles.Student},{UserRoles.Manager}")]
     public async Task<IActionResult> GetAvailableTopicsForGroupAsync([FromQuery] TopicForGroupParams request)
     {
         var result = await topicService.GetAvailableTopicsForGroupAsync(request);
