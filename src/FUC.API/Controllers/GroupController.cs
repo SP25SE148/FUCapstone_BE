@@ -414,7 +414,7 @@ public class GroupController(
     }
 
     [HttpGet("documents/{groupId}")]
-    [Authorize(Roles = $"{UserRoles.Supervisor},{UserRoles.Manager},{UserRoles.Admin}")]
+    [Authorize(Roles = $"{UserRoles.Supervisor},{UserRoles.Manager},{UserRoles.Admin},{UserRoles.Student}")]
     public async Task<IActionResult> GetPresignGroupDocument(Guid groupId)
     {
         var result = await groupService.PresentGroupDocumentFileOfGroup(groupId, default);
