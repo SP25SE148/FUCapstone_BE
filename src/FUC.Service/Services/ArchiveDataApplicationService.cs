@@ -116,7 +116,13 @@ public class ArchiveDataApplicationService : IArchiveDataApplicationService
 
             foreach (Student student in students)
             {
-                dataTable.Rows.Add(student);
+                dataTable.Rows.Add(student.Id, 
+                    student.FullName, 
+                    student.Email, 
+                    student.Status.ToString(), 
+                    student.CampusId, 
+                    student.MajorId, 
+                    student.CapstoneId);
             }
 
             using XLWorkbook wb = new XLWorkbook();
