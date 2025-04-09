@@ -2157,7 +2157,7 @@ public class GroupService(
     public async Task<OperationResult<byte[]>> ExportGroupAvailable()
     {
         var groups = await groupRepository.FindAsync(g => g.CampusId == currentUser.CampusId &&
-                                                          g.MajorId == currentUser.MajorId &&
+                                                          g.CapstoneId == currentUser.CapstoneId &&
                                                           g.Status == GroupStatus.InProgress,
             include: CreateIncludeForGroupResponse(),
             orderBy: g => g.OrderBy(g => g.CreatedDate),
