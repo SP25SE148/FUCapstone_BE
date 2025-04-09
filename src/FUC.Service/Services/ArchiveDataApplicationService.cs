@@ -50,7 +50,8 @@ public class ArchiveDataApplicationService : IArchiveDataApplicationService
             if (students.Count == 0)
                 return OperationResult.Failure<ExportCompletedStudents>(Error.NullValue);
 
-            if (await _context.Groups.AnyAsync(x => x.Status == GroupStatus.InProgress, cancellationToken))
+            if (await _context.Groups.AnyAsync(x => x.Status == GroupStatus.InProgress ||
+                    x.Status == GroupStatus.Pending, cancellationToken))
                 return OperationResult.Failure<ExportCompletedStudents>(new Error("ArchiveData.Error",
                     "They have some Inprogress groups, so that can not archive data."));
 
