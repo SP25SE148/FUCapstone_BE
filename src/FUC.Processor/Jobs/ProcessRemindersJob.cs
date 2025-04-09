@@ -1,4 +1,5 @@
 ﻿using System.Collections.Concurrent;
+using FUC.Common.Constants;
 using FUC.Common.Contracts;
 using FUC.Common.IntegrationEventLog.Services;
 using FUC.Processor.Data;
@@ -222,6 +223,29 @@ public class ProcessRemindersJob : IJob
                     // when get this ReceiveNewNotification then fe +1 for the belt
                     await _hub.Clients.Clients(connections).ReceiveNewNotification(content);
 
+                    break;
+                case nameof(TeamUpTimeConfigurationCreatedEvent.TeamUpDate):
+                case nameof(TeamUpTimeConfigurationCreatedEvent.TeamUpExpirationDate):
+                case nameof(RegistTopicTimeConfigurationCreatedEvent.RegistTopicDate):
+                case nameof(RegistTopicTimeConfigurationCreatedEvent.RegistTopicExpiredDate):
+                    var user = new List<User>();
+                    var campusId = reminder.RemindFor.Split("/")[2 - 1];
+                    if (reminder.RemindFor == "students")
+                    {
+                        user = await processorDbContext.Users
+                            .Where(u => u.Role == UserRoles.Student && u.CampusId == campusId)
+                            .ToListAsync(cancellationToken);
+                    }
+                    else if (reminder.RemindFor == "supervisors")
+                    {
+                        user = await processorDbContext.Users
+                            .Where(u => u.Role == UserRoles.Supervisor && u.CampusId == campusId)
+                            .ToListAsync(cancellationToken);
+                    }
+
+                    await _emailService.SendMailAsync("[FUC_Notification]",
+                        reminder.Content,
+                        user.Select(x => x.Email).ToArray());
                     break;
 
                 case "Test":

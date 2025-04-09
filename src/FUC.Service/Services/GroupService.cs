@@ -227,7 +227,7 @@ public class GroupService(
                      x => x.Status == GroupMemberStatus.Accepted ||
                           x.Status == GroupMemberStatus.UnderReview) <= capstoneResult.Value.MaxMember,
             include: g => g.Include(g => g.GroupMembers.Where(s => s.Status == GroupMemberStatus.Accepted))
-                .ThenInclude(gm => gm.Student),
+                .ThenInclude(gm => gm.Student).Include(g => g.Capstone),
             orderBy: x => x.OrderBy(g => g.GroupCode),
             CreateSelectorForGroupResponse(),
             cancellationToken);
@@ -1547,6 +1547,8 @@ public class GroupService(
                 MajorName = gm.Group.MajorId,
                 SemesterName = gm.Group.SemesterId,
                 IsUploadGroupDocument = gm.Group.IsUploadGroupDocument,
+                CurrentNumberOfGroupPerMax =
+                    $"{gm.Group.GroupMembers.Count(gm => gm.Status == GroupMemberStatus.Accepted)}/{gm.Group.Capstone.MaxMember}",
                 AverageGPA = gm.Group.GroupMembers.Any(gm => gm.Status == GroupMemberStatus.Accepted)
                     ? gm.Group.GroupMembers.Where(m => m.Status == GroupMemberStatus.Accepted)
                         .Select(m => m.Student.GPA)
