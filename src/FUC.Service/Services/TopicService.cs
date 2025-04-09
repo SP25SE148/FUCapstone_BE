@@ -116,8 +116,11 @@ public class TopicService(
         if (currentSemester.IsFailure)
             return OperationResult.Failure<PaginatedList<TopicForStudentResponse>>(new Error("Error.GetTopicsFailed",
                 "The current semester is not existed!"));
-
-        var averageGpa = await GetAverageGPAOfGroupByStudent(currentUser.UserCode, default);
+        float? averageGpa = null;
+        if (currentUser.Role == UserRoles.Student)
+        {
+            averageGpa = await GetAverageGPAOfGroupByStudent(currentUser.UserCode, default);
+        }
 
         var topics = await topicRepository.FindPaginatedAsync(
             x =>
@@ -140,7 +143,9 @@ public class TopicService(
             request.PageNumber,
             request.PageSize,
             x => x.OrderByDescending(x => x.CreatedDate)
-                .OrderBy(x => GetDifficultyByGPA(averageGpa))
+                .OrderBy(x => currentUser.Role == UserRoles.Student
+                    ? GetDifficultyByGPA(averageGpa)
+                    : default)
                 .ThenBy(x => x.Abbreviation),
             x => x.AsSplitQuery()
                 .Include(x => x.MainSupervisor)
