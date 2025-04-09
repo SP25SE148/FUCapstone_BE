@@ -179,7 +179,7 @@ public class TopicService(
         return OperationResult.Success(topics);
     }
 
-    private static DifficultyLevel GetDifficultyByGPA(double gpa)
+    private static DifficultyLevel GetDifficultyByGPA(double? gpa)
     {
         if (gpa >= 8)
             return DifficultyLevel.Hard;
@@ -851,8 +851,8 @@ public class TopicService(
                        systemConfigService.GetSystemConfiguration().MaxTopicAppraisalsForTopic)
                 {
                     var availableSupervisors = supervisorAssignments
-                        .Where(s => s.Key != topic.MainSupervisorId && 
-                                    ! topic.CoSupervisors.Any(x => x.SupervisorId == s.Key) &&
+                        .Where(s => s.Key != topic.MainSupervisorId &&
+                                    !topic.CoSupervisors.Any(x => x.SupervisorId == s.Key) &&
                                     !assignedSupervisors.Contains(s.Key))
                         .OrderBy(s => s.Value) // Pick the least assigned
                         .ToList();
@@ -921,7 +921,7 @@ public class TopicService(
             if (topic == null || topic.Status != TopicStatus.Pending)
                 return OperationResult.Failure(Error.NullValue);
 
-            if (topic.MainSupervisorId == request.SupervisorId || 
+            if (topic.MainSupervisorId == request.SupervisorId ||
                 topic.CoSupervisors.Any(x => x.SupervisorId == request.SupervisorId))
                 return OperationResult.Failure(new Error("Topic.Error",
                     "Can not assign this supervisor for his/her topic."));
@@ -1544,7 +1544,7 @@ public class TopicService(
         return topic ?? OperationResult.Failure<Topic>(Error.NullValue);
     }
 
-    private async Task<float> GetAverageGPAOfGroupByStudent(string studentId, CancellationToken cancellationToken)
+    private async Task<float?> GetAverageGPAOfGroupByStudent(string studentId, CancellationToken cancellationToken)
     {
         var groupMember = await groupMemberRepository.GetAsync(
             x => x.StudentId == studentId && x.Status == GroupMemberStatus.Accepted,
