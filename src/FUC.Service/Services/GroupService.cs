@@ -2154,6 +2154,52 @@ public class GroupService(
         }
     }
 
+    public async Task<OperationResult<byte[]>> ExportGroupAvailable()
+    {
+        var groups = await groupRepository.FindAsync(g => g.CampusId == currentUser.CampusId &&
+                                                          g.CapstoneId == currentUser.CapstoneId &&
+                                                          g.Status == GroupStatus.InProgress,
+            include: CreateIncludeForGroupResponse(),
+            orderBy: g => g.OrderBy(g => g.CreatedDate),
+            selector: CreateSelectorForGroupResponse());
+        if (groups.Count < 1)
+            return OperationResult.Failure<byte[]>(Error.NullValue);
+        // create excel
+        int stt = 1;
+        using (var workbook = new XLWorkbook())
+        {
+            var worksheet = workbook.Worksheets.Add("Groups");
+
+            var rowRange = worksheet.Range("A1:E1");
+            rowRange.Style.Font.FontName = "Arial";
+            rowRange.Style.Font.FontSize = 12;
+            rowRange.Style.Font.FontColor = XLColor.Black;
+            rowRange.Style.Font.Bold = true;
+
+            worksheet.Cell("A1").Value = "STT";
+            worksheet.Cell("B1").Value = "Group Code";
+            worksheet.Cell("C1").Value = "Topic Code";
+            worksheet.Cell("D1").Value = "Supervisor Name";
+
+            int row = 2;
+            foreach (var group in groups)
+            {
+                worksheet.Cell($"A{row}").Value = stt++;
+                worksheet.Cell($"B{row}").Value = group.GroupCode;
+                worksheet.Cell($"C{row}").Value = group.TopicCode;
+                worksheet.Cell($"D{row}").Value = group.SupervisorName;
+                row++;
+            }
+
+            using (var stream = new MemoryStream())
+            {
+                workbook.SaveAs(stream);
+                stream.Position = 0;
+                return stream.ToArray();
+            }
+        }
+    }
+
     public async Task<OperationResult> AssignPendingTopicForGroup(AssignPendingTopicForGroupRequest request,
         CancellationToken cancellationToken)
     {

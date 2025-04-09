@@ -305,4 +305,15 @@ public sealed class UserController(
             ? Ok(result)
             : HandleFailure(result);
     }
+
+    [HttpGet("group/export")]
+    [Authorize(Roles = UserRoles.Manager)]
+    public async Task<IActionResult> ExportGroupAvailable()
+    {
+        var result = await groupService.ExportGroupAvailable();
+        return result.IsSuccess
+            ? File(result.Value, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+                "group.xlsx")
+            : HandleFailure(result);
+    }
 }
