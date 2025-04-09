@@ -63,7 +63,7 @@ public sealed class GroupConfiguration : IEntityTypeConfiguration<Group>
         builder.HasOne(g => g.Supervisor)
             .WithMany(s => s.Groups)
             .HasForeignKey(g => g.SupervisorId)
-            .OnDelete(DeleteBehavior.Restrict);
+            .OnDelete(DeleteBehavior.SetNull);
 
         builder.HasOne(g => g.Topic)
             .WithOne(t => t.Group)

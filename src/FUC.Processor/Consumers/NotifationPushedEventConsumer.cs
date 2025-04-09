@@ -41,7 +41,8 @@ public class SupervisorAppraisalRemovedEventConsumer : BaseEventConsumer<Supervi
             ReferenceTarget = message.TopicId.ToString(),
             Content = $"You was removed for appraisal of Topic: {message.TopicEnglishName}",
             IsRead = false,
-            Type = nameof(SupervisorAppraisalRemovedEvent)
+            Type = nameof(SupervisorAppraisalRemovedEvent),
+            CreatedDate = DateTime.Now,
         });
 
         await _processorDbContext.SaveChangesAsync();
@@ -89,7 +90,8 @@ public class ReAssignAppraisalTopicEventConsumer : BaseEventConsumer<ReAssignApp
                 ReferenceTarget = message.TopicId.ToString(),
                 Content = $"You have to re-appraisal for Topic: {message.TopicEnglishName}",
                 IsRead = false,
-                Type = nameof(ReAssignAppraisalTopicEvent)
+                Type = nameof(ReAssignAppraisalTopicEvent),
+                CreatedDate = DateTime.Now,
             });
         }
 
@@ -132,7 +134,8 @@ public class TopicStatusUpdatedEventConsumer : BaseEventConsumer<TopicStatusUpda
             Content = $"Your topic {message.TopicEnglishName} was {message.TopicStatus}. " + 
             (string.IsNullOrEmpty(message.TopicCode) ? string.Empty : $"TopicCode is {message.TopicCode}"),
             IsRead = false,
-            Type = nameof(TopicStatusUpdatedEvent)
+            Type = nameof(TopicStatusUpdatedEvent),
+            CreatedDate = DateTime.Now,
         });
 
         await _processorDbContext.SaveChangesAsync();
@@ -175,7 +178,8 @@ public class AssignedSupervisorForAppraisalEventConsumer : BaseEventConsumer<Ass
             ReferenceTarget = message.TopicId.ToString(),
             Content = $"You was assigned for appraisal of Topic: {message.TopicEnglishName}",
             IsRead = false,
-            Type = nameof(AssignedSupervisorForAppraisalEvent)
+            Type = nameof(AssignedSupervisorForAppraisalEvent),
+            CreatedDate = DateTime.Now,
         });
 
         await _processorDbContext.SaveChangesAsync();
@@ -223,7 +227,8 @@ public class
                 ReferenceTarget = string.Empty,
                 Content = "You have some topic which need to your appraisal.",
                 IsRead = false,
-                Type = nameof(AssignedAvailableSupervisorForAppraisalEvent)
+                Type = nameof(AssignedAvailableSupervisorForAppraisalEvent),
+                CreatedDate = DateTime.Now,
             });
 
             await _processorDbContext.SaveChangesAsync();
@@ -267,7 +272,8 @@ public class GroupMemberStatusUpdateMessageConsumer : BaseEventConsumer<GroupMem
             ReferenceTarget = message.GroupMemberId.ToString(),
             Content = $"Member {message.MemberCode} was {message.Status} your request to join group.",
             IsRead = false,
-            Type = nameof(GroupMemberStatusUpdatedEvent)
+            Type = nameof(GroupMemberStatusUpdatedEvent),
+            CreatedDate = DateTime.Now,
         });
 
         await _processorDbContext.SaveChangesAsync();
@@ -310,7 +316,8 @@ public class JoinGroupRequestCreatedEventConsumer : BaseEventConsumer<JoinGroupR
             ReferenceTarget = string.Join("/", message.GroupId, message.JoinGroupRequestId),
             Content = $"Member {message.MemberName} - {message.MemberCode} want to join your group.",
             IsRead = false,
-            Type = nameof(JoinGroupRequestCreatedEvent)
+            Type = nameof(JoinGroupRequestCreatedEvent),
+            CreatedDate = DateTime.Now,
         });
 
         await _processorDbContext.SaveChangesAsync();
@@ -355,7 +362,8 @@ public class GroupStatusUpdatedEventConsumer : BaseEventConsumer<GroupStatusUpda
                 ReferenceTarget = message.GroupId.ToString(),
                 Content = $"Your group was created! GroupCode is {message.GroupCode}",
                 IsRead = false,
-                Type = nameof(GroupStatusUpdatedEvent)
+                Type = nameof(GroupStatusUpdatedEvent),
+                CreatedDate = DateTime.Now,
             });
 
             await _processorDbContext.SaveChangesAsync();
@@ -399,7 +407,8 @@ public class GroupMemberCreatedEventConsumer : BaseEventConsumer<GroupMemberCrea
             ReferenceTarget = string.Join("/", message.GroupId, message.GroupMemberId),
             Content = $"Leader {message.LeaderName} - {message.LeaderId} invite you to join group.",
             IsRead = false,
-            Type = nameof(GroupMemberCreatedEvent)
+            Type = nameof(GroupMemberCreatedEvent),
+            CreatedDate = DateTime.Now,
         });
 
         await _processorDbContext.SaveChangesAsync();
@@ -444,7 +453,8 @@ public class JoinGroupRequestStatusUpdatedEventConsumer : BaseEventConsumer<Join
             Content =
                 $"Leader {message.LeaderName} - {message.LeaderCode} was {message.Status} your join group request.",
             IsRead = false,
-            Type = nameof(JoinGroupRequestStatusUpdatedEvent)
+            Type = nameof(JoinGroupRequestStatusUpdatedEvent),
+            CreatedDate = DateTime.Now,
         });
 
         await _processorDbContext.SaveChangesAsync();
@@ -487,7 +497,8 @@ public class TopicRequestCreatedEventConsumer : BaseEventConsumer<TopicRequestCr
             ReferenceTarget = string.Join("/", message.GroupId, message.TopicId),
             Content = $"Group {message.GroupCode} want to register your {message.TopicShortName} topic.",
             IsRead = false,
-            Type = nameof(TopicRequestCreatedEvent)
+            Type = nameof(TopicRequestCreatedEvent),
+            CreatedDate = DateTime.Now,
         });
 
         await _processorDbContext.SaveChangesAsync();
@@ -533,7 +544,8 @@ public class TopicRequestStatusUpdatedEventConsumer : BaseEventConsumer<TopicReq
                 Content =
                     $"Supervisor {message.SupervisorOfTopicName} has {message.Status} your registration of topic {message.TopicShortName}.",
                 IsRead = false,
-                Type = nameof(TopicRequestStatusUpdatedEvent)
+                Type = nameof(TopicRequestStatusUpdatedEvent),
+                CreatedDate = DateTime.Now,
             });
 
             await _processorDbContext.SaveChangesAsync();
@@ -577,7 +589,8 @@ public class GroupDecisionUpdatedEventConsumer : BaseEventConsumer<GroupDecision
                 ReferenceTarget = message.GroupId.ToString(),
                 Content = $"Group {message.GroupCode} was decided to  {message.Decision} by your mentor.",
                 IsRead = false,
-                Type = nameof(GroupDecisionUpdatedEvent)
+                Type = nameof(GroupDecisionUpdatedEvent),
+                CreatedDate = DateTime.Now,
             };
             _processorDbContext.Notifications.Add(noti);
             await _processorDbContext.SaveChangesAsync();
@@ -624,7 +637,8 @@ public class NewSupervisorAssignedForTopicEventConsumer : BaseEventConsumer<NewS
                 ReferenceTarget = message.TopicId.ToString(),
                 Content = $"You - {message.OldSupervisorId} was removed from the Topic: {message.TopicShortName}.",
                 IsRead = false,
-                Type = nameof(NewSupervisorAssignedForTopicEvent)
+                Type = nameof(NewSupervisorAssignedForTopicEvent),
+                CreatedDate = DateTime.Now,
             });
 
             _processorDbContext.Notifications.Add(new Notification
@@ -633,7 +647,8 @@ public class NewSupervisorAssignedForTopicEventConsumer : BaseEventConsumer<NewS
                 ReferenceTarget = message.TopicId.ToString(),
                 Content = $"You - {message.NewSupervisorId} was assigned to the Topic: {message.TopicShortName}.",
                 IsRead = false,
-                Type = nameof(NewSupervisorAssignedForTopicEvent)
+                Type = nameof(NewSupervisorAssignedForTopicEvent),
+                CreatedDate = DateTime.Now,
             });
 
             await _processorDbContext.SaveChangesAsync();

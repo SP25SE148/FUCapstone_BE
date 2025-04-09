@@ -37,7 +37,7 @@ namespace FUC.Processor.Data.Migrations
                     Content = table.Column<string>(type: "text", nullable: true),
                     Type = table.Column<string>(type: "text", nullable: true),
                     ReferenceTarget = table.Column<string>(type: "text", nullable: true),
-                    CreatedDate = table.Column<DateTime>(type: "timestamp", nullable: false, defaultValue: new DateTime(2025, 3, 25, 11, 22, 36, 298, DateTimeKind.Local).AddTicks(5600))
+                    CreatedDate = table.Column<DateTime>(type: "timestamp", nullable: false)
                 },
                 constraints: table =>
                 {

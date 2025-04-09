@@ -14,7 +14,6 @@ public class NotificationConfiguration : IEntityTypeConfiguration<Notification>
 
         builder.Property(x => x.CreatedDate)
             .IsRequired()
-            .HasDefaultValue(DateTime.Now)
             .HasColumnType("timestamp");
     }
 }

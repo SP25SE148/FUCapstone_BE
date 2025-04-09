@@ -110,7 +110,7 @@ public class ProcessIntegrationEventsJob<TDbContext> : IJob where TDbContext : D
             _logger.LogWarning("Event {EventId} was processed fail. {Error}", @event.Id, ex.Message);
 
             updateQueue.Enqueue(
-                new EventUpdate { Id = @event.Id, ProcessedOnUtc = DateTime.Now, Error = ex.ToString() });
+                new EventUpdate { Id = @event.Id, ProcessedOnUtc = null, Error = ex.ToString() });
         }
     }
 
@@ -122,7 +122,7 @@ public class ProcessIntegrationEventsJob<TDbContext> : IJob where TDbContext : D
     private struct EventUpdate
     {
         public Guid Id { get; init; }
-        public DateTime ProcessedOnUtc { get; init; }
+        public DateTime? ProcessedOnUtc { get; init; }
         public string? Error { get; init; }
     }
 }

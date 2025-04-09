@@ -88,6 +88,7 @@ public class ProjectProgressCreatedEventConsumer : BaseEventConsumer<ProjectProg
                     Type = message.Type,
                     IsRead = false,
                     UserCode = student,
+                    CreatedDate = DateTime.Now
                 });
 
                 await _processorDbContext.SaveChangesAsync();
@@ -169,15 +170,15 @@ public class ProjectProgressUpdatedEventConsumer : BaseEventConsumer<ProjectProg
                     Type = message.Type,
                     IsRead = false,
                     UserCode = student,
+                    CreatedDate = DateTime.Now,
                 });
 
                 await _processorDbContext.SaveChangesAsync();
 
                 var connections = await _usersTracker.GetConnectionForUser(student);
 
-                
-                    await _hub.Clients.Clients(connections)
-                        .ReceiveNewNotification($"Our meeting date was changes to {message.RemindDate.ToString()}.");
+                await _hub.Clients.Clients(connections)
+                    .ReceiveNewNotification($"Our meeting date was changes to {message.RemindDate.ToString()}.");
             }
 
             await _processorDbContext.Database.CommitTransactionAsync();

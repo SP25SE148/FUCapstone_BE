@@ -76,6 +76,7 @@ public class FucTaskCreatedEventConsumer : BaseEventConsumer<FucTaskCreatedEvent
                 Type = message.ReminderType,
                 IsRead = false,
                 UserCode = message.NotificationFor,
+                CreatedDate = DateTime.Now,
             };
 
             _processorDbContext.Notifications.Add(notification);

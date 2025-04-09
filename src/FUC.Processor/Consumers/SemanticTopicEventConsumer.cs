@@ -72,7 +72,8 @@ public class SemanticTopicEventConsumer : BaseEventConsumer<SemanticTopicEvent>
                     Content = $"Your semantic progress for {message.TopicEnglishName} was failed.",
                     IsRead = false,
                     ReferenceTarget = message.TopicId,
-                    Type = nameof(SemanticTopicEvent)
+                    Type = nameof(SemanticTopicEvent),
+                    CreatedDate = DateTime.Now,
                 });
             }
             else
@@ -83,7 +84,8 @@ public class SemanticTopicEventConsumer : BaseEventConsumer<SemanticTopicEvent>
                     Content = $"Your semantic progress for {message.TopicEnglishName} was successfully.",
                     IsRead = false,
                     ReferenceTarget = message.TopicId,
-                    Type = nameof(SemanticTopicEvent)
+                    Type = nameof(SemanticTopicEvent),
+                    CreatedDate = DateTime.Now, 
                 });
             }
             await _processorContext.SaveChangesAsync();

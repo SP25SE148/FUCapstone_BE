@@ -29,7 +29,7 @@ public abstract class BaseEventConsumer<TIntegrationEvent> : IConsumer<TIntegrat
 
     public async Task Consume(ConsumeContext<TIntegrationEvent> context)
     {
-        _logger.LogInformation("{Consumer} is starting.", ConsumerName);
+        _logger.LogInformation("{Consumer} is starting with messageId: {Id}.", ConsumerName, context.Message.Id);
 
         int retryCount = context.Message.RetryCount;
         
@@ -46,13 +46,16 @@ public abstract class BaseEventConsumer<TIntegrationEvent> : IConsumer<TIntegrat
 
             await ProcessMessage(context.Message);
 
-            _logger.LogInformation("{Consumer}: Message processed successfully", ConsumerName);
+            _logger.LogInformation("{Consumer}: MessageId: {Id} processed successfully", ConsumerName, context.Message.Id);
         }
         catch (Exception ex) 
         {
-            _logger.LogWarning("{Consumer}: Message failed. Retrying {RetryCount}/{MaxRetryCount}. {Message}", ConsumerName,
-
-                    retryCount, _eventConsumerConfiguration.MaxRetryCount, ex.Message);
+            _logger.LogWarning("{Consumer}: MessageId: {Id} failed. Retrying {RetryCount}/{MaxRetryCount}. {Message}", 
+                ConsumerName, 
+                context.Message.Id,
+                retryCount, 
+                _eventConsumerConfiguration.MaxRetryCount, 
+                ex.Message);
 
             retryCount++;
 

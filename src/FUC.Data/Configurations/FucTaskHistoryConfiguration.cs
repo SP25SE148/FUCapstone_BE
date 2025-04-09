@@ -18,7 +18,7 @@ public class FucTaskHistoryConfiguration : IEntityTypeConfiguration<FucTaskHisto
         builder.HasOne(t => t.FucTask)
             .WithMany(x => x.FucTaskHistories)
             .HasForeignKey(t => t.TaskId)
-            .OnDelete(DeleteBehavior.Restrict);
+            .OnDelete(DeleteBehavior.Cascade);
 
         builder.Property(t => t.CreatedDate)
             .HasColumnType("timestamp");

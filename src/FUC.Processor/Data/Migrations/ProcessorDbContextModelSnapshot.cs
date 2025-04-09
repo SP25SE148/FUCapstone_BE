@@ -60,9 +60,7 @@ namespace FUC.Processor.Data.Migrations
                         .HasColumnType("text");
 
                     b.Property<DateTime>("CreatedDate")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("timestamp")
-                        .HasDefaultValue(new DateTime(2025, 3, 25, 11, 22, 36, 298, DateTimeKind.Local).AddTicks(5600));
+                        .HasColumnType("timestamp");
 
                     b.Property<bool>("IsRead")
                         .HasColumnType("boolean");

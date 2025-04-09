@@ -12,7 +12,7 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace FUC.Processor.Data.Migrations
 {
     [DbContext(typeof(ProcessorDbContext))]
-    [Migration("20250325042237_init_db")]
+    [Migration("20250409105812_init_db")]
     partial class init_db
     {
         /// <inheritdoc />
@@ -63,9 +63,7 @@ namespace FUC.Processor.Data.Migrations
                         .HasColumnType("text");
 
                     b.Property<DateTime>("CreatedDate")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("timestamp")
-                        .HasDefaultValue(new DateTime(2025, 3, 25, 11, 22, 36, 298, DateTimeKind.Local).AddTicks(5600));
+                        .HasColumnType("timestamp");
 
                     b.Property<bool>("IsRead")
                         .HasColumnType("boolean");
