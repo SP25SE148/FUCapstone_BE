@@ -122,30 +122,36 @@ public class TopicService(
             averageGpa = await GetAverageGPAOfGroupByStudent(currentUser.UserCode, default);
         }
 
+#pragma warning disable CA1304 // Specify CultureInfo
+#pragma warning disable CA1862 // Use the 'StringComparison' method overloads to perform case-insensitive string comparisons
+#pragma warning disable CA1311 // Specify a culture or use an invariant version
+        var searchTerm = request.SearchTerm?.ToLower().Trim();
+
         var topics = await topicRepository.FindPaginatedAsync(
             x =>
                 (request.MainSupervisorEmail == "all" ||
                  x.MainSupervisor.Email == request.MainSupervisorEmail) &&
-                (string.IsNullOrEmpty(request.SearchTerm) ||
-                 x.Code != null && x.Code.Contains(request.SearchTerm.Trim()) ||
-                 x.EnglishName.Contains(request.SearchTerm.Trim()) ||
-                 x.VietnameseName.Contains(request.SearchTerm.Trim()) ||
-                 x.Abbreviation.Contains(request.SearchTerm.Trim()) ||
-                 x.Description.Contains(request.SearchTerm.Trim())) &&
+                (string.IsNullOrEmpty(searchTerm) ||
+                x.Code != null && x.Code.ToLower().Contains(searchTerm) ||
+                x.EnglishName.ToLower().Contains(searchTerm) ||
+                x.VietnameseName.ToLower().Contains(searchTerm) ||
+                x.Abbreviation.ToLower().Contains(searchTerm) ||
+                x.Description.ToLower().Contains(searchTerm)) &&
                 (request.BusinessAreaId == "all" || x.BusinessAreaId == Guid.Parse(request.BusinessAreaId)) &&
                 (request.DifficultyLevel == "all" ||
                  x.DifficultyLevel == Enum.Parse<DifficultyLevel>(request.DifficultyLevel, true)) &&
                 x.CapstoneId == currentUser.CapstoneId &&
                 x.CampusId == currentUser.CampusId &&
                 x.SemesterId == currentSemester.Value.Id &&
-                x.IsAssignedToGroup == false &&
+                !x.IsAssignedToGroup &&
                 x.Status.Equals(TopicStatus.Approved),
             request.PageNumber,
             request.PageSize,
-            x => x.OrderByDescending(x => x.CreatedDate)
-                .OrderBy(x => currentUser.Role == UserRoles.Student
-                    ? GetDifficultyByGPA(averageGpa)
-                    : default)
+            x => x
+                .OrderBy(x => currentUser.Role == UserRoles.Student && averageGpa != null
+                ? Math.Abs((int)x.DifficultyLevel - (int)GetDifficultyByGPA(averageGpa))
+                : 0)
+                .ThenByDescending(x => x.CreatedDate)
                 .ThenBy(x => x.Abbreviation),
             x => x.AsSplitQuery()
                 .Include(x => x.MainSupervisor)
@@ -180,6 +186,9 @@ public class TopicService(
                 CreatedDate = x.CreatedDate,
                 NumberOfTopicRequest = x.TopicRequests.Count(x => x.Status == TopicRequestStatus.UnderReview),
             });
+#pragma warning restore CA1311 // Specify a culture or use an invariant version
+#pragma warning restore CA1862 // Use the 'StringComparison' method overloads to perform case-insensitive string comparisons
+#pragma warning restore CA1304 // Specify CultureInfo
 
         return OperationResult.Success(topics);
     }
@@ -330,18 +339,23 @@ public class TopicService(
         return OperationResult.Success(topics);
     }
 
+#pragma warning disable CA1304 // Specify CultureInfo
+#pragma warning disable CA1862 // Use the 'StringComparison' method overloads to perform case-insensitive string comparisons
+#pragma warning disable CA1311 // Specify a culture or use an invariant version
     public async Task<OperationResult<PaginatedList<TopicResponse>>> GetTopics(TopicParams request)
     {
+        var searchTerm = request.SearchTerm?.ToLower().Trim();
+
         var topics = await topicRepository.FindPaginatedAsync(
             x => (request.MainSupervisorEmail == "all" ||
                   x.MainSupervisor.Email == request.MainSupervisorEmail)
                  &&
-                 (string.IsNullOrEmpty(request.SearchTerm) ||
-                  x.Code != null && x.Code.Contains(request.SearchTerm.Trim()) ||
-                  x.EnglishName.Contains(request.SearchTerm.Trim()) ||
-                  x.VietnameseName.Contains(request.SearchTerm.Trim()) ||
-                  x.Abbreviation.Contains(request.SearchTerm.Trim()) ||
-                  x.Description.Contains(request.SearchTerm.Trim())) &&
+                 (string.IsNullOrEmpty(searchTerm) ||
+                  x.Code != null && x.Code.ToLower().Contains(searchTerm) ||
+                  x.EnglishName.ToLower().Contains(searchTerm) ||
+                  x.VietnameseName.ToLower().Contains(searchTerm) ||
+                  x.Abbreviation.ToLower().Contains(searchTerm) ||
+                  x.Description.ToLower().Contains(searchTerm)) &&
                  (request.BusinessAreaId == "all" ||
                   x.BusinessAreaId == Guid.Parse(request.BusinessAreaId)) &&
                  (request.DifficultyLevel == "all" ||
@@ -387,6 +401,9 @@ public class TopicService(
 
         return OperationResult.Success(topics);
     }
+#pragma warning restore CA1311 // Specify a culture or use an invariant version
+#pragma warning restore CA1862 // Use the 'StringComparison' method overloads to perform case-insensitive string comparisons
+#pragma warning restore CA1304 // Specify CultureInfo
 
     public async Task<TopicResponse?> GetTopicByTopicCode(string? topicCode)
     {
@@ -806,11 +823,11 @@ public class TopicService(
             }
 
             var supervisorIdList = await (from s in supervisorRepository.GetQueryable()
-                where supervisorEmail.Contains(s.Email) &&
-                      s.IsAvailable &&
-                      s.MajorId == currentUser.MajorId &&
-                      s.CampusId == currentUser.CampusId
-                select s.Id).ToListAsync(cancellationToken);
+                                          where supervisorEmail.Contains(s.Email) &&
+                                                s.IsAvailable &&
+                                                s.MajorId == currentUser.MajorId &&
+                                                s.CampusId == currentUser.CampusId
+                                          select s.Id).ToListAsync(cancellationToken);
 
             if (supervisorIdList.Count == 0)
             {
@@ -841,8 +858,10 @@ public class TopicService(
 
             // Shuffle topics and supervisors to ensure fairness
             var rand = new Random();
+#pragma warning disable CA5394 // Do not use insecure randomness
             topicList = topicList.OrderBy(_ => rand.Next()).ToList();
             supervisorIdList = supervisorIdList.OrderBy(_ => rand.Next()).ToList();
+#pragma warning restore CA5394 // Do not use insecure randomness
 
             // Track supervisor assignments count
             var supervisorAssignments = supervisorIdList.ToDictionary(s => s, _ => 0);
@@ -1353,9 +1372,9 @@ public class TopicService(
         var result = new List<(string, string)>();
 
         var query = from s in supervisorRepository.GetQueryable()
-            where coSupervisorEmails.Contains(s.Email) &&
-                  s.CoSupervisors.Count < systemConfigService.GetSystemConfiguration().MaxTopicsForCoSupervisors
-            select new { s.Id, s.Email };
+                    where coSupervisorEmails.Contains(s.Email) &&
+                          s.CoSupervisors.Count < systemConfigService.GetSystemConfiguration().MaxTopicsForCoSupervisors
+                    select new { s.Id, s.Email };
 
         (await query.ToListAsync(cancellationToken))
             .ForEach(s => result.Add((s.Id.ToString(), s.Email)));
@@ -1376,12 +1395,12 @@ public class TopicService(
     public async Task<OperationResult<List<BusinessAreaResponse>>> GetAllBusinessAreas()
     {
         var queryable = from ba in businessRepository.GetQueryable()
-            select new BusinessAreaResponse
-            {
-                Id = ba.Id,
-                Description = ba.Description,
-                Name = ba.Name
-            };
+                        select new BusinessAreaResponse
+                        {
+                            Id = ba.Id,
+                            Description = ba.Description,
+                            Name = ba.Name
+                        };
         var businessAreas = await queryable.ToListAsync();
 
         return OperationResult.Success(businessAreas);

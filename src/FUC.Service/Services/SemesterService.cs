@@ -1,4 +1,5 @@
 ﻿using AutoMapper;
+using FUC.Common.Helpers;
 using FUC.Common.Shared;
 using FUC.Data;
 using FUC.Data.Data;
@@ -19,7 +20,7 @@ public sealed class SemesterService(
     public async Task<OperationResult<string>> CreateSemesterAsync(CreateSemesterRequest request)
     {
         // check if the semester was existed
-        Semester? semester = await semesterRepository.GetAsync(
+        var semester = await semesterRepository.GetAsync(
             s => s.Id == request.Id,
             cancellationToken: default);
 
@@ -32,9 +33,10 @@ public sealed class SemesterService(
         {
             Id = request.Id.ToUpper(),
             Name = request.Name,
-            StartDate = request.StartDate,
-            EndDate = request.EndDate
+            StartDate = request.StartDate.StartOfDay(),
+            EndDate = request.EndDate.EndOfDay(),   
         };
+
         semesterRepository.Insert(newSemester);
 
         await uow.SaveChangesAsync();
@@ -44,7 +46,7 @@ public sealed class SemesterService(
     public async Task<OperationResult<SemesterResponse>> UpdateSemesterAsync(UpdateSemesterRequest request)
     {
         // Check if Semester exists
-        Semester? semester = await semesterRepository.GetAsync(
+        var semester = await semesterRepository.GetAsync(
             s => s.Id == request.Id,
             cancellationToken: default);
 
@@ -53,8 +55,8 @@ public sealed class SemesterService(
 
         // Update Semester fields
         semester.Name = request.Name;
-        semester.StartDate = request.StartDate;
-        semester.EndDate = request.EndDate;
+        semester.StartDate = request.StartDate.StartOfDay();
+        semester.EndDate = request.EndDate.EndOfDay();
 
         semesterRepository.Update(semester);
         await uow.SaveChangesAsync();
@@ -64,7 +66,10 @@ public sealed class SemesterService(
 
     public async Task<OperationResult<IEnumerable<SemesterResponse>>> GetSemestersAsync()
     {
-        List<Semester> semesters = await semesterRepository.GetAllAsync();
+        List<Semester> semesters = (await semesterRepository.GetAllAsync())
+            .OrderByDescending(x => x.StartDate)
+            .ToList();   
+
         return OperationResult.Success(mapper.Map<IEnumerable<SemesterResponse>>(semesters));
     }
 
