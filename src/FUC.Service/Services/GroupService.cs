@@ -96,6 +96,7 @@ public class GroupService(
                 CapstoneId = leader.CapstoneId,
                 MajorId = leader.MajorId,
                 SemesterId = currentSemester.Value.Id,
+                GPA = leader.GPA
             };
 
             groupRepository.Insert(newGroup);
@@ -185,6 +186,7 @@ public class GroupService(
             CreateIncludeForGroupResponse(),
             g => g.OrderBy(group => group.CreatedDate),
             CreateSelectorForGroupResponse());
+
 
         foreach (var group in groups)
         {
@@ -629,12 +631,7 @@ public class GroupService(
             SemesterName = g.SemesterId,
             TopicCode = g.Topic != null ? g.Topic.Code : "undefined",
             IsUploadGroupDocument = g.IsUploadGroupDocument,
-            AverageGPA = g.GroupMembers.Any(m => m.Status == GroupMemberStatus.Accepted)
-                ? g.GroupMembers.Where(m => m.Status == GroupMemberStatus.Accepted)
-                    .Select(m => m.Student.GPA)
-                    .Where(x => x != 0)
-                    .Average()
-                : 0,
+            AverageGPA = g.GPA,
             GroupMemberList = g.GroupMembers
                 .Where(m => m.Status == GroupMemberStatus.Accepted)
                 .Select(m => new GroupMemberResponse
@@ -1549,12 +1546,7 @@ public class GroupService(
                 IsUploadGroupDocument = gm.Group.IsUploadGroupDocument,
                 CurrentNumberOfGroupPerMax =
                     $"{gm.Group.GroupMembers.Count(gm => gm.Status == GroupMemberStatus.Accepted)}/{gm.Group.Capstone.MaxMember}",
-                AverageGPA = gm.Group.GroupMembers.Any(gm => gm.Status == GroupMemberStatus.Accepted)
-                    ? gm.Group.GroupMembers.Where(m => m.Status == GroupMemberStatus.Accepted)
-                        .Select(m => m.Student.GPA)
-                        .Where(x => x != 0)
-                        .Average()
-                    : 0
+                AverageGPA = gm.Group.GPA
             },
             gm => gm.AsSplitQuery()
                 .Include(gm => gm.Student)
@@ -2018,6 +2010,7 @@ public class GroupService(
                 MajorId = currentUser.MajorId,
                 SemesterId = semester.Id,
                 Status = GroupStatus.InProgress,
+                GPA = studentsGroup.Select(x => x.GPA).Average(),
                 GroupMembers = studentsGroup.Select(x => new GroupMember
                 {
                     StudentId = x.Id,
