@@ -1820,7 +1820,8 @@ public class GroupService(
                         .Include(g => g.DefendCapstoneProjectDecision)
                         .Include(g => g.ReviewCalendars.Where(rc => rc.Status == ReviewCalendarStatus.Done)));
             var president = await defendCapstoneProjectCouncilMemberRepository.GetAsync(
-                cm => cm.SupervisorId == currentUser.UserCode && cm.IsPresident,
+                cm => cm.SupervisorId == currentUser.UserCode && cm.IsPresident &&
+                      cm.DefendCapstoneProjectInformationCalendarId == calendarId,
                 true,
                 cm => cm.Include(cm => cm.DefendCapstoneProjectInformationCalendar),
                 default);
@@ -1845,7 +1846,11 @@ public class GroupService(
             switch (isReDefendCapstoneProject)
             {
                 case false:
-                    group!.IsReDefendCapstoneProject = false;
+                    if (group.DefendCapstoneProjectDecision.Decision == DecisionStatus.Agree_to_defense)
+                    {
+                        group!.IsReDefendCapstoneProject = false;
+                    }
+
                     group.Status = GroupStatus.Completed;
                     break;
                 case true when group.DefendCapstoneProjectDecision.Decision == DecisionStatus.Agree_to_defense:
@@ -1853,7 +1858,7 @@ public class GroupService(
                     group.IsReDefendCapstoneProject = true;
                     break;
                 default:
-                    break;
+                    throw new ArgumentException("Can not update group decision");
             }
 
             president.DefendCapstoneProjectInformationCalendar.Status = DefendCapstoneProjectCalendarStatus.Done;
@@ -1917,7 +1922,7 @@ public class GroupService(
     {
         return group != null &&
                group.Status == GroupStatus.InProgress &&
-               group.ReviewCalendars.Count >= group.Capstone.ReviewCount;
+               group.ReviewCalendars.Count == group.Capstone.ReviewCount;
     }
 
     public async Task<OperationResult> MergeGroupForRemainStudents(CancellationToken cancellationToken)
