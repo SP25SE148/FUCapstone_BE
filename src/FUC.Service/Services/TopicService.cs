@@ -117,10 +117,13 @@ public class TopicService(
             return OperationResult.Failure<PaginatedList<TopicForStudentResponse>>(new Error("Error.GetTopicsFailed",
                 "The current semester is not existed!"));
         float? averageGpa = null;
+
         if (currentUser.Role == UserRoles.Student)
         {
             averageGpa = await GetAverageGPAOfGroupByStudent(currentUser.UserCode, default);
         }
+
+        var targetDifficulty = averageGpa != null ? (int)GetDifficultyByGPA(averageGpa) : 0;
 
 #pragma warning disable CA1304 // Specify CultureInfo
 #pragma warning disable CA1862 // Use the 'StringComparison' method overloads to perform case-insensitive string comparisons
@@ -149,7 +152,7 @@ public class TopicService(
             request.PageSize,
             x => x
                 .OrderBy(x => currentUser.Role == UserRoles.Student && averageGpa != null
-                ? Math.Abs((int)x.DifficultyLevel - (int)GetDifficultyByGPA(averageGpa))
+                ? Math.Abs((int)x.DifficultyLevel - targetDifficulty)
                 : 0)
                 .ThenByDescending(x => x.CreatedDate)
                 .ThenBy(x => x.Abbreviation),

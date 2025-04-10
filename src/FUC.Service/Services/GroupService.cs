@@ -2226,8 +2226,9 @@ public class GroupService(
         if (group.Status != GroupStatus.InProgress)
             return OperationResult.Failure(new Error("Topic.Error", "This group is not valid."));
 
+        topic.Value.IsAssignedToGroup = true;
         group.Topic = topic.Value;
-        group.Topic.IsAssignedToGroup = true;
+        group.SupervisorId = topic.Value.MainSupervisorId;
 
         groupRepository.Update(group);
 
