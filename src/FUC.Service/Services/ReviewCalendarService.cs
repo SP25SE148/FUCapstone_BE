@@ -1,9 +1,6 @@
 ﻿using System.Linq.Expressions;
-using Amazon.Internal;
 using ClosedXML.Excel;
-using DocumentFormat.OpenXml.Drawing.Charts;
 using FUC.Common.Abstractions;
-using FUC.Common.Constants;
 using FUC.Common.Contracts;
 using FUC.Common.IntegrationEventLog.Services;
 using FUC.Common.Shared;
@@ -16,7 +13,6 @@ using FUC.Service.Abstractions;
 using FUC.Service.DTOs.GroupDTO;
 using FUC.Service.DTOs.ReviewCalendarDTO;
 using FUC.Service.DTOs.TopicDTO;
-using MassTransit.Internals;
 using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Query;
@@ -89,7 +85,7 @@ public sealed class ReviewCalendarService(
     public async Task<OperationResult<IEnumerable<ReviewCalendarResponse>>> GetReviewCalendarBySupervisorId()
     {
         var reviewCalendars = await reviewerRepository.FindAsync(
-            r => r.SupervisorId.Equals(currentUser.UserCode),
+            r => r.SupervisorId == currentUser.UserCode,
             r => r.AsSplitQuery()
                 .Include(r => r.ReviewCalender)
                 .ThenInclude(rc => rc.Topic)
@@ -198,7 +194,7 @@ public sealed class ReviewCalendarService(
     public async Task<OperationResult<IEnumerable<ReviewCriteriaResponse>>> GetReviewCriteriaByAttemptAsync(int attempt)
     {
         var reviewCriteria = await reviewCriteriaRepository.FindAsync(
-            rc => rc.Attempt == attempt && rc.IsActive == true,
+            rc => rc.Attempt == attempt && rc.IsActive,
             null,
             null,
             selector: rc => new ReviewCriteriaResponse

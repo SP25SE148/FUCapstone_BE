@@ -113,9 +113,11 @@ public class TopicService(
         TopicForGroupParams request)
     {
         var currentSemester = await semesterService.GetCurrentSemesterAsync();
+
         if (currentSemester.IsFailure)
             return OperationResult.Failure<PaginatedList<TopicForStudentResponse>>(new Error("Error.GetTopicsFailed",
                 "The current semester is not existed!"));
+
         float? averageGpa = null;
 
         if (currentUser.Role == UserRoles.Student)

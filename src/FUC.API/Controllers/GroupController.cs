@@ -241,6 +241,7 @@ public class GroupController(
     public async Task<IActionResult> GetAvailableTopicsForGroupAsync([FromQuery] TopicForGroupParams request)
     {
         var result = await topicService.GetAvailableTopicsForGroupAsync(request);
+
         return result.IsSuccess
             ? Ok(result)
             : HandleFailure(result);

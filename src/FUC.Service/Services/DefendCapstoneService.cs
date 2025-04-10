@@ -184,7 +184,7 @@ public class DefendCapstoneService(
         CancellationToken cancellationToken)
     {
         var calendar = await defendCapstoneCalendarRepository.GetAsync(
-            x => x.Id == calendarId && x.IsUploadedThesisMinute == true,
+            x => x.Id == calendarId && x.IsUploadedThesisMinute,
             include: x => x.Include(x => x.DefendCapstoneProjectMemberCouncils)
                 .Include(x => x.Topic),
             orderBy: null,
@@ -202,7 +202,7 @@ public class DefendCapstoneService(
                 "You can not get this thesis because you are not in the Council."));
 
         var key =
-            $"{calendar.CampusId}/{calendar.SemesterId}/{calendar.Topic.CapstoneId}/{calendar.TopicCode}/{calendar.DefendAttempt}";
+            $"{calendar.CampusId}/{calendar.SemesterId}/{calendar.Topic.CapstoneId}/{calendar.TopicCode}/{calendar.DefendAttempt}/{calendar.Topic.Group.GroupCode}";
 
         return await documentsService.PresentThesisCouncilMeetingMinutesForTopicPresignedUrl(key);
     }
