@@ -1581,7 +1581,8 @@ public class TopicService(
             orderBy: null,
             cancellationToken);
 
-        ArgumentNullException.ThrowIfNull(groupMember);
+        if (groupMember == null)
+            return 0;
 
         return groupMember.Group.GPA;
     }

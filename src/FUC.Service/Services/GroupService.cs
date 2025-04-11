@@ -2040,7 +2040,8 @@ public class GroupService(
         CancellationToken cancellationToken)
     {
         var group = await groupRepository.GetAsync(x => x.Id == request.GroupId,
-            include: x => x.Include(x => x.GroupMembers),
+            include: x => x.Include(x => x.GroupMembers)
+                .ThenInclude(x => x.Student),
             orderBy: null,
             cancellationToken);
 
@@ -2072,11 +2073,16 @@ public class GroupService(
             student.CapstoneId != currentUser.CapstoneId)
             return OperationResult.Failure(new Error("Group.Error", "Student is not on your area."));
 
+        var sumGpaOtherStudents = group.GroupMembers.Sum(x => x.Student.GPA);
+        var numberOfStudent = group.GroupMembers.Count(x => x.Student.GPA != 0);
+
         group.GroupMembers.Add(new GroupMember
         {
             Status = GroupMemberStatus.Accepted,
             StudentId = student.Id,
         });
+
+        group.GPA = (sumGpaOtherStudents + student.GPA) / (numberOfStudent + 1);
 
         groupRepository.Update(group);
 

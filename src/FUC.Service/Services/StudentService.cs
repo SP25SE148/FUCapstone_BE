@@ -16,6 +16,7 @@ public sealed class StudentService(
     IMapper mapper,
     ICurrentUser currentUser,
     IRepository<Student> studentRepository,
+    IRepository<Group> groupRepository,
     IUnitOfWork<FucDbContext> uow) : IStudentService
 {
     public async Task<OperationResult<IEnumerable<StudentResponseDTO>>> GetAllStudentAsync(
@@ -86,6 +87,28 @@ public sealed class StudentService(
         // update student info
         student.BusinessAreaId = request.BusinessAreaId;
         student.GPA = request.GPA;
+
+        var groupMember = student.GroupMembers.FirstOrDefault(x => x.Status == Data.Enums.GroupMemberStatus.Accepted);
+
+        if (groupMember != null)
+        {
+            var group = await groupRepository.GetAsync(
+                x => x.Id == groupMember.GroupId, 
+                include: x => x
+                        .Include(x => x.GroupMembers.Where(x => x.Id != groupMember.Id))
+                        .ThenInclude(x => x.Student),
+                default);
+
+            ArgumentNullException.ThrowIfNull(group); 
+
+            var sumGpaOtherStudents = group.GroupMembers.Sum(x => x.Student.GPA);
+            var numberOfStudent = group.GroupMembers.Count(x => x.Student.GPA != 0);
+
+            group.GPA = (sumGpaOtherStudents + request.GPA) / (numberOfStudent + 1);
+
+            groupRepository.Update(group);  
+        }
+
         studentRepository.Update(student);
 
         await uow.SaveChangesAsync();
