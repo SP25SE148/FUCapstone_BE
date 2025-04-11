@@ -2082,7 +2082,8 @@ public class GroupService(
             StudentId = student.Id,
         });
 
-        group.GPA = (sumGpaOtherStudents + student.GPA) / (numberOfStudent + 1);
+        if (student.GPA != 0)
+            group.GPA = (sumGpaOtherStudents + student.GPA) / (numberOfStudent + 1);
 
         groupRepository.Update(group);
 
