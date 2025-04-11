@@ -198,11 +198,15 @@ public class GroupMemberService(
                     groupMemberRepository.Update(groupMember);
                     if (request.Status.Equals(GroupMemberStatus.Accepted))
                     {
-                        groupMember.Group.GPA += groupMember.Student.GPA / (groupMember.Group.GroupMembers.Count(x => x.Status == GroupMemberStatus.Accepted) + 1);
+                        groupMember.Group.GPA = (groupMember.Group.GroupMembers
+                            .Where(x => x.Status == GroupMemberStatus.Accepted)
+                            .Select(x => x.Student.GPA).Sum() + groupMember.Student.GPA) / (groupMember.Group.GroupMembers.Count(x => x.Status == GroupMemberStatus.Accepted) + 1);
+
                         var memberRequests = await groupMemberRepository.FindAsync(gm =>
                             gm.StudentId == groupMember.StudentId &&
                             gm.Id != request.Id &&
                             gm.Status.Equals(GroupMemberStatus.UnderReview), null, true);
+
                         if (memberRequests.Any())
                         {
                             foreach (var memberRequest in memberRequests.Where(gm => gm.Id != request.Id).ToList())
@@ -673,8 +677,6 @@ public class GroupMemberService(
         });
 
         group.GPA = (sumGpaOtherStudents + student.GPA) / (numberOfStudent + 1);
-
-        groupRepository.Update(group);
 
         if (IsGroupFullAfterApprove(group, maxMember))
         {
