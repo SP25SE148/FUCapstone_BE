@@ -19,13 +19,13 @@ public class GroupMemberService(
     IUnitOfWork<FucDbContext> uow,
     IIntegrationEventLogService integrationEventLogService,
     IGroupService groupService,
+    IRepository<Group> groupRepository,
     ICurrentUser currentUser,
     ILogger<GroupMemberService> logger,
     ICapstoneService capstoneService,
     IRepository<JoinGroupRequest> joinGroupRequestRepository,
     IRepository<GroupMember> groupMemberRepository,
     IRepository<Student> studentRepository,
-    IRepository<Group> groupRepository,
     ISystemConfigurationService systemConfigService) : IGroupMemberService
 
 {
@@ -141,18 +141,14 @@ public class GroupMemberService(
     {
         try
         {
-            // get all request of member
-            // string? memberRequestId = !request.Status.Equals(GroupMemberStatus.Cancelled)
-            //     ? currentUser.UserCode
-            //     : request.MemberId;
-
             var groupMember = await groupMemberRepository.GetAsync(
                 gm => gm.Id == request.Id && gm.GroupId == request.GroupId,
                 isEnabledTracking: true,
                 gm => gm
                     .Include(grm => grm.Group)
-                        .ThenInclude(grm => grm.GroupMembers)
-                    .Include(g => g.Group.Capstone)
+                    .ThenInclude(g => g.Capstone)
+                    .Include(x => x.Group.GroupMembers)
+                    .ThenInclude(gm => gm.Student)
                     .Include(gm => gm.Student),
                 cancellationToken: default);
 
@@ -198,15 +194,15 @@ public class GroupMemberService(
                     groupMemberRepository.Update(groupMember);
                     if (request.Status.Equals(GroupMemberStatus.Accepted))
                     {
-                        groupMember.Group.GPA = (groupMember.Group.GroupMembers
-                            .Where(x => x.Status == GroupMemberStatus.Accepted)
-                            .Select(x => x.Student.GPA).Sum() + groupMember.Student.GPA) / (groupMember.Group.GroupMembers.Count(x => x.Status == GroupMemberStatus.Accepted) + 1);
-
+                        groupMember.Group.GPA =
+                            (groupMember.Student.GPA + groupMember.Group.GroupMembers
+                                .Where(gm => gm.Status == GroupMemberStatus.Accepted).Select(x => x.Student.GPA)
+                                .Sum()) / groupMember.Group.GroupMembers.Count(gm =>
+                                gm.Status == GroupMemberStatus.Accepted);
                         var memberRequests = await groupMemberRepository.FindAsync(gm =>
                             gm.StudentId == groupMember.StudentId &&
                             gm.Id != request.Id &&
                             gm.Status.Equals(GroupMemberStatus.UnderReview), null, true);
-
                         if (memberRequests.Any())
                         {
                             foreach (var memberRequest in memberRequests.Where(gm => gm.Id != request.Id).ToList())
@@ -537,7 +533,7 @@ public class GroupMemberService(
             include: jr => jr
                 .Include(jr => jr.Student)
                 .Include(jr => jr.Group)
-                    .ThenInclude(g => g.GroupMembers));
+                .ThenInclude(g => g.GroupMembers));
 
         if (joinGroupRequest is null)
             return OperationResult.Failure(Error.NullValue);
@@ -585,6 +581,7 @@ public class GroupMemberService(
         return leader != null;
     }
 
+
     private static bool IsJoinGroupRequestStatusPending(JoinGroupRequest joinGroupRequest)
     {
         return joinGroupRequest.Status != JoinGroupRequestStatus.Pending;
@@ -594,6 +591,7 @@ public class GroupMemberService(
     {
         return group.GroupMembers.Count(gm => gm.Status == GroupMemberStatus.Accepted) >= maxMember;
     }
+
 
     private async Task UpdateJoinGroupRequestStatus(
         JoinGroupRequest joinGroupRequest,
@@ -665,6 +663,13 @@ public class GroupMemberService(
             Status = GroupMemberStatus.Accepted,
             IsLeader = false
         });
+        var groupUpdate = await groupRepository.GetAsync(g => g.Id == group.Id, true,
+            include: g => g.Include(g => g.GroupMembers).ThenInclude(gm => gm.Student));
+
+        groupUpdate.GPA =
+            (student.GPA + groupUpdate.GroupMembers.Where(gm => gm.Status == GroupMemberStatus.Accepted)
+                .Select(x => x.Student.GPA).Sum()) /
+            (groupUpdate.GroupMembers.Count(gm => gm.Status == GroupMemberStatus.Accepted) + 1);
 
         if (IsGroupFullAfterApprove(group, maxMember))
         {
