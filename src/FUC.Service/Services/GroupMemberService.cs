@@ -585,7 +585,6 @@ public class GroupMemberService(
         return leader != null;
     }
 
-
     private static bool IsJoinGroupRequestStatusPending(JoinGroupRequest joinGroupRequest)
     {
         return joinGroupRequest.Status != JoinGroupRequestStatus.Pending;
@@ -595,7 +594,6 @@ public class GroupMemberService(
     {
         return group.GroupMembers.Count(gm => gm.Status == GroupMemberStatus.Accepted) >= maxMember;
     }
-
 
     private async Task UpdateJoinGroupRequestStatus(
         JoinGroupRequest joinGroupRequest,
@@ -660,14 +658,6 @@ public class GroupMemberService(
     {
         joinGroupRequest.Status = JoinGroupRequestStatus.Approved;
 
-        var sumGpaOtherStudents = group.GroupMembers
-            .Where(x => x.Status == GroupMemberStatus.Accepted)
-            .Sum(x => x.Student.GPA);
-
-        var numberOfStudent = group.GroupMembers
-            .Where(x => x.Status == GroupMemberStatus.Accepted)
-            .Count(x => x.Student.GPA != 0);
-
         groupMemberRepository.Insert(new GroupMember
         {
             GroupId = group.Id,
@@ -675,8 +665,6 @@ public class GroupMemberService(
             Status = GroupMemberStatus.Accepted,
             IsLeader = false
         });
-
-        group.GPA = (sumGpaOtherStudents + student.GPA) / (numberOfStudent + 1);
 
         if (IsGroupFullAfterApprove(group, maxMember))
         {
