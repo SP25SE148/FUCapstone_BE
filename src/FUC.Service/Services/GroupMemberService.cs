@@ -197,8 +197,8 @@ public class GroupMemberService(
                         groupMember.Group.GPA =
                             (groupMember.Student.GPA + groupMember.Group.GroupMembers
                                 .Where(gm => gm.Status == GroupMemberStatus.Accepted).Select(x => x.Student.GPA)
-                                .Sum()) / (groupMember.Group.GroupMembers.Count(gm =>
-                                gm.Status == GroupMemberStatus.Accepted) + 1);
+                                .Sum()) / groupMember.Group.GroupMembers.Count(gm =>
+                                gm.Status == GroupMemberStatus.Accepted);
                         var memberRequests = await groupMemberRepository.FindAsync(gm =>
                             gm.StudentId == groupMember.StudentId &&
                             gm.Id != request.Id &&
