@@ -25,6 +25,7 @@ public class GroupMemberService(
     IRepository<JoinGroupRequest> joinGroupRequestRepository,
     IRepository<GroupMember> groupMemberRepository,
     IRepository<Student> studentRepository,
+    IRepository<Group> groupRepository,
     ISystemConfigurationService systemConfigService) : IGroupMemberService
 
 {
@@ -150,7 +151,8 @@ public class GroupMemberService(
                 isEnabledTracking: true,
                 gm => gm
                     .Include(grm => grm.Group)
-                    .ThenInclude(g => g.Capstone)
+                        .ThenInclude(grm => grm.GroupMembers)
+                    .Include(g => g.Group.Capstone)
                     .Include(gm => gm.Student),
                 cancellationToken: default);
 
@@ -196,7 +198,7 @@ public class GroupMemberService(
                     groupMemberRepository.Update(groupMember);
                     if (request.Status.Equals(GroupMemberStatus.Accepted))
                     {
-                        groupMember.Group.GPA += groupMember.Student.GPA / (groupMember.Group.GroupMembers.Count + 1);
+                        groupMember.Group.GPA += groupMember.Student.GPA / (groupMember.Group.GroupMembers.Count(x => x.Status == GroupMemberStatus.Accepted) + 1);
                         var memberRequests = await groupMemberRepository.FindAsync(gm =>
                             gm.StudentId == groupMember.StudentId &&
                             gm.Id != request.Id &&
@@ -531,7 +533,7 @@ public class GroupMemberService(
             include: jr => jr
                 .Include(jr => jr.Student)
                 .Include(jr => jr.Group)
-                .ThenInclude(g => g.GroupMembers));
+                    .ThenInclude(g => g.GroupMembers));
 
         if (joinGroupRequest is null)
             return OperationResult.Failure(Error.NullValue);
@@ -654,6 +656,14 @@ public class GroupMemberService(
     {
         joinGroupRequest.Status = JoinGroupRequestStatus.Approved;
 
+        var sumGpaOtherStudents = group.GroupMembers
+            .Where(x => x.Status == GroupMemberStatus.Accepted)
+            .Sum(x => x.Student.GPA);
+
+        var numberOfStudent = group.GroupMembers
+            .Where(x => x.Status == GroupMemberStatus.Accepted)
+            .Count(x => x.Student.GPA != 0);
+
         groupMemberRepository.Insert(new GroupMember
         {
             GroupId = group.Id,
@@ -661,6 +671,10 @@ public class GroupMemberService(
             Status = GroupMemberStatus.Accepted,
             IsLeader = false
         });
+
+        group.GPA = (sumGpaOtherStudents + student.GPA) / (numberOfStudent + 1);
+
+        groupRepository.Update(group);
 
         if (IsGroupFullAfterApprove(group, maxMember))
         {
