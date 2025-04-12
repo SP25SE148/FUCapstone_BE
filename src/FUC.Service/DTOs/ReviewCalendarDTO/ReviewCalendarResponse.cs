@@ -28,6 +28,7 @@ public sealed class ReviewCalendarResultDetailResponse
 {
     public string? Suggestion { get; set; }
     public string? Comment { get; set; }
+    public bool IsReview { get; set; }
     public string? Author { get; set; }
 }
 

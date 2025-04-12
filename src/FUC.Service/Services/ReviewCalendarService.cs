@@ -221,6 +221,7 @@ public sealed class ReviewCalendarService(
             {
                 Suggestion = r.Suggestion ?? "undefined",
                 Comment = r.Comment ?? "undefined",
+                IsReview = r.IsReview,
                 Author = r.SupervisorId
             }).ToList()
         });
