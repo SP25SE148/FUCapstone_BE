@@ -20,3 +20,9 @@ public sealed record StudentResponseDTO
     // Constructor mặc định
     public StudentResponseDTO() { }
 }
+
+public sealed record InviteStudentsResponseDto
+{
+    public string Id { get; init; } = string.Empty;
+    public string Email { get; init; } = string.Empty;
+}

@@ -10,4 +10,5 @@ public interface IStudentService
     Task<OperationResult> UpdateStudentInformation(UpdateStudentRequest request, string studentId);
     Task<OperationResult<IList<StudentResponseDTO>>> GetRemainStudentsAsync(
        CancellationToken cancellationToken);
+    Task<OperationResult<IList<InviteStudentsResponseDto>>> GetStudentsForInvitation(string searchTerm, CancellationToken cancellationToken = default);
 }

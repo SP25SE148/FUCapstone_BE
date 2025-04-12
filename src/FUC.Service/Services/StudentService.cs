@@ -93,20 +93,20 @@ public sealed class StudentService(
         if (groupMember != null)
         {
             var group = await groupRepository.GetAsync(
-                x => x.Id == groupMember.GroupId, 
+                x => x.Id == groupMember.GroupId,
                 include: x => x
                         .Include(x => x.GroupMembers.Where(x => x.Id != groupMember.Id))
                         .ThenInclude(x => x.Student),
                 default);
 
-            ArgumentNullException.ThrowIfNull(group); 
+            ArgumentNullException.ThrowIfNull(group);
 
             var sumGpaOtherStudents = group.GroupMembers.Sum(x => x.Student.GPA);
             var numberOfStudent = group.GroupMembers.Count(x => x.Student.GPA != 0);
 
             group.GPA = (sumGpaOtherStudents + request.GPA) / (numberOfStudent + 1);
 
-            groupRepository.Update(group);  
+            groupRepository.Update(group);
         }
 
         studentRepository.Update(student);
@@ -124,5 +124,23 @@ public sealed class StudentService(
             .Include(s => s.Campus)
             .Include(s => s.GroupMembers)
             .Include(s => s.BusinessArea);
+    }
+
+    public async Task<OperationResult<IList<InviteStudentsResponseDto>>> GetStudentsForInvitation(string searchTerm, CancellationToken cancellationToken = default)
+    {
+        var students = await studentRepository.FindAsync(
+            x => x.CampusId == currentUser.CampusId &&
+                 x.MajorId == currentUser.MajorId &&
+                 (string.IsNullOrEmpty(searchTerm) || x.Email.ToLower().Contains(searchTerm.ToLower())),
+            include: null,
+            orderBy: null,
+            selector: x => new InviteStudentsResponseDto
+            {
+                Email = x.Email,
+                Id = x.Id,
+            },
+            cancellationToken: cancellationToken);
+
+        return OperationResult.Success(students);
     }
 }
