@@ -9,6 +9,7 @@ public sealed class Reviewer : AuditableSoftDeleteEntity
     public Guid ReviewCalenderId { get; set; }
     public string? Suggestion { get; set; }
     public string? Comment { get; set; }
+    public bool IsReview { get; set; }
     public Supervisor Supervisor { get; set; } = null!;
     public ReviewCalendar ReviewCalender { get; set; } = null!;
 }

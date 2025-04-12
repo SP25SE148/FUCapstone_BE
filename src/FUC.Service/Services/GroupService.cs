@@ -563,6 +563,7 @@ public class GroupService(
 
             // update topic request status
             topicRequest.Status = request.Status;
+            topicRequest.Reason = request.Reason;
             // set the rest topic request status have id same with topicRequest.TopicId to Rejected   
             if (topicRequest.Status.Equals(TopicRequestStatus.Accepted))
             {
@@ -574,6 +575,7 @@ public class GroupService(
                 foreach (TopicRequest topRequest in topicRequests)
                 {
                     topRequest.Status = TopicRequestStatus.Rejected;
+                    topicRequest.Reason = "This topic already assigned to another group";
                     topicRequestRepository.Update(topRequest);
                 }
 

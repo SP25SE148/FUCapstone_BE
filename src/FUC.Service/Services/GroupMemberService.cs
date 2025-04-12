@@ -194,11 +194,12 @@ public class GroupMemberService(
                     groupMemberRepository.Update(groupMember);
                     if (request.Status.Equals(GroupMemberStatus.Accepted))
                     {
-                        groupMember.Group.GPA =
-                            (groupMember.Student.GPA + groupMember.Group.GroupMembers
-                                .Where(gm => gm.Status == GroupMemberStatus.Accepted).Select(x => x.Student.GPA)
-                                .Sum()) / groupMember.Group.GroupMembers.Count(gm =>
-                                gm.Status == GroupMemberStatus.Accepted);
+                        groupMember.Group.GPA = groupMember.Group.GroupMembers
+                                                    .Where(gm => gm.Status == GroupMemberStatus.Accepted)
+                                                    .Select(x => x.Student.GPA)
+                                                    .Sum() /
+                                                groupMember.Group.GroupMembers.Count(gm =>
+                                                    gm.Status == GroupMemberStatus.Accepted);
                         var memberRequests = await groupMemberRepository.FindAsync(gm =>
                             gm.StudentId == groupMember.StudentId &&
                             gm.Id != request.Id &&
@@ -669,8 +670,7 @@ public class GroupMemberService(
         groupUpdate.GPA =
             (student.GPA + groupUpdate.GroupMembers.Where(gm => gm.Status == GroupMemberStatus.Accepted)
                 .Select(x => x.Student.GPA).Sum()) /
-            (groupUpdate.GroupMembers.Count(gm => gm.Status == GroupMemberStatus.Accepted) + 1);
-
+            groupUpdate.GroupMembers.Count(gm => gm.Status == GroupMemberStatus.Accepted);
         if (IsGroupFullAfterApprove(group, maxMember))
         {
             CancelPendingInviteMemberRequests(group);

@@ -12,6 +12,7 @@ public sealed class ReviewerConfiguration : IEntityTypeConfiguration<Reviewer>
         builder.ToTable(TableNames.Reviewer);
 
         builder.HasKey(r => r.Id);
+
         builder.Property(r => r.Id).HasDefaultValue(Guid.NewGuid());
 
         builder.Property(r => r.Suggestion)
@@ -19,6 +20,9 @@ public sealed class ReviewerConfiguration : IEntityTypeConfiguration<Reviewer>
 
         builder.Property(r => r.Comment)
             .HasMaxLength(1000);
+
+        builder.Property(r => r.IsReview)
+            .HasDefaultValue(false);
 
         builder.HasOne(r => r.Supervisor)
             .WithMany(s => s.Reviewers)
@@ -32,8 +36,10 @@ public sealed class ReviewerConfiguration : IEntityTypeConfiguration<Reviewer>
 
         builder.Property(r => r.CreatedDate)
             .HasColumnType("timestamp");
+
         builder.Property(r => r.UpdatedDate)
             .HasColumnType("timestamp");
+
         builder.Property(r => r.DeletedAt)
             .HasColumnType("timestamp");
     }
