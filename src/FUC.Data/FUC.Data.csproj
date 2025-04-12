@@ -28,6 +28,7 @@
     <ItemGroup>
         <Compile Remove="Entities\SupervisorGroupAssignment.cs"/>
       <Compile Remove="Entities\DefencapstioneProjectInformationCalendar.cs"/>
+      <Compile Remove="Migrations\FucDbContextModelSnapshot.cs"/>
     </ItemGroup>
 
 </Project>
