@@ -38,7 +38,7 @@ public class TopicService(
     IRepository<CoSupervisor> coSupervisorRepository,
     S3BucketConfiguration s3BucketConfiguration,
     ISemesterService semesterService,
-    IRepository<GroupMember> groupMemberRepository,
+    IRepository<Group> groupRepository,
     ICacheService cache,
     ITimeConfigurationService timeConfigurationService,
     ISystemConfigurationService systemConfigService,
@@ -74,7 +74,8 @@ public class TopicService(
                 .Include(x => x.MainSupervisor)
                 .Include(x => x.BusinessArea)
                 .Include(x => x.CoSupervisors)
-                .ThenInclude(c => c.Supervisor),
+                    .ThenInclude(c => c.Supervisor)
+                .Include(x => x.TopicAppraisals),
             null,
             cancellationToken);
 
@@ -105,6 +106,20 @@ public class TopicService(
                     SupervisorEmail = x.Supervisor.Email,
                     SupervisorName = x.Supervisor.FullName,
                 }).ToList(),
+                TopicAppraisals = topic.TopicAppraisals.Select(x => new TopicAppraisalDto
+                {
+                    AppraisalComment = x.AppraisalComment,
+                    AppraisalContent = x.AppraisalContent,
+                    AppraisalDate = x.AppraisalDate,
+                    AttemptTime = x.AttemptTime,    
+                    CreatedDate = x.CreatedDate,
+                    Status = x.Status,
+                    SupervisorId = x.SupervisorId,
+                    TopicAppraisalId = x.Id,
+                    TopicId = x.TopicId,
+                })
+                .OrderByDescending(x => x.AttemptTime)
+                .ToList(),
                 CreatedDate = topic.CreatedDate,
             });
     }
@@ -120,9 +135,20 @@ public class TopicService(
 
         float? averageGpa = null;
 
+        Guid? businessArea = Guid.Empty;
+
         if (currentUser.Role == UserRoles.Student)
         {
-            averageGpa = await GetAverageGPAOfGroupByStudent(currentUser.UserCode, default);
+            var groupOfStudent = await groupRepository.GetAsync(
+                x => x.GroupMembers
+                    .Any(x => x.StudentId == currentUser.UserCode &&
+                         x.Status == GroupMemberStatus.Accepted),
+                include: x => x.Include(x => x.GroupMembers.Where(x => x.Status == GroupMemberStatus.Accepted))
+                           .ThenInclude(x => x.Student),
+                cancellationToken: default);
+
+            averageGpa = groupOfStudent != null ? groupOfStudent.GPA : 0;
+            businessArea = GetBusinessAreafGroup(groupOfStudent);
         }
 
         var targetDifficulty = averageGpa != null ? (int)GetDifficultyByGPA(averageGpa) : 0;
@@ -156,6 +182,7 @@ public class TopicService(
                 .OrderBy(x => currentUser.Role == UserRoles.Student && averageGpa != null
                 ? Math.Abs((int)x.DifficultyLevel - targetDifficulty)
                 : 0)
+                .ThenByDescending(x => businessArea != null && x.BusinessAreaId == businessArea)
                 .ThenByDescending(x => x.CreatedDate)
                 .ThenBy(x => x.Abbreviation),
             x => x.AsSplitQuery()
@@ -1573,17 +1600,17 @@ public class TopicService(
         return topic ?? OperationResult.Failure<Topic>(Error.NullValue);
     }
 
-    private async Task<float?> GetAverageGPAOfGroupByStudent(string studentId, CancellationToken cancellationToken)
+    private static Guid? GetBusinessAreafGroup(Group? group)
     {
-        var groupMember = await groupMemberRepository.GetAsync(
-            x => x.StudentId == studentId && x.Status == GroupMemberStatus.Accepted,
-            include: x => x.Include(x => x.Group),
-            orderBy: null,
-            cancellationToken);
+        if (group == null || group.GroupMembers.Count == 0) return null; 
 
-        if (groupMember == null)
-            return 0;
+        var mostCommonBusinessAreaId = group.GroupMembers
+            .Select(x => x.Student)
+            .GroupBy(x => x.BusinessAreaId)
+            .OrderByDescending(g => g.Count())
+            .Select(g => g.Key)
+            .FirstOrDefault();
 
-        return groupMember.Group.GPA;
+        return mostCommonBusinessAreaId;
     }
 }
