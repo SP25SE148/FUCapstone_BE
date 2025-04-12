@@ -9,6 +9,7 @@ using System.Text.Json;
 using FUC.API.Abstractions;
 using System.Text.Json.Serialization;
 using Microsoft.AspNetCore.Authorization;
+using FUC.Data.Data;
 
 namespace FUC.API.Controllers;
 
@@ -56,24 +57,9 @@ public class SeedController : ApiController
 
         var topics = JsonSerializer.Deserialize<List<Topic>>(topicsData, options);
 
-        var context = _serviceProvider.GetService<DbContext>();
+        var context = _serviceProvider.GetRequiredService<FucDbContext>();
 
-        var httpContextAccessor = _serviceProvider.GetRequiredService<IHttpContextAccessor>();
-
-        // Manually create a fake HttpContext with a test user
-        var claims = new List<Claim>
-        {
-            new Claim(ClaimTypes.NameIdentifier, "supervisor1"),
-            new Claim("name", "Supervisor 1"),
-            new Claim(ClaimTypes.Email, "supervisor1@fe.edu.vn"),
-            new Claim(ClaimTypes.GivenName, "supervisor1")
-        };
-
-        var identity = new ClaimsIdentity(claims, "TestAuth");
-        var user = new ClaimsPrincipal(identity);
-
-        // Set the fake user in IHttpContextAccessor
-        httpContextAccessor.HttpContext = new DefaultHttpContext { User = user };
+        context.DisableInterceptors = true;
 
         if (!context.Set<Topic>().Any() && topics is not null)
         {
