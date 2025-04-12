@@ -10,7 +10,7 @@ public class TopicRequest : AuditableSoftDeleteEntity
     public Guid GroupId { get; set; }
     public Guid TopicId { get; set; }
     public TopicRequestStatus Status { get; set; }
-
+    public string? Reason { get; set; } = "";
     public Group Group { get; set; } = null!;
 
     public Topic Topic { get; set; } = null!;
