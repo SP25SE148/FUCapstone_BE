@@ -49,4 +49,5 @@ public class GroupTaskMetrics
     public Dictionary<Priority, int>? PriorityDistribution { get; set; }
     public double? CompletionTaskRatio { get; set; }
     public double? OverdueTaskRatio { get; set; }
+
 }

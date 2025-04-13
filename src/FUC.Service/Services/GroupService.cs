@@ -1342,7 +1342,6 @@ public class GroupService(
         var groups = await groupRepository.FindAsync(g => g.SupervisorId == currentUser.UserCode,
             include: g => g.Include(g => g.ProjectProgress)
                 .ThenInclude(pp => pp.FucTasks));
-
         var groupMetrics = groups.Select(g => new GroupTaskMetrics
         {
             GroupId = g.Id,
