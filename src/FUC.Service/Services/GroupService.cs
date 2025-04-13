@@ -1370,9 +1370,13 @@ public class GroupService(
             gm => gm.GroupId,
             gm => gm.TotalTasks > 0 ? (double)gm.OverdueTasks / gm.TotalTasks : 0);
 
-        var groupWithHighestCompletion = groupMetrics.MaxBy(gm => gm.CompletedTasks);
+        var groupWithHighestCompletion = groupMetrics.All(gm => gm.CompletedTasks == 0)
+            ? null
+            : groupMetrics.MaxBy(gm => gm.CompletedTasks);
 
-        var groupWithLowestOverdue = groupMetrics.MinBy(gm => gm.OverdueTasks);
+        var groupWithLowestOverdue = groupMetrics.All(gm => gm.OverdueTasks == 0)
+            ? null
+            : groupMetrics.MinBy(gm => gm.OverdueTasks);
 
         var studentContributions =
             (await weeklyEvaluationRepository
