@@ -72,6 +72,7 @@ public class TopicService(
             isEnabledTracking: false,
             x => x.AsSplitQuery()
                 .Include(x => x.MainSupervisor)
+                .Include(x => x.Capstone)
                 .Include(x => x.BusinessArea)
                 .Include(x => x.CoSupervisors)
                     .ThenInclude(c => c.Supervisor)
@@ -82,7 +83,7 @@ public class TopicService(
         if (topic == null)
             return OperationResult.Failure<TopicResponse>(new Error("Topic.Error", "Topic does not exist."));
 
-        if (topic.CampusId != currentUser.CampusId || topic.CapstoneId != currentUser.CapstoneId)
+        if (topic.CampusId != currentUser.CampusId || topic.Capstone.MajorId != currentUser.MajorId)
             return OperationResult.Failure<TopicResponse>(new Error("Topic.Error", "This topic is not on your progress."));
 
         return

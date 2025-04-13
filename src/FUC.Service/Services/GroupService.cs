@@ -993,6 +993,7 @@ public class GroupService(
         ArgumentNullException.ThrowIfNull(group);
 
         var topicResult = await topicService.GetTopicById(group.TopicId ?? Guid.Empty, cancellationToken);
+
         if (topicResult.IsFailure)
             return OperationResult.Failure<byte[]>(topicResult.Error);
 
