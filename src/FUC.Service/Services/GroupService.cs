@@ -1364,11 +1364,11 @@ public class GroupService(
         }).ToList();
 
         var completionTaskRatios = groupMetrics.ToDictionary(
-            gm => gm.GroupId,
+            gm => gm.GroupCode,
             gm => gm.TotalTasks > 0 ? (double)gm.CompletedTasks / gm.TotalTasks : 0);
 
         var overdueTaskRatios = groupMetrics.ToDictionary(
-            gm => gm.GroupId,
+            gm => gm.GroupCode,
             gm => gm.TotalTasks > 0 ? (double)gm.OverdueTasks / gm.TotalTasks : 0);
 
         var groupWithHighestCompletion = groupMetrics.All(gm => gm.CompletedTasks == 0)
@@ -1402,7 +1402,7 @@ public class GroupService(
                 {
                     GroupId = groupWithHighestCompletion.GroupId,
                     GroupCode = groupWithHighestCompletion.GroupCode,
-                    CompletionTaskRatio = completionTaskRatios[groupWithHighestCompletion.GroupId]
+                    CompletionTaskRatio = completionTaskRatios[groupWithHighestCompletion.GroupCode]
                 }
                 : null,
             GroupWithLowestOverdue = groupWithLowestOverdue != null
@@ -1410,11 +1410,11 @@ public class GroupService(
                 {
                     GroupId = groupWithLowestOverdue.GroupId,
                     GroupCode = groupWithLowestOverdue.GroupCode,
-                    OverdueTaskRatio = overdueTaskRatios[groupWithLowestOverdue.GroupId]
+                    OverdueTaskRatio = overdueTaskRatios[groupWithLowestOverdue.GroupCode]
                 }
                 : null,
-            AverageTaskDurations = groupMetrics.ToDictionary(gm => gm.GroupId, gm => gm.AverageTaskDuration),
-            TaskPriorityDistributions = groupMetrics.ToDictionary(gm => gm.GroupId, gm => gm.PriorityDistribution),
+            AverageTaskDurations = groupMetrics.ToDictionary(gm => gm.GroupCode, gm => gm.AverageTaskDuration),
+            TaskPriorityDistributions = groupMetrics.ToDictionary(gm => gm.GroupCode, gm => gm.PriorityDistribution),
             StudentContributions = studentContributions.ToDictionary(sc => sc.StudentId, sc => sc.TotalContribution)
         };
     }
@@ -1429,10 +1429,12 @@ public class GroupService(
             TotalInprogressTasks = fucTasks.Count(x =>
                 x.Status == FucTaskStatus.InProgress && x.CompletionDate is null && x.DueDate >= DateTime.Now),
             TotalDoneTasks =
-                fucTasks.Count(x => x.Status == FucTaskStatus.Done && x.CompletionDate!.Value <= x.DueDate), // done valid
+                fucTasks.Count(x =>
+                    x.Status == FucTaskStatus.Done && x.CompletionDate!.Value <= x.DueDate), // done valid
             TotalExpiredTasks =
-                fucTasks.Count(x => x.Status == FucTaskStatus.Done && x.CompletionDate!.Value > x.DueDate || // done invalid
-                DateTime.Now > x.DueDate && x.CompletionDate == null),
+                fucTasks.Count(x =>
+                    x.Status == FucTaskStatus.Done && x.CompletionDate!.Value > x.DueDate || // done invalid
+                    DateTime.Now > x.DueDate && x.CompletionDate == null),
         };
     }
 
@@ -1565,11 +1567,11 @@ public class GroupService(
         CancellationToken cancellationToken)
     {
         var group = await groupRepository.GetAsync(
-            x => x.Id == groupId, 
+            x => x.Id == groupId,
             include: x => x.Include(x => x.Topic),
-            orderBy: null,  
+            orderBy: null,
             cancellationToken);
-        
+
         if (group is null)
             return false;
 
