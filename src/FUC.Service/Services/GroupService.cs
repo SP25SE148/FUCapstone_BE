@@ -1345,17 +1345,21 @@ public class GroupService(
         var groupMetrics = groups.Select(g => new GroupTaskMetrics
         {
             GroupId = g.Id,
-            GroupCode = g.GroupCode,
-            TotalTasks = g.ProjectProgress.FucTasks.Count,
-            CompletedTasks = g.ProjectProgress.FucTasks.Count(t => t.Status == FucTaskStatus.Done),
+            GroupCode = g.GroupCode ?? "Undefined",
+            TotalTasks = g.ProjectProgress?.FucTasks?.Count ?? 0,
+            CompletedTasks = g.ProjectProgress?.FucTasks?.Count(t => t.Status == FucTaskStatus.Done) ?? 0,
             OverdueTasks =
-                g.ProjectProgress.FucTasks.Count(t => t.DueDate < DateTime.Now && t.Status != FucTaskStatus.Done),
-            AverageTaskDuration = g.ProjectProgress.FucTasks
-                .Where(t => t.Status == FucTaskStatus.Done)
-                .Average(t => (t.CompletionDate! - t.CreatedDate).Value.TotalDays),
-            PriorityDistribution = g.ProjectProgress.FucTasks
-                .GroupBy(t => t.Priority)
-                .ToDictionary(gp => gp.Key, gp => gp.Count())
+                g.ProjectProgress?.FucTasks?.Count(t => t.DueDate < DateTime.Now && t.Status != FucTaskStatus.Done) ??
+                0,
+            AverageTaskDuration = g.ProjectProgress?.FucTasks?.Any(t => t.Status == FucTaskStatus.Done) == true
+                ? g.ProjectProgress.FucTasks.Where(t => t.Status == FucTaskStatus.Done)
+                    .Average(t => (t.CompletionDate!.Value - t.CreatedDate).TotalDays)
+                : 0,
+            PriorityDistribution = g.ProjectProgress?.FucTasks?.Any() == true
+                ? g.ProjectProgress.FucTasks
+                    .GroupBy(t => t.Priority)
+                    .ToDictionary(gp => gp.Key, gp => gp.Count())
+                : new Dictionary<Priority, int>()
         }).ToList();
 
         var completionTaskRatios = groupMetrics.ToDictionary(
@@ -1373,6 +1377,9 @@ public class GroupService(
         var studentContributions =
             (await weeklyEvaluationRepository
                 .FindAsync(we => we.ProjectProgressWeek.ProjectProgress.Group.SupervisorId == currentUser.UserCode,
+                    include: we =>
+                        we.Include(we => we.ProjectProgressWeek).ThenInclude(pp => pp.ProjectProgress)
+                            .ThenInclude(ppp => ppp.Group),
                     cancellationToken))
             .GroupBy(we => we.StudentId)
             .Select(g => new
