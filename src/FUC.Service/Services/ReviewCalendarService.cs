@@ -142,11 +142,16 @@ public sealed class ReviewCalendarService(
             var reviewer = await reviewerRepository.GetAsync(
                 r => r.SupervisorId == currentUser.UserCode && r.ReviewCalenderId == request.ReviewCalenderId,
                 true,
-                include: r => r.Include(rc => rc.ReviewCalender));
+                include: r => r.AsSplitQuery()
+                    .Include(rc => rc.ReviewCalender).ThenInclude(rc => rc.Reviewers));
             if (IsReviewerValidToEnterSuggestionAndComment(reviewer))
-                return OperationResult.Failure(Error.NullValue);
+                return OperationResult.Failure(new Error("UpdateReviewFailed",
+                    "You can not update this review suggestion and comment"));
             reviewer!.Suggestion = request.Suggestion;
             reviewer.Comment = request.Comment;
+            reviewer.IsReview = true;
+            if (reviewer.ReviewCalender.Reviewers.All(r => r.IsReview))
+                reviewer.ReviewCalender.Status = ReviewCalendarStatus.Done;
             await uow.SaveChangesAsync();
             return OperationResult.Success();
         }
@@ -229,7 +234,9 @@ public sealed class ReviewCalendarService(
 
     private static bool IsReviewerValidToEnterSuggestionAndComment(Reviewer? reviewer)
     {
-        return reviewer != null && reviewer.ReviewCalender.Status == ReviewCalendarStatus.InProgress &&
+        return reviewer != null &&
+               reviewer.ReviewCalender.Status == ReviewCalendarStatus.InProgress &&
+               reviewer.IsReview == false &&
                reviewer.ReviewCalender.Date.Date == DateTime.Now.Date;
     }
 
