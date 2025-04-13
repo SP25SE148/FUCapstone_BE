@@ -4,6 +4,7 @@ using FUC.Service.DTOs.GroupDTO;
 using FUC.Service.DTOs.ProjectProgressDTO;
 using FUC.Service.DTOs.TopicRequestDTO;
 using FUC.Data.Entities;
+using FUC.Service.DTOs.ConfigDTO;
 
 namespace FUC.Service.Abstractions;
 
@@ -97,4 +98,6 @@ public interface IGroupService
 
     Task<OperationResult> AssignPendingTopicForGroup(AssignPendingTopicForGroupRequest request,
         CancellationToken cancellationToken);
+
+    Task<OperationResult<SupervisorDashBoardDto>> GetSupervisorDashboardMetrics(CancellationToken cancellationToken);
 }

@@ -327,4 +327,14 @@ public sealed class UserController(
                 "group.xlsx")
             : HandleFailure(result);
     }
+
+    [HttpGet("dash-board/groups")]
+    [Authorize(Roles = UserRoles.Supervisor)]
+    public async Task<IActionResult> GetDashBoardGroups()
+    {
+        var result = await groupService.GetSupervisorDashboardMetrics(default);
+        return result.IsSuccess
+            ? Ok(result)
+            : HandleFailure(result);
+    }
 }
