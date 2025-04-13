@@ -15,6 +15,7 @@ using FUC.Data.Entities;
 using FUC.Data.Enums;
 using FUC.Data.Repositories;
 using FUC.Service.Abstractions;
+using FUC.Service.DTOs.ConfigDTO;
 using FUC.Service.DTOs.GroupDTO;
 using FUC.Service.DTOs.GroupMemberDTO;
 using FUC.Service.DTOs.ProjectProgressDTO;
@@ -1332,6 +1333,77 @@ public class GroupService(
                 DashBoardFucTask = GetDashBoardFucTasksDetail(x.ToList()),
                 StudentId = x.Key
             }).ToList()
+        };
+    }
+
+    public async Task<OperationResult<SupervisorDashBoardDto>> GetSupervisorDashboardMetrics(
+        CancellationToken cancellationToken)
+    {
+        var groups = await groupRepository.FindAsync(g => g.SupervisorId == currentUser.UserCode,
+            include: g => g.Include(g => g.ProjectProgress)
+                .ThenInclude(pp => pp.FucTasks));
+        var groupMetrics = groups.Select(g => new GroupTaskMetrics
+        {
+            GroupId = g.Id,
+            GroupCode = g.GroupCode,
+            TotalTasks = g.ProjectProgress.FucTasks.Count,
+            CompletedTasks = g.ProjectProgress.FucTasks.Count(t => t.Status == FucTaskStatus.Done),
+            OverdueTasks =
+                g.ProjectProgress.FucTasks.Count(t => t.DueDate < DateTime.Now && t.Status != FucTaskStatus.Done),
+            AverageTaskDuration = g.ProjectProgress.FucTasks
+                .Where(t => t.Status == FucTaskStatus.Done)
+                .Average(t => (t.CompletionDate! - t.CreatedDate).Value.TotalDays),
+            PriorityDistribution = g.ProjectProgress.FucTasks
+                .GroupBy(t => t.Priority)
+                .ToDictionary(gp => gp.Key, gp => gp.Count())
+        }).ToList();
+
+        var completionTaskRatios = groupMetrics.ToDictionary(
+            gm => gm.GroupId,
+            gm => gm.TotalTasks > 0 ? (double)gm.CompletedTasks / gm.TotalTasks : 0);
+
+        var overdueTaskRatios = groupMetrics.ToDictionary(
+            gm => gm.GroupId,
+            gm => gm.TotalTasks > 0 ? (double)gm.OverdueTasks / gm.TotalTasks : 0);
+
+        var groupWithHighestCompletion = groupMetrics.MaxBy(gm => gm.CompletedTasks);
+
+        var groupWithLowestOverdue = groupMetrics.MinBy(gm => gm.OverdueTasks);
+
+        var studentContributions =
+            (await weeklyEvaluationRepository
+                .FindAsync(we => we.ProjectProgressWeek.ProjectProgress.Group.SupervisorId == currentUser.UserCode,
+                    cancellationToken))
+            .GroupBy(we => we.StudentId)
+            .Select(g => new
+            {
+                StudentId = g.Key,
+                TotalContribution = g.Sum(we => we.ContributionPercentage)
+            });
+
+        return new SupervisorDashBoardDto
+        {
+            CompletionTaskRatios = completionTaskRatios,
+            OverdueTaskRatios = overdueTaskRatios,
+            GroupWithHighestCompletion = groupWithHighestCompletion != null
+                ? new GroupTaskMetrics
+                {
+                    GroupId = groupWithHighestCompletion.GroupId,
+                    GroupCode = groupWithHighestCompletion.GroupCode,
+                    CompletionTaskRatio = completionTaskRatios[groupWithHighestCompletion.GroupId]
+                }
+                : null,
+            GroupWithLowestOverdue = groupWithLowestOverdue != null
+                ? new GroupTaskMetrics
+                {
+                    GroupId = groupWithLowestOverdue.GroupId,
+                    GroupCode = groupWithLowestOverdue.GroupCode,
+                    OverdueTaskRatio = overdueTaskRatios[groupWithLowestOverdue.GroupId]
+                }
+                : null,
+            AverageTaskDurations = groupMetrics.ToDictionary(gm => gm.GroupId, gm => gm.AverageTaskDuration),
+            TaskPriorityDistributions = groupMetrics.ToDictionary(gm => gm.GroupId, gm => gm.PriorityDistribution),
+            StudentContributions = studentContributions.ToDictionary(sc => sc.StudentId, sc => sc.TotalContribution)
         };
     }
 
