@@ -79,9 +79,14 @@ public class TopicService(
             null,
             cancellationToken);
 
-        return topic == null
-            ? OperationResult.Failure<TopicResponse>(new Error("Topic.Error", "Topic does not exist."))
-            : OperationResult.Success(new TopicResponse
+        if (topic == null)
+            return OperationResult.Failure<TopicResponse>(new Error("Topic.Error", "Topic does not exist."));
+
+        if (topic.CampusId != currentUser.CampusId || topic.CapstoneId != currentUser.CapstoneId)
+            return OperationResult.Failure<TopicResponse>(new Error("Topic.Error", "This topic is not on your progress."));
+
+        return
+            OperationResult.Success(new TopicResponse
             {
                 Id = topic.Id.ToString(),
                 Code = topic.Code ?? "undefined",
@@ -111,7 +116,7 @@ public class TopicService(
                     AppraisalComment = x.AppraisalComment,
                     AppraisalContent = x.AppraisalContent,
                     AppraisalDate = x.AppraisalDate,
-                    AttemptTime = x.AttemptTime,    
+                    AttemptTime = x.AttemptTime,
                     CreatedDate = x.CreatedDate,
                     Status = x.Status,
                     SupervisorId = x.SupervisorId,
@@ -1602,7 +1607,8 @@ public class TopicService(
 
     private static Guid? GetBusinessAreafGroup(Group? group)
     {
-        if (group == null || group.GroupMembers.Count == 0) return null; 
+        if (group == null || group.GroupMembers.Count == 0)
+            return null;
 
         var mostCommonBusinessAreaId = group.GroupMembers
             .Select(x => x.Student)

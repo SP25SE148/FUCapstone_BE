@@ -890,7 +890,7 @@ public class GroupService(
             currentUser.UserCode != progress.FucTasks.Single().ReporterId)
         {
             return OperationResult.Failure<UpdateFucTaskResponse>(new Error("ProjectProgress.Error",
-                "You can update the task which is not belong to you."));
+                "Can not update the task which is not belong to you."));
         }
 
         var changes = TrackingTaskHistory.GetChangedProperties(request, progress.FucTasks.Single());
@@ -1314,7 +1314,7 @@ public class GroupService(
             orderBy: null,
             cancellationToken);
 
-        if (progress == null || progress.FucTasks.Count == 0)
+        if (progress == null)
             return OperationResult.Failure<DashBoardFucTasksOfGroup>(Error.NullValue);
 
         if (!await CheckSupervisorInGroup(currentUser.UserCode, progress.GroupId, cancellationToken))
@@ -1424,13 +1424,14 @@ public class GroupService(
         {
             TotalTasks = fucTasks.Count,
             TotalToDoTasks = fucTasks.Count(x =>
-                x.Status == FucTaskStatus.ToDo && x.CompletionDate is null && x.DueDate <= DateTime.Now),
+                x.Status == FucTaskStatus.ToDo && x.CompletionDate is null && x.DueDate >= DateTime.Now),
             TotalInprogressTasks = fucTasks.Count(x =>
-                x.Status == FucTaskStatus.InProgress && x.CompletionDate is null && x.DueDate <= DateTime.Now),
+                x.Status == FucTaskStatus.InProgress && x.CompletionDate is null && x.DueDate >= DateTime.Now),
             TotalDoneTasks =
-                fucTasks.Count(x => x.Status == FucTaskStatus.Done && x.CompletionDate!.Value <= x.DueDate),
+                fucTasks.Count(x => x.Status == FucTaskStatus.Done && x.CompletionDate!.Value <= x.DueDate), // done valid
             TotalExpiredTasks =
-                fucTasks.Count(x => x.Status == FucTaskStatus.Done && x.CompletionDate!.Value <= x.DueDate),
+                fucTasks.Count(x => x.Status == FucTaskStatus.Done && x.CompletionDate!.Value > x.DueDate || // done invalid
+                DateTime.Now > x.DueDate && x.CompletionDate == null),
         };
     }
 
@@ -1562,7 +1563,12 @@ public class GroupService(
         Guid groupId,
         CancellationToken cancellationToken)
     {
-        var group = await groupRepository.GetAsync(x => x.Id == groupId, cancellationToken);
+        var group = await groupRepository.GetAsync(
+            x => x.Id == groupId, 
+            include: x => x.Include(x => x.Topic),
+            orderBy: null,  
+            cancellationToken);
+        
         if (group is null)
             return false;
 
