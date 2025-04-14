@@ -1448,10 +1448,12 @@ public class GroupService(
                 x.Status == FucTaskStatus.InProgress && x.CompletionDate is null && x.DueDate >= DateTime.Now),
             TotalDoneTasks =
                 fucTasks.Count(x =>
-                    x.Status == FucTaskStatus.Done && x.CompletionDate!.Value <= x.DueDate), // done valid
+                    x.Status == FucTaskStatus.Done && x.CompletionDate.HasValue && x.CompletionDate.Value <= x.DueDate), // done valid
             TotalExpiredTasks =
                 fucTasks.Count(x =>
-                    x.Status == FucTaskStatus.Done && x.CompletionDate!.Value > x.DueDate || // done invalid
+                    x.Status == FucTaskStatus.Done && 
+                    x.CompletionDate.HasValue && 
+                    x.CompletionDate.Value > x.DueDate || // done invalid
                     DateTime.Now > x.DueDate && x.CompletionDate == null),
         };
     }
