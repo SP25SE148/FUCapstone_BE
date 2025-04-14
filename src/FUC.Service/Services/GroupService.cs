@@ -1427,22 +1427,8 @@ public class GroupService(
             GroupTaskMetrics = groupMetrics.ToDictionary(x => x.GroupCode, x => x),
             CompletionTaskRatios = completionTaskRatios,
             OverdueTaskRatios = overdueTaskRatios,
-            GroupWithHighestCompletion = groupWithHighestCompletion != null
-                ? new GroupTaskMetrics
-                {
-                    GroupId = groupWithHighestCompletion.GroupId,
-                    GroupCode = groupWithHighestCompletion.GroupCode,
-                    CompletionTaskRatio = completionTaskRatios[groupWithHighestCompletion.GroupCode]
-                }
-                : null,
-            GroupWithLowestOverdue = groupWithLowestOverdue != null
-                ? new GroupTaskMetrics
-                {
-                    GroupId = groupWithLowestOverdue.GroupId,
-                    GroupCode = groupWithLowestOverdue.GroupCode,
-                    OverdueTaskRatio = overdueTaskRatios[groupWithLowestOverdue.GroupCode]
-                }
-                : null,
+            GroupWithHighestCompletion = groupWithHighestCompletion,
+            GroupWithLowestOverdue = groupWithLowestOverdue,
             AverageTaskDurations = groupMetrics.ToDictionary(gm => gm.GroupCode, gm => gm.AverageTaskDuration),
             TaskPriorityDistributions = groupMetrics.ToDictionary(gm => gm.GroupCode, gm => gm.PriorityDistribution),
             StudentContributions = studentContributions.ToDictionary(sc => sc.StudentId, sc => sc.TotalContribution)
