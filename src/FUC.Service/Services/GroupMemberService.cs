@@ -668,8 +668,8 @@ public class GroupMemberService(
             include: g => g.Include(g => g.GroupMembers).ThenInclude(gm => gm.Student));
 
         groupUpdate.GPA =
-            (student.GPA + groupUpdate.GroupMembers.Where(gm => gm.Status == GroupMemberStatus.Accepted)
-                .Select(x => x.Student.GPA).Sum()) /
+            groupUpdate.GroupMembers.Where(gm => gm.Status == GroupMemberStatus.Accepted)
+                .Select(x => x.Student.GPA).Sum() /
             groupUpdate.GroupMembers.Count(gm => gm.Status == GroupMemberStatus.Accepted);
         if (IsGroupFullAfterApprove(group, maxMember))
         {

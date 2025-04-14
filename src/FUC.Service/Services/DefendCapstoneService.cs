@@ -297,9 +297,14 @@ public class DefendCapstoneService(
         var group = await groupService.GetGroupInformationByGroupSelfId();
         if (group.IsFailure)
             return OperationResult.Failure<IEnumerable<DefendCapstoneCalendarDetailResponse>>(Error.NullValue);
+        if (!Guid.TryParse(group.Value.TopicResponse?.Id, out Guid topicId))
+        {
+            return new List<DefendCapstoneCalendarDetailResponse>();
+        }
+
         var defendCapstoneCalendars =
             await defendCapstoneCalendarRepository.FindAsync(
-                dc => dc.TopicId == Guid.Parse(group.Value.TopicResponse.Id),
+                dc => dc.TopicId == topicId,
                 include: x => x.AsSplitQuery()
                     .Include(x => x.DefendCapstoneProjectMemberCouncils)
                     .ThenInclude(x => x.Supervisor)
