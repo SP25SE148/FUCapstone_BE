@@ -55,7 +55,7 @@ public class FucTaskCreatedEventConsumer : BaseEventConsumer<FucTaskCreatedEvent
                 RemindFor = message.NotificationFor,
             });
 
-            if (message.RemindInDaysBeforeDueDate > 0)
+            if (message.RemindInDaysBeforeDueDate > 0 && message.DueDate.Date > DateTime.Now.Date)
             {
                 // remind on day befor due date
                 await AddReminderTask(new Reminder

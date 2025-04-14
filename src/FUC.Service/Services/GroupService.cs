@@ -1,4 +1,5 @@
 ﻿using System.Linq.Expressions;
+using System.Threading;
 using Amazon.S3;
 using Amazon.S3.Model;
 using AutoMapper;
@@ -254,6 +255,9 @@ public class GroupService(
 
         if (group is null)
             return OperationResult.Failure<GroupResponse>(Error.NullValue);
+
+        if (!await IsValidUserCanAccess(group.Id, group.CampusName, group.MajorName, group.CapstoneName, default))
+            return OperationResult.Failure<GroupResponse>(new Error("GroupDocument.Error", "You can not get this group document."));
 
         group.TopicResponse = await topicService.GetTopicByTopicCode(group.TopicCode);
 
@@ -988,14 +992,17 @@ public class GroupService(
         CancellationToken cancellationToken)
     {
         var group = await groupRepository.GetAsync(x => x.Id == groupId && x.TopicId != null,
+            include: x => x.Include(x => x.Topic),
+            orderBy: null,
             cancellationToken);
 
         ArgumentNullException.ThrowIfNull(group);
 
-        var topicResult = await topicService.GetTopicById(group.TopicId ?? Guid.Empty, cancellationToken);
+        if (await CheckSupervisorInGroup(currentUser.UserCode, group, cancellationToken))
+            return OperationResult.Failure<byte[]>(new Error("ProjectProgress.Error", "You can not get the export."));
 
-        if (topicResult.IsFailure)
-            return OperationResult.Failure<byte[]>(topicResult.Error);
+        if (group.Topic is null)
+            return OperationResult.Failure<byte[]>(new Error("ProjectProgress.Error", "This topic of group does not exist."));
 
         var result = await GetProgressEvaluationOfGroup(groupId, cancellationToken);
 
@@ -1010,7 +1017,7 @@ public class GroupService(
 
             return response == null || response.HttpStatusCode != System.Net.HttpStatusCode.OK
                 ? throw new AmazonS3Exception("Fail to get template in S3")
-                : await ProcessEvaluationProjectProgressTemplate(response, topicResult.Value, result.Value,
+                : await ProcessEvaluationProjectProgressTemplate(response, group.Topic, result.Value,
                     cancellationToken);
         }
         catch (AmazonS3Exception ex)
@@ -1023,7 +1030,7 @@ public class GroupService(
 
     private static async Task<OperationResult<byte[]>> ProcessEvaluationProjectProgressTemplate(
         GetObjectResponse response,
-        TopicResponse topic,
+        Topic topic,
         List<EvaluationProjectProgressResponse> evaluations,
         CancellationToken cancellationToken)
     {
@@ -1238,7 +1245,7 @@ public class GroupService(
 
         if (!await CheckTheUserIsValid(progress.GroupId, cancellationToken))
             return OperationResult.Failure<List<FucTaskResponse>>(new Error("ProjectProgress.Error",
-                "The user can not view tasks"));
+                "The user can not view tasks."));
 
         var tasks = await fucTaskRepository.FindAsync(
             x => x.ProjectProgressId == projectProgressId,
@@ -1273,13 +1280,20 @@ public class GroupService(
             include: x => x.AsSingleQuery()
                 .Include(x => x.Assignee)
                 .Include(x => x.Reporter)
+                .Include(x => x.ProjectProgress)
                 .Include(x => x.FucTaskHistories),
             orderBy: x => x.OrderByDescending(x => x.CreatedDate),
             cancellationToken);
 
-        return task == null
-            ? OperationResult.Failure<FucTaskDetailResponse>(Error.NullValue)
-            : new FucTaskDetailResponse
+        if (task == null)
+            return OperationResult.Failure<FucTaskDetailResponse>(Error.NullValue);
+
+        if (!await CheckTheUserIsValid(task.ProjectProgress.GroupId, cancellationToken))
+            return OperationResult.Failure<FucTaskDetailResponse>(new Error("ProjectProgress.Error",
+                "The user can not view task detail."));
+
+        return 
+            new FucTaskDetailResponse
             {
                 Id = taskId,
                 KeyTask = task.KeyTask,
@@ -1340,9 +1354,12 @@ public class GroupService(
     public async Task<OperationResult<SupervisorDashBoardDto>> GetSupervisorDashboardMetrics(
         CancellationToken cancellationToken)
     {
-        var groups = await groupRepository.FindAsync(g => g.SupervisorId == currentUser.UserCode,
+        var groups = await groupRepository.FindAsync(
+            g => g.SupervisorId == currentUser.UserCode,
             include: g => g.Include(g => g.ProjectProgress)
-                .ThenInclude(pp => pp.FucTasks));
+                .ThenInclude(pp => pp.FucTasks), 
+            cancellationToken);
+
         var groupMetrics = groups.Select(g => new GroupTaskMetrics
         {
             GroupId = g.Id,
@@ -1352,11 +1369,11 @@ public class GroupService(
             OverdueTasks =
                 g.ProjectProgress?.FucTasks?.Count(t => t.DueDate < DateTime.Now && t.Status != FucTaskStatus.Done) ??
                 0,
-            AverageTaskDuration = g.ProjectProgress?.FucTasks?.Any(t => t.Status == FucTaskStatus.Done) == true
+            AverageTaskDuration = g.ProjectProgress?.FucTasks?.Exists(t => t.Status == FucTaskStatus.Done) == true
                 ? g.ProjectProgress.FucTasks.Where(t => t.Status == FucTaskStatus.Done)
                     .Average(t => (t.CompletionDate!.Value - t.CreatedDate).TotalDays)
                 : 0,
-            PriorityDistribution = g.ProjectProgress?.FucTasks?.Any() == true
+            PriorityDistribution = g.ProjectProgress?.FucTasks.Count > 0
                 ? g.ProjectProgress.FucTasks
                     .GroupBy(t => t.Priority)
                     .ToDictionary(gp => gp.Key, gp => gp.Count())
@@ -1371,11 +1388,11 @@ public class GroupService(
             gm => gm.GroupCode,
             gm => gm.TotalTasks > 0 ? (double)gm.OverdueTasks / gm.TotalTasks : 0);
 
-        var groupWithHighestCompletion = groupMetrics.All(gm => gm.CompletedTasks == 0)
+        var groupWithHighestCompletion = groupMetrics.TrueForAll(gm => gm.CompletedTasks == 0)
             ? null
             : groupMetrics.MaxBy(gm => gm.CompletedTasks);
 
-        var groupWithLowestOverdue = groupMetrics.All(gm => gm.OverdueTasks == 0)
+        var groupWithLowestOverdue = groupMetrics.TrueForAll(gm => gm.OverdueTasks == 0)
             ? null
             : groupMetrics.MinBy(gm => gm.OverdueTasks);
 
@@ -1572,6 +1589,22 @@ public class GroupService(
             orderBy: null,
             cancellationToken);
 
+        if (group is null)
+            return false;
+
+        return group.SupervisorId == supervisorId ||
+               group.Topic != null &&
+               await coSupervisorRepository.AnyAsync(
+                   x => x.SupervisorId == currentUser.UserCode &&
+                        x.TopicId == group.TopicId,
+                   cancellationToken);
+    }
+
+    private async Task<bool> CheckSupervisorInGroup(
+        string supervisorId,
+        Group group,
+        CancellationToken cancellationToken)
+    {
         if (group is null)
             return false;
 
@@ -1793,6 +1826,9 @@ public class GroupService(
             cancellationToken);
 
         ArgumentNullException.ThrowIfNull(group);
+
+        if (!await IsValidUserCanAccess(group.Id, group.CampusId, group.MajorId, group.CapstoneId, cancellationToken))
+            return OperationResult.Failure<string>(new Error("GroupDocument.Error", "You can not get this group document."));
 
         var key = $"{group.CampusId}/{group.SemesterId}/{group.MajorId}/{group.CapstoneId}/{group.GroupCode}";
 
@@ -2334,5 +2370,32 @@ public class GroupService(
         await uow.SaveChangesAsync(cancellationToken);
 
         return OperationResult.Success();
+    }
+
+    private async Task<bool> IsValidUserCanAccess(Guid groupId, string groupCampusId, string groupMajorId, string groupCapstoneId, CancellationToken cancellationToken)
+    {
+        var canAccess = false;
+
+        if (currentUser.Role == UserRoles.Student)
+        {
+            canAccess = await CheckStudentsInSameGroup([currentUser.UserCode], groupId, cancellationToken);
+        }
+        else if (currentUser.Role == UserRoles.Supervisor)
+        {
+            canAccess = currentUser.CampusId == groupCampusId && 
+                currentUser.MajorId == groupMajorId;
+        }
+        else if (currentUser.Role == UserRoles.Manager)
+        {
+            canAccess = currentUser.CampusId == groupCampusId && 
+                currentUser.MajorId == groupMajorId && 
+                currentUser.CapstoneId == groupCapstoneId;
+        }
+        else if (currentUser.Role == UserRoles.Admin)
+        {
+            canAccess = currentUser.CampusId == groupCampusId;
+        }
+
+        return await Task.FromResult(canAccess);
     }
 }
