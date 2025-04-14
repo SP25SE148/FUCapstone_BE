@@ -1,5 +1,4 @@
 ﻿using System.Linq.Expressions;
-using System.Threading;
 using Amazon.S3;
 using Amazon.S3.Model;
 using AutoMapper;
@@ -241,7 +240,7 @@ public class GroupService(
             : OperationResult.Failure<IEnumerable<GroupResponse>>(Error.NullValue);
     }
 
-    public async Task<OperationResult<GroupResponse>> GetGroupByIdAsync(Guid id)
+    public async Task<OperationResult<GroupResponse>> GetGroupByIdAsync(Guid id, bool IsCheckAccess = false)
     {
         var group = await groupRepository.GetAsync(g => g.Id == id,
             CreateSelectorForGroupResponse(),
@@ -256,7 +255,7 @@ public class GroupService(
         if (group is null)
             return OperationResult.Failure<GroupResponse>(Error.NullValue);
 
-        if (!await IsValidUserCanAccess(group.Id, group.CampusName, group.MajorName, group.CapstoneName, default))
+        if (IsCheckAccess && !await IsValidUserCanAccess(group.Id, group.CampusName, group.MajorName, group.CapstoneName, default))
             return OperationResult.Failure<GroupResponse>(new Error("GroupDocument.Error", "You can not get this group document."));
 
         group.TopicResponse = await topicService.GetTopicByTopicCode(group.TopicCode);

@@ -20,7 +20,7 @@ public interface IGroupService
     Task<OperationResult<IEnumerable<GroupResponse>>> GetPendingGroupsForStudentJoin(
         CancellationToken cancellationToken);
 
-    Task<OperationResult<GroupResponse>> GetGroupByIdAsync(Guid id);
+    Task<OperationResult<GroupResponse>> GetGroupByIdAsync(Guid id, bool IsCheckAccess = false);
     Task<OperationResult<GroupResponse>> GetGroupByGroupCodeAsync(string groupCode);
 
     Task<OperationResult> UpdateGroupStatusAsync();
