@@ -15,7 +15,7 @@ public class DefendCapstoneCalendarResponse
     public string CapstoneId { get; set; }
     public int DefendAttempt { get; set; }
     public string Location { get; set; } // Room
-    public int Slot { get; set; }
+    public string Time { get; set; }
     public DateTime DefenseDate { get; set; }
     public string Status { get; set; }
     public List<DefendCapstoneCouncilMemberDto> CouncilMembers { get; set; }

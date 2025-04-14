@@ -12,7 +12,7 @@ public class ReviewCalendar : AuditableSoftDeleteEntity
     public string CampusId { get; set; }
     public string SemesterId { get; set; }
     public int Attempt { get; set; }
-    public int Slot { get; set; }
+    public string Time { get; set; }
     public string Room { get; set; }
     public DateTime Date { get; set; }
     public ReviewCalendarStatus Status { get; set; }
@@ -26,7 +26,7 @@ public class ReviewCalendar : AuditableSoftDeleteEntity
 
 public sealed class ReviewCalendarDetail()
 {
-    public int Slot { get; set; }
+    public string Time { get; set; }
     public string Room { get; set; }
     public DateTime Date { get; set; }
     public IReadOnlyCollection<string> ReviewersId { get; set; }

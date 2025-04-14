@@ -12,7 +12,7 @@ public sealed class ReviewCalendarResponse
     public IReadOnlyCollection<string> CoSupervisorsCode { get; set; }
     public IReadOnlyCollection<string> Reviewers { get; set; }
     public int Attempt { get; set; }
-    public int Slot { get; set; }
+    public string Time { get; set; }
     public string Room { get; set; }
     public DateTime Date { get; set; }
     public string Status { get; set; }

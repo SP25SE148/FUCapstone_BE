@@ -98,7 +98,7 @@ public sealed class ReviewCalendarService(
                 Attempt = r.ReviewCalender.Attempt,
                 Date = r.ReviewCalender.Date,
                 Room = r.ReviewCalender.Room,
-                Slot = r.ReviewCalender.Slot,
+                Time = r.ReviewCalender.Time,
                 GroupId = r.ReviewCalender.GroupId,
                 GroupCode = r.ReviewCalender.Group.GroupCode,
                 TopicId = r.ReviewCalender.TopicId,
@@ -323,10 +323,10 @@ public sealed class ReviewCalendarService(
         }
 
         var reviewDate = row.Cell(6).GetValue<string>();
-        var slot = row.Cell(7).GetValue<string>();
+        var time = row.Cell(7).GetValue<string>();
         var room = row.Cell(8).GetValue<string>();
 
-        if (string.IsNullOrEmpty(reviewDate) || string.IsNullOrEmpty(slot) || string.IsNullOrEmpty(room))
+        if (string.IsNullOrEmpty(reviewDate) || string.IsNullOrEmpty(time) || string.IsNullOrEmpty(room))
         {
             logger.LogError("import review failed with message: review date, slot or room is empty!");
             throw new Exception("Invalid review details");
@@ -336,7 +336,7 @@ public sealed class ReviewCalendarService(
         {
             ReviewersId = reviewers,
             Date = DateTime.Parse(reviewDate),
-            Slot = int.Parse(slot),
+            Time = time,
             Room = room
         };
     }
@@ -353,7 +353,7 @@ public sealed class ReviewCalendarService(
             CampusId = currentUser.CampusId,
             SemesterId = currentSemester,
             Attempt = defendAttempt,
-            Slot = reviewDetail.Slot,
+            Time = reviewDetail.Time,
             Room = reviewDetail.Room,
             Date = reviewDetail.Date
         };
@@ -381,7 +381,7 @@ public sealed class ReviewCalendarService(
             Attempt = calendar.Attempt,
             Date = calendar.Date,
             Room = calendar.Room,
-            Slot = calendar.Slot,
+            Time = calendar.Time,
             GroupId = calendar.GroupId,
             GroupCode = calendar.Group.GroupCode,
             TopicId = calendar.TopicId,
