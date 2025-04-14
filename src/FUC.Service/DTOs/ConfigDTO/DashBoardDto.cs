@@ -30,11 +30,11 @@ public record class ManagerDashBoardDto : DashBoardDto
 public class SupervisorDashBoardDto
 {
     public Dictionary<string, GroupTaskMetrics> GroupTaskMetrics { get; set; }
-    public Dictionary<string, double> CompletionTaskRatios { get; set; }
-    public Dictionary<string, double> OverdueTaskRatios { get; set; }
+    public Dictionary<string, double?>? CompletionTaskRatios { get; set; }
+    public Dictionary<string, double?>? OverdueTaskRatios { get; set; }
     public GroupTaskMetrics? GroupWithHighestCompletion { get; set; }
     public GroupTaskMetrics? GroupWithLowestOverdue { get; set; }
-    public Dictionary<string, double?> AverageTaskDurations { get; set; }
+    public Dictionary<string, double> AverageTaskDurations { get; set; }
     public Dictionary<string, Dictionary<Priority, int>> TaskPriorityDistributions { get; set; }
     public Dictionary<string, double> StudentContributions { get; set; }
 }
@@ -46,7 +46,7 @@ public class GroupTaskMetrics
     public int TotalTasks { get; set; }
     public int CompletedTasks { get; set; }
     public int OverdueTasks { get; set; }
-    public double? AverageTaskDuration { get; set; }
+    public double AverageTaskDuration { get; set; }
     public Dictionary<Priority, int>? PriorityDistribution { get; set; }
     public double? CompletionTaskRatio { get; set; }
     public double? OverdueTaskRatio { get; set; }

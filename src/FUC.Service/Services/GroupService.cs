@@ -1372,9 +1372,9 @@ public class GroupService(
                 x.Status == FucTaskStatus.Done && x.CompletionDate.HasValue && x.CompletionDate > x.DueDate || // done but late
                 x.CompletionDate == null && DateTime.Now > x.DueDate); // not done and overdue
 
-            double? averageDuration = doneTasks.Count > 0
+            double averageDuration = doneTasks.Count > 0
                 ? doneTasks.Average(t => (t.CompletionDate!.Value - t.CreatedDate).TotalDays)
-                : null;
+                : 0;
 
             var priorityDistribution = fucTasks
                 .GroupBy(t => t.Priority)
@@ -1388,17 +1388,19 @@ public class GroupService(
                 CompletedTasks = completedTasks,
                 OverdueTasks = overdueTasks,
                 AverageTaskDuration = averageDuration,
-                PriorityDistribution = priorityDistribution
+                PriorityDistribution = priorityDistribution,
+                CompletionTaskRatio = totalTasks > 0 ? ((double)completedTasks / totalTasks) : 0,
+                OverdueTaskRatio = totalTasks > 0 ? (double)overdueTasks / totalTasks : 0
             };
         }).ToList();
 
         var completionTaskRatios = groupMetrics.ToDictionary(
             gm => gm.GroupCode,
-            gm => gm.TotalTasks > 0 ? (double)gm.CompletedTasks / gm.TotalTasks : 0);
+            gm => gm.CompletionTaskRatio);
 
         var overdueTaskRatios = groupMetrics.ToDictionary(
             gm => gm.GroupCode,
-            gm => gm.TotalTasks > 0 ? (double)gm.OverdueTasks / gm.TotalTasks : 0);
+            gm => gm.OverdueTaskRatio);
 
         var groupWithHighestCompletion = groupMetrics.TrueForAll(gm => gm.CompletedTasks == 0)
             ? null
