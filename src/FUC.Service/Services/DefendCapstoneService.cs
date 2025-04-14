@@ -416,7 +416,6 @@ public class DefendCapstoneService(
         IXLWorksheet workSheet = wb.Worksheet(1);
 
         var defendCalendars = new List<DefendCapstoneProjectInformationCalendar>();
-        var memberColumn = 11;
         var memberInfoList = new List<string>();
 
         var existingDefendCalendars = await defendCapstoneCalendarRepository.GetAllAsync();
@@ -447,19 +446,23 @@ public class DefendCapstoneService(
             var presidentAndSecretary = await GetPresidentAndSecretaryAsync(row, topicResult.Value);
             var defendCapstoneProjectCalendarDetail = GetDefendCapstoneProjectCalendarDetail(row);
 
+            // get member information
+            var memberColumn = 11;
             for (; memberColumn <= row.Cells().Count(); memberColumn++)
             {
-                if (!string.IsNullOrEmpty(workSheet.Cell(5, memberColumn).GetValue<string>()))
+                if (string.IsNullOrEmpty(workSheet.Cell(5, memberColumn).GetValue<string>()))
                 {
-                    var memberInfo = await GetMemberInformationAsync(row, topicResult.Value, memberColumn);
-
-                    memberInfoList.Add(memberInfo.Id);
-                    // check if member information is duplicate value with president or secretary
-                    if (IsMemberInformationValid(memberInfoList, presidentAndSecretary.Item1.Id,
-                            presidentAndSecretary.Item2.Id))
-                        throw new InvalidOperationException(
-                            "Member information is duplicate value with president or secretary.");
+                    break;
                 }
+
+                var memberInfo = await GetMemberInformationAsync(row, topicResult.Value, memberColumn);
+
+                memberInfoList.Add(memberInfo.Id);
+                // check if member information is duplicate value with president or secretary
+                if (IsMemberInformationValid(memberInfoList, presidentAndSecretary.Item1.Id,
+                        presidentAndSecretary.Item2.Id))
+                    throw new InvalidOperationException(
+                        "Member information is duplicate value with president or secretary.");
             }
 
             var defendCalendar = CreateDefendCalendar(

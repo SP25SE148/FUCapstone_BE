@@ -255,8 +255,10 @@ public class GroupService(
         if (group is null)
             return OperationResult.Failure<GroupResponse>(Error.NullValue);
 
-        if (IsCheckAccess && !await IsValidUserCanAccess(group.Id, group.CampusName, group.MajorName, group.CapstoneName, default))
-            return OperationResult.Failure<GroupResponse>(new Error("GroupDocument.Error", "You can not get this group document."));
+        if (IsCheckAccess &&
+            !await IsValidUserCanAccess(group.Id, group.CampusName, group.MajorName, group.CapstoneName, default))
+            return OperationResult.Failure<GroupResponse>(new Error("GroupDocument.Error",
+                "You can not get this group document."));
 
         group.TopicResponse = await topicService.GetTopicByTopicCode(group.TopicCode);
 
@@ -1002,7 +1004,8 @@ public class GroupService(
             return OperationResult.Failure<byte[]>(new Error("ProjectProgress.Error", "You can not get the export."));
 
         if (group.Topic is null)
-            return OperationResult.Failure<byte[]>(new Error("ProjectProgress.Error", "This topic of group does not exist."));
+            return OperationResult.Failure<byte[]>(new Error("ProjectProgress.Error",
+                "This topic of group does not exist."));
 
         var result = await GetProgressEvaluationOfGroup(groupId, cancellationToken);
 
@@ -1292,7 +1295,7 @@ public class GroupService(
             return OperationResult.Failure<FucTaskDetailResponse>(new Error("ProjectProgress.Error",
                 "The user can not view task detail."));
 
-        return 
+        return
             new FucTaskDetailResponse
             {
                 Id = taskId,
@@ -1357,7 +1360,7 @@ public class GroupService(
         var groups = await groupRepository.FindAsync(
             g => g.SupervisorId == currentUser.UserCode,
             include: g => g.Include(g => g.ProjectProgress)
-                .ThenInclude(pp => pp.FucTasks), 
+                .ThenInclude(pp => pp.FucTasks),
             cancellationToken);
 
         var groupMetrics = groups.Select(g =>
@@ -1368,7 +1371,8 @@ public class GroupService(
             var totalTasks = fucTasks.Count;
             var completedTasks = doneTasks.Count(t => t.CompletionDate <= t.DueDate);
             var overdueTasks = fucTasks.Count(x =>
-                x.Status == FucTaskStatus.Done && x.CompletionDate.HasValue && x.CompletionDate > x.DueDate || // done but late
+                x.Status == FucTaskStatus.Done && x.CompletionDate.HasValue &&
+                x.CompletionDate > x.DueDate || // done but late
                 x.CompletionDate == null && DateTime.Now > x.DueDate); // not done and overdue
 
             double averageDuration = doneTasks.Count > 0
@@ -1447,11 +1451,12 @@ public class GroupService(
                 x.Status == FucTaskStatus.InProgress && x.CompletionDate is null && x.DueDate >= DateTime.Now),
             TotalDoneTasks =
                 fucTasks.Count(x =>
-                    x.Status == FucTaskStatus.Done && x.CompletionDate.HasValue && x.CompletionDate.Value <= x.DueDate), // done valid
+                    x.Status == FucTaskStatus.Done && x.CompletionDate.HasValue &&
+                    x.CompletionDate.Value <= x.DueDate), // done valid
             TotalExpiredTasks =
                 fucTasks.Count(x =>
-                    x.Status == FucTaskStatus.Done && 
-                    x.CompletionDate.HasValue && 
+                    x.Status == FucTaskStatus.Done &&
+                    x.CompletionDate.HasValue &&
                     x.CompletionDate.Value > x.DueDate || // done invalid
                     DateTime.Now > x.DueDate && x.CompletionDate == null),
         };
@@ -1830,7 +1835,8 @@ public class GroupService(
         ArgumentNullException.ThrowIfNull(group);
 
         if (!await IsValidUserCanAccess(group.Id, group.CampusId, group.MajorId, group.CapstoneId, cancellationToken))
-            return OperationResult.Failure<string>(new Error("GroupDocument.Error", "You can not get this group document."));
+            return OperationResult.Failure<string>(new Error("GroupDocument.Error",
+                "You can not get this group document."));
 
         var key = $"{group.CampusId}/{group.SemesterId}/{group.MajorId}/{group.CapstoneId}/{group.GroupCode}";
 
@@ -2224,33 +2230,36 @@ public class GroupService(
         return OperationResult.Success();
     }
 
-    public async Task<OperationResult<IEnumerable<GroupDecisionResponse>>> GetGroupDecisionsByStatus(
-        DecisionStatus status)
+    public async Task<OperationResult<IEnumerable<GroupDecisionResponse>>> GetGroupDecisionsByStatus(string? status)
     {
-        var groups = await defendCapstoneDecisionRepository.FindAsync(dc => dc.Decision == status,
-            include: dc => dc
-                .Include(dc => dc.Group).ThenInclude(g => g.GroupMembers)
-                .Include(dc => dc.Group.Topic)
-                .Include(dc => dc.Group.Supervisor)
-                .Include(dc => dc.Supervisor),
-            orderBy: dc => dc.OrderBy(dc => dc.CreatedDate),
-            selector: dc => new GroupDecisionResponse
-            {
-                GroupId = dc.GroupId,
-                Comment = dc.Comment,
-                Decision = dc.Decision.ToString(),
-                GroupCode = dc.Group.GroupCode,
-                TopicId = (Guid)dc.Group.TopicId!,
-                TopicCode = dc.Group.Topic.Code,
-                SupervisorName = dc.Group.Supervisor.FullName
-            });
+        var groups = await defendCapstoneDecisionRepository
+            .FindAsync(
+                dc => (status == null || dc.Decision == (DecisionStatus)Enum.Parse(typeof(DecisionStatus), status)) &&
+                      dc.Group.CapstoneId == currentUser.CapstoneId &&
+                      dc.Group.CampusId == currentUser.CampusId,
+                include: dc => dc
+                    .Include(dc => dc.Group).ThenInclude(g => g.GroupMembers)
+                    .Include(dc => dc.Group.Topic)
+                    .Include(dc => dc.Group.Supervisor)
+                    .Include(dc => dc.Supervisor),
+                orderBy: dc => dc.OrderBy(dc => dc.CreatedDate),
+                selector: dc => new GroupDecisionResponse
+                {
+                    GroupId = dc.GroupId,
+                    Comment = dc.Comment,
+                    Decision = dc.Decision.ToString(),
+                    GroupCode = dc.Group.GroupCode,
+                    TopicId = (Guid)dc.Group.TopicId!,
+                    TopicCode = dc.Group.Topic.Code,
+                    SupervisorName = dc.Group.Supervisor.FullName
+                });
 
         return groups.ToList();
     }
 
     public async Task<OperationResult<byte[]>> ExportGroupDecisionByStatus(DecisionStatus status)
     {
-        var groupDecisions = await GetGroupDecisionsByStatus(status);
+        var groupDecisions = await GetGroupDecisionsByStatus(status.ToString());
         if (groupDecisions.IsFailure)
             return OperationResult.Failure<byte[]>(Error.NullValue);
         // create excel
@@ -2374,7 +2383,8 @@ public class GroupService(
         return OperationResult.Success();
     }
 
-    private async Task<bool> IsValidUserCanAccess(Guid groupId, string groupCampusId, string groupMajorId, string groupCapstoneId, CancellationToken cancellationToken)
+    private async Task<bool> IsValidUserCanAccess(Guid groupId, string groupCampusId, string groupMajorId,
+        string groupCapstoneId, CancellationToken cancellationToken)
     {
         var canAccess = false;
 
@@ -2384,14 +2394,14 @@ public class GroupService(
         }
         else if (currentUser.Role == UserRoles.Supervisor)
         {
-            canAccess = currentUser.CampusId == groupCampusId && 
-                currentUser.MajorId == groupMajorId;
+            canAccess = currentUser.CampusId == groupCampusId &&
+                        currentUser.MajorId == groupMajorId;
         }
         else if (currentUser.Role == UserRoles.Manager)
         {
-            canAccess = currentUser.CampusId == groupCampusId && 
-                currentUser.MajorId == groupMajorId && 
-                currentUser.CapstoneId == groupCapstoneId;
+            canAccess = currentUser.CampusId == groupCampusId &&
+                        currentUser.MajorId == groupMajorId &&
+                        currentUser.CapstoneId == groupCapstoneId;
         }
         else if (currentUser.Role == UserRoles.Admin)
         {
