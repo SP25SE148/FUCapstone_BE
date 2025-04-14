@@ -322,9 +322,9 @@ public sealed class ReviewCalendarService(
             reviewers.Add(reviewerCode);
         }
 
-        var reviewDate = row.Cell(reviewerCol++).GetValue<string>();
-        var slot = row.Cell(reviewerCol++).GetValue<string>();
-        var room = row.Cell(reviewerCol).GetValue<string>();
+        var reviewDate = row.Cell(6).GetValue<string>();
+        var slot = row.Cell(7).GetValue<string>();
+        var room = row.Cell(8).GetValue<string>();
 
         if (string.IsNullOrEmpty(reviewDate) || string.IsNullOrEmpty(slot) || string.IsNullOrEmpty(room))
         {
