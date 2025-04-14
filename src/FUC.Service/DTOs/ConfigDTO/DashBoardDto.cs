@@ -29,6 +29,7 @@ public record class ManagerDashBoardDto : DashBoardDto
 
 public class SupervisorDashBoardDto
 {
+    public Dictionary<string, GroupTaskMetrics> GroupTaskMetrics { get; set; }
     public Dictionary<string, double> CompletionTaskRatios { get; set; }
     public Dictionary<string, double> OverdueTaskRatios { get; set; }
     public GroupTaskMetrics? GroupWithHighestCompletion { get; set; }

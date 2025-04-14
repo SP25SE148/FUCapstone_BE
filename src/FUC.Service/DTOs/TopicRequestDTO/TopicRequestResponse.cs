@@ -13,6 +13,7 @@ public sealed class TopicRequestResponse
     public string Status { get; set; }
     public string RequestedBy { get; set; }
     public float Gpa { get; set; }
+    public string? Reason { get; set; }
     public string LeaderFullName { get; set; }
     public DateTime CreatedDate { get; set; }
 }

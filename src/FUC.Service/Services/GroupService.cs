@@ -532,6 +532,7 @@ public class GroupService(
                     SupervisorId = tr.SupervisorId,
                     SupervisorFullName = tr.Supervisor.FullName,
                     TopicEnglishName = tr.Topic.EnglishName,
+                    Reason = tr.Reason,
                     LeaderFullName = tr.Group.GroupMembers.FirstOrDefault()!.Student.FullName,
                     Gpa = tr.Group.GPA
                 }
@@ -1360,24 +1361,35 @@ public class GroupService(
                 .ThenInclude(pp => pp.FucTasks), 
             cancellationToken);
 
-        var groupMetrics = groups.Select(g => new GroupTaskMetrics
+        var groupMetrics = groups.Select(g =>
         {
-            GroupId = g.Id,
-            GroupCode = g.GroupCode ?? "Undefined",
-            TotalTasks = g.ProjectProgress?.FucTasks?.Count ?? 0,
-            CompletedTasks = g.ProjectProgress?.FucTasks?.Count(t => t.Status == FucTaskStatus.Done) ?? 0,
-            OverdueTasks =
-                g.ProjectProgress?.FucTasks?.Count(t => t.DueDate < DateTime.Now && t.Status != FucTaskStatus.Done) ??
-                0,
-            AverageTaskDuration = g.ProjectProgress?.FucTasks?.Exists(t => t.Status == FucTaskStatus.Done) == true
-                ? g.ProjectProgress.FucTasks.Where(t => t.Status == FucTaskStatus.Done)
-                    .Average(t => (t.CompletionDate!.Value - t.CreatedDate).TotalDays)
-                : 0,
-            PriorityDistribution = g.ProjectProgress?.FucTasks.Count > 0
-                ? g.ProjectProgress.FucTasks
-                    .GroupBy(t => t.Priority)
-                    .ToDictionary(gp => gp.Key, gp => gp.Count())
-                : new Dictionary<Priority, int>()
+            var fucTasks = g.ProjectProgress?.FucTasks ?? new List<FucTask>();
+
+            var doneTasks = fucTasks.Where(t => t.Status == FucTaskStatus.Done && t.CompletionDate.HasValue).ToList();
+            var totalTasks = fucTasks.Count;
+            var completedTasks = doneTasks.Count(t => t.CompletionDate <= t.DueDate);
+            var overdueTasks = fucTasks.Count(x =>
+                x.Status == FucTaskStatus.Done && x.CompletionDate.HasValue && x.CompletionDate > x.DueDate || // done but late
+                x.CompletionDate == null && DateTime.Now > x.DueDate); // not done and overdue
+
+            double? averageDuration = doneTasks.Count > 0
+                ? doneTasks.Average(t => (t.CompletionDate!.Value - t.CreatedDate).TotalDays)
+                : null;
+
+            var priorityDistribution = fucTasks
+                .GroupBy(t => t.Priority)
+                .ToDictionary(gp => gp.Key, gp => gp.Count());
+
+            return new GroupTaskMetrics
+            {
+                GroupId = g.Id,
+                GroupCode = g.GroupCode,
+                TotalTasks = totalTasks,
+                CompletedTasks = completedTasks,
+                OverdueTasks = overdueTasks,
+                AverageTaskDuration = averageDuration,
+                PriorityDistribution = priorityDistribution
+            };
         }).ToList();
 
         var completionTaskRatios = groupMetrics.ToDictionary(
@@ -1412,6 +1424,7 @@ public class GroupService(
 
         return new SupervisorDashBoardDto
         {
+            GroupTaskMetrics = groupMetrics.ToDictionary(x => x.GroupCode, x => x),
             CompletionTaskRatios = completionTaskRatios,
             OverdueTaskRatios = overdueTaskRatios,
             GroupWithHighestCompletion = groupWithHighestCompletion != null
