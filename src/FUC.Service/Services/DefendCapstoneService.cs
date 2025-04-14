@@ -410,7 +410,7 @@ public class DefendCapstoneService(
         IXLWorksheet workSheet = wb.Worksheet(1);
 
         var defendCalendars = new List<DefendCapstoneProjectInformationCalendar>();
-        var memberColumn = 8;
+        var memberColumn = 11;
         var memberInfoList = new List<string>();
 
         var existingDefendCalendars = await defendCapstoneCalendarRepository.GetAllAsync();
@@ -424,7 +424,7 @@ public class DefendCapstoneService(
 
         foreach (var row in workSheet.Rows().Skip(5))
         {
-            var topicCode = row.Cell(2).GetValue<string>();
+            var topicCode = row.Cell(3).GetValue<string>();
             if (string.IsNullOrEmpty(topicCode))
             {
                 break;
@@ -545,9 +545,9 @@ public class DefendCapstoneService(
 
     private (DateTime, int, string) GetDefendCapstoneProjectCalendarDetail(IXLRow row)
     {
-        var reviewDate = row.Cell(3).GetValue<string>();
-        var slot = row.Cell(4).GetValue<string>();
-        var room = row.Cell(5).GetValue<string>();
+        var reviewDate = row.Cell(6).GetValue<string>();
+        var slot = row.Cell(7).GetValue<string>();
+        var room = row.Cell(8).GetValue<string>();
 
         if (string.IsNullOrEmpty(reviewDate) || string.IsNullOrEmpty(slot) || string.IsNullOrEmpty(room))
         {
@@ -578,11 +578,11 @@ public class DefendCapstoneService(
     private async Task<(SupervisorResponseDTO, SupervisorResponseDTO)> GetPresidentAndSecretaryAsync(IXLRow row,
         Topic topic)
     {
-        var presidentInformation = await supervisorService.GetSupervisorByIdAsync(row.Cell(6).GetValue<string>());
+        var presidentInformation = await supervisorService.GetSupervisorByIdAsync(row.Cell(9).GetValue<string>());
         if (presidentInformation.IsFailure)
             throw new InvalidOperationException("President is not available for defend phase.");
 
-        var secretaryInformation = await supervisorService.GetSupervisorByIdAsync(row.Cell(7).GetValue<string>());
+        var secretaryInformation = await supervisorService.GetSupervisorByIdAsync(row.Cell(10).GetValue<string>());
         if (secretaryInformation.IsFailure)
             throw new InvalidOperationException("Secretary is not available for defend phase.");
 
