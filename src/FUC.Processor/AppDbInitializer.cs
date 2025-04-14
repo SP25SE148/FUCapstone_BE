@@ -33,29 +33,6 @@ public class AppDbInitializer
                 });
             }
 
-            if (!context.Set<Notification>().Any())
-            {
-                context.Add(new Notification
-                {
-                    IsRead = false,
-                    Content = "Test",
-                    UserCode = "SE173512",
-                    ReferenceTarget = "Test",
-                    Type = "Test",
-                    CreatedDate = DateTime.Now,
-                });
-
-                context.Add(new Notification
-                {
-                    IsRead = false,
-                    Content = "Test1",
-                    UserCode = "SE173512",
-                    ReferenceTarget = "Test1",
-                    Type = "Test",
-                    CreatedDate = DateTime.Now, 
-                });
-            }
-
             await context.SaveChangesAsync();
         }
     }

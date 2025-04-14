@@ -295,6 +295,7 @@ public class DefendCapstoneService(
         GetDefendCapstoneCalendarByGroupSelf()
     {
         var group = await groupService.GetGroupInformationByGroupSelfId();
+
         if (group.IsFailure)
             return OperationResult.Failure<IEnumerable<DefendCapstoneCalendarDetailResponse>>(Error.NullValue);
         if (!Guid.TryParse(group.Value.TopicResponse?.Id, out Guid topicId))

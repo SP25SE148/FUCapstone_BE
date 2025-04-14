@@ -998,7 +998,7 @@ public class GroupService(
 
         ArgumentNullException.ThrowIfNull(group);
 
-        if (await CheckSupervisorInGroup(currentUser.UserCode, group, cancellationToken))
+        if (!await CheckSupervisorInGroup(currentUser.UserCode, group, cancellationToken))
             return OperationResult.Failure<byte[]>(new Error("ProjectProgress.Error", "You can not get the export."));
 
         if (group.Topic is null)

@@ -109,7 +109,7 @@ public class GroupController(
     [Authorize(Roles = $"{UserRoles.Supervisor}")]
     public async Task<IActionResult> GetGroupByIdAsync(Guid id)
     {
-        var result = await groupService.GetGroupByIdAsync(id);
+        var result = await groupService.GetGroupByIdAsync(id, IsCheckAccess: true);
         return result.IsSuccess
             ? Ok(result)
             : HandleFailure(result);
