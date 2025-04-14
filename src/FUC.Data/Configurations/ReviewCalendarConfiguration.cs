@@ -25,7 +25,7 @@ public sealed class ReviewCalendarConfiguration : IEntityTypeConfiguration<Revie
         builder.Property(rc => rc.SemesterId)
             .IsRequired();
 
-        builder.Property(rc => rc.Slot)
+        builder.Property(rc => rc.Time)
             .IsRequired();
 
         builder.Property(rc => rc.Room)

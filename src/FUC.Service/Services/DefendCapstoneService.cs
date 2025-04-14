@@ -100,7 +100,7 @@ public class DefendCapstoneService(
                     DefenseDate = x.DefenseDate,
                     DefendAttempt = x.DefendAttempt,
                     Location = x.Location,
-                    Slot = x.Slot,
+                    Time = x.Time,
                     CampusId = x.CampusId,
                     SemesterId = x.SemesterId,
                     CapstoneId = x.CapstoneId,
@@ -119,7 +119,7 @@ public class DefendCapstoneService(
                                 x.DefendCapstoneProjectInformationCalendarId
                         }).ToList(),
                 })
-                .OrderBy(x => x.Slot)
+                .OrderBy(x => x.Time)
                 .ToList();
         }
 
@@ -264,7 +264,7 @@ public class DefendCapstoneService(
             DefenseDate = calendar.DefenseDate,
             DefendAttempt = calendar.DefendAttempt,
             Location = calendar.Location,
-            Slot = calendar.Slot,
+            Time = calendar.Time,
             CampusId = calendar.CampusId,
             SemesterId = calendar.SemesterId,
             TopicCode = calendar.TopicCode,
@@ -321,7 +321,7 @@ public class DefendCapstoneService(
                     DefenseDate = calendar.DefenseDate,
                     DefendAttempt = calendar.DefendAttempt,
                     Location = calendar.Location,
-                    Slot = calendar.Slot,
+                    Time = calendar.Time,
                     CampusId = calendar.CampusId,
                     SemesterId = calendar.SemesterId,
                     TopicCode = calendar.TopicCode,
@@ -384,7 +384,7 @@ public class DefendCapstoneService(
                 DefenseDate = calendar.DefenseDate,
                 DefendAttempt = calendar.DefendAttempt,
                 Location = calendar.Location,
-                Slot = calendar.Slot,
+                Time = calendar.Time,
                 CampusId = calendar.CampusId,
                 SemesterId = calendar.SemesterId,
                 TopicCode = calendar.TopicCode,
@@ -482,7 +482,7 @@ public class DefendCapstoneService(
         string currentUserCampusId,
         string currentSemesterId,
         string currentCapstoneId,
-        (DateTime, int, string) defendCapstoneProjectCalendarDetail,
+        (DateTime, string, string) defendCapstoneProjectCalendarDetail,
         int attempt,
         (SupervisorResponseDTO, SupervisorResponseDTO) presidentAndSecretary,
         List<string> memberInfoList)
@@ -496,7 +496,7 @@ public class DefendCapstoneService(
             SemesterId = currentSemesterId,
             CapstoneId = currentCapstoneId,
             DefenseDate = defendCapstoneProjectCalendarDetail.Item1,
-            Slot = defendCapstoneProjectCalendarDetail.Item2,
+            Time = defendCapstoneProjectCalendarDetail.Item2,
             Location = defendCapstoneProjectCalendarDetail.Item3,
             DefendAttempt = attempt
         };
@@ -549,19 +549,19 @@ public class DefendCapstoneService(
         }).ToList().ForEach(x => defendCalendar.DefendCapstoneProjectMemberCouncils.Add(x));
     }
 
-    private (DateTime, int, string) GetDefendCapstoneProjectCalendarDetail(IXLRow row)
+    private (DateTime, string, string) GetDefendCapstoneProjectCalendarDetail(IXLRow row)
     {
         var reviewDate = row.Cell(6).GetValue<string>();
-        var slot = row.Cell(7).GetValue<string>();
+        var time = row.Cell(7).GetValue<string>();
         var room = row.Cell(8).GetValue<string>();
 
-        if (string.IsNullOrEmpty(reviewDate) || string.IsNullOrEmpty(slot) || string.IsNullOrEmpty(room))
+        if (string.IsNullOrEmpty(reviewDate) || string.IsNullOrEmpty(time) || string.IsNullOrEmpty(room))
         {
             logger.LogError("import defend capstone calendar failed with message: review date, slot or room is empty!");
             throw new InvalidOperationException("Invalid defend capstone calendar details");
         }
 
-        return (DateTime.Parse(reviewDate), int.Parse(slot), room);
+        return (DateTime.Parse(reviewDate), time, room);
     }
 
     private static bool IsMemberInformationValid(List<string> memberInfoList, string presidentId, string secretaryId)
@@ -645,7 +645,7 @@ public class DefendCapstoneService(
                     DefenseDate = x.DefenseDate,
                     DefendAttempt = x.DefendAttempt,
                     Location = x.Location,
-                    Slot = x.Slot,
+                    Time = x.Time,
                     CampusId = x.CampusId,
                     SemesterId = x.SemesterId,
                     CapstoneId = x.CapstoneId,
@@ -663,7 +663,7 @@ public class DefendCapstoneService(
                                 x.DefendCapstoneProjectInformationCalendarId
                         }).ToList(),
                 })
-                .OrderBy(x => x.Slot)
+                .OrderBy(x => x.Time)
                 .ToList();
         }
 
