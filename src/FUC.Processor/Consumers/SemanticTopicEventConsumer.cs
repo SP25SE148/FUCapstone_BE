@@ -53,7 +53,8 @@ public class SemanticTopicEventConsumer : BaseEventConsumer<SemanticTopicEvent>
         try
         {
             var response = message.IsCurrentSemester
-                ? await _semanticApi.GetSemanticStatisticWithCurrentSemester(message.CampusId, message.CapstoneId, message.SemesterIds[0], message.TopicId)
+                ? await _semanticApi.GetSemanticStatisticWithCurrentSemester(message.CampusId, message.CapstoneId,
+                    message.SemesterIds[0], message.TopicId)
                 : await _semanticApi.GetSemanticStatisticWithPreviousSemesters(new SemanticPreviousSemesterRequest
                 {
                     SemesterIds = message.SemesterIds,
@@ -62,7 +63,7 @@ public class SemanticTopicEventConsumer : BaseEventConsumer<SemanticTopicEvent>
                     CampusId = message.CampusId,
                 });
 
-            var scope = new TransactionScope(TransactionScopeAsyncFlowOption.Enabled);
+            // var scope = new TransactionScope(TransactionScopeAsyncFlowOption.Enabled);
 
             if (!response.IsSuccessStatusCode)
             {
@@ -85,9 +86,10 @@ public class SemanticTopicEventConsumer : BaseEventConsumer<SemanticTopicEvent>
                     IsRead = false,
                     ReferenceTarget = message.TopicId,
                     Type = nameof(SemanticTopicEvent),
-                    CreatedDate = DateTime.Now, 
+                    CreatedDate = DateTime.Now,
                 });
             }
+
             await _processorContext.SaveChangesAsync();
 
             var analysisResult = await response.Content.ReadAsStringAsync();
@@ -104,12 +106,13 @@ public class SemanticTopicEventConsumer : BaseEventConsumer<SemanticTopicEvent>
 
             await _hub.Clients.Clients(connections).ReceiveNewNotification("New result of semantic for topic.");
 
-            scope.Complete();
-            scope.Dispose();
+            // scope.Complete();
+            // scope.Dispose();
         }
         catch (Exception ex)
         {
-            _logger.LogError("Fail to process semantic for topicId: {Id} with error {Message}.", message.TopicId, ex.Message);
+            _logger.LogError("Fail to process semantic for topicId: {Id} with error {Message}.", message.TopicId,
+                ex.Message);
             throw;
         }
         finally
