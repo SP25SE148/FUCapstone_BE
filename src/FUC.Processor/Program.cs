@@ -11,11 +11,25 @@ builder.Services.AddJwtAuthentication(builder.Configuration);
 
 builder.Services.AddQuartzInfrastructure();
 
+builder.Services.AddCors(options =>
+{
+    options.AddDefaultPolicy(policy =>
+    {
+        policy
+            .AllowAnyHeader()
+            .AllowAnyMethod()
+            .AllowCredentials()
+            .WithOrigins("https://localhost:3000", "https://fu-capstone-fe.vercel.app");
+    });
+});
+
 builder.Services.AddSignalR();
 
 var app = builder.Build();
 
 app.UseMiddleware<ExceptionHandlingMiddleware>();
+
+app.UseCors();
 
 app.UseAuthentication();
 app.UseAuthorization();

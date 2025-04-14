@@ -61,7 +61,7 @@ builder.Services.AddCors(options =>
         b.AllowAnyHeader()
          .AllowAnyMethod()
          .AllowCredentials() 
-         .WithOrigins(builder.Configuration["ClientApp"]);
+         .WithOrigins(builder.Configuration["ClientApp"], "https://fu-capstone-fe.vercel.app");
     });
 });
 

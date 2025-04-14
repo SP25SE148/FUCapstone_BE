@@ -63,7 +63,7 @@ try
         .AllowAnyHeader()
         .AllowAnyMethod()
         .AllowCredentials() // to support a SignalR
-        .WithOrigins("https://localhost:3000"));
+        .WithOrigins("https://localhost:3000", "https://fu-capstone-fe.vercel.app"));
 
     // Configure the HTTP request pipeline.
     if (app.Environment.IsDevelopment())
