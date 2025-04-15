@@ -668,6 +668,8 @@ public class DefendCapstoneService(
                     DefendAttempt = x.DefendAttempt,
                     Location = x.Location,
                     Time = x.Time,
+                    IsUploadedThesisMinute = x.IsUploadedThesisMinute,
+                    Status = x.Status.ToString(),
                     CampusId = x.CampusId,
                     SemesterId = x.SemesterId,
                     CapstoneId = x.CapstoneId,

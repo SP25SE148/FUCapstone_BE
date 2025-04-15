@@ -1,7 +1,4 @@
-﻿using FUC.Service.DTOs.GroupDTO;
-using FUC.Service.DTOs.TopicDTO;
-
-namespace FUC.Service.DTOs.DefendCapstone;
+﻿namespace FUC.Service.DTOs.DefendCapstone;
 
 public class DefendCapstoneCalendarResponse
 {
@@ -16,6 +13,7 @@ public class DefendCapstoneCalendarResponse
     public int DefendAttempt { get; set; }
     public string Location { get; set; } // Room
     public string Time { get; set; }
+    public bool IsUploadedThesisMinute { get; set; }
     public DateTime DefenseDate { get; set; }
     public string Status { get; set; }
     public List<DefendCapstoneCouncilMemberDto> CouncilMembers { get; set; }
