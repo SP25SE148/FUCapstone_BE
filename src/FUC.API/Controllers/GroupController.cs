@@ -423,9 +423,9 @@ public class GroupController(
         return result.IsSuccess ? Ok(result) : HandleFailure(result);
     }
 
-    [HttpGet("group-decision/{status}")]
+    [HttpGet("group-decision")]
     [Authorize(Roles = $"{UserRoles.Manager}")]
-    public async Task<IActionResult> GetGroupDecision(string? status)
+    public async Task<IActionResult> GetGroupDecision([FromQuery] string? status)
     {
         var result = await groupService.GetGroupDecisionsByStatus(status);
         return result.IsSuccess ? Ok(result) : HandleFailure(result);

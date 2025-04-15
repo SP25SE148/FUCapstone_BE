@@ -372,7 +372,7 @@ public class DefendCapstoneService(
         else if (currentUser.Role == UserRoles.Supervisor)
         {
             var isMainOrCoSupervisor = topic.Value.MainSupervisorId == currentUser.UserCode ||
-                                        topic.Value.CoSupervisors.Any(c => c.SupervisorId == currentUser.UserCode);
+                                       topic.Value.CoSupervisors.Any(c => c.SupervisorId == currentUser.UserCode);
 
             if (!isMainOrCoSupervisor)
             {
@@ -661,6 +661,7 @@ public class DefendCapstoneService(
             result[calendar.Key] = calendar.Select(x => new DefendCapstoneCalendarResponse
                 {
                     Id = x.Id,
+                    Status = x.Status.ToString(),
                     TopicId = x.TopicId,
                     GroupId = x.Topic.Group.Id,
                     DefenseDate = x.DefenseDate,
