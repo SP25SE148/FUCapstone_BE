@@ -19,7 +19,6 @@ using FUC.Service.DTOs.ConfigDTO;
 using FUC.Service.DTOs.GroupDTO;
 using FUC.Service.DTOs.GroupMemberDTO;
 using FUC.Service.DTOs.ProjectProgressDTO;
-using FUC.Service.DTOs.TopicDTO;
 using FUC.Service.DTOs.TopicRequestDTO;
 using FUC.Service.Extensions.Options;
 using FUC.Service.Helpers;
@@ -819,7 +818,7 @@ public class GroupService(
 
         try
         {
-            if (progress.FucTasks.Any(x => x.KeyTask == request.KeyTask))
+            if (progress.FucTasks.Exists(x => x.KeyTask == request.KeyTask))
                 return OperationResult.Failure<FucTaskResponse>(new Error("ProjectProgress.Error",
                     "The key task was already taken."));
 

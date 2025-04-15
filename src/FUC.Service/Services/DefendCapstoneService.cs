@@ -298,6 +298,7 @@ public class DefendCapstoneService(
 
         if (group.IsFailure)
             return OperationResult.Failure<IEnumerable<DefendCapstoneCalendarDetailResponse>>(Error.NullValue);
+
         if (!Guid.TryParse(group.Value.TopicResponse?.Id, out Guid topicId))
         {
             return new List<DefendCapstoneCalendarDetailResponse>();
@@ -355,19 +356,36 @@ public class DefendCapstoneService(
         GetDefendCapstoneResultByGroupId(Guid groupId)
     {
         var topic = await topicService.GetTopicByGroupIdAsync(groupId);
+
         if (topic.IsFailure)
             return OperationResult.Failure<IEnumerable<DefendCapstoneResultResponse>>(new Error("Error.NotFound",
                 "Group not found"));
-        if (currentUser.Role == UserRoles.Student &&
-            topic.Value.Group.GroupMembers.All(gm => gm.StudentId != currentUser.UserCode))
-            return OperationResult.Failure<IEnumerable<DefendCapstoneResultResponse>>(new Error("Error.NotFound",
-                "You are not in this group"));
 
-        if (!(currentUser.Role == UserRoles.Supervisor &&
-              (topic.Value.MainSupervisorId == currentUser.UserCode ||
-               topic.Value.CoSupervisors.Any(c => c.SupervisorId == currentUser.UserCode))))
-            return OperationResult.Failure<IEnumerable<DefendCapstoneResultResponse>>(new Error("Error.NotFound",
-                "You are not the main or co supervisor of this group"));
+        if (currentUser.Role == UserRoles.Student)
+        {
+            if (topic.Value.Group.GroupMembers.All(gm => gm.StudentId != currentUser.UserCode))
+            {
+                return OperationResult.Failure<IEnumerable<DefendCapstoneResultResponse>>(new Error("Error.NotFound",
+                    "You are not in this group"));
+            }
+        }
+        else if (currentUser.Role == UserRoles.Supervisor)
+        {
+            var isMainOrCoSupervisor = topic.Value.MainSupervisorId == currentUser.UserCode ||
+                                        topic.Value.CoSupervisors.Any(c => c.SupervisorId == currentUser.UserCode);
+
+            if (!isMainOrCoSupervisor)
+            {
+                return OperationResult.Failure<IEnumerable<DefendCapstoneResultResponse>>(new Error("Error.NotFound",
+                    "You are not the main or co-supervisor of this group"));
+            }
+        }
+        else
+        {
+            return OperationResult.Failure<IEnumerable<DefendCapstoneResultResponse>>(new Error("Error.Unauthorized",
+                "You are not authorized to view this group’s defense result"));
+        }
+
         var defendCapstoneResults = await defendCapstoneCalendarRepository.FindAsync(dc => dc.TopicId == topic.Value.Id,
             x => x.AsSplitQuery()
                 .Include(x => x.DefendCapstoneProjectMemberCouncils)
