@@ -186,7 +186,8 @@ public class DefendCapstoneService(
         var calendar = await defendCapstoneCalendarRepository.GetAsync(
             x => x.Id == calendarId && x.IsUploadedThesisMinute,
             include: x => x.Include(x => x.DefendCapstoneProjectMemberCouncils)
-                .Include(x => x.Topic),
+                .Include(x => x.Topic)
+                .ThenInclude(x => x.Group),
             orderBy: null,
             cancellationToken);
 
