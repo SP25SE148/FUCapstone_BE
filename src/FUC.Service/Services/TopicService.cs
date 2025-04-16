@@ -1009,7 +1009,7 @@ public class TopicService(
                     new Error("Topic.Error", "You can not assign this superviosr for topic."));
             }
 
-            var newAttempTime = topic.TopicAppraisals.Max(x => x.AttemptTime);
+            var newAttempTime = topic.TopicAppraisals.Count > 0 ? topic.TopicAppraisals.Max(x => x.AttemptTime) : 0;
 
             if (topic.TopicAppraisals.Count(x => x.AttemptTime == newAttempTime)
                 == systemConfigService.GetSystemConfiguration().MaxTopicAppraisalsForTopic)
@@ -1020,6 +1020,9 @@ public class TopicService(
             {
                 newAttempTime++;
             }
+
+            if (topic.TopicAppraisals.Exists(x => x.AttemptTime == newAttempTime && x.SupervisorId == request.SupervisorId))
+                return OperationResult.Failure(new Error("Topic.Error", $"{request.SupervisorId} was in this topic's appraisals."));
 
             await unitOfWork.BeginTransactionAsync(cancellationToken);
 
