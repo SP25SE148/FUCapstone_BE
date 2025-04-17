@@ -9,6 +9,7 @@ public sealed class GroupMemberResponse
     public string StudentId { get; set; }
     public string StudentEmail { get; set; }
     public string StudentFullName { get; set; }
+    public string Skills { get; set; }
     public float GPA { get; set; }
     public bool IsLeader { get; set; } = false;
     public string CreatedBy { get; set; }

@@ -54,7 +54,7 @@ public sealed class StudentService(
                 CampusName = x.Campus.Name,
                 Email = x.Email,
                 Status = x.Status.ToString(),
-                BusinessArea = x.BusinessArea.Name,
+                Skills = x.Skills ?? "UnDefined",
                 Gpa = x.GPA,
                 IsHaveBeenJoinGroup = false,
             },
@@ -85,8 +85,11 @@ public sealed class StudentService(
                 $"Student with id {studentId} is not found !!!"));
 
         // update student info
-        student.BusinessAreaId = request.BusinessAreaId;
-        student.GPA = request.GPA;
+        if (request.BusinessAreaId != null)
+            student.BusinessAreaId = request.BusinessAreaId;
+        if (request.GPA != null)
+            student.GPA = (float)request.GPA;
+        student.Skills = request.Skills ?? default;
 
         var groupMember = student.GroupMembers.FirstOrDefault(x => x.Status == Data.Enums.GroupMemberStatus.Accepted);
 
@@ -95,8 +98,8 @@ public sealed class StudentService(
             var group = await groupRepository.GetAsync(
                 x => x.Id == groupMember.GroupId,
                 include: x => x
-                        .Include(x => x.GroupMembers.Where(x => x.Id != groupMember.Id))
-                        .ThenInclude(x => x.Student),
+                    .Include(x => x.GroupMembers.Where(x => x.Id != groupMember.Id))
+                    .ThenInclude(x => x.Student),
                 default);
 
             ArgumentNullException.ThrowIfNull(group);
@@ -104,7 +107,8 @@ public sealed class StudentService(
             var sumGpaOtherStudents = group.GroupMembers.Sum(x => x.Student.GPA);
             var numberOfStudent = group.GroupMembers.Count(x => x.Student.GPA != 0);
 
-            group.GPA = (sumGpaOtherStudents + request.GPA) / (numberOfStudent + 1);
+            if (request.GPA != null)
+                group.GPA = (sumGpaOtherStudents + (float)request.GPA) / (numberOfStudent + 1);
 
             groupRepository.Update(group);
         }
@@ -126,7 +130,8 @@ public sealed class StudentService(
             .Include(s => s.BusinessArea);
     }
 
-    public async Task<OperationResult<IList<InviteStudentsResponseDto>>> GetStudentsForInvitation(string searchTerm, CancellationToken cancellationToken = default)
+    public async Task<OperationResult<IList<InviteStudentsResponseDto>>> GetStudentsForInvitation(string searchTerm,
+        CancellationToken cancellationToken = default)
     {
         var students = await studentRepository.FindAsync(
             x => x.CampusId == currentUser.CampusId &&
