@@ -620,6 +620,7 @@ public class GroupService(
         return g => g.AsSplitQuery()
             .Include(g => g.GroupMembers)
             .ThenInclude(gm => gm.Student)
+            .ThenInclude(s => s.BusinessArea)
             .Include(g => g.Supervisor)
             .Include(g => g.Capstone);
     }
@@ -654,6 +655,7 @@ public class GroupService(
                     CreatedDate = m.CreatedDate,
                     StudentEmail = m.Student.Email,
                     GPA = m.Student.GPA,
+                    Skills = m.Student.Skills ?? "Undefined"
                 }),
             CurrentNumberOfGroupPerMax =
                 $"{g.GroupMembers.Count(m => m.Status == GroupMemberStatus.Accepted)}/{g.Capstone.MaxMember}",
@@ -1710,7 +1712,8 @@ public class GroupService(
                 GroupId = gm.GroupId,
                 CreatedBy = gm.CreatedBy,
                 CreatedDate = gm.CreatedDate,
-                GPA = gm.Student.GPA
+                GPA = gm.Student.GPA,
+                Skills = gm.Student.Skills ?? "UnDefined",
             });
         // get topic's group information
         group.TopicResponse = await topicService.GetTopicByTopicCode(group.TopicCode);

@@ -1,5 +1,6 @@
 ﻿namespace FUC.Service.DTOs.StudentDTO;
 
 public sealed record UpdateStudentRequest(
-    Guid BusinessAreaId,
-    float GPA);
+    Guid? BusinessAreaId,
+    string? Skills,
+    float? GPA);

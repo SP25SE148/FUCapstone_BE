@@ -296,23 +296,25 @@ public class GroupMemberService(
     {
         var groupMemberRequestResponse = new GroupMemberRequestResponse();
 
-        var groupMembers = await (from gm in groupMemberRepository.GetQueryable()
-            where gm.StudentId == currentUser.UserCode
-            join s in studentRepository.GetQueryable() on gm.CreatedBy equals s.Email
-            orderby s.GPA, gm.CreatedDate
-            select new GroupMemberResponse
-            {
-                Id = gm.Id,
-                Status = gm.Status.ToString(),
-                GroupId = gm.GroupId,
-                StudentId = s.Id,
-                StudentFullName = s.FullName,
-                StudentEmail = s.Email,
-                IsLeader = gm.IsLeader,
-                CreatedDate = gm.CreatedDate,
-                CreatedBy = gm.CreatedBy,
-                GPA = s.GPA
-            }).ToListAsync();
+        var groupMembers = await
+            (from gm in groupMemberRepository.GetQueryable()
+                where gm.StudentId == currentUser.UserCode
+                join s in studentRepository.GetQueryable() on gm.CreatedBy equals s.Email
+                orderby s.GPA, gm.CreatedDate
+                select new GroupMemberResponse
+                {
+                    Id = gm.Id,
+                    Status = gm.Status.ToString(),
+                    GroupId = gm.GroupId,
+                    StudentId = s.Id,
+                    StudentFullName = s.FullName,
+                    StudentEmail = s.Email,
+                    IsLeader = gm.IsLeader,
+                    CreatedDate = gm.CreatedDate,
+                    CreatedBy = gm.CreatedBy,
+                    GPA = s.GPA,
+                    Skills = s.Skills ?? "Undefined"
+                }).ToListAsync();
 
 
         groupMemberRequestResponse.GroupMemberRequested = groupMembers.Where(gm => !gm.IsLeader).ToList();
@@ -339,7 +341,8 @@ public class GroupMemberService(
                         IsLeader = x.IsLeader,
                         CreatedDate = x.CreatedDate,
                         CreatedBy = x.CreatedBy,
-                        GPA = x.Student.GPA
+                        GPA = x.Student.GPA,
+                        Skills = x.Student.Skills ?? "Undefined"
                     });
             groupMemberRequestResponse.GroupMemberRequestSentByLeader = groupMembersRequestOfLeader.ToList();
 
@@ -360,7 +363,8 @@ public class GroupMemberService(
                         StudentEmail = x.Student.Email,
                         CreatedDate = x.CreatedDate,
                         CreatedBy = x.CreatedBy,
-                        GPA = x.Student.GPA
+                        GPA = x.Student.GPA,
+                        Skills = x.Student.Skills ?? "Undefined"
                     })).ToList();
         }
 
@@ -386,7 +390,8 @@ public class GroupMemberService(
                 StudentEmail = leader!.Student.Email,
                 CreatedDate = x.CreatedDate,
                 CreatedBy = x.CreatedBy,
-                GPA = leader?.Student.GPA ?? 0 // Handle null leader case
+                GPA = leader?.Student.GPA ?? 0, // Handle null leader case,
+                Skills = leader?.Student.Skills ?? "Undefined"
             };
         }).ToList();
 

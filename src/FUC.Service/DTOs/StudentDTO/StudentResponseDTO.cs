@@ -12,9 +12,8 @@ public sealed record StudentResponseDTO
     public string CampusName { get; init; } = string.Empty;
     public string Email { get; init; } = string.Empty;
     public string Status { get; init; } = string.Empty;
+    public string Skills { get; init; } = string.Empty;
     public float Gpa { get; set; }
-    public string BusinessArea { get; set; } = string.Empty;
-
     public bool IsHaveBeenJoinGroup { get; init; }
 
     // Constructor mặc định

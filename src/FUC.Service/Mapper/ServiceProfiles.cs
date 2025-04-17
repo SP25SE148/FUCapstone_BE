@@ -40,8 +40,8 @@ public class ServiceProfiles : Profile
             .ForMember(s => s.CapstoneName, opt => opt.MapFrom(s => s.Capstone.Name))
             .ForMember(s => s.CampusName, opt => opt.MapFrom(s => s.Campus.Name))
             .ForMember(s => s.Status, opt => opt.MapFrom(s => s.Status.ToString()))
-            .ForMember(s => s.BusinessArea, opt => opt.MapFrom(s => s.BusinessArea.Name))
             .ForMember(s => s.Gpa, opt => opt.MapFrom(s => s.GPA))
+            .ForMember(s => s.Skills, opt => opt.MapFrom(s => s.Skills))
             .ForMember(s => s.IsHaveBeenJoinGroup,
                 opt => opt.MapFrom(s => s.GroupMembers.Any(gm => gm.Status.Equals(GroupMemberStatus.Accepted))));
 
@@ -58,7 +58,8 @@ public class ServiceProfiles : Profile
         CreateMap<UpdateTaskRequest, FucTask>()
             .ForMember(dest => dest.Id, opt => opt.MapFrom(src => src.TaskId))
             .ForMember(dest => dest.AssigneeId, opt => opt.Condition(src => !string.IsNullOrEmpty(src.AssigneeId)))
-            .ForMember(dest => dest.Description, opt => opt.Condition(src => !string.IsNullOrWhiteSpace(src.Description)))
+            .ForMember(dest => dest.Description,
+                opt => opt.Condition(src => !string.IsNullOrWhiteSpace(src.Description)))
             .ForMember(dest => dest.DueDate, opt => opt.Condition(src => src.DueDate.HasValue))
             .ForAllMembers(opt => opt.Condition((src, dest, srcMember) => srcMember != null));
 
@@ -76,9 +77,11 @@ public class ServiceProfiles : Profile
 
         CreateMap<UpdateTimeConfigurationRequest, TimeConfiguration>()
             .ForMember(dest => dest.TeamUpDate, opt => opt.Condition(src => src.TeamUpDate.HasValue))
-            .ForMember(dest => dest.TeamUpExpirationDate, opt => opt.Condition(src => src.TeamUpExpirationDate.HasValue))
+            .ForMember(dest => dest.TeamUpExpirationDate,
+                opt => opt.Condition(src => src.TeamUpExpirationDate.HasValue))
             .ForMember(dest => dest.RegistTopicDate, opt => opt.Condition(src => src.RegistTopicDate.HasValue))
-            .ForMember(dest => dest.RegistTopicExpiredDate, opt => opt.Condition(src => src.RegistTopicExpiredDate.HasValue))
+            .ForMember(dest => dest.RegistTopicExpiredDate,
+                opt => opt.Condition(src => src.RegistTopicExpiredDate.HasValue))
             .ForAllMembers(opt => opt.Condition((src, dest, srcMember) => srcMember != null));
 
         CreateMap<UpdateProjectProgressRequest, ProjectProgress>()

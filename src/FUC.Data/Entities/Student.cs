@@ -12,6 +12,7 @@ public sealed class Student : AuditableSoftDeleteEntity
     public string CampusId { get; set; }
     public Guid? BusinessAreaId { get; set; }
     public string Email { get; set; }
+    public string? Skills { get; set; }
     public float GPA { get; set; }
     public StudentStatus Status { get; set; }
 
