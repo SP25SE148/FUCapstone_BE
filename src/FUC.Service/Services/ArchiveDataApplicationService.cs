@@ -33,7 +33,8 @@ public class ArchiveDataApplicationService : IArchiveDataApplicationService
         _logger = serviceProvider.GetRequiredService<ILogger<ArchiveDataApplicationService>>();
     }
 
-    public async Task<OperationResult<ExportCompletedStudents>> ArchiveDataCompletedStudents(CancellationToken cancellationToken)
+    public async Task<OperationResult<ExportCompletedStudents>> ArchiveDataCompletedStudents(
+        CancellationToken cancellationToken)
     {
         try
         {
@@ -44,14 +45,14 @@ public class ArchiveDataApplicationService : IArchiveDataApplicationService
 
             var students = await _context.Students
                 .Where(x => x.CampusId == _currentUser.CampusId &&
-                     x.CapstoneId == _currentUser.CapstoneId)
+                            x.CapstoneId == _currentUser.CapstoneId)
                 .ToListAsync(cancellationToken);
 
             if (students.Count == 0)
                 return OperationResult.Failure<ExportCompletedStudents>(Error.NullValue);
 
             if (await _context.Groups.AnyAsync(x => x.Status == GroupStatus.InProgress ||
-                    x.Status == GroupStatus.Pending, cancellationToken))
+                                                    x.Status == GroupStatus.Pending, cancellationToken))
                 return OperationResult.Failure<ExportCompletedStudents>(new Error("ArchiveData.Error",
                     "They have some Inprogress groups, so that can not archive data."));
 
@@ -59,13 +60,13 @@ public class ArchiveDataApplicationService : IArchiveDataApplicationService
 
             await _context.Groups
                 .Where(x => x.CampusId == _currentUser.CampusId &&
-                     x.CapstoneId == _currentUser.CapstoneId &&
-                     x.SemesterId == currentSemester.Value.Id)
+                            x.CapstoneId == _currentUser.CapstoneId &&
+                            x.SemesterId == currentSemester.Value.Id)
                 .ExecuteDeleteAsync(cancellationToken);
 
             await _context.Students
                 .Where(x => x.CampusId == _currentUser.CampusId &&
-                     x.CapstoneId == _currentUser.CapstoneId)
+                            x.CapstoneId == _currentUser.CapstoneId)
                 .ExecuteDeleteAsync(cancellationToken);
 
             var resultFile = ArchiveStudentsInExcel(students);
@@ -94,7 +95,8 @@ public class ArchiveDataApplicationService : IArchiveDataApplicationService
 
             await _context.Database.RollbackTransactionAsync(cancellationToken);
 
-            return OperationResult.Failure<ExportCompletedStudents>(new Error("ArchiveData.Error", "Fail to archive data."));
+            return OperationResult.Failure<ExportCompletedStudents>(new Error("ArchiveData.Error",
+                "Fail to archive data."));
         }
     }
 
@@ -117,12 +119,12 @@ public class ArchiveDataApplicationService : IArchiveDataApplicationService
 
             foreach (Student student in students)
             {
-                dataTable.Rows.Add(student.Id, 
-                    student.FullName, 
-                    student.Email, 
-                    student.Status.ToString(), 
-                    student.CampusId, 
-                    student.MajorId, 
+                dataTable.Rows.Add(student.Id,
+                    student.FullName,
+                    student.Email,
+                    student.Status.ToString(),
+                    student.CampusId,
+                    student.MajorId,
                     student.CapstoneId);
             }
 
@@ -143,7 +145,8 @@ public class ArchiveDataApplicationService : IArchiveDataApplicationService
         }
     }
 
-    public async Task<OperationResult<SuperAdminDashBoardDto>> PresentSuperAdminDashBoard(CancellationToken cancellationToken)
+    public async Task<OperationResult<SuperAdminDashBoardDto>> PresentSuperAdminDashBoard(
+        CancellationToken cancellationToken)
     {
         var currentSemester = await _semesterService.GetCurrentSemesterAsync();
 
@@ -241,7 +244,7 @@ public class ArchiveDataApplicationService : IArchiveDataApplicationService
             return OperationResult.Failure<ManagerDashBoardDto>(currentSemester.Error);
 
         var students = await _context.Students
-            .Where(x => x.CampusId == _currentUser.CampusId && 
+            .Where(x => x.CampusId == _currentUser.CampusId &&
                         x.CapstoneId == _currentUser.CapstoneId)
             .CountAsync(cancellationToken);
 
@@ -252,7 +255,7 @@ public class ArchiveDataApplicationService : IArchiveDataApplicationService
 
         var topics = await _context.Topics
             .Where(x => x.CampusId == _currentUser.CampusId &&
-                        x.SemesterId == currentSemester.Value.Id && 
+                        x.SemesterId == currentSemester.Value.Id &&
                         x.CapstoneId == _currentUser.CapstoneId)
             .ToListAsync(cancellationToken);
 
@@ -260,17 +263,70 @@ public class ArchiveDataApplicationService : IArchiveDataApplicationService
             .Where(x => x.CampusId == _currentUser.CampusId &&
                         x.SemesterId == currentSemester.Value.Id &&
                         x.CapstoneId == _currentUser.CapstoneId)
-            .CountAsync(cancellationToken);
+            .Include(group => group.ProjectProgress)
+            .ThenInclude(projectProgress => projectProgress.FucTasks)
+            .Include(group => group.GroupMembers)
+            .ToListAsync(cancellationToken: cancellationToken);
+
+        var totalTasks = groups.Sum(g => g.ProjectProgress.FucTasks.Count);
+        var completedTasks = groups.Sum(g => g.ProjectProgress.FucTasks.Count(t => t.Status == FucTaskStatus.Done));
+        var overdueTasks = groups.Sum(g =>
+            g.ProjectProgress.FucTasks.Count(t => t.DueDate < DateTime.Now && t.Status != FucTaskStatus.Done));
+        var averageGroupSize = groups.Average(g => g.GroupMembers.Count);
+        var taskCompletionRate = totalTasks > 0 ? (double)completedTasks / totalTasks : 0;
+
+        var bestPerformingGroup = groups
+            .Select(g => new GroupTaskMetrics
+            {
+                GroupId = g.Id,
+                GroupCode = g.GroupCode,
+                TotalTasks = g.ProjectProgress.FucTasks.Count,
+                CompletedTasks = g.ProjectProgress.FucTasks.Count(t => t.Status == FucTaskStatus.Done),
+                OverdueTasks =
+                    g.ProjectProgress.FucTasks.Count(t => t.DueDate < DateTime.Now && t.Status != FucTaskStatus.Done)
+            })
+            .OrderByDescending(gm => gm.CompletedTasks)
+            .FirstOrDefault();
+
+        var worstPerformingGroup = groups
+            .Select(g => new GroupTaskMetrics
+            {
+                GroupId = g.Id,
+                GroupCode = g.GroupCode,
+                TotalTasks = g.ProjectProgress.FucTasks.Count,
+                CompletedTasks = g.ProjectProgress.FucTasks.Count(t => t.Status == FucTaskStatus.Done),
+                OverdueTasks =
+                    g.ProjectProgress.FucTasks.Count(t => t.DueDate < DateTime.Now && t.Status != FucTaskStatus.Done)
+            })
+            .OrderBy(gm => gm.CompletedTasks)
+            .FirstOrDefault();
+        var averageStudentContribution = await _context.WeeklyEvaluations
+            .Where(we => we.ProjectProgressWeek.ProjectProgress.Group.CampusId == _currentUser.CampusId &&
+                         we.ProjectProgressWeek.ProjectProgress.Group.CapstoneId == _currentUser.CapstoneId)
+            .AverageAsync(we => we.ContributionPercentage, cancellationToken);
+
+        var topicsPerSupervisor = await _context.Topics
+            .Where(t => t.SemesterId == currentSemester.Value.Id)
+            .GroupBy(t => t.MainSupervisorId)
+            .Select(g => new { SupervisorId = g.Key, TopicCount = g.Count() })
+            .ToDictionaryAsync(g => g.SupervisorId, g => g.TopicCount, cancellationToken);
 
         return new ManagerDashBoardDto
         {
             Students = students,
             Supervisors = supervisors.Count,
             Topics = topics.Count,
-            Groups = groups,
+            Groups = groups.Count,
             TopicsInEachStatus = topics
                 .GroupBy(x => x.Status.ToString())
-                .ToDictionary(g => g.Key, g => g.Count())
+                .ToDictionary(g => g.Key, g => g.Count()),
+            AverageGroupSize = averageGroupSize,
+            TaskCompletionRate = taskCompletionRate,
+            OverdueTaskCount = overdueTasks,
+            BestPerformingGroup = bestPerformingGroup,
+            WorstPerformingGroup = worstPerformingGroup,
+            AverageStudentContribution = averageStudentContribution,
+            TopicsPerSupervisor = topicsPerSupervisor
         };
     }
 }
