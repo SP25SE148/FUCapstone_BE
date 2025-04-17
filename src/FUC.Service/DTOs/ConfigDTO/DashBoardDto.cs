@@ -25,6 +25,13 @@ public record class AdminDashBoardDto : DashBoardDto
 public record class ManagerDashBoardDto : DashBoardDto
 {
     public Dictionary<string, int> TopicsInEachStatus { get; set; }
+    public double AverageGroupSize { get; set; }
+    public double TaskCompletionRate { get; set; }
+    public int OverdueTaskCount { get; set; }
+    public GroupTaskMetrics? BestPerformingGroup { get; set; }
+    public GroupTaskMetrics? WorstPerformingGroup { get; set; }
+    public double AverageStudentContribution { get; set; }
+    public Dictionary<string, int> TopicsPerSupervisor { get; set; }
 }
 
 public class SupervisorDashBoardDto

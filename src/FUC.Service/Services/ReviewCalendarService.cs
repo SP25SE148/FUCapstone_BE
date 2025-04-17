@@ -144,7 +144,7 @@ public sealed class ReviewCalendarService(
                 true,
                 include: r => r.AsSplitQuery()
                     .Include(rc => rc.ReviewCalender).ThenInclude(rc => rc.Reviewers));
-            if (IsReviewerValidToEnterSuggestionAndComment(reviewer))
+            if (!IsReviewerValidToEnterSuggestionAndComment(reviewer))
                 return OperationResult.Failure(new Error("UpdateReviewFailed",
                     "You can not update this review suggestion and comment"));
             reviewer!.Suggestion = request.Suggestion;
@@ -236,8 +236,9 @@ public sealed class ReviewCalendarService(
     {
         return reviewer != null &&
                reviewer.ReviewCalender.Status == ReviewCalendarStatus.InProgress &&
-               reviewer.IsReview == false &&
-               reviewer.ReviewCalender.Date.Date == DateTime.Now.Date;
+               reviewer.IsReview == false;
+        // &&
+        // reviewer.ReviewCalender.Date.Date == DateTime.Now.Date;
     }
 
     private async Task<List<ReviewCalendar>> ParseReviewCalendarsFromFile(IFormFile file, string currentSemester)

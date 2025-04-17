@@ -25,6 +25,7 @@ public class FucDbContext : DbContext
 
     public DbSet<Semester> Semesters { get; set; }
 
+    public DbSet<WeeklyEvaluation> WeeklyEvaluations { get; set; }
     public DbSet<Student> Students { get; set; }
 
     public DbSet<Supervisor> Supervisors { get; set; }
