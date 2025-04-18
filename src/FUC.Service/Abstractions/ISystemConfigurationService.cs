@@ -12,6 +12,7 @@ public interface ISystemConfigurationService
     void UpdateExpirationTeamUpDuration(double value);
     void UpdateMaxAttemptTimesToDefendCapstone(int value);
     void UpdateMaxAttemptTimesToReviewTopic(int value);
+    void UpdateSemanticTopicThroughSemesters(int value);
     Task<OperationResult> UpdateMininumTopicsPerCapstoneInEachCampus();
     Task<Dictionary<string, double>> GetMinimumTopicsByMajorId();
 }

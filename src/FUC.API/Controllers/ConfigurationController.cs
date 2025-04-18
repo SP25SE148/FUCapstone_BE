@@ -77,6 +77,14 @@ public sealed class ConfigurationController : ApiController
         return Ok(OperationResult.Success());
     }
 
+    [HttpPatch("system/SemanticTopicThroughSemesters")]
+    [Authorize(Roles = UserRoles.SuperAdmin)]
+    public IActionResult UpdateSemanticTopicThroughSemesters([FromBody] int value)
+    {
+        _systemConfigService.UpdateSemanticTopicThroughSemesters(value);
+        return Ok(OperationResult.Success());
+    }
+
     [HttpPost("estimate/minimum-topics")]
     [Authorize(Roles = UserRoles.Admin)]
     public async Task<IActionResult> EstimateMinimumTopics()

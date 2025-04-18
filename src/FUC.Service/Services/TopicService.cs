@@ -513,7 +513,8 @@ public class TopicService(
 
             var semesterIds = withCurrentSemester
                 ? new List<string> { currentSemester.Value.Id }
-                : await semesterService.GetPreviouseSemesterIds(currentSemester.Value.StartDate);
+                : await semesterService.GetPreviouseSemesterIds(currentSemester.Value.StartDate, 
+                systemConfigService.GetSystemConfiguration().SemanticTopicThroughSemesters);
 
             integrationEventLogService.SendEvent(new SemanticTopicEvent
             {
@@ -624,7 +625,8 @@ public class TopicService(
             {
                 TopicId = topic.Id.ToString(),
                 TopicEnglishName = request.EnglishName,
-                SemesterIds = await semesterService.GetPreviouseSemesterIds(getCurrentSemesterResult.Value.StartDate),
+                SemesterIds = await semesterService.GetPreviouseSemesterIds(getCurrentSemesterResult.Value.StartDate, 
+                    systemConfigService.GetSystemConfiguration().SemanticTopicThroughSemesters),
                 ProcessedBy = currentUser.UserCode,
                 IsCurrentSemester = false,
                 CampusId = currentUser.CampusId,

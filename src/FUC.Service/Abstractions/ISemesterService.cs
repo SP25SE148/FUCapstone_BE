@@ -13,5 +13,5 @@ public interface ISemesterService
     Task<OperationResult<SemesterResponse>> GetSemesterByIdAsync(string semesterId);
     Task<OperationResult> DeleteSemesterAsync(string semesterId);
     Task<OperationResult<Semester>> GetCurrentSemesterAsync();
-    Task<List<string>> GetPreviouseSemesterIds(DateTime? startDayOfCurrentSemester = null);
+    Task<List<string>> GetPreviouseSemesterIds(DateTime? startDayOfCurrentSemester = null, int top = 3);
 }

@@ -62,6 +62,11 @@ public class SystemConfigurationService : ISystemConfigurationService
         _config.MaxAttemptTimesToReviewTopic = value;
     }
 
+    public void UpdateSemanticTopicThroughSemesters(int value)
+    {
+        _config.SemanticTopicThroughSemesters = value;
+    }
+
     public async Task<OperationResult> UpdateMininumTopicsPerCapstoneInEachCampus()
     {
         var campus = _currentUser.CampusId;

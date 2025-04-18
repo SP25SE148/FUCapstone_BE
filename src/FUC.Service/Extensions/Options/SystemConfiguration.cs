@@ -9,5 +9,6 @@ public class SystemConfiguration
     public double ExpirationReviewCalendarDuration { get; set; } = 1; // 1 day
     public int MaxAttemptTimesToDefendCapstone { get; set; } = 2;
     public int MaxAttemptTimesToReviewTopic { get; set; } = 3;
+    public int SemanticTopicThroughSemesters { get; set; } = 3;
     public Dictionary<string, Dictionary<string, double>> MininumTopicsPerCapstoneInEachCampus { get; set; } // base on students
 }

@@ -123,7 +123,7 @@ public sealed class SemesterService(
         return OperationResult.Success(currentSemester);
     }
 
-    public async Task<List<string>> GetPreviouseSemesterIds(DateTime? startDayOfCurrentSemester = null)
+    public async Task<List<string>> GetPreviouseSemesterIds(DateTime? startDayOfCurrentSemester = null, int top = 3)
     {
         if (startDayOfCurrentSemester is null)
         {
@@ -136,7 +136,7 @@ public sealed class SemesterService(
             null,
             orderBy: s => s.OrderByDescending(s => s.StartDate),
             selector: x => x.Id,
-            top: 3,
+            top: top,
             default);
 
         return [.. previousSemesterIds];
