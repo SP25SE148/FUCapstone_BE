@@ -1,4 +1,5 @@
-﻿using FUC.Service.Extensions.Options;
+﻿using FUC.Common.Shared;
+using FUC.Service.Extensions.Options;
 
 namespace FUC.Service.Abstractions;
 
@@ -11,4 +12,6 @@ public interface ISystemConfigurationService
     void UpdateExpirationTeamUpDuration(double value);
     void UpdateMaxAttemptTimesToDefendCapstone(int value);
     void UpdateMaxAttemptTimesToReviewTopic(int value);
+    Task<OperationResult> UpdateMininumTopicsPerCapstoneInEachCampus();
+    Task<Dictionary<string, double>> GetMinimumTopicsByMajorId();
 }

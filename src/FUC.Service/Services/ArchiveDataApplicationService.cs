@@ -22,6 +22,7 @@ public class ArchiveDataApplicationService : IArchiveDataApplicationService
     private readonly IIntegrationEventLogService _integrationEventLogService;
     private readonly ICurrentUser _currentUser;
     private readonly ISemesterService _semesterService;
+    private readonly ISystemConfigurationService _systemConfigurationService;
     private readonly ILogger<ArchiveDataApplicationService> _logger;
 
     public ArchiveDataApplicationService(IServiceProvider serviceProvider)
@@ -31,6 +32,7 @@ public class ArchiveDataApplicationService : IArchiveDataApplicationService
         _currentUser = serviceProvider.GetRequiredService<ICurrentUser>();
         _semesterService = serviceProvider.GetRequiredService<ISemesterService>();
         _logger = serviceProvider.GetRequiredService<ILogger<ArchiveDataApplicationService>>();
+        _systemConfigurationService = serviceProvider.GetRequiredService<ISystemConfigurationService>();
     }
 
     public async Task<OperationResult<ExportCompletedStudents>> ArchiveDataCompletedStudents(
@@ -259,10 +261,15 @@ public class ArchiveDataApplicationService : IArchiveDataApplicationService
                         x.CapstoneId == _currentUser.CapstoneId)
             .ToListAsync(cancellationToken);
 
+        var topicsPerSupervisor = topics
+            .GroupBy(t => t.MainSupervisorId)
+            .ToDictionary(g => g.Key, g => g.Count());
+
         var groups = await _context.Groups
             .Where(x => x.CampusId == _currentUser.CampusId &&
                         x.SemesterId == currentSemester.Value.Id &&
                         x.CapstoneId == _currentUser.CapstoneId)
+            .AsSplitQuery()
             .Include(group => group.ProjectProgress)
             .ThenInclude(projectProgress => projectProgress.FucTasks)
             .Include(group => group.GroupMembers)
@@ -272,7 +279,7 @@ public class ArchiveDataApplicationService : IArchiveDataApplicationService
         var completedTasks = groups.Sum(g => g.ProjectProgress.FucTasks.Count(t => t.Status == FucTaskStatus.Done));
         var overdueTasks = groups.Sum(g =>
             g.ProjectProgress.FucTasks.Count(t => t.DueDate < DateTime.Now && t.Status != FucTaskStatus.Done));
-        var averageGroupSize = groups.Average(g => g.GroupMembers.Count);
+        var averageGroupSize = groups.Count > 0 ? groups.Where(x => x.GroupMembers != null && x.GroupMembers.Count > 0).Average(g => g.GroupMembers.Count) : 0;
         var taskCompletionRate = totalTasks > 0 ? (double)completedTasks / totalTasks : 0;
 
         var bestPerformingGroup = groups
@@ -300,16 +307,6 @@ public class ArchiveDataApplicationService : IArchiveDataApplicationService
             })
             .OrderBy(gm => gm.CompletedTasks)
             .FirstOrDefault();
-        var averageStudentContribution = await _context.WeeklyEvaluations
-            .Where(we => we.ProjectProgressWeek.ProjectProgress.Group.CampusId == _currentUser.CampusId &&
-                         we.ProjectProgressWeek.ProjectProgress.Group.CapstoneId == _currentUser.CapstoneId)
-            .AverageAsync(we => we.ContributionPercentage, cancellationToken);
-
-        var topicsPerSupervisor = await _context.Topics
-            .Where(t => t.SemesterId == currentSemester.Value.Id)
-            .GroupBy(t => t.MainSupervisorId)
-            .Select(g => new { SupervisorId = g.Key, TopicCount = g.Count() })
-            .ToDictionaryAsync(g => g.SupervisorId, g => g.TopicCount, cancellationToken);
 
         return new ManagerDashBoardDto
         {
@@ -325,8 +322,9 @@ public class ArchiveDataApplicationService : IArchiveDataApplicationService
             OverdueTaskCount = overdueTasks,
             BestPerformingGroup = bestPerformingGroup,
             WorstPerformingGroup = worstPerformingGroup,
-            AverageStudentContribution = averageStudentContribution,
-            TopicsPerSupervisor = topicsPerSupervisor
+            TopicsPerSupervisor = topicsPerSupervisor,
+            MaxTopicsOfCapstone = _systemConfigurationService.GetSystemConfiguration()
+                .MininumTopicsPerCapstoneInEachCampus[_currentUser.CampusId][_currentUser.CapstoneId]
         };
     }
 }

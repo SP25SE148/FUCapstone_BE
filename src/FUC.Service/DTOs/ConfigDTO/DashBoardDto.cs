@@ -30,8 +30,8 @@ public record class ManagerDashBoardDto : DashBoardDto
     public int OverdueTaskCount { get; set; }
     public GroupTaskMetrics? BestPerformingGroup { get; set; }
     public GroupTaskMetrics? WorstPerformingGroup { get; set; }
-    public double AverageStudentContribution { get; set; }
     public Dictionary<string, int> TopicsPerSupervisor { get; set; }
+    public double MaxTopicsOfCapstone { get; set; }
 }
 
 public class SupervisorDashBoardDto
@@ -44,6 +44,7 @@ public class SupervisorDashBoardDto
     public Dictionary<string, double> AverageTaskDurations { get; set; }
     public Dictionary<string, Dictionary<Priority, int>> TaskPriorityDistributions { get; set; }
     public Dictionary<string, double> StudentContributions { get; set; }
+    public Dictionary<string, double> MaxTopicsOfCapstoneEachMajor { get; set; }
 }
 
 public class GroupTaskMetrics

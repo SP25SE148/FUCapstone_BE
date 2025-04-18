@@ -1437,7 +1437,9 @@ public class GroupService(
             GroupWithLowestOverdue = groupWithLowestOverdue,
             AverageTaskDurations = groupMetrics.ToDictionary(gm => gm.GroupCode, gm => gm.AverageTaskDuration),
             TaskPriorityDistributions = groupMetrics.ToDictionary(gm => gm.GroupCode, gm => gm.PriorityDistribution),
-            StudentContributions = studentContributions.ToDictionary(sc => sc.StudentId, sc => sc.TotalContribution)
+            StudentContributions = studentContributions.ToDictionary(sc => sc.StudentId, sc => sc.TotalContribution),
+            MaxTopicsOfCapstoneEachMajor = await systemConfigService
+                .GetMinimumTopicsByMajorId()
         };
     }
 

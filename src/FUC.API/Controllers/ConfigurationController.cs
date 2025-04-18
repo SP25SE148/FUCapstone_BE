@@ -76,6 +76,15 @@ public sealed class ConfigurationController : ApiController
         _systemConfigService.UpdateMaxAttemptTimesToReviewTopic(value);
         return Ok(OperationResult.Success());
     }
+
+    [HttpPost("estimate/minimum-topics")]
+    [Authorize(Roles = UserRoles.Admin)]
+    public async Task<IActionResult> EstimateMinimumTopics()
+    {
+        var result = await _systemConfigService.UpdateMininumTopicsPerCapstoneInEachCampus();
+
+        return result.IsSuccess ? Ok(result) : HandleFailure(result);  
+    }
     #endregion system_config
 
     #region time_config
