@@ -42,7 +42,7 @@ try
     builder.Services.AddSingleton(bucketConfiguration);
 
     builder.Services.Configure<SystemConfiguration>(builder.Configuration.GetSection("SystemConfiguration"));
-    builder.Services.AddSingleton<ISystemConfigurationService, SystemConfigurationService>();
+    builder.Services.AddScoped<ISystemConfigurationService, SystemConfigurationService>();
 
     // Add services to the container.
     builder.Services.AddServices();

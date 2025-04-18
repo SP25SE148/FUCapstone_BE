@@ -12,17 +12,17 @@ namespace FUC.Service.Services;
 public class SystemConfigurationService : ISystemConfigurationService
 {
     private readonly SystemConfiguration _config;
-    private readonly CapstoneService _capstoneService;
+    private readonly IRepository<Capstone> _capstoneRepository;
     private readonly ICurrentUser _currentUser;
     private readonly IRepository<Student> _studentRepository;
 
-    public SystemConfigurationService(IOptions<SystemConfiguration> options, 
-        CapstoneService capstoneService,
+    public SystemConfigurationService(IOptions<SystemConfiguration> options,
+        IRepository<Capstone> capstoneRepository,
         ICurrentUser currentUser,
         IRepository<Student> studentRepository)
     {
         _config = options.Value;
-        _capstoneService = capstoneService; 
+        _capstoneRepository = capstoneRepository;
         _currentUser = currentUser;
         _studentRepository = studentRepository;
     }
@@ -71,11 +71,11 @@ public class SystemConfigurationService : ISystemConfigurationService
     {
         var campus = _currentUser.CampusId;
 
-        var capstones = await _capstoneService.GetAllCapstonesAsync();
+        var capstones = await _capstoneRepository.GetAllAsync();
 
         var mininumTopicsPerCapstone = new Dictionary<string, double>();  
 
-        foreach (var capstone in capstones.Value)
+        foreach (var capstone in capstones)
         {
             var students = await _studentRepository.GetQueryable().Where(x => x.CapstoneId == capstone.Id).CountAsync();
 
@@ -91,14 +91,16 @@ public class SystemConfigurationService : ISystemConfigurationService
 
     public async Task<Dictionary<string, double>> GetMinimumTopicsByMajorId() 
     {
-        var capstonesByMajorResult = await _capstoneService.GetCapstonesByMajorIdAsync(_currentUser.MajorId);
+        var capstonesByMajor = await _capstoneRepository
+            .FindAsync(x => x.MajorId == _currentUser.MajorId,
+            include: null,
+            orderBy: null,
+            selector: x => x.Id);
 
-        if (capstonesByMajorResult.IsFailure) throw new InvalidOperationException();
-
-        var capstoneIds = capstonesByMajorResult.Value.Select(x => x.Id).ToList();
+        if (capstonesByMajor.Count == 0) throw new InvalidOperationException();
 
         return _config.MininumTopicsPerCapstoneInEachCampus[_currentUser.CampusId]
-            .Where(x => capstoneIds.Contains(x.Key))
+            .Where(x => capstonesByMajor.Contains(x.Key))
             .ToDictionary();
     } 
 }
