@@ -67,28 +67,47 @@ public class SystemConfigurationService : ISystemConfigurationService
         _config.SemanticTopicThroughSemesters = value;
     }
 
+    public void UpdateTimeConfigurationRemindInDaysBeforeDueDate(int value)
+    {
+        _config.TimeConfigurationRemindInDaysBeforeDueDate = value;
+    }
+
+    public void UpdateProjectProgressRemindInDaysBeforeDueDate(int value)
+    {
+        _config.ProjectProgressRemindInDaysBeforeDueDate = value;
+    }
+
     public async Task<OperationResult> UpdateMininumTopicsPerCapstoneInEachCampus()
     {
-        var campus = _currentUser.CampusId;
-
-        var capstones = await _capstoneRepository.GetAllAsync();
-
-        var mininumTopicsPerCapstone = new Dictionary<string, double>();  
-
-        foreach (var capstone in capstones)
+        try
         {
-            var students = await _studentRepository.GetQueryable().Where(x => x.CapstoneId == capstone.Id).CountAsync();
+            var campus = _currentUser.CampusId;
 
-            var topics = students / capstone.MinMember;
+            var capstones = await _capstoneRepository.GetAllAsync();
 
-            mininumTopicsPerCapstone[capstone.Id] = Math.Ceiling(topics + topics * 0.1);
+            var mininumTopicsPerCapstone = new Dictionary<string, double>();
+
+            foreach (var capstone in capstones)
+            {
+                var students = await _studentRepository.GetQueryable()
+                    .Where(x => x.CapstoneId == capstone.Id)
+                    .CountAsync();
+
+                var topics = students / (double)capstone.MinMember;
+
+                mininumTopicsPerCapstone[capstone.Id] = Math.Ceiling(topics + topics * 0.1);
+            }
+
+            var config = _config.MininumTopicsPerCapstoneInEachCampus;
+
+            config[campus] = mininumTopicsPerCapstone;
+
+            return OperationResult.Success();
         }
-
-        var config = _config.MininumTopicsPerCapstoneInEachCampus;
-
-        config.TryAdd(campus, mininumTopicsPerCapstone);
-
-        return OperationResult.Success();
+        catch (Exception)
+        {
+            return OperationResult.Failure(new Error("SystemConfig.Error", "Fail to estimate."));
+        }
     }
 
     public async Task<Dictionary<string, double>> GetMinimumTopicsByMajorId() 

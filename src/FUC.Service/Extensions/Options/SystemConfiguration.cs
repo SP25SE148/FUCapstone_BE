@@ -12,5 +12,7 @@ public class SystemConfiguration
     public int MaxAttemptTimesToDefendCapstone { get; set; } = 2;
     public int MaxAttemptTimesToReviewTopic { get; set; } = 3;
     public int SemanticTopicThroughSemesters { get; set; } = 3;
+    public int TimeConfigurationRemindInDaysBeforeDueDate { get; set; } = 3;
+    public int ProjectProgressRemindInDaysBeforeDueDate { get; set; } = 1;
     public ConcurrentDictionary<string, Dictionary<string, double>> MininumTopicsPerCapstoneInEachCampus { get; set; } = new(); // base on students
 }

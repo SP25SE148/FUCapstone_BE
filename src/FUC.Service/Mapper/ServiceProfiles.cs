@@ -33,7 +33,6 @@ public class ServiceProfiles : Profile
         // Semester mapping
         CreateMap<Semester, SemesterResponse>();
 
-
         // Student mapping
         CreateMap<Student, StudentResponseDTO>()
             .ForMember(s => s.MajorName, opt => opt.MapFrom(s => s.Major.Name))
@@ -41,10 +40,10 @@ public class ServiceProfiles : Profile
             .ForMember(s => s.CampusName, opt => opt.MapFrom(s => s.Campus.Name))
             .ForMember(s => s.Status, opt => opt.MapFrom(s => s.Status.ToString()))
             .ForMember(s => s.Gpa, opt => opt.MapFrom(s => s.GPA))
+            .ForMember(s => s.BusinessArea, opt => opt.MapFrom(s => s.BusinessArea.Name))
             .ForMember(s => s.Skills, opt => opt.MapFrom(s => s.Skills))
             .ForMember(s => s.IsHaveBeenJoinGroup,
                 opt => opt.MapFrom(s => s.GroupMembers.Any(gm => gm.Status.Equals(GroupMemberStatus.Accepted))));
-
 
         // Supervisor mapping
         CreateMap<Supervisor, SupervisorResponseDTO>()

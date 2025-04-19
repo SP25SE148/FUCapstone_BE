@@ -13,6 +13,8 @@ public interface ISystemConfigurationService
     void UpdateMaxAttemptTimesToDefendCapstone(int value);
     void UpdateMaxAttemptTimesToReviewTopic(int value);
     void UpdateSemanticTopicThroughSemesters(int value);
+    void UpdateTimeConfigurationRemindInDaysBeforeDueDate(int value);
+    void UpdateProjectProgressRemindInDaysBeforeDueDate(int value);
     Task<OperationResult> UpdateMininumTopicsPerCapstoneInEachCampus();
     Task<Dictionary<string, double>> GetMinimumTopicsByMajorId();
     double GetMinimumTopicsByMajorId(string majorId);

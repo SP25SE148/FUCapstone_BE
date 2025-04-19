@@ -85,6 +85,22 @@ public sealed class ConfigurationController : ApiController
         return Ok(OperationResult.Success());
     }
 
+    [HttpPatch("system/ProjectProgressRemindInDaysBeforeDueDate")]
+    [Authorize(Roles = UserRoles.SuperAdmin)]
+    public IActionResult UpdateProjectProgressRemindInDaysBeforeDueDate([FromBody] int value)
+    {
+        _systemConfigService.UpdateProjectProgressRemindInDaysBeforeDueDate(value);
+        return Ok(OperationResult.Success());
+    }
+
+    [HttpPatch("system/TimeConfigurationRemindInDaysBeforeDueDate")]
+    [Authorize(Roles = UserRoles.SuperAdmin)]
+    public IActionResult UpdateTimeConfigurationRemindInDaysBeforeDueDate([FromBody] int value)
+    {
+        _systemConfigService.UpdateTimeConfigurationRemindInDaysBeforeDueDate(value);
+        return Ok(OperationResult.Success());
+    }
+
     [HttpPost("estimate/minimum-topics")]
     [Authorize(Roles = UserRoles.Admin)]
     public async Task<IActionResult> EstimateMinimumTopics()

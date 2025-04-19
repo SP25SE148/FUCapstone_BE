@@ -17,6 +17,7 @@ public class TimeConfigurationService(
     IMapper mapper,
     IRepository<TimeConfiguration> repository,
     ISemesterService semesterService,
+    ISystemConfigurationService systemConfigurationService,
     IIntegrationEventLogService integrationEventLogService,
     IUnitOfWork<FucDbContext> unitOfWork) : ITimeConfigurationService
 {
@@ -149,7 +150,8 @@ public class TimeConfigurationService(
         {
             RequestId = timeConfig.Id,
             CampusId = currentUser.CampusId,
-            RemindInDaysBeforeDueDate = 3,
+            RemindInDaysBeforeDueDate = systemConfigurationService.GetSystemConfiguration()
+                .TimeConfigurationRemindInDaysBeforeDueDate,
             RemindTime = TimeSpan.FromHours(7),
             RegistTopicTimeConfigurationCreatedEvent = new RegistTopicTimeConfigurationCreatedEvent
             {

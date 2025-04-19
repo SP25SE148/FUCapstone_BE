@@ -853,7 +853,8 @@ public class GroupService(
                 ReminderType = nameof(FucTaskCreatedEvent),
                 NotificationFor = newTask.AssigneeId,
                 RemindTimeOnDueDate = TimeSpan.FromHours(7),
-                RemindInDaysBeforeDueDate = 1,
+                RemindInDaysBeforeDueDate = systemConfigService.GetSystemConfiguration()
+                    .ProjectProgressRemindInDaysBeforeDueDate,
                 DueDate = request.DueDate,
             });
 
