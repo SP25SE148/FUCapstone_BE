@@ -1,4 +1,6 @@
-﻿namespace FUC.Service.Extensions.Options;
+﻿using System.Collections.Concurrent;
+
+namespace FUC.Service.Extensions.Options;
 
 public class SystemConfiguration
 {
@@ -10,5 +12,5 @@ public class SystemConfiguration
     public int MaxAttemptTimesToDefendCapstone { get; set; } = 2;
     public int MaxAttemptTimesToReviewTopic { get; set; } = 3;
     public int SemanticTopicThroughSemesters { get; set; } = 3;
-    public Dictionary<string, Dictionary<string, double>> MininumTopicsPerCapstoneInEachCampus { get; set; } // base on students
+    public ConcurrentDictionary<string, Dictionary<string, double>> MininumTopicsPerCapstoneInEachCampus { get; set; } = new(); // base on students
 }

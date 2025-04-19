@@ -84,7 +84,9 @@ public class SystemConfigurationService : ISystemConfigurationService
             mininumTopicsPerCapstone[capstone.Id] = Math.Ceiling(topics + topics * 0.1);
         }
 
-        _config.MininumTopicsPerCapstoneInEachCampus[campus] = mininumTopicsPerCapstone;
+        var config = _config.MininumTopicsPerCapstoneInEachCampus;
+
+        config.TryAdd(campus, mininumTopicsPerCapstone);
 
         return OperationResult.Success();
     }
