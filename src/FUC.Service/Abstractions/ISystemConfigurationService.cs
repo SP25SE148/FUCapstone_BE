@@ -15,4 +15,5 @@ public interface ISystemConfigurationService
     void UpdateSemanticTopicThroughSemesters(int value);
     Task<OperationResult> UpdateMininumTopicsPerCapstoneInEachCampus();
     Task<Dictionary<string, double>> GetMinimumTopicsByMajorId();
+    double GetMinimumTopicsByMajorId(string majorId);
 }

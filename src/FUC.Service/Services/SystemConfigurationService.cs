@@ -94,16 +94,37 @@ public class SystemConfigurationService : ISystemConfigurationService
     public async Task<Dictionary<string, double>> GetMinimumTopicsByMajorId() 
     {
         var capstonesByMajor = await _capstoneRepository
-            .FindAsync(x => x.MajorId == _currentUser.MajorId,
+        .FindAsync(
+            x => _currentUser.MajorId == "all" || x.MajorId == _currentUser.MajorId,
             include: null,
             orderBy: null,
-            selector: x => x.Id);
+            selector: x => x.Id
+        );
 
-        if (capstonesByMajor.Count == 0) throw new InvalidOperationException();
+        if (capstonesByMajor.Count == 0)
+            throw new InvalidOperationException("No capstones found for the given major.");
 
-        return _config.MininumTopicsPerCapstoneInEachCampus[_currentUser.CampusId]
-            .Where(x => capstonesByMajor.Contains(x.Key))
-            .ToDictionary();
-    } 
+        var configForCampus = _config.MininumTopicsPerCapstoneInEachCampus
+            .GetValueOrDefault(_currentUser.CampusId);
+
+        if (configForCampus == null)
+            return new Dictionary<string, double>(); // or throw if you prefer
+
+        var result = configForCampus
+            .Where(x => x.Key != null && capstonesByMajor.Contains(x.Key))
+            .ToDictionary(x => x.Key, x => x.Value);
+
+        return result;
+    }
+
+    public double GetMinimumTopicsByMajorId(string majorId)
+    {
+        if (!_config.MininumTopicsPerCapstoneInEachCampus.TryGetValue(_currentUser.CampusId, out Dictionary<string, double>? value))
+            return 0;
+
+        var result = value.TryGetValue(majorId, out double maxTopics);
+
+        return result ? maxTopics : 0;  
+    }
 }
 

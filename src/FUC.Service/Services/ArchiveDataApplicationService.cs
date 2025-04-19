@@ -234,7 +234,8 @@ public class ArchiveDataApplicationService : IArchiveDataApplicationService
                 .ToDictionary(g => g.Key, g => g.Count()),
             TopicsInEachCapstone = topics
                 .GroupBy(x => x.CapstoneId)
-                .ToDictionary(g => g.Key, g => g.Count())
+                .ToDictionary(g => g.Key, g => g.Count()),
+            MaxTopicsOfCapstoneEachMajor = await _systemConfigurationService.GetMinimumTopicsByMajorId(),
         };
     }
 
@@ -323,8 +324,7 @@ public class ArchiveDataApplicationService : IArchiveDataApplicationService
             BestPerformingGroup = bestPerformingGroup,
             WorstPerformingGroup = worstPerformingGroup,
             TopicsPerSupervisor = topicsPerSupervisor,
-            MaxTopicsOfCapstone = _systemConfigurationService.GetSystemConfiguration()
-                .MininumTopicsPerCapstoneInEachCampus[_currentUser.CampusId][_currentUser.CapstoneId]
+            MaxTopicsOfCapstone = _systemConfigurationService.GetMinimumTopicsByMajorId(_currentUser.MajorId),
         };
     }
 }

@@ -20,9 +20,10 @@ public record class AdminDashBoardDto : DashBoardDto
 {
     public Dictionary<string, int> SupervisorsInEachMajor { get; set; }
     public Dictionary<string, int> TopicsInEachCapstone { get; set; }
+    public Dictionary<string, double> MaxTopicsOfCapstoneEachMajor { get; set; }
 }
 
-public record class ManagerDashBoardDto : DashBoardDto
+    public record class ManagerDashBoardDto : DashBoardDto
 {
     public Dictionary<string, int> TopicsInEachStatus { get; set; }
     public double AverageGroupSize { get; set; }
