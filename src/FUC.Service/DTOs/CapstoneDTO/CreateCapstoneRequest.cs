@@ -6,4 +6,5 @@ public sealed record CreateCapstoneRequest(
     string Name,
     int MinMember,
     int MaxMember,
-    int ReviewCount);
+    int ReviewCount,
+    int DurationWeeks);
