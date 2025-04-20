@@ -35,8 +35,6 @@ public class FucTaskConfiguration : IEntityTypeConfiguration<FucTask>
                 v => v.ToString(),
                 v => (Priority)Enum.Parse(typeof(Priority), v));
 
-        builder.Property(t => t.DueDate).IsRequired();
-
         builder.HasOne(t => t.ProjectProgress)
             .WithMany(p => p.FucTasks)
             .HasForeignKey(p => p.ProjectProgressId)  

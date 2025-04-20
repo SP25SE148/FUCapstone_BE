@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace FUC.Data.Migrations
 {
     /// <inheritdoc />
-    public partial class db_v1 : Migration
+    public partial class init_db : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -15,7 +15,7 @@ namespace FUC.Data.Migrations
                 name: "BusinessArea",
                 columns: table => new
                 {
-                    Id = table.Column<Guid>(type: "uuid", nullable: false, defaultValue: new Guid("8ccbf42e-e5c4-40a2-81dd-06c29afc79aa")),
+                    Id = table.Column<Guid>(type: "uuid", nullable: false, defaultValue: new Guid("9234ebb5-1c07-4b47-b945-44aebe6df92a")),
                     Name = table.Column<string>(type: "text", nullable: false),
                     Description = table.Column<string>(type: "text", nullable: false),
                     CreatedDate = table.Column<DateTime>(type: "timestamp", nullable: false),
@@ -111,7 +111,7 @@ namespace FUC.Data.Migrations
                 name: "TemplateDocument",
                 columns: table => new
                 {
-                    Id = table.Column<Guid>(type: "uuid", nullable: false, defaultValue: new Guid("c3443aeb-a5cb-46ce-af03-5b1f08b892dc")),
+                    Id = table.Column<Guid>(type: "uuid", nullable: false, defaultValue: new Guid("0840db53-e5b8-4d4d-abb8-4043027676ed")),
                     FileName = table.Column<string>(type: "text", nullable: false),
                     FileUrl = table.Column<string>(type: "text", nullable: false),
                     ParentId = table.Column<Guid>(type: "uuid", nullable: true),
@@ -244,7 +244,7 @@ namespace FUC.Data.Migrations
                 name: "ReviewCriteria",
                 columns: table => new
                 {
-                    Id = table.Column<Guid>(type: "uuid", nullable: false, defaultValue: new Guid("3fd62965-a0f2-4b29-bfb0-bc53a086dcf2")),
+                    Id = table.Column<Guid>(type: "uuid", nullable: false, defaultValue: new Guid("d4775841-394b-429e-abd0-ab7b94a11d44")),
                     CapstoneId = table.Column<string>(type: "text", nullable: false),
                     Attempt = table.Column<int>(type: "integer", nullable: false),
                     Name = table.Column<string>(type: "character varying(255)", maxLength: 255, nullable: false),
@@ -280,6 +280,7 @@ namespace FUC.Data.Migrations
                     CampusId = table.Column<string>(type: "text", nullable: false),
                     BusinessAreaId = table.Column<Guid>(type: "uuid", nullable: true),
                     Email = table.Column<string>(type: "text", nullable: false),
+                    Skills = table.Column<string>(type: "text", nullable: true),
                     GPA = table.Column<float>(type: "real", nullable: false),
                     Status = table.Column<string>(type: "text", nullable: false, defaultValue: "InProgress"),
                     CreatedDate = table.Column<DateTime>(type: "timestamp", nullable: false),
@@ -322,7 +323,7 @@ namespace FUC.Data.Migrations
                 name: "Topic",
                 columns: table => new
                 {
-                    Id = table.Column<Guid>(type: "uuid", nullable: false, defaultValue: new Guid("ee087e5a-14dd-402a-a51a-3627c05f5c56")),
+                    Id = table.Column<Guid>(type: "uuid", nullable: false, defaultValue: new Guid("60d5e2b7-4271-4033-a001-e39751a2a623")),
                     MainSupervisorId = table.Column<string>(type: "text", nullable: false),
                     CapstoneId = table.Column<string>(type: "text", nullable: false),
                     SemesterId = table.Column<string>(type: "text", nullable: false),
@@ -385,7 +386,7 @@ namespace FUC.Data.Migrations
                 name: "CoSupervisor",
                 columns: table => new
                 {
-                    Id = table.Column<Guid>(type: "uuid", nullable: false, defaultValue: new Guid("b245caf1-9c2e-4fd0-8fae-2f0550c2da90")),
+                    Id = table.Column<Guid>(type: "uuid", nullable: false, defaultValue: new Guid("a807d94f-dc3f-46f1-ac5c-0445d2563e30")),
                     SupervisorId = table.Column<string>(type: "text", nullable: false),
                     TopicId = table.Column<Guid>(type: "uuid", nullable: false),
                     CreatedDate = table.Column<DateTime>(type: "timestamp", nullable: false),
@@ -422,7 +423,7 @@ namespace FUC.Data.Migrations
                     CapstoneId = table.Column<string>(type: "text", nullable: false),
                     DefendAttempt = table.Column<int>(type: "integer", nullable: false),
                     Location = table.Column<string>(type: "text", nullable: false),
-                    Slot = table.Column<int>(type: "integer", nullable: false),
+                    Time = table.Column<string>(type: "text", nullable: false),
                     IsUploadedThesisMinute = table.Column<bool>(type: "boolean", nullable: false, defaultValue: false),
                     Status = table.Column<string>(type: "text", nullable: false, defaultValue: "NotStarted"),
                     DefenseDate = table.Column<DateTime>(type: "timestamp", nullable: false),
@@ -464,7 +465,7 @@ namespace FUC.Data.Migrations
                 name: "Group",
                 columns: table => new
                 {
-                    Id = table.Column<Guid>(type: "uuid", nullable: false, defaultValue: new Guid("96f869be-2763-424a-9746-c32ebdf5db7c")),
+                    Id = table.Column<Guid>(type: "uuid", nullable: false, defaultValue: new Guid("58c02444-57e2-428b-8a5c-4a97a29dd5a8")),
                     SemesterId = table.Column<string>(type: "text", nullable: false),
                     MajorId = table.Column<string>(type: "text", nullable: false),
                     CampusId = table.Column<string>(type: "text", nullable: false),
@@ -528,9 +529,9 @@ namespace FUC.Data.Migrations
                 name: "TopicAnalysis",
                 columns: table => new
                 {
-                    Id = table.Column<Guid>(type: "uuid", nullable: false, defaultValue: new Guid("42d54ac9-3f8a-4cd5-923a-0be29f903813")),
+                    Id = table.Column<Guid>(type: "uuid", nullable: false, defaultValue: new Guid("97eb0056-efa5-4d38-a0e2-29345389ff05")),
                     AnalysisResult = table.Column<string>(type: "text", nullable: false),
-                    CreatedDate = table.Column<DateTime>(type: "timestamp", nullable: false, defaultValue: new DateTime(2025, 4, 12, 23, 7, 7, 36, DateTimeKind.Local).AddTicks(8368)),
+                    CreatedDate = table.Column<DateTime>(type: "timestamp", nullable: false, defaultValue: new DateTime(2025, 4, 20, 19, 54, 11, 76, DateTimeKind.Local).AddTicks(9877)),
                     ProcessedBy = table.Column<string>(type: "text", nullable: false),
                     TopicId = table.Column<Guid>(type: "uuid", nullable: false)
                 },
@@ -549,7 +550,7 @@ namespace FUC.Data.Migrations
                 name: "TopicAppraisal",
                 columns: table => new
                 {
-                    Id = table.Column<Guid>(type: "uuid", nullable: false, defaultValue: new Guid("6e861ba6-0d86-4be1-a675-6e598e17154f")),
+                    Id = table.Column<Guid>(type: "uuid", nullable: false, defaultValue: new Guid("d706af42-41c8-40d0-88b2-9f84c40d8c44")),
                     SupervisorId = table.Column<string>(type: "text", nullable: false),
                     TopicId = table.Column<Guid>(type: "uuid", nullable: false),
                     AttemptTime = table.Column<int>(type: "integer", nullable: false),
@@ -645,7 +646,7 @@ namespace FUC.Data.Migrations
                 name: "GroupMember",
                 columns: table => new
                 {
-                    Id = table.Column<Guid>(type: "uuid", nullable: false, defaultValue: new Guid("9fd01583-3db2-4728-bea0-25d7dc7c711c")),
+                    Id = table.Column<Guid>(type: "uuid", nullable: false, defaultValue: new Guid("c3503e5b-ef0f-421e-a191-937358331c31")),
                     GroupId = table.Column<Guid>(type: "uuid", nullable: false),
                     StudentId = table.Column<string>(type: "text", nullable: false),
                     IsLeader = table.Column<bool>(type: "boolean", nullable: false),
@@ -738,14 +739,14 @@ namespace FUC.Data.Migrations
                 name: "ReviewCalendar",
                 columns: table => new
                 {
-                    Id = table.Column<Guid>(type: "uuid", nullable: false, defaultValue: new Guid("2ea3f362-2db7-42c5-9a14-97e18f7126e3")),
+                    Id = table.Column<Guid>(type: "uuid", nullable: false, defaultValue: new Guid("09936755-bdd4-4d9b-87ab-10c0d9f78596")),
                     TopicId = table.Column<Guid>(type: "uuid", nullable: false),
                     GroupId = table.Column<Guid>(type: "uuid", nullable: false),
                     MajorId = table.Column<string>(type: "text", nullable: false),
                     CampusId = table.Column<string>(type: "text", nullable: false),
                     SemesterId = table.Column<string>(type: "text", nullable: false),
                     Attempt = table.Column<int>(type: "integer", nullable: false),
-                    Slot = table.Column<int>(type: "integer", nullable: false),
+                    Time = table.Column<string>(type: "text", nullable: false),
                     Room = table.Column<string>(type: "text", nullable: false),
                     Date = table.Column<DateTime>(type: "timestamp", nullable: false),
                     Status = table.Column<string>(type: "text", nullable: false, defaultValue: "Pending"),
@@ -795,7 +796,7 @@ namespace FUC.Data.Migrations
                 name: "TopicRequest",
                 columns: table => new
                 {
-                    Id = table.Column<Guid>(type: "uuid", nullable: false, defaultValue: new Guid("c0061bc3-5939-4cb7-9c0b-6a8f6b333bb1")),
+                    Id = table.Column<Guid>(type: "uuid", nullable: false, defaultValue: new Guid("eded75ae-7b6c-4443-98a2-04f924ae57f7")),
                     SupervisorId = table.Column<string>(type: "text", nullable: false),
                     GroupId = table.Column<Guid>(type: "uuid", nullable: false),
                     TopicId = table.Column<Guid>(type: "uuid", nullable: false),
@@ -865,7 +866,7 @@ namespace FUC.Data.Migrations
                 name: "Reviewer",
                 columns: table => new
                 {
-                    Id = table.Column<Guid>(type: "uuid", nullable: false, defaultValue: new Guid("a4c73af3-981c-488e-82d8-1536918012f1")),
+                    Id = table.Column<Guid>(type: "uuid", nullable: false, defaultValue: new Guid("6df5f929-8695-462b-b157-b2063a249e36")),
                     SupervisorId = table.Column<string>(type: "text", nullable: false),
                     ReviewCalenderId = table.Column<Guid>(type: "uuid", nullable: false),
                     Suggestion = table.Column<string>(type: "character varying(500)", maxLength: 500, nullable: true),

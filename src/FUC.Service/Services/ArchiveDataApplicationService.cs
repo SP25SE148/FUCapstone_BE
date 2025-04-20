@@ -276,11 +276,19 @@ public class ArchiveDataApplicationService : IArchiveDataApplicationService
             .Include(group => group.GroupMembers)
             .ToListAsync(cancellationToken: cancellationToken);
 
-        var totalTasks = groups.Sum(g => g.ProjectProgress.FucTasks.Count);
-        var completedTasks = groups.Sum(g => g.ProjectProgress.FucTasks.Count(t => t.Status == FucTaskStatus.Done));
+        var totalTasks = groups.Sum(g => g.ProjectProgress?.FucTasks?.Count ?? 0);
+
+        var completedTasks = groups.Sum(g =>
+            g.ProjectProgress?.FucTasks?.Count(t => t.Status == FucTaskStatus.Done) ?? 0);
+
         var overdueTasks = groups.Sum(g =>
-            g.ProjectProgress.FucTasks.Count(t => t.DueDate < DateTime.Now && t.Status != FucTaskStatus.Done));
-        var averageGroupSize = groups.Count > 0 ? groups.Where(x => x.GroupMembers != null && x.GroupMembers.Count > 0).Average(g => g.GroupMembers.Count) : 0;
+            g.ProjectProgress?.FucTasks?
+            .Count(t => t.DueDate < DateTime.Now && t.Status != FucTaskStatus.Done) ?? 0);
+
+        var averageGroupSize = groups.Count > 0 ? 
+            groups.Where(x => x.GroupMembers != null && x.GroupMembers.Count > 0)
+            .Average(g => g.GroupMembers.Count) : 0;
+
         var taskCompletionRate = totalTasks > 0 ? (double)completedTasks / totalTasks : 0;
 
         var bestPerformingGroup = groups
@@ -288,10 +296,12 @@ public class ArchiveDataApplicationService : IArchiveDataApplicationService
             {
                 GroupId = g.Id,
                 GroupCode = g.GroupCode,
-                TotalTasks = g.ProjectProgress.FucTasks.Count,
-                CompletedTasks = g.ProjectProgress.FucTasks.Count(t => t.Status == FucTaskStatus.Done),
+                TotalTasks = g.ProjectProgress?.FucTasks?.Count ?? 0,
+                CompletedTasks = g.ProjectProgress?.FucTasks?
+                    .Count(t => t.Status == FucTaskStatus.Done) ?? 0,
                 OverdueTasks =
-                    g.ProjectProgress.FucTasks.Count(t => t.DueDate < DateTime.Now && t.Status != FucTaskStatus.Done)
+                    g.ProjectProgress?.FucTasks?
+                    .Count(t => t.DueDate < DateTime.Now && t.Status != FucTaskStatus.Done) ?? 0
             })
             .OrderByDescending(gm => gm.CompletedTasks)
             .FirstOrDefault();
@@ -301,10 +311,12 @@ public class ArchiveDataApplicationService : IArchiveDataApplicationService
             {
                 GroupId = g.Id,
                 GroupCode = g.GroupCode,
-                TotalTasks = g.ProjectProgress.FucTasks.Count,
-                CompletedTasks = g.ProjectProgress.FucTasks.Count(t => t.Status == FucTaskStatus.Done),
+                TotalTasks = g.ProjectProgress?.FucTasks?.Count ?? 0,
+                CompletedTasks = g.ProjectProgress?.FucTasks?
+                    .Count(t => t.Status == FucTaskStatus.Done) ?? 0,
                 OverdueTasks =
-                    g.ProjectProgress.FucTasks.Count(t => t.DueDate < DateTime.Now && t.Status != FucTaskStatus.Done)
+                    g.ProjectProgress?.FucTasks?
+                    .Count(t => t.DueDate < DateTime.Now && t.Status != FucTaskStatus.Done) ?? 0
             })
             .OrderBy(gm => gm.CompletedTasks)
             .FirstOrDefault();
