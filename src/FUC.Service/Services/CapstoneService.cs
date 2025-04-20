@@ -9,7 +9,8 @@ using FUC.Service.DTOs.CapstoneDTO;
 
 namespace FUC.Service.Services;
 
-public sealed class CapstoneService(IUnitOfWork<FucDbContext> uow,
+public sealed class CapstoneService(
+    IUnitOfWork<FucDbContext> uow,
     IRepository<Capstone> capstoneRepository,
     IMapper mapper) : ICapstoneService
 {
@@ -30,7 +31,9 @@ public sealed class CapstoneService(IUnitOfWork<FucDbContext> uow,
             MajorId = request.MajorId,
             Name = request.Name,
             MinMember = request.MinMember,
-            MaxMember = request.MaxMember
+            MaxMember = request.MaxMember,
+            ReviewCount = request.ReviewCount,
+            DurationWeeks = request.DurationWeeks
         };
 
         capstoneRepository.Insert(capstone);
@@ -99,7 +102,7 @@ public sealed class CapstoneService(IUnitOfWork<FucDbContext> uow,
     public async Task<OperationResult> DeleteCapstoneAsync(string capstoneId)
     {
         Capstone? capstone = await capstoneRepository.GetAsync(
-            predicate: c => c.Id == capstoneId, 
+            predicate: c => c.Id == capstoneId,
             cancellationToken: default);
 
         if (capstone is null) return OperationResult.Failure<Capstone>(Error.NullValue);
@@ -117,8 +120,8 @@ public sealed class CapstoneService(IUnitOfWork<FucDbContext> uow,
     public async Task<OperationResult<int>> GetMaxMemberByCapstoneId(string capstoneId)
     {
         var capstone = await capstoneRepository
-            .GetAsync(c => c.Id == capstoneId, 
-            default);
+            .GetAsync(c => c.Id == capstoneId,
+                default);
 
         return capstone?.MaxMember ?? OperationResult.Failure<int>(Error.NullValue);
     }
