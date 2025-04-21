@@ -47,7 +47,6 @@ public class GroupController(
     {
         var result = await groupService.UpdateGroupStatusAsync();
 
-
         return result.IsSuccess
             ? Ok(result)
             : HandleFailure(result);
