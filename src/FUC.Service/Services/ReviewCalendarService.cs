@@ -46,6 +46,15 @@ public sealed class ReviewCalendarService(
             return OperationResult.Failure(new Error("Error.SemesterIsNotGoingOn",
                 "The current semester is not going on"));
 
+        if (currentSemester.Value.TimeConfiguration != null &&
+            currentSemester.Value.TimeConfiguration.IsActived &&
+            (currentSemester.Value.TimeConfiguration.ReviewAttemptDate > DateTime.Now
+             || currentSemester.Value.TimeConfiguration.ReviewAttemptExpiredDate < DateTime.Now))
+            return OperationResult.Failure<Guid>(new Error("CreateFailed",
+                "Must import the review for group on available time. The time that you can import the review calendar file is from " +
+                currentSemester.Value.TimeConfiguration.ReviewAttemptDate + " to " +
+                currentSemester.Value.TimeConfiguration.ReviewAttemptExpiredDate));
+
         try
         {
             var reviewCalendars =

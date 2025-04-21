@@ -63,6 +63,14 @@ public class GroupService(
             return OperationResult.Failure<Guid>(new Error("Error.SemesterIsNotGoingOn",
                 "The current semester is not going on"));
 
+        if (currentSemester.Value.TimeConfiguration != null && currentSemester.Value.TimeConfiguration.IsActived &&
+            currentSemester.Value.TimeConfiguration.TeamUpDate > DateTime.Now ||
+            currentSemester.Value.TimeConfiguration.TeamUpExpirationDate < DateTime.Now)
+            return OperationResult.Failure<Guid>(new Error("CreateFailed",
+                "Must team up on available time. The time that you can team up is from " +
+                currentSemester.Value.TimeConfiguration.TeamUpDate + " to " +
+                currentSemester.Value.TimeConfiguration.TeamUpExpirationDate));
+
         Student? leader = await studentRepository.GetAsync(
             predicate: s =>
                 s.Id == currentUser.UserCode &&
@@ -278,6 +286,19 @@ public class GroupService(
 
     public async Task<OperationResult> UpdateGroupStatusAsync()
     {
+        OperationResult<Semester> currentSemester = await semesterService.GetCurrentSemesterAsync();
+        if (currentSemester.IsFailure)
+            return OperationResult.Failure<Guid>(new Error("Error.SemesterIsNotGoingOn",
+                "The current semester is not going on"));
+
+        if (currentSemester.Value.TimeConfiguration != null && currentSemester.Value.TimeConfiguration.IsActived &&
+            (currentSemester.Value.TimeConfiguration.TeamUpDate > DateTime.Now ||
+             currentSemester.Value.TimeConfiguration.TeamUpExpirationDate < DateTime.Now))
+            return OperationResult.Failure<Guid>(new Error("CreateFailed",
+                "Must team up on available time. The time that you can team up is from " +
+                currentSemester.Value.TimeConfiguration.TeamUpDate + " to " +
+                currentSemester.Value.TimeConfiguration.TeamUpExpirationDate));
+
         var capstone = await capstoneService.GetCapstoneByIdAsync(currentUser.CapstoneId);
 
         var groupId =
@@ -381,16 +402,19 @@ public class GroupService(
     {
         try
         {
-            var timeConfig = await timeConfigurationService.GetCurrentTimeConfiguration(currentUser.CampusId);
+            OperationResult<Semester> currentSemester = await semesterService.GetCurrentSemesterAsync();
+            if (currentSemester.IsFailure)
+                return OperationResult.Failure<Guid>(new Error("Error.SemesterIsNotGoingOn",
+                    "The current semester is not going on"));
 
-            if (timeConfig.IsFailure)
-                return OperationResult.Failure<Guid>(timeConfig.Error);
-
-            if (timeConfig.Value.IsActived &&
-                (timeConfig.Value.RegistTopicDate > DateTime.Now ||
-                 timeConfig.Value.RegistTopicExpiredDate < DateTime.Now))
-                return OperationResult.Failure<Guid>(new Error("TopicRequest.Error",
-                    "You need request topic in right time."));
+            if (currentSemester.Value.TimeConfiguration != null &&
+                currentSemester.Value.TimeConfiguration.IsActived &&
+                (currentSemester.Value.TimeConfiguration.RegistTopicForGroupDate > DateTime.Now
+                 || currentSemester.Value.TimeConfiguration.RegistTopicForGroupExpiredDate < DateTime.Now))
+                return OperationResult.Failure<Guid>(new Error("CreateFailed",
+                    "Must regist topic on available time. The time that you can regist topic is from " +
+                    currentSemester.Value.TimeConfiguration.RegistTopicForGroupDate + " to " +
+                    currentSemester.Value.TimeConfiguration.RegistTopicForGroupExpiredDate));
 
             var groupMember = await groupMemberRepository
                 .GetAsync(
@@ -546,6 +570,21 @@ public class GroupService(
 
     public async Task<OperationResult> UpdateTopicRequestStatusAsync(UpdateTopicRequestStatusRequest request)
     {
+        OperationResult<Semester> currentSemester = await semesterService.GetCurrentSemesterAsync();
+        if (currentSemester.IsFailure)
+            return OperationResult.Failure<Guid>(new Error("Error.SemesterIsNotGoingOn",
+                "The current semester is not going on"));
+
+        if (currentSemester.Value.TimeConfiguration != null &&
+            currentSemester.Value.TimeConfiguration.IsActived &&
+            (currentSemester.Value.TimeConfiguration.RegistTopicForGroupDate > DateTime.Now
+             || currentSemester.Value.TimeConfiguration.RegistTopicForGroupExpiredDate < DateTime.Now))
+            return OperationResult.Failure<Guid>(new Error("CreateFailed",
+                "Must do this action on available time. The time that you can accept/reject topic request is from " +
+                currentSemester.Value.TimeConfiguration.RegistTopicForGroupDate + " to " +
+                currentSemester.Value.TimeConfiguration.RegistTopicForGroupExpiredDate));
+
+
         var topicRequest = await topicRequestRepository.GetAsync(tr => tr.Id.Equals(request.TopicRequestId) &&
                                                                        tr.SupervisorId == currentUser.UserCode,
             true,

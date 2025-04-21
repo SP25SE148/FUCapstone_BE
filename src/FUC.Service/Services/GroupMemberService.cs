@@ -19,6 +19,7 @@ public class GroupMemberService(
     IUnitOfWork<FucDbContext> uow,
     IIntegrationEventLogService integrationEventLogService,
     IGroupService groupService,
+    ISemesterService semesterService,
     IRepository<Group> groupRepository,
     ICurrentUser currentUser,
     ILogger<GroupMemberService> logger,
@@ -33,6 +34,19 @@ public class GroupMemberService(
     {
         try
         {
+            OperationResult<Semester> currentSemester = await semesterService.GetCurrentSemesterAsync();
+            if (currentSemester.IsFailure)
+                return OperationResult.Failure<Guid>(new Error("Error.SemesterIsNotGoingOn",
+                    "The current semester is not going on"));
+
+            if (currentSemester.Value.TimeConfiguration != null && currentSemester.Value.TimeConfiguration.IsActived &&
+                (currentSemester.Value.TimeConfiguration.TeamUpDate > DateTime.Now ||
+                 currentSemester.Value.TimeConfiguration.TeamUpExpirationDate < DateTime.Now))
+                return OperationResult.Failure<Guid>(new Error("CreateFailed",
+                    "Must team up on available time. The time that you can team up is from " +
+                    currentSemester.Value.TimeConfiguration.TeamUpDate + " to " +
+                    currentSemester.Value.TimeConfiguration.TeamUpExpirationDate));
+
             Student? leader = await studentRepository.GetAsync(
                 predicate: s =>
                     s.Id == currentUser.UserCode &&
@@ -403,6 +417,19 @@ public class GroupMemberService(
     {
         try
         {
+            OperationResult<Semester> currentSemester = await semesterService.GetCurrentSemesterAsync();
+            if (currentSemester.IsFailure)
+                return OperationResult.Failure<Guid>(new Error("Error.SemesterIsNotGoingOn",
+                    "The current semester is not going on"));
+
+            if (currentSemester.Value.TimeConfiguration != null && currentSemester.Value.TimeConfiguration.IsActived &&
+                (currentSemester.Value.TimeConfiguration.TeamUpDate > DateTime.Now ||
+                 currentSemester.Value.TimeConfiguration.TeamUpExpirationDate < DateTime.Now))
+                return OperationResult.Failure<Guid>(new Error("CreateFailed",
+                    "Must team up on available time. The time that you can team up is from " +
+                    currentSemester.Value.TimeConfiguration.TeamUpDate + " to " +
+                    currentSemester.Value.TimeConfiguration.TeamUpExpirationDate));
+
             var group = await groupService.GetGroupByIdAsync(request.GroupId);
             if (group.IsFailure)
             {

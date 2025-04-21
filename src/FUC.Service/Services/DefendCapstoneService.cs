@@ -43,10 +43,20 @@ public class DefendCapstoneService(
 
         try
         {
+            // get current semester 
             var currentSemester = await semesterService.GetCurrentSemesterAsync();
-
             if (currentSemester.IsFailure)
-                return OperationResult.Failure(new Error("ImportFailed", "Current semester is not on going!!"));
+                return OperationResult.Failure(new Error("Error.SemesterIsNotGoingOn",
+                    "The current semester is not going on"));
+
+            if (currentSemester.Value.TimeConfiguration != null &&
+                currentSemester.Value.TimeConfiguration.IsActived &&
+                (currentSemester.Value.TimeConfiguration.DefendCapstoneProjectDate > DateTime.Now
+                 || currentSemester.Value.TimeConfiguration.DefendCapstoneProjectExpiredDate < DateTime.Now))
+                return OperationResult.Failure<Guid>(new Error("CreateFailed",
+                    "Must import the defend calendar for group on available time. The time that you can import the defend calendar file is from " +
+                    currentSemester.Value.TimeConfiguration.DefendCapstoneProjectDate + " to " +
+                    currentSemester.Value.TimeConfiguration.DefendCapstoneProjectExpiredDate));
 
             var defendCalendars =
                 await ParseDefendCapstoneCalendarsFromFile(file, currentSemester.Value.Id, cancellationToken);

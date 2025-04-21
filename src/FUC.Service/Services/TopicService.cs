@@ -75,7 +75,7 @@ public class TopicService(
                 .Include(x => x.Capstone)
                 .Include(x => x.BusinessArea)
                 .Include(x => x.CoSupervisors)
-                    .ThenInclude(c => c.Supervisor)
+                .ThenInclude(c => c.Supervisor)
                 .Include(x => x.TopicAppraisals),
             null,
             cancellationToken);
@@ -84,7 +84,8 @@ public class TopicService(
             return OperationResult.Failure<TopicResponse>(new Error("Topic.Error", "Topic does not exist."));
 
         if (topic.CampusId != currentUser.CampusId || topic.Capstone.MajorId != currentUser.MajorId)
-            return OperationResult.Failure<TopicResponse>(new Error("Topic.Error", "This topic is not on your progress."));
+            return OperationResult.Failure<TopicResponse>(new Error("Topic.Error",
+                "This topic is not on your progress."));
 
         return
             OperationResult.Success(new TopicResponse
@@ -113,19 +114,19 @@ public class TopicService(
                     SupervisorName = x.Supervisor.FullName,
                 }).ToList(),
                 TopicAppraisals = topic.TopicAppraisals.Select(x => new TopicAppraisalDto
-                {
-                    AppraisalComment = x.AppraisalComment,
-                    AppraisalContent = x.AppraisalContent,
-                    AppraisalDate = x.AppraisalDate,
-                    AttemptTime = x.AttemptTime,
-                    CreatedDate = x.CreatedDate,
-                    Status = x.Status,
-                    SupervisorId = x.SupervisorId,
-                    TopicAppraisalId = x.Id,
-                    TopicId = x.TopicId,
-                })
-                .OrderByDescending(x => x.AttemptTime)
-                .ToList(),
+                    {
+                        AppraisalComment = x.AppraisalComment,
+                        AppraisalContent = x.AppraisalContent,
+                        AppraisalDate = x.AppraisalDate,
+                        AttemptTime = x.AttemptTime,
+                        CreatedDate = x.CreatedDate,
+                        Status = x.Status,
+                        SupervisorId = x.SupervisorId,
+                        TopicAppraisalId = x.Id,
+                        TopicId = x.TopicId,
+                    })
+                    .OrderByDescending(x => x.AttemptTime)
+                    .ToList(),
                 CreatedDate = topic.CreatedDate,
             });
     }
@@ -148,9 +149,9 @@ public class TopicService(
             var groupOfStudent = await groupRepository.GetAsync(
                 x => x.GroupMembers
                     .Any(x => x.StudentId == currentUser.UserCode &&
-                         x.Status == GroupMemberStatus.Accepted),
+                              x.Status == GroupMemberStatus.Accepted),
                 include: x => x.Include(x => x.GroupMembers.Where(x => x.Status == GroupMemberStatus.Accepted))
-                           .ThenInclude(x => x.Student),
+                    .ThenInclude(x => x.Student),
                 cancellationToken: default);
 
             averageGpa = groupOfStudent != null ? groupOfStudent.GPA : 0;
@@ -169,11 +170,11 @@ public class TopicService(
                 (request.MainSupervisorEmail == "all" ||
                  x.MainSupervisor.Email == request.MainSupervisorEmail) &&
                 (string.IsNullOrEmpty(searchTerm) ||
-                x.Code != null && x.Code.ToLower().Contains(searchTerm) ||
-                x.EnglishName.ToLower().Contains(searchTerm) ||
-                x.VietnameseName.ToLower().Contains(searchTerm) ||
-                x.Abbreviation.ToLower().Contains(searchTerm) ||
-                x.Description.ToLower().Contains(searchTerm)) &&
+                 x.Code != null && x.Code.ToLower().Contains(searchTerm) ||
+                 x.EnglishName.ToLower().Contains(searchTerm) ||
+                 x.VietnameseName.ToLower().Contains(searchTerm) ||
+                 x.Abbreviation.ToLower().Contains(searchTerm) ||
+                 x.Description.ToLower().Contains(searchTerm)) &&
                 (request.BusinessAreaId == "all" || x.BusinessAreaId == Guid.Parse(request.BusinessAreaId)) &&
                 (request.DifficultyLevel == "all" ||
                  x.DifficultyLevel == Enum.Parse<DifficultyLevel>(request.DifficultyLevel, true)) &&
@@ -186,8 +187,8 @@ public class TopicService(
             request.PageSize,
             x => x
                 .OrderBy(x => currentUser.Role == UserRoles.Student && averageGpa != null
-                ? Math.Abs((int)x.DifficultyLevel - targetDifficulty)
-                : 0)
+                    ? Math.Abs((int)x.DifficultyLevel - targetDifficulty)
+                    : 0)
                 .ThenByDescending(x => businessArea != null && x.BusinessAreaId == businessArea)
                 .ThenByDescending(x => x.CreatedDate)
                 .ThenBy(x => x.Abbreviation),
@@ -513,8 +514,8 @@ public class TopicService(
 
             var semesterIds = withCurrentSemester
                 ? new List<string> { currentSemester.Value.Id }
-                : await semesterService.GetPreviouseSemesterIds(currentSemester.Value.StartDate, 
-                systemConfigService.GetSystemConfiguration().SemanticTopicThroughSemesters);
+                : await semesterService.GetPreviouseSemesterIds(currentSemester.Value.StartDate,
+                    systemConfigService.GetSystemConfiguration().SemanticTopicThroughSemesters);
 
             integrationEventLogService.SendEvent(new SemanticTopicEvent
             {
@@ -541,6 +542,19 @@ public class TopicService(
     public async Task<OperationResult<Guid>> CreateTopic(CreateTopicRequest request,
         CancellationToken cancellationToken)
     {
+        OperationResult<Semester> currentSemester = await semesterService.GetCurrentSemesterAsync();
+        if (currentSemester.IsFailure)
+            return OperationResult.Failure<Guid>(new Error("Error.SemesterIsNotGoingOn",
+                "The current semester is not going on"));
+
+        if (currentSemester.Value.TimeConfiguration != null && currentSemester.Value.TimeConfiguration.IsActived &&
+            (currentSemester.Value.TimeConfiguration.RegistTopicForSupervisorDate > DateTime.Now ||
+             currentSemester.Value.TimeConfiguration.RegistTopicForSupervisorExpiredDate < DateTime.Now))
+            return OperationResult.Failure<Guid>(new Error("CreateFailed",
+                "Must regist topic on available time. The time that you can regist topic is from " +
+                currentSemester.Value.TimeConfiguration.RegistTopicForSupervisorDate + " to " +
+                currentSemester.Value.TimeConfiguration.RegistTopicForSupervisorExpiredDate));
+
         var mainSupervisor = await supervisorRepository.GetAsync(s => s.Email == currentUser.Email, cancellationToken);
 
         if (mainSupervisor == null)
@@ -625,7 +639,7 @@ public class TopicService(
             {
                 TopicId = topic.Id.ToString(),
                 TopicEnglishName = request.EnglishName,
-                SemesterIds = await semesterService.GetPreviouseSemesterIds(getCurrentSemesterResult.Value.StartDate, 
+                SemesterIds = await semesterService.GetPreviouseSemesterIds(getCurrentSemesterResult.Value.StartDate,
                     systemConfigService.GetSystemConfiguration().SemanticTopicThroughSemesters),
                 ProcessedBy = currentUser.UserCode,
                 IsCurrentSemester = false,
@@ -863,11 +877,11 @@ public class TopicService(
             }
 
             var supervisorIdList = await (from s in supervisorRepository.GetQueryable()
-                                          where supervisorEmail.Contains(s.Email) &&
-                                                s.IsAvailable &&
-                                                s.MajorId == currentUser.MajorId &&
-                                                s.CampusId == currentUser.CampusId
-                                          select s.Id).ToListAsync(cancellationToken);
+                where supervisorEmail.Contains(s.Email) &&
+                      s.IsAvailable &&
+                      s.MajorId == currentUser.MajorId &&
+                      s.CampusId == currentUser.CampusId
+                select s.Id).ToListAsync(cancellationToken);
 
             if (supervisorIdList.Count == 0)
             {
@@ -1023,8 +1037,10 @@ public class TopicService(
                 newAttempTime++;
             }
 
-            if (topic.TopicAppraisals.Exists(x => x.AttemptTime == newAttempTime && x.SupervisorId == request.SupervisorId))
-                return OperationResult.Failure(new Error("Topic.Error", $"{request.SupervisorId} was in this topic's appraisals."));
+            if (topic.TopicAppraisals.Exists(x =>
+                    x.AttemptTime == newAttempTime && x.SupervisorId == request.SupervisorId))
+                return OperationResult.Failure(new Error("Topic.Error",
+                    $"{request.SupervisorId} was in this topic's appraisals."));
 
             await unitOfWork.BeginTransactionAsync(cancellationToken);
 
@@ -1415,9 +1431,9 @@ public class TopicService(
         var result = new List<(string, string)>();
 
         var query = from s in supervisorRepository.GetQueryable()
-                    where coSupervisorEmails.Contains(s.Email) &&
-                          s.CoSupervisors.Count < systemConfigService.GetSystemConfiguration().MaxTopicsForCoSupervisors
-                    select new { s.Id, s.Email };
+            where coSupervisorEmails.Contains(s.Email) &&
+                  s.CoSupervisors.Count < systemConfigService.GetSystemConfiguration().MaxTopicsForCoSupervisors
+            select new { s.Id, s.Email };
 
         (await query.ToListAsync(cancellationToken))
             .ForEach(s => result.Add((s.Id.ToString(), s.Email)));
@@ -1438,12 +1454,12 @@ public class TopicService(
     public async Task<OperationResult<List<BusinessAreaResponse>>> GetAllBusinessAreas()
     {
         var queryable = from ba in businessRepository.GetQueryable()
-                        select new BusinessAreaResponse
-                        {
-                            Id = ba.Id,
-                            Description = ba.Description,
-                            Name = ba.Name
-                        };
+            select new BusinessAreaResponse
+            {
+                Id = ba.Id,
+                Description = ba.Description,
+                Name = ba.Name
+            };
         var businessAreas = await queryable.ToListAsync();
 
         return OperationResult.Success(businessAreas);
