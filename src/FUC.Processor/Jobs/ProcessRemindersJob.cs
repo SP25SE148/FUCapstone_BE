@@ -16,7 +16,6 @@ namespace FUC.Processor.Jobs;
 public class ProcessRemindersJob : IJob
 {
     private readonly ILogger<ProcessRemindersJob> _logger;
-    private readonly IIntegrationEventLogService _integrationEventLogService;
     private readonly IEmailService _emailService;
     private readonly IHubContext<NotificationHub, INotificationClient> _hub;
     private readonly UsersTracker _usersTracker;
@@ -29,7 +28,6 @@ public class ProcessRemindersJob : IJob
     {
         _logger = logger;
         _usersTracker = usersTracker;
-        _integrationEventLogService = serviceProvider.GetRequiredService<IIntegrationEventLogService>();
         _hub = serviceProvider.GetRequiredService<IHubContext<NotificationHub, INotificationClient>>();
         _emailService = serviceProvider.GetRequiredService<IEmailService>();
         _serviceScopeFactory = serviceScopeFactory;
@@ -55,6 +53,7 @@ public class ProcessRemindersJob : IJob
         using var scope = _serviceScopeFactory.CreateScope();
 
         var _processorDbContext = scope.ServiceProvider.GetRequiredService<ProcessorDbContext>();
+        using var integrationEventLogService = new IntegrationEventLogService<ProcessorDbContext>(_processorDbContext);
 
         try
         {
@@ -62,8 +61,10 @@ public class ProcessRemindersJob : IJob
 
             await _processorDbContext.Database.BeginTransactionAsync(cancellationToken);
 
+            var now = DateTime.Now; 
+
             var reminders = await _processorDbContext.Reminders
-                .Where(r => r.RemindDate <= DateTime.Now)
+                .Where(r => r.RemindDate <= now)
                 .Take(100)
                 .ToListAsync(cancellationToken);
 
@@ -77,7 +78,7 @@ public class ProcessRemindersJob : IJob
 
             foreach (var reminder in reminders)
             {
-                await ProcessReminderAsync(reminder, reminderedQueue, _processorDbContext, cancellationToken);
+                await ProcessReminderAsync(reminder, reminderedQueue, _processorDbContext, integrationEventLogService, cancellationToken);
             }
 
             if (!reminderedQueue.IsEmpty)
@@ -156,6 +157,7 @@ public class ProcessRemindersJob : IJob
     private async Task ProcessReminderAsync(Reminder reminder,
         ConcurrentQueue<Guid> reminderedQueue,
         ProcessorDbContext processorDbContext,
+        IIntegrationEventLogService integrationEventLogService,
         CancellationToken cancellationToken)
     {
         _logger.LogInformation("Processing reminder ID: {Id}, Type: {Type}", reminder.Id, reminder.ReminderType);
@@ -165,30 +167,36 @@ public class ProcessRemindersJob : IJob
             switch (reminder.ReminderType)
             {
                 case "TopicRequest":
-                    _integrationEventLogService.SendEvent(new TopicRequestExpirationEvent
+                    integrationEventLogService.SendEvent(new TopicRequestExpirationEvent
                     {
                         TopicRequestId = Guid.Parse(reminder.RemindFor)
                     });
 
+                    await processorDbContext.SaveChangesAsync(cancellationToken);
+
                     break;
 
                 case "JoinGroupRequest":
-                    _integrationEventLogService.SendEvent(new JoinGroupRequestExpirationEvent
+                    integrationEventLogService.SendEvent(new JoinGroupRequestExpirationEvent
                     {
                         JoinGroupRequestId = Guid.Parse(reminder.RemindFor)
                     });
 
+                    await processorDbContext.SaveChangesAsync(cancellationToken);
+
                     break;
 
                 case "GroupMember":
-                    _integrationEventLogService.SendEvent(new GroupMemberExpirationEvent
+                    integrationEventLogService.SendEvent(new GroupMemberExpirationEvent
                     {
                         GroupMemberId = Guid.Parse(reminder.RemindFor)
                     });
 
+                    await processorDbContext.SaveChangesAsync(cancellationToken);
+
                     break;
                 case nameof(ReviewCalendarExpirationEvent):
-                    _integrationEventLogService.SendEvent(new ReviewCalendarExpirationEvent
+                    integrationEventLogService.SendEvent(new ReviewCalendarExpirationEvent
                     {
                         ReviewCalendarId = Guid.Parse(reminder.RemindFor)
                     });

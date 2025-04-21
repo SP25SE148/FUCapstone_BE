@@ -26,6 +26,7 @@ public static class ApplicationServiceExtensions
             options.UseNpgsql(configuration.GetConnectionString("DefaultConnection"));
         });
 
+        services.AddEventConsumerConfiguration(configuration);
         services.AddIntegrationEventLogService<ApplicationDbContext>();
 
         services.AddAutoMapper(typeof(ServiceProfiles));
