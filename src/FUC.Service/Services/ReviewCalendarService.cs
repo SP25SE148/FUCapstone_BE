@@ -48,22 +48,23 @@ public sealed class ReviewCalendarService(
 
         try
         {
-            var reviewCalendars = await ParseReviewCalendarsFromFile(file, currentSemester.Value.Id);
+            var reviewCalendars =
+                await ParseReviewCalendarsFromFile(file, currentSemester.Value.Id);
+
             reviewCalendarRepository.InsertRange(reviewCalendars);
-            await uow.SaveChangesAsync();
+
             // send review calendar created event
             foreach (var reviewCalendar in reviewCalendars)
             {
-                integrationEventLogService.SendEvent(new ExpirationRequestEvent
+                integrationEventLogService.SendEvent(new CalendarCreatedEvent()
                 {
-                    RequestId = reviewCalendar.Id,
-                    RequestType = nameof(ReviewCalendarExpirationEvent),
-                    ExpirationDuration =
-                        TimeSpan.FromHours(systemConfigService.GetSystemConfiguration()
-                            .ExpirationReviewCalendarDuration)
+                    CalendarId = reviewCalendar.Id,
+                    Type = nameof(ReviewCalendar),
+                    StartDate = reviewCalendar.Date
                 });
             }
 
+            await uow.SaveChangesAsync();
             return OperationResult.Success();
         }
         catch (Exception e)
@@ -236,9 +237,8 @@ public sealed class ReviewCalendarService(
     {
         return reviewer != null &&
                reviewer.ReviewCalender.Status == ReviewCalendarStatus.InProgress &&
-               reviewer.IsReview == false;
-        // &&
-        // reviewer.ReviewCalender.Date.Date == DateTime.Now.Date;
+               reviewer.IsReview == false &&
+               reviewer.ReviewCalender.Date.Date == DateTime.Now.Date;
     }
 
     private async Task<List<ReviewCalendar>> ParseReviewCalendarsFromFile(IFormFile file, string currentSemester)
@@ -260,6 +260,7 @@ public sealed class ReviewCalendarService(
         {
             var groupCode = row.Cell(2).GetValue<string>();
             var topicCode = row.Cell(3).GetValue<string>();
+            // Validate group code and topic code
             if (string.IsNullOrEmpty(groupCode) || string.IsNullOrEmpty(topicCode))
             {
                 break;
@@ -333,10 +334,17 @@ public sealed class ReviewCalendarService(
             throw new Exception("Invalid review details");
         }
 
+        // Validate review date
+        if (DateTime.TryParse(reviewDate, out var date) == false)
+            // && date.Date < DateTime.Now.Date)
+        {
+            throw new Exception("Review date must be in the future and in correct format");
+        }
+
         return new ReviewCalendarDetail()
         {
             ReviewersId = reviewers,
-            Date = DateTime.Parse(reviewDate),
+            Date = date,
             Time = time,
             Room = room
         };

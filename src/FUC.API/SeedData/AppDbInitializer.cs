@@ -90,25 +90,36 @@ public static class AppDbInitializer
                 {
                     semester.StartDate = semester.StartDate.StartOfDay();
                     semester.EndDate = semester.EndDate.EndOfDay();
-                    await context.Set<Semester>().AddAsync(semester);
+
+                    // Create a new TimeConfiguration for each Semester and associate it with a Campus
+                    foreach (var campus in campuses!)
+                    {
+                        var timeConfig = new TimeConfiguration
+                        {
+                            CampusId = campus.Id,
+                            IsActived = false,
+                            RegistTopicForSupervisorDate = DateTime.Now,
+                            RegistTopicForSupervisorExpiredDate = DateTime.Now.AddDays(1),
+                            TeamUpDate = DateTime.Now,
+                            TeamUpExpirationDate = DateTime.Now.AddDays(1),
+                            RegistTopicForGroupDate = DateTime.Now,
+                            RegistTopicForGroupExpiredDate = DateTime.Now.AddDays(1),
+                            ReviewAttemptDate = DateTime.Now,
+                            ReviewAttemptExpiredDate = DateTime.Now.AddDays(1),
+                            DefendCapstoneProjectDate = DateTime.Now,
+                            DefendCapstoneProjectExpiredDate = DateTime.Now.AddDays(1)
+                        };
+
+                        // Associate the TimeConfiguration with the Semester
+                        semester.TimeConfiguration = timeConfig;
+
+                        // Add the Semester (and its associated TimeConfiguration) to the context
+                        await context.Set<Semester>().AddAsync(semester);
+                    }
                 }
             }
 
-            if (!context.Set<TemplateDocument>().Any())
-            {
-                foreach (var campus in campuses!)
-                {
-                    context.Set<TimeConfiguration>().Add(new TimeConfiguration
-                    {
-                        CampusId = campus.Id,
-                        IsActived = false,
-                        RegistTopicDate = DateTime.Now,
-                        RegistTopicExpiredDate = DateTime.Now,
-                        TeamUpDate = DateTime.Now,
-                        TeamUpExpirationDate = DateTime.Now,
-                    });
-                }
-            }
+// No need to separately add TimeConfiguration as it's added with Semester
 
             if (!context.Set<TemplateDocument>().Any() && templates is not null)
             {
