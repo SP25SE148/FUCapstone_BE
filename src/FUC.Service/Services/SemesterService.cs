@@ -7,6 +7,7 @@ using FUC.Data.Entities;
 using FUC.Data.Repositories;
 using FUC.Service.Abstractions;
 using FUC.Service.DTOs.SemesterDTO;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 
 namespace FUC.Service.Services;
@@ -34,7 +35,7 @@ public sealed class SemesterService(
             Id = request.Id.ToUpper(),
             Name = request.Name,
             StartDate = request.StartDate.StartOfDay(),
-            EndDate = request.EndDate.EndOfDay(),   
+            EndDate = request.EndDate.EndOfDay(),
         };
 
         semesterRepository.Insert(newSemester);
@@ -50,7 +51,7 @@ public sealed class SemesterService(
             s => s.Id == request.Id,
             cancellationToken: default);
 
-        if (semester is null) 
+        if (semester is null)
             return OperationResult.Failure<SemesterResponse>(Error.NullValue);
 
         // Update Semester fields
@@ -68,7 +69,7 @@ public sealed class SemesterService(
     {
         List<Semester> semesters = (await semesterRepository.GetAllAsync())
             .OrderByDescending(x => x.StartDate)
-            .ToList();   
+            .ToList();
 
         return OperationResult.Success(mapper.Map<IEnumerable<SemesterResponse>>(semesters));
     }
@@ -96,7 +97,7 @@ public sealed class SemesterService(
             predicate: s => s.Id == semesterId,
             cancellationToken: default);
 
-        if (semester is null) 
+        if (semester is null)
             return OperationResult.Failure(Error.NullValue);
 
         semester.IsDeleted = true;
@@ -107,12 +108,13 @@ public sealed class SemesterService(
         return OperationResult.Success();
     }
 
-    public async Task<OperationResult<Semester>> GetCurrentSemesterAsync()
+    public async Task<OperationResult<Semester>> GetCurrentSemesterAsync(bool isEnableTracking = false)
     {
         var currentSemester = await semesterRepository
-            .GetAsync(x => DateTime.Now >= x.StartDate && 
-                DateTime.Now <= x.EndDate,
-            cancellationToken: default);
+            .GetAsync(x => DateTime.Now >= x.StartDate &&
+                           DateTime.Now <= x.EndDate,
+                isEnableTracking,
+                include: x => x.Include(x => x.TimeConfiguration));
 
         if (currentSemester is null)
         {

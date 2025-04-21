@@ -1394,7 +1394,7 @@ public class GroupService(
                 OverdueTasks = overdueTasks,
                 AverageTaskDuration = averageDuration,
                 PriorityDistribution = priorityDistribution,
-                CompletionTaskRatio = totalTasks > 0 ? ((double)completedTasks / totalTasks) : 0,
+                CompletionTaskRatio = totalTasks > 0 ? (double)completedTasks / totalTasks : 0,
                 OverdueTaskRatio = totalTasks > 0 ? (double)overdueTasks / totalTasks : 0
             };
         }).ToList();
@@ -2028,10 +2028,12 @@ public class GroupService(
         if (currentUser.Role == UserRoles.Supervisor && groupDecision.SupervisorId != currentUser.UserCode)
             return OperationResult.Failure<GroupDecisionResponse>(new Error("GetFailed",
                 "Can not get group decision while you are not mentor of this group"));
+
         if (currentUser.Role == UserRoles.Student &&
             groupDecision.Group.GroupMembers.Count(gm => gm.StudentId == currentUser.UserCode) < 1)
             return OperationResult.Failure<GroupDecisionResponse>(new Error("GetFailed",
                 "Can not get group decision while you are not member of this group"));
+
         return new GroupDecisionResponse
         {
             GroupId = groupDecision.GroupId,

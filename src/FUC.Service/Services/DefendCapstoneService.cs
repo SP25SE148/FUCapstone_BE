@@ -1,6 +1,7 @@
 ﻿using ClosedXML.Excel;
 using FUC.Common.Abstractions;
 using FUC.Common.Constants;
+using FUC.Common.Contracts;
 using FUC.Common.IntegrationEventLog.Services;
 using FUC.Common.Shared;
 using FUC.Data;
@@ -51,6 +52,16 @@ public class DefendCapstoneService(
                 await ParseDefendCapstoneCalendarsFromFile(file, currentSemester.Value.Id, cancellationToken);
 
             defendCapstoneCalendarRepository.InsertRange(defendCalendars);
+
+            foreach (var defendCalendar in defendCalendars)
+            {
+                integrationEventLogService.SendEvent(new CalendarCreatedEvent
+                {
+                    CalendarId = defendCalendar.Id,
+                    StartDate = defendCalendar.DefenseDate,
+                    Type = nameof(DefendCapstoneProjectInformationCalendar)
+                });
+            }
 
             await unitOfWork.SaveChangesAsync(cancellationToken);
 
@@ -438,6 +449,9 @@ public class DefendCapstoneService(
         var memberInfoList = new List<string>();
 
         var existingDefendCalendars = await defendCapstoneCalendarRepository.GetAllAsync();
+        if (existingDefendCalendars.Any(x => x.Status != DefendCapstoneProjectCalendarStatus.Done))
+            throw new Exception("The current defend capstone project calendars has not been completed.");
+
         var attempt = existingDefendCalendars.Any() ? existingDefendCalendars.Max(rc => rc.DefendAttempt) + 1 : 1;
 
         if (attempt > systemConfigService.GetSystemConfiguration().MaxAttemptTimesToDefendCapstone)
@@ -449,17 +463,26 @@ public class DefendCapstoneService(
         foreach (var row in workSheet.Rows().Skip(5))
         {
             var topicCode = row.Cell(3).GetValue<string>();
-            if (string.IsNullOrEmpty(topicCode))
+            var groupCode = row.Cell(2).GetValue<string>();
+            if (string.IsNullOrEmpty(topicCode) || string.IsNullOrEmpty(groupCode))
             {
                 break;
             }
 
+            var groupResult = await groupService.GetGroupDecisionByGroupIdAsync(Guid.Parse(groupCode));
+
+
             var topicResult = await topicService.GetTopicByCode(topicCode, cancellationToken);
+
             if (topicResult.IsFailure ||
                 topicResult.Value.Status != TopicStatus.Approved ||
                 topicResult.Value.IsAssignedToGroup == false ||
                 topicResult.Value.CapstoneId != currentUser.CapstoneId ||
-                topicResult.Value.CampusId != currentUser.CampusId)
+                topicResult.Value.CampusId != currentUser.CampusId ||
+                groupResult.IsFailure ||
+                groupResult.Value.TopicCode != topicResult.Value.Code ||
+                !IsDecisionStatusValidForAttempt(
+                    (DecisionStatus)Enum.Parse(typeof(DecisionStatus), groupResult.Value.Decision), attempt))
                 throw new InvalidOperationException("Topic is not available for defend phase.");
 
             var presidentAndSecretary = await GetPresidentAndSecretaryAsync(row, topicResult.Value);
@@ -497,6 +520,17 @@ public class DefendCapstoneService(
         }
 
         return defendCalendars;
+    }
+
+    private static bool IsDecisionStatusValidForAttempt(DecisionStatus status, int attempt)
+    {
+        return (status, attempt) switch
+        {
+            (DecisionStatus.Agree_to_defense, 1) => true,
+            (DecisionStatus.Revised_for_the_second_defense, 2) => true,
+            (DecisionStatus.Disagree_to_defense, _) => false,
+            _ => false
+        };
     }
 
     private static DefendCapstoneProjectInformationCalendar CreateDefendCalendar(
@@ -583,7 +617,13 @@ public class DefendCapstoneService(
             throw new InvalidOperationException("Invalid defend capstone calendar details");
         }
 
-        return (DateTime.Parse(reviewDate), time, room);
+        // Validate review date
+        if (DateTime.TryParse(reviewDate, out var date) && date <= DateTime.Now)
+        {
+            throw new Exception("Defend date must be in the future and in correct format");
+        }
+
+        return (date, time, room);
     }
 
     private static bool IsMemberInformationValid(List<string> memberInfoList, string presidentId, string secretaryId)

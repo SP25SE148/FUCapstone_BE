@@ -2,6 +2,7 @@
 using FUC.Common.Constants;
 using FUC.Common.Contracts;
 using FUC.Common.IntegrationEventLog.Services;
+using FUC.Data.Entities;
 using FUC.Processor.Data;
 using FUC.Processor.Hubs;
 using FUC.Processor.Models;
@@ -61,7 +62,7 @@ public class ProcessRemindersJob : IJob
 
             await _processorDbContext.Database.BeginTransactionAsync(cancellationToken);
 
-            var now = DateTime.Now; 
+            var now = DateTime.Now;
 
             var reminders = await _processorDbContext.Reminders
                 .Where(r => r.RemindDate <= now)
@@ -78,7 +79,8 @@ public class ProcessRemindersJob : IJob
 
             foreach (var reminder in reminders)
             {
-                await ProcessReminderAsync(reminder, reminderedQueue, _processorDbContext, integrationEventLogService, cancellationToken);
+                await ProcessReminderAsync(reminder, reminderedQueue, _processorDbContext, integrationEventLogService,
+                    cancellationToken);
             }
 
             if (!reminderedQueue.IsEmpty)
@@ -232,10 +234,22 @@ public class ProcessRemindersJob : IJob
                     await _hub.Clients.Clients(connections).ReceiveNewNotification(content);
 
                     break;
+                //flow 1
                 case nameof(TeamUpTimeConfigurationCreatedEvent.TeamUpDate):
                 case nameof(TeamUpTimeConfigurationCreatedEvent.TeamUpExpirationDate):
-                case nameof(RegistTopicTimeConfigurationCreatedEvent.RegistTopicDate):
-                case nameof(RegistTopicTimeConfigurationCreatedEvent.RegistTopicExpiredDate):
+                //flow 2
+                case nameof(RegistTopicForSupervisorTimeConfigurationCreatedEvent.RegistTopicDate):
+                case nameof(RegistTopicForSupervisorTimeConfigurationCreatedEvent.RegistTopicExpiredDate):
+                //flow 3
+                case nameof(RegistTopicForGroupTimeConfigurationCreatedEvent.RegistTopicForGroupDate):
+                case nameof(RegistTopicForGroupTimeConfigurationCreatedEvent.RegistTopicForGroupExpiredDate):
+                // flow 5
+                case nameof(ReviewAttemptTimeConfigurationCreatedEvent.ReviewAttemptDate):
+                case nameof(ReviewAttemptTimeConfigurationCreatedEvent.ReviewAttemptExpiredDate):
+                // flow 6
+                case nameof(DefendCapstoneProjectTimeConfigurationCreatedEvent.DefendCapstoneProjectDate):
+                case nameof(DefendCapstoneProjectTimeConfigurationCreatedEvent.DefendCapstoneProjectExpiredDate):
+
                     var user = new List<User>();
                     var campusId = reminder.RemindFor.Split("/")[2 - 1];
                     if (reminder.RemindFor == "students")
@@ -254,6 +268,26 @@ public class ProcessRemindersJob : IJob
                     await _emailService.SendMailAsync("[FUC_Notification]",
                         reminder.Content,
                         user.Select(x => x.Email).ToArray());
+                    break;
+
+
+                case nameof(ReviewCalendar):
+                case nameof(DefendCapstoneProjectInformationCalendar):
+                    _logger.LogInformation("Processing reminder ID: {Id}, Type: {Type}", reminder.Id,
+                        reminder.ReminderType);
+                    if (reminder.RemindDate.Date >= DateTime.Now.Date)
+                    {
+                        integrationEventLogService.SendEvent(new CalendarOnTimeEvent
+                        {
+                            CalendarId = Guid.Parse(reminder.RemindFor),
+                            Type = reminder.ReminderType,
+                            Status = reminder.RemindDate.Date == DateTime.Now.Date
+                                ? "InProgress"
+                                : "Done"
+                        });
+                        await processorDbContext.SaveChangesAsync(cancellationToken);
+                    }
+
                     break;
 
                 case "Test":

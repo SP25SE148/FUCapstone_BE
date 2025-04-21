@@ -9,16 +9,28 @@ public class TimeConfigurationConfiguration : IEntityTypeConfiguration<TimeConfi
     public void Configure(EntityTypeBuilder<TimeConfiguration> builder)
     {
         builder.ToTable(nameof(TimeConfiguration));
-        
+
         builder.HasKey(x => x.Id);
 
         builder.Property(b => b.TeamUpDate)
             .HasColumnType("timestamp");
         builder.Property(b => b.TeamUpExpirationDate)
             .HasColumnType("timestamp");
-        builder.Property(b => b.RegistTopicDate)
+        builder.Property(b => b.RegistTopicForSupervisorDate)
             .HasColumnType("timestamp");
-        builder.Property(b => b.RegistTopicExpiredDate)
+        builder.Property(b => b.RegistTopicForSupervisorExpiredDate)
+            .HasColumnType("timestamp");
+        builder.Property(b => b.RegistTopicForGroupDate)
+            .HasColumnType("timestamp");
+        builder.Property(b => b.RegistTopicForGroupExpiredDate)
+            .HasColumnType("timestamp");
+        builder.Property(b => b.ReviewAttemptDate)
+            .HasColumnType("timestamp");
+        builder.Property(b => b.ReviewAttemptExpiredDate)
+            .HasColumnType("timestamp");
+        builder.Property(b => b.DefendCapstoneProjectDate)
+            .HasColumnType("timestamp");
+        builder.Property(b => b.DefendCapstoneProjectExpiredDate)
             .HasColumnType("timestamp");
 
         builder.Property(b => b.CampusId)

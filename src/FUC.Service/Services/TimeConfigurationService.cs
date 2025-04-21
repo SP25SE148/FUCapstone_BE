@@ -31,8 +31,8 @@ public class TimeConfigurationService(
             {
                 Id = x.Id,
                 CampusId = x.CampusId,
-                RegistTopicDate = x.RegistTopicDate,
-                RegistTopicExpiredDate = x.RegistTopicExpiredDate,
+                RegistTopicDate = x.RegistTopicForSupervisorDate,
+                RegistTopicExpiredDate = x.RegistTopicForSupervisorExpiredDate,
                 TeamUpDate = x.TeamUpDate,
                 TeamUpExpirationDate = x.TeamUpExpirationDate,
                 IsActived = x.IsActived
@@ -49,8 +49,8 @@ public class TimeConfigurationService(
             {
                 Id = x.Id,
                 CampusId = x.CampusId,
-                RegistTopicDate = x.RegistTopicDate,
-                RegistTopicExpiredDate = x.RegistTopicExpiredDate,
+                RegistTopicDate = x.RegistTopicForSupervisorDate,
+                RegistTopicExpiredDate = x.RegistTopicForSupervisorExpiredDate,
                 TeamUpDate = x.TeamUpDate,
                 TeamUpExpirationDate = x.TeamUpExpirationDate,
                 IsActived = x.IsActived
@@ -77,25 +77,27 @@ public class TimeConfigurationService(
 
         ArgumentNullException.ThrowIfNull(timeConfig);
 
-        if (request.TeamUpDate.HasValue &&
-            !CheckConfigurationDateIsValid(request.TeamUpDate.Value, currentSemester.Value))
-            return OperationResult.Failure(new Error("TimeConfiguration.Error",
-                $"TimeUpDate need to in the duration of Semester {currentSemester.Value.Id}"));
+        var invalidDates = new[]
+        {
+            (request.TeamUpDate, "TeamUpDate", "TeamUp"),
+            (request.TeamUpExpirationDate, "TeamUpExpirationDate", "TeamUp"),
+            (request.RegistTopicForSupervisorDate, "RegistTopicForSupervisorDate", "RegistTopicForSupervisor"),
+            (request.RegistTopicForSupervisorExpiredDate, "RegistTopicForSupervisorExpiredDate",
+                "RegistTopicForSupervisor"),
+            (request.RegistTopicForGroupDate, "RegistTopicForGroupDate", "RegistTopicForGroup"),
+            (request.RegistTopicForGroupExpiredDate, "RegistTopicForGroupExpiredDate", "RegistTopicForGroup"),
+            (request.ReviewAttemptDate, "ReviewAttemptDate", "ReviewAttempt"),
+            (request.ReviewAttemptExpiredDate, "ReviewAttemptExpiredDate", "ReviewAttempt"),
+            (request.DefendCapstoneProjectDate, "DefendCapstoneProjectDate", "DefendCapstoneProject"),
+            (request.DefendCapstoneProjectExpiredDate, "DefendCapstoneProjectExpiredDate", "DefendCapstoneProject"),
+        };
 
-        if (request.TeamUpExpirationDate.HasValue &&
-            !CheckConfigurationDateIsValid(request.TeamUpExpirationDate.Value, currentSemester.Value))
-            return OperationResult.Failure(new Error("TimeConfiguration.Error",
-                $"TimeUpExpirationDate need to in the duration of Semester {currentSemester.Value.Id}"));
-
-        if (request.RegistTopicDate.HasValue &&
-            !CheckConfigurationDateIsValid(request.RegistTopicDate.Value, currentSemester.Value))
-            return OperationResult.Failure(new Error("TimeConfiguration.Error",
-                $"RegistTopicDate need to in the duration of Semester {currentSemester.Value.Id}"));
-
-        if (request.RegistTopicExpiredDate.HasValue &&
-            !CheckConfigurationDateIsValid(request.RegistTopicExpiredDate.Value, currentSemester.Value))
-            return OperationResult.Failure(new Error("TimeConfiguration.Error",
-                $"RegistTopicExpiredDate need to in the duration of Semester {currentSemester.Value.Id}"));
+        foreach (var (date, dateName, configType) in invalidDates)
+        {
+            if (date.HasValue && !CheckConfigurationDateIsValid(date.Value, currentSemester.Value, configType))
+                return OperationResult.Failure(new Error("TimeConfiguration.Error",
+                    $"{dateName} need to be in the valid duration of Semester {currentSemester.Value.Id}"));
+        }
 
         mapper.Map(request, timeConfig);
 
@@ -109,26 +111,32 @@ public class TimeConfigurationService(
     public async Task<OperationResult> CreateTimeConfiguration(CreateTimeConfigurationRequest request,
         CancellationToken cancellationToken)
     {
-        var currentSemester = await semesterService.GetCurrentSemesterAsync();
+        var currentSemester = await semesterService.GetCurrentSemesterAsync(true);
 
         if (currentSemester.IsFailure)
             return OperationResult.Failure(currentSemester.Error);
 
-        if (!CheckConfigurationDateIsValid(request.TeamUpDate, currentSemester.Value))
-            return OperationResult.Failure(new Error("TimeConfiguration.Error",
-                $"TeamUpDate need to in the duration of Semester {currentSemester.Value.Id}"));
+        var invalidDates = new[]
+        {
+            (request.TeamUpDate, "TeamUpDate", "TeamUp"),
+            (request.TeamUpExpirationDate, "TeamUpExpirationDate", "TeamUp"),
+            (request.RegistTopicForSupervisorDate, "RegistTopicForSupervisorDate", "RegistTopicForSupervisor"),
+            (request.RegistTopicForSupervisorExpiredDate, "RegistTopicForSupervisorExpiredDate",
+                "RegistTopicForSupervisor"),
+            (request.RegistTopicForGroupDate, "RegistTopicForGroupDate", "RegistTopicForGroup"),
+            (request.RegistTopicForGroupExpiredDate, "RegistTopicForGroupExpiredDate", "RegistTopicForGroup"),
+            (request.ReviewAttemptDate, "ReviewAttemptDate", "ReviewAttempt"),
+            (request.ReviewAttemptExpiredDate, "ReviewAttemptExpiredDate", "ReviewAttempt"),
+            (request.DefendCapstoneProjectDate, "DefendCapstoneProjectDate", "DefendCapstoneProject"),
+            (request.DefendCapstoneProjectExpiredDate, "DefendCapstoneProjectExpiredDate", "DefendCapstoneProject"),
+        };
 
-        if (!CheckConfigurationDateIsValid(request.TeamUpExpirationDate, currentSemester.Value))
-            return OperationResult.Failure(new Error("TimeConfiguration.Error",
-                $"TeamUpExpirationDate need to in the duration of Semester {currentSemester.Value.Id}"));
-
-        if (!CheckConfigurationDateIsValid(request.RegistTopicDate, currentSemester.Value))
-            return OperationResult.Failure(new Error("TimeConfiguration.Error",
-                $"RegistTopicDate need to in the duration of Semester {currentSemester.Value.Id}"));
-
-        if (!CheckConfigurationDateIsValid(request.RegistTopicExpiredDate, currentSemester.Value))
-            return OperationResult.Failure(new Error("TimeConfiguration.Error",
-                $"RegistTopicExpiredDate need to in the duration of Semester {currentSemester.Value.Id}"));
+        foreach (var (date, dateName, configType) in invalidDates)
+        {
+            if (!CheckConfigurationDateIsValid(date, currentSemester.Value, configType))
+                return OperationResult.Failure(new Error("TimeConfiguration.Error",
+                    $"{dateName} need to be in the valid duration of Semester {currentSemester.Value.Id}"));
+        }
 
         if (string.IsNullOrEmpty(request.CampusId))
         {
@@ -137,14 +145,22 @@ public class TimeConfigurationService(
 
         var timeConfig = new TimeConfiguration
         {
-            RegistTopicDate = request.RegistTopicDate,
-            RegistTopicExpiredDate = request.RegistTopicExpiredDate,
-            TeamUpExpirationDate = request.TeamUpExpirationDate,
+            Id = Guid.NewGuid(),
+            RegistTopicForSupervisorDate = request.RegistTopicForSupervisorDate,
+            RegistTopicForSupervisorExpiredDate = request.RegistTopicForSupervisorExpiredDate,
+            RegistTopicForGroupDate = request.RegistTopicForGroupDate,
+            RegistTopicForGroupExpiredDate = request.RegistTopicForGroupExpiredDate,
+            ReviewAttemptDate = request.ReviewAttemptDate,
+            ReviewAttemptExpiredDate = request.ReviewAttemptExpiredDate,
+            DefendCapstoneProjectDate = request.DefendCapstoneProjectDate,
+            DefendCapstoneProjectExpiredDate = request.DefendCapstoneProjectExpiredDate,
             TeamUpDate = request.TeamUpDate,
+            TeamUpExpirationDate = request.TeamUpExpirationDate,
             IsActived = request.IsActived,
             CampusId = request.CampusId,
         };
 
+        currentSemester.Value.TimeConfigurationId = timeConfig.Id;
         repository.Insert(timeConfig);
         integrationEventLogService.SendEvent(new TimeConfigurationCreatedEvent()
         {
@@ -153,17 +169,36 @@ public class TimeConfigurationService(
             RemindInDaysBeforeDueDate = systemConfigurationService.GetSystemConfiguration()
                 .TimeConfigurationRemindInDaysBeforeDueDate,
             RemindTime = TimeSpan.FromHours(7),
-            RegistTopicTimeConfigurationCreatedEvent = new RegistTopicTimeConfigurationCreatedEvent
-            {
-                NotificationFor = $"supervisors/{currentUser.CampusId}",
-                RegistTopicDate = timeConfig.RegistTopicDate,
-                RegistTopicExpiredDate = timeConfig.RegistTopicExpiredDate
-            },
+            RegistTopicForSupervisorTimeConfigurationCreatedEvent =
+                new RegistTopicForSupervisorTimeConfigurationCreatedEvent
+                {
+                    NotificationFor = $"supervisors/{currentUser.CampusId}",
+                    RegistTopicDate = timeConfig.RegistTopicForSupervisorDate,
+                    RegistTopicExpiredDate = timeConfig.RegistTopicForSupervisorExpiredDate
+                },
             TeamUpTimeConfigurationCreatedEvent = new TeamUpTimeConfigurationCreatedEvent
             {
                 NotificationFor = $"students/{currentUser.CampusId}",
                 TeamUpDate = timeConfig.TeamUpDate,
                 TeamUpExpirationDate = timeConfig.TeamUpExpirationDate
+            },
+            RegistTopicForGroupTimeConfigurationCreatedEvent = new RegistTopicForGroupTimeConfigurationCreatedEvent
+            {
+                NotificationFor = $"students/{currentUser.CampusId}",
+                RegistTopicForGroupDate = timeConfig.RegistTopicForGroupDate,
+                RegistTopicForGroupExpiredDate = timeConfig.RegistTopicForGroupExpiredDate
+            },
+            ReviewAttemptTimeConfigurationCreatedEvent = new ReviewAttemptTimeConfigurationCreatedEvent
+            {
+                NotificationFor = $"supervisors/{currentUser.CampusId}",
+                ReviewAttemptDate = timeConfig.ReviewAttemptDate,
+                ReviewAttemptExpiredDate = timeConfig.ReviewAttemptExpiredDate
+            },
+            DefendCapstoneProjectTimeConfigurationCreatedEvent = new DefendCapstoneProjectTimeConfigurationCreatedEvent
+            {
+                NotificationFor = $"supervisors/{currentUser.CampusId}",
+                DefendCapstoneProjectDate = timeConfig.DefendCapstoneProjectDate,
+                DefendCapstoneProjectExpiredDate = timeConfig.DefendCapstoneProjectExpiredDate
             }
         });
         await unitOfWork.SaveChangesAsync(cancellationToken);
@@ -172,8 +207,13 @@ public class TimeConfigurationService(
         return OperationResult.Success();
     }
 
-    private static bool CheckConfigurationDateIsValid(DateTime configDate, Semester currentSemester)
+    private static bool CheckConfigurationDateIsValid(DateTime configDate, Semester currentSemester, string configType)
     {
-        return configDate >= currentSemester.StartDate && configDate <= currentSemester.EndDate;
+        return configType switch
+        {
+            "RegistTopicForSupervisor" => configDate <= currentSemester.StartDate,
+            "DefendCapstoneProject" => configDate >= currentSemester.EndDate,
+            _ => configDate >= currentSemester.StartDate && configDate <= currentSemester.EndDate,
+        };
     }
 }

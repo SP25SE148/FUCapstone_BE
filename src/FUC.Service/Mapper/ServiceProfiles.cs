@@ -78,9 +78,22 @@ public class ServiceProfiles : Profile
             .ForMember(dest => dest.TeamUpDate, opt => opt.Condition(src => src.TeamUpDate.HasValue))
             .ForMember(dest => dest.TeamUpExpirationDate,
                 opt => opt.Condition(src => src.TeamUpExpirationDate.HasValue))
-            .ForMember(dest => dest.RegistTopicDate, opt => opt.Condition(src => src.RegistTopicDate.HasValue))
-            .ForMember(dest => dest.RegistTopicExpiredDate,
-                opt => opt.Condition(src => src.RegistTopicExpiredDate.HasValue))
+            .ForMember(dest => dest.RegistTopicForSupervisorDate,
+                opt => opt.Condition(src => src.RegistTopicForSupervisorDate.HasValue))
+            .ForMember(dest => dest.RegistTopicForSupervisorExpiredDate,
+                opt => opt.Condition(src => src.RegistTopicForSupervisorExpiredDate.HasValue))
+            .ForMember(dest => dest.RegistTopicForGroupDate,
+                opt => opt.Condition(src => src.RegistTopicForGroupDate.HasValue))
+            .ForMember(dest => dest.RegistTopicForGroupExpiredDate,
+                opt => opt.Condition(src => src.RegistTopicForGroupExpiredDate.HasValue))
+            .ForMember(dest => dest.ReviewAttemptDate, opt => opt.Condition(src => src.ReviewAttemptDate.HasValue))
+            .ForMember(dest => dest.ReviewAttemptExpiredDate,
+                opt => opt.Condition(src => src.ReviewAttemptExpiredDate.HasValue))
+            .ForMember(dest => dest.DefendCapstoneProjectDate,
+                opt => opt.Condition(src => src.DefendCapstoneProjectDate.HasValue))
+            .ForMember(dest => dest.DefendCapstoneProjectExpiredDate,
+                opt => opt.Condition(src => src.DefendCapstoneProjectExpiredDate.HasValue))
+            .ForMember(dest => dest.IsActived, opt => opt.Condition(src => src.IsActived))
             .ForAllMembers(opt => opt.Condition((src, dest, srcMember) => srcMember != null));
 
         CreateMap<UpdateProjectProgressRequest, ProjectProgress>()

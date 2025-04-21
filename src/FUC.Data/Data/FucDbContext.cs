@@ -29,6 +29,9 @@ public class FucDbContext : DbContext
     public DbSet<Student> Students { get; set; }
 
     public DbSet<Supervisor> Supervisors { get; set; }
+    public DbSet<ReviewCalendar> ReviewCalendars { get; set; }
+    public DbSet<DefendCapstoneProjectInformationCalendar> DefendCapstoneProjectInformationCalendars { get; set; }
+
 
     public DbSet<Topic> Topics { get; set; }
 
