@@ -270,7 +270,9 @@ public sealed class AcademicManagementController(
     public async Task<IActionResult> GetNextSemesterAsync()
     {
         var semester = await semesterService.GetNextSemesterAsync();
-        return semester.IsSuccess ? Ok(mapper.Map<SemesterResponse>(semester.Value)) : HandleFailure(semester);
+        return semester.IsSuccess
+            ? Ok(OperationResult.Success(mapper.Map<SemesterResponse>(semester.Value)))
+            : HandleFailure(semester);
     }
 
     [HttpGet("semester/active")]
