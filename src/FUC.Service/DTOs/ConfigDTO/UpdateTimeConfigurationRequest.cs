@@ -4,6 +4,8 @@ public class UpdateTimeConfigurationRequest
 {
     public Guid Id { get; set; }
 
+    public string SemesterId { get; set; }
+
     // flow 1
     public DateTime? TeamUpDate { get; set; }
 

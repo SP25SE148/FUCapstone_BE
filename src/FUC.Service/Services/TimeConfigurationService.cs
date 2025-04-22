@@ -1,4 +1,5 @@
-﻿using AutoMapper;
+﻿using System.Runtime.InteropServices.JavaScript;
+using AutoMapper;
 using FUC.Common.Abstractions;
 using FUC.Common.Constants;
 using FUC.Common.Contracts;
@@ -84,10 +85,14 @@ public class TimeConfigurationService(
         UpdateTimeConfigurationRequest request,
         CancellationToken cancellationToken)
     {
-        var currentSemester = await semesterService.GetCurrentSemesterAsync();
+        var semester = await semesterRepository.GetAsync(
+            s => s.Id == request.SemesterId && s.TimeConfigurationId == request.Id,
+            include: x => x.Include(x => x.TimeConfiguration),
+            default,
+            cancellationToken);
 
-        if (currentSemester.IsFailure)
-            return OperationResult.Failure(currentSemester.Error);
+        if (semester is null)
+            return OperationResult.Failure(new Error("Semester.Error", "Semester not found."));
 
         var timeConfig = await repository.GetAsync(
             x => x.Id == request.Id,
@@ -112,12 +117,30 @@ public class TimeConfigurationService(
 
         foreach (var (date, dateName, configType) in invalidDates)
         {
-            if (date.HasValue && !CheckConfigurationDateIsValid(date.Value, currentSemester.Value, configType))
+            if (date.HasValue && !CheckConfigurationDateIsValid(date.Value,
+                    semester.StartDate,
+                    semester.EndDate,
+                    configType))
+            {
+                if (configType == "DefendCapstoneProject")
+                {
+                    return OperationResult.Failure(new Error("TimeConfiguration.Error",
+                        $"{dateName} need to be in the valid duration of Semester {semester.Id}. The valid date to defend capstone project for group is after the end date of semester: {semester.EndDate}"));
+                }
+
+                if (configType == "RegistTopicForSupervisor")
+                {
+                    return OperationResult.Failure(new Error("TimeConfiguration.Error",
+                        $"{dateName} need to be in the valid duration of Semester {semester.Id}. The valid date for supervisor regist the topic is before the start date of semester: {semester.StartDate}"));
+                }
+
                 return OperationResult.Failure(new Error("TimeConfiguration.Error",
-                    $"{dateName} need to be in the valid duration of Semester {currentSemester.Value.Id}"));
+                    $"{dateName} need to be in the valid duration of Semester {semester.Id} from {semester.StartDate} to {semester.EndDate}"));
+            }
         }
 
         mapper.Map(request, timeConfig);
+
 
         repository.Update(timeConfig);
 
@@ -152,9 +175,26 @@ public class TimeConfigurationService(
 
         foreach (var (date, dateName, configType) in invalidDates)
         {
-            if (!CheckConfigurationDateIsValid(date, nextSemester.Value, configType))
+            if (!CheckConfigurationDateIsValid(date,
+                    nextSemester.Value.StartDate,
+                    nextSemester.Value.EndDate,
+                    configType))
+            {
+                if (configType == "DefendCapstoneProject")
+                {
+                    return OperationResult.Failure(new Error("TimeConfiguration.Error",
+                        $"{dateName} need to be in the valid duration of Semester {nextSemester.Value.Id}. The valid date to defend capstone project for group is after the end date of semester: {nextSemester.Value.EndDate}"));
+                }
+
+                if (configType == "RegistTopicForSupervisor")
+                {
+                    return OperationResult.Failure(new Error("TimeConfiguration.Error",
+                        $"{dateName} need to be in the valid duration of Semester {nextSemester.Value.Id}. The valid date for supervisor regist the topic is before the start date of semester: {nextSemester.Value.StartDate}"));
+                }
+
                 return OperationResult.Failure(new Error("TimeConfiguration.Error",
-                    $"{dateName} need to be in the valid duration of Semester {nextSemester.Value.Id}"));
+                    $"{dateName} need to be in the valid duration of Semester {nextSemester.Value.Id} from {nextSemester.Value.StartDate} to {nextSemester.Value.EndDate}"));
+            }
         }
 
         if (string.IsNullOrEmpty(request.CampusId))
@@ -228,13 +268,16 @@ public class TimeConfigurationService(
         return OperationResult.Success();
     }
 
-    private static bool CheckConfigurationDateIsValid(DateTime configDate, Semester currentSemester, string configType)
+    private static bool CheckConfigurationDateIsValid(DateTime configDate,
+        DateTime startDateOfSemester,
+        DateTime endDateOfSemester,
+        string configType)
     {
         return configType switch
         {
-            "RegistTopicForSupervisor" => configDate <= currentSemester.StartDate,
-            "DefendCapstoneProject" => configDate >= currentSemester.EndDate,
-            _ => configDate >= currentSemester.StartDate && configDate <= currentSemester.EndDate,
+            "RegistTopicForSupervisor" => configDate <= startDateOfSemester,
+            "DefendCapstoneProject" => configDate >= endDateOfSemester,
+            _ => configDate >= startDateOfSemester && configDate <= startDateOfSemester,
         };
     }
 }
