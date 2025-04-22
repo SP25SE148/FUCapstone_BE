@@ -128,9 +128,12 @@ public sealed class SemesterService(
     public async Task<OperationResult<Semester>> GetNextSemesterAsync(bool isEnableTracking = false)
     {
         var semester = await semesterRepository.FindAsync(t => DateTime.Now < t.StartDate,
-            default,
+            x => x.Include(x => x.TimeConfiguration),
             isEnableTracking);
-        return semester.Any() ? semester.MinBy(x => x.StartDate) : default;
+
+        return semester.Any(x => x.TimeConfiguration != null)
+            ? semester.MinBy(x => x.StartDate)
+            : default;
     }
 
     public async Task<List<string>> GetPreviouseSemesterIds(DateTime? startDayOfCurrentSemester = null, int top = 3)
