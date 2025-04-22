@@ -13,7 +13,7 @@ public sealed class ConfigurationController : ApiController
     private readonly ISystemConfigurationService _systemConfigService;
     private readonly ITimeConfigurationService _timeConfigurationService;
 
-    public ConfigurationController(ISystemConfigurationService systemConfigService, 
+    public ConfigurationController(ISystemConfigurationService systemConfigService,
         ITimeConfigurationService timeConfigurationService)
     {
         _systemConfigService = systemConfigService;
@@ -21,6 +21,7 @@ public sealed class ConfigurationController : ApiController
     }
 
     #region system_config
+
     [HttpGet("system")]
     [Authorize(Roles = UserRoles.SuperAdmin)]
     public IActionResult GetSystemConfiguration()
@@ -107,11 +108,13 @@ public sealed class ConfigurationController : ApiController
     {
         var result = await _systemConfigService.UpdateMininumTopicsPerCapstoneInEachCampus();
 
-        return result.IsSuccess ? Ok(result) : HandleFailure(result);  
+        return result.IsSuccess ? Ok(result) : HandleFailure(result);
     }
+
     #endregion system_config
 
     #region time_config
+
     [HttpGet("time")]
     [Authorize(Roles = $"{UserRoles.Admin},{UserRoles.SuperAdmin}")]
     public async Task<IActionResult> GetTimeConfigurations()
@@ -138,5 +141,14 @@ public sealed class ConfigurationController : ApiController
 
         return config.IsSuccess ? Ok(config) : HandleFailure(config);
     }
+
+    [HttpGet("time-by-semester-id/{semesterId}")]
+    [Authorize(Roles = $"{UserRoles.Admin},{UserRoles.SuperAdmin}")]
+    public async Task<IActionResult> GetTimeConfigurationsBySemesterId(string semesterId)
+    {
+        var timeConfig = await _timeConfigurationService.GetTimeConfigurationBySemesterId(semesterId);
+        return timeConfig.IsSuccess ? Ok(timeConfig) : HandleFailure(timeConfig);
+    }
+
     #endregion time_config
 }

@@ -1,4 +1,5 @@
-﻿using FUC.API.Abstractions;
+﻿using AutoMapper;
+using FUC.API.Abstractions;
 using FUC.Common.Abstractions;
 using FUC.Common.Constants;
 using FUC.Common.Shared;
@@ -9,6 +10,7 @@ using FUC.Service.DTOs.MajorDTO;
 using FUC.Service.DTOs.MajorGroupDTO;
 using FUC.Service.DTOs.SemesterDTO;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
 
 namespace FUC.API.Controllers;
@@ -20,10 +22,12 @@ public sealed class AcademicManagementController(
     ICapstoneService capstoneService,
     IMajorGroupService majorGroupService,
     ISemesterService semesterService,
+    IMapper mapper,
     IArchiveDataApplicationService archiveDataApplicationService,
     ICurrentUser currentUser) : ApiController
 {
     #region Campus
+
     // ---- Campus Endpoints ----
     [HttpGet("campus")]
     public async Task<IActionResult> GetAllCampusAsync()
@@ -40,7 +44,7 @@ public sealed class AcademicManagementController(
             ? Ok(result)
             : HandleFailure(result);
     }
-    
+
     [Authorize(Roles = nameof(UserRoles.SuperAdmin))]
     [HttpPost("campus")]
     public async Task<IActionResult> CreateCampusAsync(CreateCampusRequest request)
@@ -55,7 +59,7 @@ public sealed class AcademicManagementController(
         OperationResult<CampusResponse> result = await campusService.GetCampusByIdAsync(id);
         return !result.IsFailure ? Ok(result) : HandleFailure(result);
     }
-    
+
     [Authorize(Roles = nameof(UserRoles.SuperAdmin))]
     [HttpDelete("campus/{id}")]
     public async Task<IActionResult> DeleteCampusAsync(string id)
@@ -68,13 +72,15 @@ public sealed class AcademicManagementController(
     [HttpPut("campus")]
     public async Task<IActionResult> UpdateCampusAsync([FromBody] UpdateCampusRequest request)
     {
-       OperationResult<CampusResponse> result = await campusService.UpdateCampusAsync(request);
-       return !result.IsFailure ? Ok(result) : HandleFailure(result);
+        OperationResult<CampusResponse> result = await campusService.UpdateCampusAsync(request);
+        return !result.IsFailure ? Ok(result) : HandleFailure(result);
     }
+
     #endregion
-    
+
     #region Major
-     // ---- Major Endpoints ----
+
+    // ---- Major Endpoints ----
     [HttpGet("major")]
     public async Task<IActionResult> GetAllMajorsAsync()
     {
@@ -94,19 +100,20 @@ public sealed class AcademicManagementController(
     [HttpGet("major/by-major-group/{majorGroupId}")]
     public async Task<IActionResult> GetMajorsByMajorGroupIdAsync(string majorGroupId)
     {
-        OperationResult<IEnumerable<MajorResponse>> result = await majorService.GetMajorsByMajorGroupIdAsync(majorGroupId);
+        OperationResult<IEnumerable<MajorResponse>> result =
+            await majorService.GetMajorsByMajorGroupIdAsync(majorGroupId);
         return !result.IsFailure
             ? Ok(result)
             : HandleFailure(result);
     }
-    
+
     [HttpGet("major/{id}")]
     public async Task<IActionResult> GetMajorByIdAsync(string id)
     {
         OperationResult<MajorResponse> result = await majorService.GetMajorByIdAsync(id);
         return !result.IsFailure ? Ok(result) : HandleFailure(result);
     }
-    
+
     [Authorize(Roles = nameof(UserRoles.SuperAdmin))]
     [HttpPost("major")]
     public async Task<IActionResult> CreateMajorAsync(CreateMajorRequest request)
@@ -130,10 +137,11 @@ public sealed class AcademicManagementController(
         OperationResult result = await majorService.DeleteMajorAsync(id);
         return !result.IsFailure ? NoContent() : HandleFailure(result);
     }
+
     #endregion
 
     #region MajorGroup
-    
+
     // ---- MajorGroup Endpoints ----
     [HttpGet("majorgroup")]
     public async Task<IActionResult> GetAllMajorGroupsAsync()
@@ -145,11 +153,13 @@ public sealed class AcademicManagementController(
     [HttpGet("majorgroup/active")]
     public async Task<IActionResult> GetAllActiveMajorGroupAsync()
     {
-        OperationResult<IEnumerable<MajorGroupResponse>> result = await majorGroupService.GetAllActiveMajorGroupsAsync();
+        OperationResult<IEnumerable<MajorGroupResponse>>
+            result = await majorGroupService.GetAllActiveMajorGroupsAsync();
         return !result.IsFailure
             ? Ok(result)
             : HandleFailure(result);
     }
+
     [HttpGet("majorgroup/{id}")]
     public async Task<IActionResult> GetMajorGroupByIdAsync(string id)
     {
@@ -180,9 +190,11 @@ public sealed class AcademicManagementController(
         OperationResult result = await majorGroupService.DeleteMajorGroupAsync(id);
         return !result.IsFailure ? NoContent() : HandleFailure(result);
     }
+
     #endregion
 
     #region Capstone
+
     // ---- Capstone Endpoints ----
     [HttpGet("capstone")]
     public async Task<IActionResult> GetAllCapstonesAsync()
@@ -203,12 +215,13 @@ public sealed class AcademicManagementController(
     [HttpGet("capstone/by-major/{majorId}")]
     public async Task<IActionResult> GetCapstoneByMajorIdAsync(string majorId)
     {
-        OperationResult<IEnumerable<CapstoneResponse>> result = await capstoneService.GetCapstonesByMajorIdAsync(majorId);
+        OperationResult<IEnumerable<CapstoneResponse>> result =
+            await capstoneService.GetCapstonesByMajorIdAsync(majorId);
         return !result.IsFailure
             ? Ok(result)
             : HandleFailure(result);
     }
-    
+
     [HttpGet("capstone/{id}")]
     public async Task<IActionResult> GetCapstoneByIdAsync(string id)
     {
@@ -239,6 +252,7 @@ public sealed class AcademicManagementController(
         OperationResult result = await capstoneService.DeleteCapstoneAsync(id);
         return !result.IsFailure ? NoContent() : HandleFailure(result);
     }
+
     #endregion
 
     #region Semester
@@ -250,6 +264,13 @@ public sealed class AcademicManagementController(
         return !semesters.IsFailure
             ? Ok(semesters)
             : HandleFailure(semesters);
+    }
+
+    [HttpGet("next-semester")]
+    public async Task<IActionResult> GetNextSemesterAsync()
+    {
+        var semester = await semesterService.GetNextSemesterAsync();
+        return semester.IsSuccess ? Ok(mapper.Map<SemesterResponse>(semester.Value)) : HandleFailure(semester);
     }
 
     [HttpGet("semester/active")]
@@ -269,7 +290,7 @@ public sealed class AcademicManagementController(
             ? Ok(result)
             : HandleFailure(result);
     }
-    
+
     [Authorize(Roles = nameof(UserRoles.SuperAdmin))]
     [HttpPost("semester")]
     public async Task<IActionResult> CreateSemesterAsync(CreateSemesterRequest request)
@@ -278,9 +299,9 @@ public sealed class AcademicManagementController(
         return !result.IsFailure
             ? CreatedAtRoute(
                 "GetSemesterById",
-                new {semesterId = result.Value},
-                new {Id = result.Value}
-                )
+                new { semesterId = result.Value },
+                new { Id = result.Value }
+            )
             : HandleFailure(result);
     }
 
@@ -303,9 +324,10 @@ public sealed class AcademicManagementController(
             ? NoContent()
             : HandleFailure(result);
     }
+
     #endregion
 
-    #region Archive 
+    #region Archive
 
     [HttpPost("archive")]
     [Authorize(Roles = $"{UserRoles.Manager}")]
@@ -314,10 +336,10 @@ public sealed class AcademicManagementController(
         var result = await archiveDataApplicationService.ArchiveDataCompletedStudents(default);
 
         return result.IsSuccess
-           ? File(result.Value.Content,
-               "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-               result.Value.FileName)
-           : HandleFailure(result);
+            ? File(result.Value.Content,
+                "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+                result.Value.FileName)
+            : HandleFailure(result);
     }
 
     #endregion Archive
@@ -333,7 +355,7 @@ public sealed class AcademicManagementController(
             case UserRoles.SuperAdmin:
                 var superAdmin = await archiveDataApplicationService.PresentSuperAdminDashBoard(default);
 
-                return superAdmin.IsSuccess ? Ok(superAdmin) : HandleFailure(superAdmin);   
+                return superAdmin.IsSuccess ? Ok(superAdmin) : HandleFailure(superAdmin);
 
             case UserRoles.Admin:
                 var admin = await archiveDataApplicationService.PresentAdminDashBoard(default);
@@ -349,5 +371,6 @@ public sealed class AcademicManagementController(
                 throw new InvalidOperationException();
         }
     }
+
     #endregion Dashboard
 }
