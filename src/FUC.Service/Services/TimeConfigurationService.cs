@@ -132,7 +132,8 @@ public class TimeConfigurationService(
         var nextSemester = await semesterService.GetNextSemesterAsync(true);
 
         if (nextSemester.IsFailure)
-            return OperationResult.Failure(new Error("CreateFailed", "Does not have any next semester"));
+            return OperationResult.Failure(new Error("CreateFailed",
+                "Does not have any next semester or the next semester dose not exist "));
 
         var invalidDates = new[]
         {

@@ -131,7 +131,7 @@ public sealed class SemesterService(
             x => x.Include(x => x.TimeConfiguration),
             isEnableTracking);
 
-        return semester.Any(x => x.TimeConfiguration != null)
+        return semester.Any(x => x.TimeConfiguration == null)
             ? semester.MinBy(x => x.StartDate)
             : default;
     }
