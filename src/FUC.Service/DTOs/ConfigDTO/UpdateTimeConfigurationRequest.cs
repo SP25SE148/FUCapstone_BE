@@ -50,5 +50,5 @@ public class CreateTimeConfigurationRequest
     public DateTime DefendCapstoneProjectDate { get; set; }
     public DateTime DefendCapstoneProjectExpiredDate { get; set; }
     public bool IsActived { get; set; }
-    public string CampusId { get; set; }
+    public string? CampusId { get; set; }
 }

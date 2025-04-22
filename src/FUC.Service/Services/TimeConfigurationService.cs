@@ -1,5 +1,6 @@
 ﻿using AutoMapper;
 using FUC.Common.Abstractions;
+using FUC.Common.Constants;
 using FUC.Common.Contracts;
 using FUC.Common.IntegrationEventLog.Services;
 using FUC.Common.Shared;
@@ -9,6 +10,8 @@ using FUC.Data.Entities;
 using FUC.Data.Repositories;
 using FUC.Service.Abstractions;
 using FUC.Service.DTOs.ConfigDTO;
+using FUC.Service.DTOs.SemesterDTO;
+using Microsoft.EntityFrameworkCore;
 
 namespace FUC.Service.Services;
 
@@ -16,6 +19,7 @@ public class TimeConfigurationService(
     ICurrentUser currentUser,
     IMapper mapper,
     IRepository<TimeConfiguration> repository,
+    IRepository<Semester> semesterRepository,
     ISemesterService semesterService,
     ISystemConfigurationService systemConfigurationService,
     IIntegrationEventLogService integrationEventLogService,
@@ -25,45 +29,59 @@ public class TimeConfigurationService(
     {
         var result = await repository.FindAsync(
             x => currentUser.CampusId == "all" || x.CampusId == currentUser.CampusId,
-            include: null,
+            include: x => x.Include(x => x.Semester),
             orderBy: null,
             selector: x => new TimeConfigurationDto
             {
                 Id = x.Id,
+                SemesterId = x.Semester.Id,
+                SemesterName = x.Semester.Name,
                 CampusId = x.CampusId,
-                RegistTopicDate = x.RegistTopicForSupervisorDate,
-                RegistTopicExpiredDate = x.RegistTopicForSupervisorExpiredDate,
+                RegistTopicForSupervisorDate = x.RegistTopicForSupervisorDate,
+                RegistTopicForSupervisorExpiredDate = x.RegistTopicForSupervisorExpiredDate,
                 TeamUpDate = x.TeamUpDate,
                 TeamUpExpirationDate = x.TeamUpExpirationDate,
+                RegistTopicForGroupDate = x.RegistTopicForGroupDate,
+                RegistTopicForGroupExpiredDate = x.RegistTopicForGroupExpiredDate,
+                ReviewAttemptDate = x.ReviewAttemptDate,
+                ReviewAttemptExpiredDate = x.ReviewAttemptExpiredDate,
+                DefendCapstoneProjectDate = x.DefendCapstoneProjectDate,
+                DefendCapstoneProjectExpiredDate = x.DefendCapstoneProjectExpiredDate,
                 IsActived = x.IsActived
             });
 
         return OperationResult.Success(result);
     }
 
-    public async Task<OperationResult<TimeConfigurationDto>> GetCurrentTimeConfiguration(string campusId)
+    public async Task<OperationResult<TimeConfigurationDto>> GetTimeConfigurationBySemesterId(string semesterId)
     {
-        var result = await repository.GetAsync(
-            x => x.CampusId == campusId,
-            selector: x => new TimeConfigurationDto
+        var result =
+            from tc in repository.GetQueryable()
+            join s in semesterRepository.GetQueryable() on tc.Id equals s.TimeConfigurationId
+            where s.Id == semesterId && (currentUser.CampusId == "all" || tc.CampusId == currentUser.CampusId)
+            select new TimeConfigurationDto
             {
-                Id = x.Id,
-                CampusId = x.CampusId,
-                RegistTopicDate = x.RegistTopicForSupervisorDate,
-                RegistTopicExpiredDate = x.RegistTopicForSupervisorExpiredDate,
-                TeamUpDate = x.TeamUpDate,
-                TeamUpExpirationDate = x.TeamUpExpirationDate,
-                IsActived = x.IsActived
-            });
-
-        if (result is null)
-            return OperationResult.Failure<TimeConfigurationDto>(new Error("TimeConfiguration.Error",
-                "The timeconfig does not exist."));
-
-        return OperationResult.Success(result);
+                Id = tc.Id,
+                SemesterId = tc.Semester.Id,
+                SemesterName = tc.Semester.Name,
+                CampusId = tc.CampusId,
+                RegistTopicForSupervisorDate = tc.RegistTopicForSupervisorDate,
+                RegistTopicForSupervisorExpiredDate = tc.RegistTopicForSupervisorExpiredDate,
+                TeamUpDate = tc.TeamUpDate,
+                TeamUpExpirationDate = tc.TeamUpExpirationDate,
+                RegistTopicForGroupDate = tc.RegistTopicForGroupDate,
+                RegistTopicForGroupExpiredDate = tc.RegistTopicForGroupExpiredDate,
+                ReviewAttemptDate = tc.ReviewAttemptDate,
+                ReviewAttemptExpiredDate = tc.ReviewAttemptExpiredDate,
+                DefendCapstoneProjectDate = tc.DefendCapstoneProjectDate,
+                DefendCapstoneProjectExpiredDate = tc.DefendCapstoneProjectExpiredDate,
+                IsActived = tc.IsActived
+            };
+        return await result.FirstOrDefaultAsync();
     }
 
-    public async Task<OperationResult> UpdateTimeConfiguration(UpdateTimeConfigurationRequest request,
+    public async Task<OperationResult> UpdateTimeConfiguration(
+        UpdateTimeConfigurationRequest request,
         CancellationToken cancellationToken)
     {
         var currentSemester = await semesterService.GetCurrentSemesterAsync();
@@ -111,10 +129,10 @@ public class TimeConfigurationService(
     public async Task<OperationResult> CreateTimeConfiguration(CreateTimeConfigurationRequest request,
         CancellationToken cancellationToken)
     {
-        var currentSemester = await semesterService.GetCurrentSemesterAsync(true);
+        var nextSemester = await semesterService.GetNextSemesterAsync(true);
 
-        if (currentSemester.IsFailure)
-            return OperationResult.Failure(currentSemester.Error);
+        if (nextSemester.IsFailure)
+            return OperationResult.Failure(nextSemester.Error);
 
         var invalidDates = new[]
         {
@@ -133,9 +151,9 @@ public class TimeConfigurationService(
 
         foreach (var (date, dateName, configType) in invalidDates)
         {
-            if (!CheckConfigurationDateIsValid(date, currentSemester.Value, configType))
+            if (!CheckConfigurationDateIsValid(date, nextSemester.Value, configType))
                 return OperationResult.Failure(new Error("TimeConfiguration.Error",
-                    $"{dateName} need to be in the valid duration of Semester {currentSemester.Value.Id}"));
+                    $"{dateName} need to be in the valid duration of Semester {nextSemester.Value.Id}"));
         }
 
         if (string.IsNullOrEmpty(request.CampusId))
@@ -157,11 +175,13 @@ public class TimeConfigurationService(
             TeamUpDate = request.TeamUpDate,
             TeamUpExpirationDate = request.TeamUpExpirationDate,
             IsActived = request.IsActived,
-            CampusId = request.CampusId,
+            CampusId = currentUser.Role == UserRoles.SuperAdmin ? request.CampusId : currentUser.CampusId,
         };
 
-        currentSemester.Value.TimeConfigurationId = timeConfig.Id;
         repository.Insert(timeConfig);
+        await unitOfWork.SaveChangesAsync(cancellationToken);
+
+        nextSemester.Value.TimeConfigurationId = timeConfig.Id;
         integrationEventLogService.SendEvent(new TimeConfigurationCreatedEvent()
         {
             RequestId = timeConfig.Id,

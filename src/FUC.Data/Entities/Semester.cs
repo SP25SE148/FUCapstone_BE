@@ -5,7 +5,7 @@ namespace FUC.Data.Entities;
 public sealed class Semester : AuditableSoftDeleteEntity
 {
     public string Id { get; set; } // semester code
-    public Guid TimeConfigurationId { get; set; }
+    public Guid? TimeConfigurationId { get; set; }
     public string Name { get; set; } = string.Empty;
     public int MaxGroupsPerSupervisor { get; set; }
     public DateTime StartDate { get; set; }

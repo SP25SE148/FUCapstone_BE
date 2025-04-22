@@ -6,9 +6,11 @@ namespace FUC.Service.Abstractions;
 public interface ITimeConfigurationService
 {
     Task<OperationResult<IList<TimeConfigurationDto>>> GetTimeConfigurations();
+    Task<OperationResult<TimeConfigurationDto>> GetTimeConfigurationBySemesterId(string semesterId);
+
     Task<OperationResult> UpdateTimeConfiguration(UpdateTimeConfigurationRequest request,
         CancellationToken cancellationToken);
+
     Task<OperationResult> CreateTimeConfiguration(CreateTimeConfigurationRequest request,
         CancellationToken cancellationToken);
-    Task<OperationResult<TimeConfigurationDto>> GetCurrentTimeConfiguration(string campusId);
 }
