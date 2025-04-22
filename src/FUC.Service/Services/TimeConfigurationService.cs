@@ -277,7 +277,7 @@ public class TimeConfigurationService(
         {
             "RegistTopicForSupervisor" => configDate <= startDateOfSemester,
             "DefendCapstoneProject" => configDate >= endDateOfSemester,
-            _ => configDate >= startDateOfSemester && configDate <= startDateOfSemester,
+            _ => configDate >= startDateOfSemester && configDate <= endDateOfSemester,
         };
     }
 }
