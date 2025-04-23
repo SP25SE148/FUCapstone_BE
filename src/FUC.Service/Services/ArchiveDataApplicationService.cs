@@ -148,12 +148,13 @@ public class ArchiveDataApplicationService : IArchiveDataApplicationService
     }
 
     public async Task<OperationResult<SuperAdminDashBoardDto>> PresentSuperAdminDashBoard(
-        CancellationToken cancellationToken)
+        string semesterId, CancellationToken cancellationToken)
     {
-        var currentSemester = await _semesterService.GetCurrentSemesterAsync();
+        var currentSemester = await _semesterService.GetSemesterByIdAsync(semesterId);
 
         if (currentSemester.IsFailure)
-            return OperationResult.Failure<SuperAdminDashBoardDto>(currentSemester.Error);
+            return OperationResult.Failure<SuperAdminDashBoardDto>(new Error("GetDashBoard.Error",
+                "Semester not found."));
 
         var students = await _context.Students.ToListAsync(cancellationToken);
         var supervisors = await _context.Supervisors.ToListAsync(cancellationToken);
@@ -197,12 +198,13 @@ public class ArchiveDataApplicationService : IArchiveDataApplicationService
         };
     }
 
-    public async Task<OperationResult<AdminDashBoardDto>> PresentAdminDashBoard(CancellationToken cancellationToken)
+    public async Task<OperationResult<AdminDashBoardDto>> PresentAdminDashBoard(string semesterId,
+        CancellationToken cancellationToken)
     {
-        var currentSemester = await _semesterService.GetCurrentSemesterAsync();
+        var currentSemester = await _semesterService.GetSemesterByIdAsync(semesterId);
 
         if (currentSemester.IsFailure)
-            return OperationResult.Failure<AdminDashBoardDto>(currentSemester.Error);
+            return OperationResult.Failure<AdminDashBoardDto>(new Error("GetDashBoard.Error", "Semester not found."));
 
         var students = await _context.Students
             .Where(x => x.CampusId == _currentUser.CampusId)
@@ -239,12 +241,14 @@ public class ArchiveDataApplicationService : IArchiveDataApplicationService
         };
     }
 
-    public async Task<OperationResult<ManagerDashBoardDto>> PresentManagerDashBoard(CancellationToken cancellationToken)
+    public async Task<OperationResult<ManagerDashBoardDto>> PresentManagerDashBoard(string semesterId,
+        CancellationToken cancellationToken)
     {
-        var currentSemester = await _semesterService.GetCurrentSemesterAsync();
+        var currentSemester = await _semesterService.GetSemesterByIdAsync(semesterId);
 
         if (currentSemester.IsFailure)
-            return OperationResult.Failure<ManagerDashBoardDto>(currentSemester.Error);
+            return OperationResult.Failure<ManagerDashBoardDto>(new Error("GetDashBoard.Error", "Semester not found."));
+
 
         var students = await _context.Students
             .Where(x => x.CampusId == _currentUser.CampusId &&
@@ -283,11 +287,12 @@ public class ArchiveDataApplicationService : IArchiveDataApplicationService
 
         var overdueTasks = groups.Sum(g =>
             g.ProjectProgress?.FucTasks?
-            .Count(t => t.DueDate < DateTime.Now && t.Status != FucTaskStatus.Done) ?? 0);
+                .Count(t => t.DueDate < DateTime.Now && t.Status != FucTaskStatus.Done) ?? 0);
 
-        var averageGroupSize = groups.Count > 0 ? 
-            groups.Where(x => x.GroupMembers != null && x.GroupMembers.Count > 0)
-            .Average(g => g.GroupMembers.Count) : 0;
+        var averageGroupSize = groups.Count > 0
+            ? groups.Where(x => x.GroupMembers != null && x.GroupMembers.Count > 0)
+                .Average(g => g.GroupMembers.Count)
+            : 0;
 
         var taskCompletionRate = totalTasks > 0 ? (double)completedTasks / totalTasks : 0;
 
@@ -301,7 +306,7 @@ public class ArchiveDataApplicationService : IArchiveDataApplicationService
                     .Count(t => t.Status == FucTaskStatus.Done) ?? 0,
                 OverdueTasks =
                     g.ProjectProgress?.FucTasks?
-                    .Count(t => t.DueDate < DateTime.Now && t.Status != FucTaskStatus.Done) ?? 0
+                        .Count(t => t.DueDate < DateTime.Now && t.Status != FucTaskStatus.Done) ?? 0
             })
             .OrderByDescending(gm => gm.CompletedTasks)
             .FirstOrDefault();
@@ -316,7 +321,7 @@ public class ArchiveDataApplicationService : IArchiveDataApplicationService
                     .Count(t => t.Status == FucTaskStatus.Done) ?? 0,
                 OverdueTasks =
                     g.ProjectProgress?.FucTasks?
-                    .Count(t => t.DueDate < DateTime.Now && t.Status != FucTaskStatus.Done) ?? 0
+                        .Count(t => t.DueDate < DateTime.Now && t.Status != FucTaskStatus.Done) ?? 0
             })
             .OrderBy(gm => gm.CompletedTasks)
             .FirstOrDefault();
