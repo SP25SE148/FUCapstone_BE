@@ -7,7 +7,13 @@ namespace FUC.Service.Abstractions;
 public interface IArchiveDataApplicationService
 {
     Task<OperationResult<ExportCompletedStudents>> ArchiveDataCompletedStudents(CancellationToken cancellationToken);
-    Task<OperationResult<SuperAdminDashBoardDto>> PresentSuperAdminDashBoard(CancellationToken cancellationToken);
-    Task<OperationResult<AdminDashBoardDto>> PresentAdminDashBoard(CancellationToken cancellationToken);
-    Task<OperationResult<ManagerDashBoardDto>> PresentManagerDashBoard(CancellationToken cancellationToken);
+
+    Task<OperationResult<SuperAdminDashBoardDto>> PresentSuperAdminDashBoard(string semesterId,
+        CancellationToken cancellationToken);
+
+    Task<OperationResult<AdminDashBoardDto>> PresentAdminDashBoard(string semesterId,
+        CancellationToken cancellationToken);
+
+    Task<OperationResult<ManagerDashBoardDto>> PresentManagerDashBoard(string semesterId,
+        CancellationToken cancellationToken);
 }

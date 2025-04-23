@@ -348,24 +348,24 @@ public sealed class AcademicManagementController(
 
     #region Dashboard
 
-    [HttpGet("dashboard")]
+    [HttpGet("dashboard/{semesterId}")]
     [Authorize(Roles = $"{UserRoles.SuperAdmin},{UserRoles.Admin},{UserRoles.Manager}")]
-    public async Task<IActionResult> GetDashboardAsync()
+    public async Task<IActionResult> GetDashboardAsync(string semesterId)
     {
         switch (currentUser.Role)
         {
             case UserRoles.SuperAdmin:
-                var superAdmin = await archiveDataApplicationService.PresentSuperAdminDashBoard(default);
+                var superAdmin = await archiveDataApplicationService.PresentSuperAdminDashBoard(semesterId, default);
 
                 return superAdmin.IsSuccess ? Ok(superAdmin) : HandleFailure(superAdmin);
 
             case UserRoles.Admin:
-                var admin = await archiveDataApplicationService.PresentAdminDashBoard(default);
+                var admin = await archiveDataApplicationService.PresentAdminDashBoard(semesterId, default);
 
                 return admin.IsSuccess ? Ok(admin) : HandleFailure(admin);
 
             case UserRoles.Manager:
-                var manager = await archiveDataApplicationService.PresentManagerDashBoard(default);
+                var manager = await archiveDataApplicationService.PresentManagerDashBoard(semesterId, default);
 
                 return manager.IsSuccess ? Ok(manager) : HandleFailure(manager);
 
