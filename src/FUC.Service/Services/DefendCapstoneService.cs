@@ -24,6 +24,7 @@ public class DefendCapstoneService(
     ICurrentUser currentUser,
     IRepository<DefendCapstoneProjectInformationCalendar> defendCapstoneCalendarRepository,
     IRepository<DefendCapstoneProjectCouncilMember> defendCapstoneCouncilMemberRepository,
+    IRepository<Group> groupRepository,
     IUnitOfWork<FucDbContext> unitOfWork,
     IIntegrationEventLogService integrationEventLogService,
     ISemesterService semesterService,
@@ -479,7 +480,9 @@ public class DefendCapstoneService(
                 break;
             }
 
-            var groupResult = await groupService.GetGroupDecisionByGroupIdAsync(Guid.Parse(groupCode));
+            var groupResult = await groupRepository.GetAsync(g => g.GroupCode == groupCode,
+                include: x => x.Include(x => x.DefendCapstoneProjectDecision),
+                cancellationToken: cancellationToken);
 
 
             var topicResult = await topicService.GetTopicByCode(topicCode, cancellationToken);
@@ -489,10 +492,9 @@ public class DefendCapstoneService(
                 topicResult.Value.IsAssignedToGroup == false ||
                 topicResult.Value.CapstoneId != currentUser.CapstoneId ||
                 topicResult.Value.CampusId != currentUser.CampusId ||
-                groupResult.IsFailure ||
-                groupResult.Value.TopicCode != topicResult.Value.Code ||
-                !IsDecisionStatusValidForAttempt(
-                    (DecisionStatus)Enum.Parse(typeof(DecisionStatus), groupResult.Value.Decision), attempt))
+                groupResult is null ||
+                groupResult.TopicId != topicResult.Value.Id ||
+                !IsDecisionStatusValidForAttempt(groupResult.DefendCapstoneProjectDecision.Decision, attempt))
                 throw new InvalidOperationException("Topic is not available for defend phase.");
 
             var presidentAndSecretary = await GetPresidentAndSecretaryAsync(row, topicResult.Value);
