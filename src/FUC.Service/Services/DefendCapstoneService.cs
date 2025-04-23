@@ -689,16 +689,10 @@ public class DefendCapstoneService(
     {
         var result = new Dictionary<DateTime, List<DefendCapstoneCalendarResponse>>();
 
-        var currentSemester = await semesterService.GetCurrentSemesterAsync();
-
-        if (currentSemester.IsFailure)
-            return OperationResult.Failure<Dictionary<DateTime, List<DefendCapstoneCalendarResponse>>>(currentSemester
-                .Error);
 
         var calendars = await defendCapstoneCalendarRepository.FindAsync(
             x => x.CampusId == currentUser.CampusId &&
-                 x.CapstoneId == currentUser.CapstoneId &&
-                 x.SemesterId == currentSemester.Value.Id,
+                 x.CapstoneId == currentUser.CapstoneId,
             include: x => x.AsSplitQuery()
                 .Include(x => x.DefendCapstoneProjectMemberCouncils)
                 .ThenInclude(x => x.Supervisor)
