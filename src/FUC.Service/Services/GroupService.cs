@@ -557,7 +557,7 @@ public class GroupService(
                     SupervisorFullName = tr.Supervisor.FullName,
                     TopicEnglishName = tr.Topic.EnglishName,
                     Reason = tr.Reason,
-                    LeaderFullName = tr.Group.GroupMembers.FirstOrDefault()!.Student.FullName,
+                    LeaderFullName = tr.Group.GroupMembers.FirstOrDefault(gm => gm.IsLeader)!.Student.FullName,
                     Gpa = tr.Group.GPA
                 }
             )).GroupBy(tr => tr.TopicId);
