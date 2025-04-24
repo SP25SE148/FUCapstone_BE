@@ -293,6 +293,13 @@ public sealed class AcademicManagementController(
             : HandleFailure(result);
     }
 
+    [HttpGet("semester/get-semesters-between-current-date")]
+    public async Task<IActionResult> GetSemestersBetweenCurrentDateAsync()
+    {
+        OperationResult<IEnumerable<SemesterResponse>> result = await semesterService.GetSemestersBetweenCurrentDate();
+        return result.IsSuccess ? Ok(result) : HandleFailure(result);
+    }
+
     [Authorize(Roles = nameof(UserRoles.SuperAdmin))]
     [HttpPost("semester")]
     public async Task<IActionResult> CreateSemesterAsync(CreateSemesterRequest request)

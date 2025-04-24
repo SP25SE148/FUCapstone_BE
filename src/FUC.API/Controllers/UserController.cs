@@ -149,7 +149,8 @@ public sealed class UserController(
     public async Task<IActionResult> ImportDefendCapstoneCalendarAsync(
         [FromForm] UploadDefendCapstoneCalendarRequest request)
     {
-        var result = await defendCapstoneService.UploadDefendCapstoneProjectCalendar(request.File, default);
+        var result =
+            await defendCapstoneService.UploadDefendCapstoneProjectCalendar(request.File, request.semesterId, default);
 
         return result.IsSuccess
             ? Ok(result)

@@ -2,4 +2,4 @@
 
 namespace FUC.Service.DTOs.DefendCapstone;
 
-public sealed record UploadDefendCapstoneCalendarRequest(IFormFile File);
+public sealed record UploadDefendCapstoneCalendarRequest(IFormFile File, string semesterId);

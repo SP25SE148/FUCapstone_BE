@@ -24,10 +24,10 @@ public class DefendCapstoneService(
     ICurrentUser currentUser,
     IRepository<DefendCapstoneProjectInformationCalendar> defendCapstoneCalendarRepository,
     IRepository<DefendCapstoneProjectCouncilMember> defendCapstoneCouncilMemberRepository,
+    IRepository<Semester> semesterRepository,
     IRepository<Group> groupRepository,
     IUnitOfWork<FucDbContext> unitOfWork,
     IIntegrationEventLogService integrationEventLogService,
-    ISemesterService semesterService,
     ITopicService topicService,
     IGroupService groupService,
     ISupervisorService supervisorService,
@@ -35,6 +35,7 @@ public class DefendCapstoneService(
     IDocumentsService documentsService) : IDefendCapstoneService
 {
     public async Task<OperationResult> UploadDefendCapstoneProjectCalendar(IFormFile file,
+        string semesterId,
         CancellationToken cancellationToken)
     {
         if (!IsValidFile(file))
@@ -45,34 +46,41 @@ public class DefendCapstoneService(
         try
         {
             // get current semester 
-            var currentSemester = await semesterService.GetCurrentSemesterAsync();
-            if (currentSemester.IsFailure)
+            var semester = await semesterRepository.GetAsync(s => s.Id == semesterId,
+                include: s => s.Include(s => s.TimeConfiguration),
+                orderBy: null,
+                cancellationToken
+            );
+            if (semester is null)
                 return OperationResult.Failure(new Error("Error.SemesterIsNotGoingOn",
-                    "The current semester is not going on"));
+                    "The semester that you choose is not going on or not found !"));
 
-            if (currentSemester.Value.TimeConfiguration != null &&
-                currentSemester.Value.TimeConfiguration.IsActived &&
-                (currentSemester.Value.TimeConfiguration.DefendCapstoneProjectDate > DateTime.Now
-                 || currentSemester.Value.TimeConfiguration.DefendCapstoneProjectExpiredDate < DateTime.Now))
+            if (semester.TimeConfiguration != null &&
+                semester.TimeConfiguration.IsActived &&
+                (semester.TimeConfiguration.DefendCapstoneProjectDate > DateTime.Now
+                 || semester.TimeConfiguration.DefendCapstoneProjectExpiredDate < DateTime.Now))
                 return OperationResult.Failure<Guid>(new Error("CreateFailed",
                     "Must import the defend calendar for group on available time. The time that you can import the defend calendar file is from " +
-                    currentSemester.Value.TimeConfiguration.DefendCapstoneProjectDate + " to " +
-                    currentSemester.Value.TimeConfiguration.DefendCapstoneProjectExpiredDate));
+                    semester.TimeConfiguration.DefendCapstoneProjectDate + " to " +
+                    semester.TimeConfiguration.DefendCapstoneProjectExpiredDate));
 
             var defendCalendars =
-                await ParseDefendCapstoneCalendarsFromFile(file, currentSemester.Value.Id, cancellationToken);
+                await ParseDefendCapstoneCalendarsFromFile(file, semester.Id, cancellationToken);
 
             defendCapstoneCalendarRepository.InsertRange(defendCalendars);
 
+            var calendarCreatedEvent = new CalendarCreatedEvent();
             foreach (var defendCalendar in defendCalendars)
             {
-                integrationEventLogService.SendEvent(new CalendarCreatedEvent
+                calendarCreatedEvent.Details.Add(new CalendarCreatedDetail()
                 {
                     CalendarId = defendCalendar.Id,
                     StartDate = defendCalendar.DefenseDate,
                     Type = nameof(DefendCapstoneProjectInformationCalendar)
                 });
             }
+
+            integrationEventLogService.SendEvent(calendarCreatedEvent);
 
             await unitOfWork.SaveChangesAsync(cancellationToken);
 
@@ -449,7 +457,7 @@ public class DefendCapstoneService(
     }
 
     private async Task<List<DefendCapstoneProjectInformationCalendar>> ParseDefendCapstoneCalendarsFromFile(
-        IFormFile file, string currentSemesterId, CancellationToken cancellationToken)
+        IFormFile file, string semesterId, CancellationToken cancellationToken)
     {
         var stream = new MemoryStream();
         await file.CopyToAsync(stream, cancellationToken);
@@ -522,7 +530,7 @@ public class DefendCapstoneService(
             var defendCalendar = CreateDefendCalendar(
                 topicResult.Value,
                 currentUser.CampusId,
-                currentSemesterId,
+                semesterId,
                 currentUser.CapstoneId,
                 defendCapstoneProjectCalendarDetail,
                 attempt,
@@ -548,7 +556,7 @@ public class DefendCapstoneService(
     private static DefendCapstoneProjectInformationCalendar CreateDefendCalendar(
         Topic topic,
         string currentUserCampusId,
-        string currentSemesterId,
+        string semesterId,
         string currentCapstoneId,
         (DateTime, string, string) defendCapstoneProjectCalendarDetail,
         int attempt,
@@ -561,7 +569,7 @@ public class DefendCapstoneService(
             TopicId = topic.Id,
             TopicCode = topic.Code!,
             CampusId = currentUserCampusId,
-            SemesterId = currentSemesterId,
+            SemesterId = semesterId,
             CapstoneId = currentCapstoneId,
             DefenseDate = defendCapstoneProjectCalendarDetail.Item1,
             Time = defendCapstoneProjectCalendarDetail.Item2,
