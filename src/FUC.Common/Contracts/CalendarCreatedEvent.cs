@@ -4,7 +4,7 @@ namespace FUC.Common.Contracts;
 
 public class CalendarCreatedEvent : IntegrationEvent
 {
-    public List<CalendarCreatedDetail> Details { get; set; }
+    public IEnumerable<CalendarCreatedDetail> Details { get; set; }
 }
 
 public class CalendarCreatedDetail
