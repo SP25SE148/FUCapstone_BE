@@ -1,4 +1,5 @@
-﻿using AutoMapper;
+﻿using System.Runtime.InteropServices.JavaScript;
+using AutoMapper;
 using FUC.Common.Helpers;
 using FUC.Common.Shared;
 using FUC.Data;
@@ -136,13 +137,29 @@ public sealed class SemesterService(
             : default;
     }
 
-    public async Task<List<string>> GetPreviouseSemesterIds(DateTime? startDayOfCurrentSemester = null, int top = 3)
+    public async Task<OperationResult<IEnumerable<SemesterResponse>>> GetSemestersBetweenCurrentDate()
     {
-        if (startDayOfCurrentSemester is null)
+        var resultList = new List<Semester>();
+        var previousSemester = (await semesterRepository.FindAsync(s => s.StartDate <= DateTime.Now,
+            orderBy: s => s.OrderByDescending(s => s.EndDate))).FirstOrDefault();
+        var nextSemester = await GetNextSemesterAsync();
+        if (previousSemester != null)
         {
-            var currentSemester = await GetCurrentSemesterAsync();
-            startDayOfCurrentSemester = currentSemester.Value.StartDate;
+            resultList.Add(previousSemester);
         }
+
+        if (nextSemester.IsSuccess)
+        {
+            resultList.Add(nextSemester.Value);
+        }
+
+        return OperationResult.Success(mapper.Map<IEnumerable<SemesterResponse>>(resultList));
+    }
+
+    public async Task<List<string>> GetPreviouseSemesterIds(
+        DateTime? startDayOfCurrentSemester = null, int top = 3)
+    {
+        startDayOfCurrentSemester ??= DateTime.Now;
 
         var previousSemesterIds = await semesterRepository.FindAsync(
             predicate: s => s.StartDate < startDayOfCurrentSemester,

@@ -4,6 +4,11 @@ namespace FUC.Common.Contracts;
 
 public class CalendarCreatedEvent : IntegrationEvent
 {
+    public List<CalendarCreatedDetail> Details { get; set; }
+}
+
+public class CalendarCreatedDetail
+{
     public Guid CalendarId { get; set; }
     public string Type { get; set; }
     public DateTime StartDate { get; set; }

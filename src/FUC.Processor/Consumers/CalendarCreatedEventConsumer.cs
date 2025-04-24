@@ -1,5 +1,6 @@
 ﻿using FUC.Common.Abstractions;
 using FUC.Common.Contracts;
+using FUC.Common.Helpers;
 using FUC.Common.Options;
 using FUC.Processor.Data;
 using FUC.Processor.Models;
@@ -29,12 +30,22 @@ public class CalendarCreatedEventConsumer : BaseEventConsumer<CalendarCreatedEve
                 "--> Consume created event for CalendarCreatedEventConsumer - Event {EventId}",
                 message.Id);
 
-            _processorDbContext.Reminders.Add(new Reminder
+            foreach (var calendarCreatedDetail in message.Details)
             {
-                ReminderType = message.Type,
-                RemindFor = message.CalendarId.ToString(),
-                RemindDate = message.StartDate
-            });
+                _processorDbContext.Reminders.Add(new Reminder
+                {
+                    ReminderType = calendarCreatedDetail.Type,
+                    RemindFor = calendarCreatedDetail.CalendarId.ToString(),
+                    RemindDate = calendarCreatedDetail.StartDate.StartOfDay()
+                });
+                _processorDbContext.Reminders.Add(new Reminder
+                {
+                    ReminderType = calendarCreatedDetail.Type,
+                    RemindFor = calendarCreatedDetail.CalendarId.ToString(),
+                    RemindDate = calendarCreatedDetail.StartDate.AddDays(1).StartOfDay()
+                });
+            }
+
             await _processorDbContext.SaveChangesAsync();
         }
         catch (Exception ex)

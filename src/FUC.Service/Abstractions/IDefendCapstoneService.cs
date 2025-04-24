@@ -7,7 +7,7 @@ namespace FUC.Service.Abstractions;
 
 public interface IDefendCapstoneService
 {
-    Task<OperationResult> UploadDefendCapstoneProjectCalendar(IFormFile file,
+    Task<OperationResult> UploadDefendCapstoneProjectCalendar(IFormFile file, string semesterId,
         CancellationToken cancellationToken);
 
     Task<OperationResult<Dictionary<DateTime, List<DefendCapstoneCalendarResponse>>>> GetDefendCalendersByCouncilMember(
