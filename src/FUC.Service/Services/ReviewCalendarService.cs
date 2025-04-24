@@ -63,18 +63,22 @@ public sealed class ReviewCalendarService(
             reviewCalendarRepository.InsertRange(reviewCalendars);
 
             // send review calendar created event
-            var calendarCreatedEvent = new CalendarCreatedEvent();
-            foreach (var reviewCalendar in reviewCalendars)
+            var calendarCreatedDetails = new List<CalendarCreatedDetail>();
+
+            foreach (var defendCalendar in reviewCalendars)
             {
-                calendarCreatedEvent.Details.Add(new CalendarCreatedDetail()
+                calendarCreatedDetails.Add(new CalendarCreatedDetail()
                 {
-                    CalendarId = reviewCalendar.Id,
-                    StartDate = reviewCalendar.Date,
+                    CalendarId = defendCalendar.Id,
+                    StartDate = defendCalendar.Date,
                     Type = nameof(ReviewCalendar)
                 });
             }
 
-            integrationEventLogService.SendEvent(calendarCreatedEvent);
+            integrationEventLogService.SendEvent(new CalendarCreatedEvent
+            {
+                Details = calendarCreatedDetails
+            });
 
             await uow.SaveChangesAsync();
             return OperationResult.Success();

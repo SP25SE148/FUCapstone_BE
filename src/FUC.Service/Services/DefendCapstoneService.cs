@@ -69,10 +69,11 @@ public class DefendCapstoneService(
 
             defendCapstoneCalendarRepository.InsertRange(defendCalendars);
 
-            var calendarCreatedEvent = new CalendarCreatedEvent();
+            var calendarCreatedDetails = new List<CalendarCreatedDetail>();
+
             foreach (var defendCalendar in defendCalendars)
             {
-                calendarCreatedEvent.Details.Add(new CalendarCreatedDetail()
+                calendarCreatedDetails.Add(new CalendarCreatedDetail()
                 {
                     CalendarId = defendCalendar.Id,
                     StartDate = defendCalendar.DefenseDate,
@@ -80,7 +81,10 @@ public class DefendCapstoneService(
                 });
             }
 
-            integrationEventLogService.SendEvent(calendarCreatedEvent);
+            integrationEventLogService.SendEvent(new CalendarCreatedEvent
+            {
+                Details = calendarCreatedDetails
+            });
 
             await unitOfWork.SaveChangesAsync(cancellationToken);
 
