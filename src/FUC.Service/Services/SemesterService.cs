@@ -148,7 +148,7 @@ public sealed class SemesterService(
             resultList.Add(previousSemester);
         }
 
-        if (nextSemester.IsSuccess)
+        if (nextSemester.IsSuccess && nextSemester.Value != null)
         {
             resultList.Add(nextSemester.Value);
         }
