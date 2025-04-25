@@ -1,7 +1,11 @@
 ﻿using FUC.API.Abstractions;
 using FUC.Common.Abstractions;
 using FUC.Common.Constants;
+using FUC.Common.Contracts;
+using FUC.Common.IntegrationEventLog.Services;
 using FUC.Common.Shared;
+using FUC.Data;
+using FUC.Data.Data;
 using FUC.Data.Enums;
 using FUC.Service.Abstractions;
 using FUC.Service.DTOs.DefendCapstone;
@@ -20,10 +24,23 @@ public sealed class UserController(
     ICurrentUser currentUser,
     IStudentService studentService,
     ISupervisorService supervisorService,
+    IIntegrationEventLogService integrationEventLogService,
+    IUnitOfWork<FucDbContext> uow,
     IReviewCalendarService reviewCalendarService,
     IDefendCapstoneService defendCapstoneService,
     IGroupService groupService) : ApiController
 {
+    [HttpGet("test")]
+    public async Task<IActionResult> Test()
+    {
+        integrationEventLogService.SendEvent(new CalendarCreatedEvent
+        {
+            Details = new List<CalendarCreatedDetail>(),
+        });
+        await uow.SaveChangesAsync();
+        return Ok();
+    }
+
     [HttpGet("get-all-student")]
     [Authorize(Roles = $"{UserRoles.SuperAdmin}, {UserRoles.Admin}, {UserRoles.Manager}")]
     public async Task<IActionResult> GetAllStudentAsync()

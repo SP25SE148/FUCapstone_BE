@@ -10,6 +10,7 @@ using FUC.Service.Abstractions;
 using FUC.Service.DTOs.SemesterDTO;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
+using Microsoft.VisualBasic;
 
 namespace FUC.Service.Services;
 
@@ -17,7 +18,8 @@ public sealed class SemesterService(
     ILogger<SemesterService> logger,
     IMapper mapper,
     IRepository<Semester> semesterRepository,
-    IUnitOfWork<FucDbContext> uow) : ISemesterService
+    IUnitOfWork<FucDbContext> uow,
+    ITimeConfigurationService timeConfigurationService) : ISemesterService
 {
     public async Task<OperationResult<string>> CreateSemesterAsync(CreateSemesterRequest request)
     {
@@ -115,7 +117,7 @@ public sealed class SemesterService(
             .GetAsync(x => DateTime.Now >= x.StartDate &&
                            DateTime.Now <= x.EndDate,
                 isEnableTracking,
-                include: x => x.Include(x => x.TimeConfiguration));
+                include: x => x.Include(x => x.TimeConfigurations));
 
         if (currentSemester is null)
         {
@@ -126,34 +128,48 @@ public sealed class SemesterService(
         return OperationResult.Success(currentSemester);
     }
 
-    public async Task<OperationResult<Semester>> GetNextSemesterAsync(bool isEnableTracking = false)
+    public async Task<OperationResult<Semester?>> GetNextSemesterAsync(bool isEnableTracking = false)
     {
-        var semester = await semesterRepository.FindAsync(t => DateTime.Now < t.StartDate,
-            x => x.Include(x => x.TimeConfiguration),
-            isEnableTracking);
-
-        return semester.Any(x => x.TimeConfiguration == null)
-            ? semester.MinBy(x => x.StartDate)
-            : default;
+        var semester = (await semesterRepository.FindAsync(
+            t => DateTime.Now < t.StartDate,
+            null,
+            isEnableTracking)).MinBy(x => x.StartDate);
+        if (semester is null)
+            return OperationResult.Success<Semester?>(null);
+        var timeConfig = await timeConfigurationService.GetTimeConfigurationBySemesterId(semester.Id);
+        if (timeConfig.IsSuccess)
+            return OperationResult.Success<Semester?>(null);
+        return semester;
     }
 
     public async Task<OperationResult<IEnumerable<SemesterResponse>>> GetSemestersBetweenCurrentDate()
     {
-        var resultList = new List<Semester>();
+        var resultList = new List<Semester?>();
         var previousSemester = (await semesterRepository.FindAsync(s => s.StartDate <= DateTime.Now,
             orderBy: s => s.OrderByDescending(s => s.EndDate))).FirstOrDefault();
-        var nextSemester = await GetNextSemesterAsync();
+        var nextSemester = (await semesterRepository.FindAsync(
+            t => DateTime.Now < t.StartDate)).MinBy(x => x.StartDate);
         if (previousSemester != null)
         {
             resultList.Add(previousSemester);
         }
 
-        if (nextSemester.IsSuccess && nextSemester.Value != null)
+        if (nextSemester != null)
         {
-            resultList.Add(nextSemester.Value);
+            resultList.Add(nextSemester);
         }
 
         return OperationResult.Success(mapper.Map<IEnumerable<SemesterResponse>>(resultList));
+    }
+
+    public async Task<OperationResult<Semester?>> GetSemesterForCreateTopic()
+    {
+        var semester = await GetCurrentSemesterAsync();
+        return semester.IsSuccess
+            ? semester
+            : (await semesterRepository.FindAsync(
+                t => DateTime.Now < t.StartDate,
+                include: x => x.Include(x => x.TimeConfigurations))).MinBy(x => x.StartDate);
     }
 
     public async Task<List<string>> GetPreviouseSemesterIds(

@@ -35,17 +35,39 @@ public class CalendarOnTimeEventConsumer
         {
             var reviewCalendar = await _dbContext.ReviewCalendars.AsTracking()
                 .FirstOrDefaultAsync(t => t.Id == message.CalendarId);
-            reviewCalendar!.Status = (ReviewCalendarStatus)Enum.Parse(typeof(ReviewCalendarStatus), message.Status);
+            if (reviewCalendar != null)
+            {
+                switch (reviewCalendar!.Status)
+                {
+                    case ReviewCalendarStatus.InProgress:
+                        reviewCalendar.Status = ReviewCalendarStatus.Done;
+                        break;
+                    case ReviewCalendarStatus.Pending:
+                        reviewCalendar.Status = ReviewCalendarStatus.InProgress;
+                        break;
+                }
+
+                await _dbContext.SaveChangesAsync();
+            }
         }
         else if (message.Type == nameof(DefendCapstoneProjectInformationCalendar))
         {
             var defendCalendar = await _dbContext.DefendCapstoneProjectInformationCalendars.AsTracking()
                 .FirstOrDefaultAsync(t => t.Id == message.CalendarId);
-            defendCalendar!.Status =
-                (DefendCapstoneProjectCalendarStatus)Enum.Parse(typeof(DefendCapstoneProjectCalendarStatus),
-                    message.Status);
-        }
+            if (defendCalendar != null)
+            {
+                switch (defendCalendar!.Status)
+                {
+                    case DefendCapstoneProjectCalendarStatus.InProgress:
+                        defendCalendar.Status = DefendCapstoneProjectCalendarStatus.Done;
+                        break;
+                    case DefendCapstoneProjectCalendarStatus.NotStarted:
+                        defendCalendar.Status = DefendCapstoneProjectCalendarStatus.InProgress;
+                        break;
+                }
 
-        await _dbContext.SaveChangesAsync();
+                await _dbContext.SaveChangesAsync();
+            }
+        }
     }
 }

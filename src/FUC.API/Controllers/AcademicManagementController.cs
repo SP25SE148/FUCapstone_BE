@@ -3,6 +3,7 @@ using FUC.API.Abstractions;
 using FUC.Common.Abstractions;
 using FUC.Common.Constants;
 using FUC.Common.Shared;
+using FUC.Data.Entities;
 using FUC.Service.Abstractions;
 using FUC.Service.DTOs.CampusDTO;
 using FUC.Service.DTOs.CapstoneDTO;

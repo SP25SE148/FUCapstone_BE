@@ -79,54 +79,47 @@ public static class AppDbInitializer
                 }
             }
 
-            if (!context.Set<Campus>().Any())
+            if (!context.Set<Campus>().Any() && campuses is not null)
             {
                 await context.Set<Campus>().AddRangeAsync(campuses);
-                await context.SaveChangesAsync();
             }
+
+            if (!context.Set<Semester>().Any() && semesters is not null)
+            {
+                await context.Set<Semester>().AddRangeAsync(semesters);
+            }
+
+            await context.SaveChangesAsync();
 
             if (!context.Set<TimeConfiguration>().Any())
             {
                 var timeConfigs = new List<TimeConfiguration>();
-
                 foreach (var campus in campuses)
                 {
-                    var timeConfig = new TimeConfiguration
+                    foreach (var semester in semesters)
                     {
-                        Id = Guid.NewGuid(),
-                        CampusId = campus.Id,
-                        IsActived = false,
-                        RegistTopicForSupervisorDate = DateTime.Now,
-                        RegistTopicForSupervisorExpiredDate = DateTime.Now.AddDays(1),
-                        TeamUpDate = DateTime.Now,
-                        TeamUpExpirationDate = DateTime.Now.AddDays(1),
-                        RegistTopicForGroupDate = DateTime.Now,
-                        RegistTopicForGroupExpiredDate = DateTime.Now.AddDays(1),
-                        ReviewAttemptDate = DateTime.Now,
-                        ReviewAttemptExpiredDate = DateTime.Now.AddDays(1),
-                        DefendCapstoneProjectDate = DateTime.Now,
-                        DefendCapstoneProjectExpiredDate = DateTime.Now.AddDays(1)
-                    };
-
-                    timeConfigs.Add(timeConfig);
+                        var timeConfig = new TimeConfiguration
+                        {
+                            Id = Guid.NewGuid(),
+                            SemesterId = semester.Id,
+                            CampusId = campus.Id,
+                            IsActived = false,
+                            RegistTopicForSupervisorDate = DateTime.Now,
+                            RegistTopicForSupervisorExpiredDate = DateTime.Now.AddDays(1),
+                            TeamUpDate = DateTime.Now,
+                            TeamUpExpirationDate = DateTime.Now.AddDays(1),
+                            RegistTopicForGroupDate = DateTime.Now,
+                            RegistTopicForGroupExpiredDate = DateTime.Now.AddDays(1),
+                            ReviewAttemptDate = DateTime.Now,
+                            ReviewAttemptExpiredDate = DateTime.Now.AddDays(1),
+                            DefendCapstoneProjectDate = DateTime.Now,
+                            DefendCapstoneProjectExpiredDate = DateTime.Now.AddDays(1)
+                        };
+                        timeConfigs.Add(timeConfig);
+                    }
                 }
 
                 await context.Set<TimeConfiguration>().AddRangeAsync(timeConfigs);
-                await context.SaveChangesAsync();
-
-                // ✔ Giả sử số lượng `semesters` == số lượng `timeConfigs` (1-1 mapping)
-                for (int i = 0; i < timeConfigs.Count && i < semesters!.Count; i++)
-                {
-                    var semester = semesters[i];
-                    semester.TimeConfigurationId = timeConfigs[i].Id;
-
-                    // Optional: xử lý Start/End date nếu cần
-                    semester.StartDate = semester.StartDate.Date;
-                    semester.EndDate = semester.EndDate.Date.AddDays(1).AddTicks(-1); // End of day
-                }
-
-                await context.Set<Semester>().AddRangeAsync(semesters);
-                await context.SaveChangesAsync();
             }
 
 // No need to separately add TimeConfiguration as it's added with Semester
