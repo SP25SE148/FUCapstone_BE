@@ -24,7 +24,7 @@ public class DefendCapstoneService(
     ICurrentUser currentUser,
     IRepository<DefendCapstoneProjectInformationCalendar> defendCapstoneCalendarRepository,
     IRepository<DefendCapstoneProjectCouncilMember> defendCapstoneCouncilMemberRepository,
-    IRepository<Semester> semesterRepository,
+    ITimeConfigurationService timeConfigurationService,
     IRepository<Group> groupRepository,
     IUnitOfWork<FucDbContext> unitOfWork,
     IIntegrationEventLogService integrationEventLogService,
@@ -46,29 +46,27 @@ public class DefendCapstoneService(
         try
         {
             // get current semester 
-            var semester = await semesterRepository.GetAsync(s => s.Id == semesterId,
-                include: s => s.Include(s => s.TimeConfiguration),
-                orderBy: null,
-                cancellationToken
-            );
-            if (semester is null)
-                return OperationResult.Failure(new Error("Error.SemesterIsNotGoingOn",
-                    "The semester that you choose is not going on or not found !"));
+            var timeConfiguration = await timeConfigurationService.GetTimeConfigurationBySemesterId(semesterId);
+            if (timeConfiguration is null)
+                return OperationResult.Failure(new Error("Error.UploadFailed",
+                    "Import calendar failed cause its not in the valid time configuration !"));
 
-            if (semester.TimeConfiguration != null &&
-                semester.TimeConfiguration.IsActived &&
-                (semester.TimeConfiguration.DefendCapstoneProjectDate > DateTime.Now
-                 || semester.TimeConfiguration.DefendCapstoneProjectExpiredDate < DateTime.Now))
+            if (
+                timeConfiguration.Value.IsActived &&
+                (timeConfiguration.Value.DefendCapstoneProjectDate > DateTime.Now
+                 || timeConfiguration.Value.DefendCapstoneProjectExpiredDate < DateTime.Now))
                 return OperationResult.Failure<Guid>(new Error("CreateFailed",
                     "Must import the defend calendar for group on available time. The time that you can import the defend calendar file is from " +
-                    semester.TimeConfiguration.DefendCapstoneProjectDate + " to " +
-                    semester.TimeConfiguration.DefendCapstoneProjectExpiredDate));
+                    timeConfiguration.Value.DefendCapstoneProjectDate + " to " +
+                    timeConfiguration.Value.DefendCapstoneProjectExpiredDate));
 
             var defendCalendars =
-                await ParseDefendCapstoneCalendarsFromFile(file, semester.Id, cancellationToken);
+                await ParseDefendCapstoneCalendarsFromFile(file, timeConfiguration.Value.SemesterId, cancellationToken);
 
             defendCapstoneCalendarRepository.InsertRange(defendCalendars);
-
+            
+            // send review calendar created event
+            
             var calendarCreatedDetails = new List<CalendarCreatedDetail>();
 
             foreach (var defendCalendar in defendCalendars)
@@ -93,7 +91,7 @@ public class DefendCapstoneService(
         catch (Exception e)
         {
             logger.LogError("import review failed with message: {Message}", e.Message);
-            return OperationResult.Failure(new Error("Error.ImportFailed", "import defend calendar failed"));
+            return OperationResult.Failure(new Error("Error.ImportFailed", e.Message));
         }
     }
 

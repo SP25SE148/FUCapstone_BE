@@ -25,10 +25,5 @@ public sealed class SemesterConfiguration : IEntityTypeConfiguration<Semester>
             .HasColumnType("timestamp");
         builder.Property(s => s.EndDate)
             .HasColumnType("timestamp");
-
-        builder.HasOne(s => s.TimeConfiguration)
-            .WithOne(t => t.Semester)
-            .HasForeignKey<Semester>(s => s.TimeConfigurationId)
-            .OnDelete(DeleteBehavior.Cascade);
     }
 }

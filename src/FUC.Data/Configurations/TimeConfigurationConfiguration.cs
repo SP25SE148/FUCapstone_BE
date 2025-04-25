@@ -40,5 +40,9 @@ public class TimeConfigurationConfiguration : IEntityTypeConfiguration<TimeConfi
             .WithMany(s => s.TimeConfigurations)
             .HasForeignKey(b => b.CampusId)
             .OnDelete(DeleteBehavior.Cascade);
+        builder.HasOne(s => s.Semester)
+            .WithMany(t => t.TimeConfigurations)
+            .HasForeignKey(s => s.SemesterId)
+            .OnDelete(DeleteBehavior.Cascade);
     }
 }

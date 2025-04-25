@@ -542,18 +542,23 @@ public class TopicService(
     public async Task<OperationResult<Guid>> CreateTopic(CreateTopicRequest request,
         CancellationToken cancellationToken)
     {
-        OperationResult<Semester> currentSemester = await semesterService.GetCurrentSemesterAsync();
-        if (currentSemester.IsFailure)
-            return OperationResult.Failure<Guid>(new Error("Error.SemesterIsNotGoingOn",
-                "The current semester is not going on"));
+        var semester = await semesterService.GetSemesterForCreateTopic();
+        if (semester.Value == null)
+        {
+            return OperationResult.Failure<Guid>(new Error("CreateFailed",
+                "There is not semester is going on to create topic"));
+        }
 
-        if (currentSemester.Value.TimeConfiguration != null && currentSemester.Value.TimeConfiguration.IsActived &&
-            (currentSemester.Value.TimeConfiguration.RegistTopicForSupervisorDate > DateTime.Now ||
-             currentSemester.Value.TimeConfiguration.RegistTopicForSupervisorExpiredDate < DateTime.Now))
+        var timeConfiguration =
+            semester.Value.TimeConfigurations?.FirstOrDefault(t => t.CampusId == currentUser.CampusId);
+
+        if (timeConfiguration is { IsActived: true } &&
+            (timeConfiguration.RegistTopicForSupervisorDate > DateTime.Now ||
+             timeConfiguration.RegistTopicForSupervisorExpiredDate < DateTime.Now))
             return OperationResult.Failure<Guid>(new Error("CreateFailed",
                 "Must regist topic on available time. The time that you can regist topic is from " +
-                currentSemester.Value.TimeConfiguration.RegistTopicForSupervisorDate + " to " +
-                currentSemester.Value.TimeConfiguration.RegistTopicForSupervisorExpiredDate));
+                timeConfiguration.RegistTopicForSupervisorDate + " to " +
+                timeConfiguration.RegistTopicForSupervisorExpiredDate));
 
         var mainSupervisor = await supervisorRepository.GetAsync(s => s.Email == currentUser.Email, cancellationToken);
 
@@ -584,7 +589,7 @@ public class TopicService(
         if (request.CoSupervisorEmails.Exists(x => x == currentUser.Email))
         {
             return OperationResult.Failure<Guid>(new Error("Topic.Error",
-                "The supervisor can not copporate topic himself."));
+                "The supervisor can not co-supervise topic himself."));
         }
 
         var availableSupportSupervisors =
@@ -595,20 +600,13 @@ public class TopicService(
             return OperationResult.Failure<Guid>(new Error("Topic.Error", "Someone can not be assigned for topic"));
         }
 
-        var getCurrentSemesterResult = await semesterService.GetCurrentSemesterAsync();
-
-        if (getCurrentSemesterResult.IsFailure)
-        {
-            return OperationResult.Failure<Guid>(getCurrentSemesterResult.Error);
-        }
-
         try
         {
             await unitOfWork.BeginTransactionAsync(cancellationToken);
 
             var topicId = Guid.NewGuid();
             var key =
-                $"{currentUser.CampusId}/{getCurrentSemesterResult.Value.Id}/{request.CapstoneId}/{topicId}";
+                $"{currentUser.CampusId}/{semester.Value.Id}/{request.CapstoneId}/{topicId}";
 
             var topic = new Topic
             {
@@ -620,7 +618,7 @@ public class TopicService(
                 BusinessAreaId = request.BusinessAreaId,
                 CampusId = currentUser.CampusId,
                 CapstoneId = request.CapstoneId,
-                SemesterId = getCurrentSemesterResult.Value.Id,
+                SemesterId = semester.Value.Id,
                 Description = request.Description,
                 FileName = request.File.FileName,
                 FileUrl = key,
@@ -639,7 +637,7 @@ public class TopicService(
             {
                 TopicId = topic.Id.ToString(),
                 TopicEnglishName = request.EnglishName,
-                SemesterIds = await semesterService.GetPreviouseSemesterIds(getCurrentSemesterResult.Value.StartDate,
+                SemesterIds = await semesterService.GetPreviouseSemesterIds(semester.Value.StartDate,
                     systemConfigService.GetSystemConfiguration().SemanticTopicThroughSemesters),
                 ProcessedBy = currentUser.UserCode,
                 IsCurrentSemester = false,
@@ -861,13 +859,24 @@ public class TopicService(
         {
             // TODO: Check the valid date to assign supervisors to topics (TimeConfig table)
 
-            var currentSemester = await semesterService.GetCurrentSemesterAsync();
-            if (currentSemester.IsFailure)
+            var semester = await semesterService.GetSemesterForCreateTopic();
+            if (semester.Value == null)
             {
-                logger.LogError("The current semester is inactive!");
-                return OperationResult.Failure(
-                    new Error("Error.CurrentSemesterIsNull", "Current semester is inactive!"));
+                return OperationResult.Failure<Guid>(new Error("CreateFailed",
+                    "There is not semester is going on to create topic"));
             }
+
+            var timeConfiguration =
+                semester.Value.TimeConfigurations?.FirstOrDefault(t => t.CampusId == currentUser.CampusId);
+
+            if (timeConfiguration is { IsActived: true } &&
+                (timeConfiguration.RegistTopicForSupervisorDate > DateTime.Now ||
+                 timeConfiguration.RegistTopicForSupervisorExpiredDate < DateTime.Now))
+                return OperationResult.Failure<Guid>(new Error("CreateFailed",
+                    "Must regist topic on available time. The time that you can regist topic is from " +
+                    timeConfiguration.RegistTopicForSupervisorDate + " to " +
+                    timeConfiguration.RegistTopicForSupervisorExpiredDate));
+
 
             if (supervisorEmail.Count < TopicAppraisalRequirement.SupervisorAppraisalMinimum)
             {
@@ -893,7 +902,7 @@ public class TopicService(
                 .FindAsync(t => t.Status == TopicStatus.Pending &&
                                 t.CampusId == currentUser.CampusId &&
                                 t.CapstoneId == currentUser.CapstoneId &&
-                                t.SemesterId == currentSemester.Value.Id,
+                                t.SemesterId == semester.Value.Id,
                     t => t.Include(t => t.TopicAppraisals)
                         .Include(t => t.CoSupervisors)
                         .Include(t => t.Capstone),
@@ -982,10 +991,24 @@ public class TopicService(
     {
         try
         {
-            var currentSemester = await semesterService.GetCurrentSemesterAsync();
+            var semester = await semesterService.GetSemesterForCreateTopic();
+            if (semester.Value == null)
+            {
+                return OperationResult.Failure<Guid>(new Error("CreateFailed",
+                    "There is not semester is going on to create topic"));
+            }
 
-            if (currentSemester.IsFailure)
-                return OperationResult.Failure(currentSemester.Error);
+            var timeConfiguration =
+                semester.Value.TimeConfigurations?.FirstOrDefault(t => t.CampusId == currentUser.CampusId);
+
+            if (timeConfiguration is { IsActived: true } &&
+                (timeConfiguration.RegistTopicForSupervisorDate > DateTime.Now ||
+                 timeConfiguration.RegistTopicForSupervisorExpiredDate < DateTime.Now))
+                return OperationResult.Failure<Guid>(new Error("CreateFailed",
+                    "Must regist topic on available time. The time that you can regist topic is from " +
+                    timeConfiguration.RegistTopicForSupervisorDate + " to " +
+                    timeConfiguration.RegistTopicForSupervisorExpiredDate));
+
 
             var topic = await topicRepository.GetAsync(x => x.Id == request.TopicId,
                 isEnabledTracking: true,
@@ -1004,7 +1027,7 @@ public class TopicService(
                 return OperationResult.Failure(new Error("Topic.Error",
                     "Can not assign this supervisor for his/her topic."));
 
-            if (topic.SemesterId != currentSemester.Value.Id ||
+            if (topic.SemesterId != semester.Value.Id ||
                 topic.CampusId != currentUser.CampusId ||
                 topic.CapstoneId != currentUser.CapstoneId)
             {

@@ -97,10 +97,10 @@ public sealed class StudentService(
         {
             var group = await groupRepository.GetAsync(
                 x => x.Id == groupMember.GroupId,
+                true,
                 include: x => x
                     .Include(x => x.GroupMembers.Where(x => x.Id != groupMember.Id))
-                    .ThenInclude(x => x.Student),
-                default);
+                    .ThenInclude(x => x.Student));
 
             ArgumentNullException.ThrowIfNull(group);
 
@@ -109,11 +109,7 @@ public sealed class StudentService(
 
             if (request.GPA != null)
                 group.GPA = (sumGpaOtherStudents + (float)request.GPA) / (numberOfStudent + 1);
-
-            groupRepository.Update(group);
         }
-
-        studentRepository.Update(student);
 
         await uow.SaveChangesAsync();
 

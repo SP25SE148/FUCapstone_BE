@@ -21,7 +21,6 @@ public class TimeConfigurationService(
     IMapper mapper,
     IRepository<TimeConfiguration> repository,
     IRepository<Semester> semesterRepository,
-    ISemesterService semesterService,
     ISystemConfigurationService systemConfigurationService,
     IIntegrationEventLogService integrationEventLogService,
     IUnitOfWork<FucDbContext> unitOfWork) : ITimeConfigurationService
@@ -57,45 +56,39 @@ public class TimeConfigurationService(
     public async Task<OperationResult<TimeConfigurationDto>> GetTimeConfigurationBySemesterId(string semesterId)
     {
         var result =
-            from tc in repository.GetQueryable()
-            join s in semesterRepository.GetQueryable() on tc.Id equals s.TimeConfigurationId
-            where s.Id == semesterId && (currentUser.CampusId == "all" || tc.CampusId == currentUser.CampusId)
-            select new TimeConfigurationDto
-            {
-                Id = tc.Id,
-                SemesterId = tc.Semester.Id,
-                SemesterName = tc.Semester.Name,
-                CampusId = tc.CampusId,
-                RegistTopicForSupervisorDate = tc.RegistTopicForSupervisorDate,
-                RegistTopicForSupervisorExpiredDate = tc.RegistTopicForSupervisorExpiredDate,
-                TeamUpDate = tc.TeamUpDate,
-                TeamUpExpirationDate = tc.TeamUpExpirationDate,
-                RegistTopicForGroupDate = tc.RegistTopicForGroupDate,
-                RegistTopicForGroupExpiredDate = tc.RegistTopicForGroupExpiredDate,
-                ReviewAttemptDate = tc.ReviewAttemptDate,
-                ReviewAttemptExpiredDate = tc.ReviewAttemptExpiredDate,
-                DefendCapstoneProjectDate = tc.DefendCapstoneProjectDate,
-                DefendCapstoneProjectExpiredDate = tc.DefendCapstoneProjectExpiredDate,
-                IsActived = tc.IsActived
-            };
-        return await result.FirstOrDefaultAsync();
+            await repository.GetAsync(t => t.SemesterId == semesterId &&
+                                           (currentUser.CampusId == "all" || t.CampusId == currentUser.CampusId),
+                include: t => t.Include(t => t.Semester),
+                selector: tc => new TimeConfigurationDto()
+                {
+                    Id = tc.Id,
+                    SemesterId = tc.Semester.Id,
+                    SemesterName = tc.Semester.Name,
+                    CampusId = tc.CampusId,
+                    RegistTopicForSupervisorDate = tc.RegistTopicForSupervisorDate,
+                    RegistTopicForSupervisorExpiredDate = tc.RegistTopicForSupervisorExpiredDate,
+                    TeamUpDate = tc.TeamUpDate,
+                    TeamUpExpirationDate = tc.TeamUpExpirationDate,
+                    RegistTopicForGroupDate = tc.RegistTopicForGroupDate,
+                    RegistTopicForGroupExpiredDate = tc.RegistTopicForGroupExpiredDate,
+                    ReviewAttemptDate = tc.ReviewAttemptDate,
+                    ReviewAttemptExpiredDate = tc.ReviewAttemptExpiredDate,
+                    DefendCapstoneProjectDate = tc.DefendCapstoneProjectDate,
+                    DefendCapstoneProjectExpiredDate = tc.DefendCapstoneProjectExpiredDate,
+                    IsActived = tc.IsActived
+                });
+
+        return result;
     }
 
     public async Task<OperationResult> UpdateTimeConfiguration(
         UpdateTimeConfigurationRequest request,
         CancellationToken cancellationToken)
     {
-        var semester = await semesterRepository.GetAsync(
-            s => s.Id == request.SemesterId && s.TimeConfigurationId == request.Id,
-            include: x => x.Include(x => x.TimeConfiguration),
-            default,
-            cancellationToken);
-
-        if (semester is null)
-            return OperationResult.Failure(new Error("Semester.Error", "Semester not found."));
-
         var timeConfig = await repository.GetAsync(
-            x => x.Id == request.Id,
+            x => x.Id == request.Id && x.SemesterId == request.SemesterId,
+            include: x => x.Include(t => t.Semester),
+            null,
             cancellationToken);
 
         ArgumentNullException.ThrowIfNull(timeConfig);
@@ -118,24 +111,24 @@ public class TimeConfigurationService(
         foreach (var (date, dateName, configType) in invalidDates)
         {
             if (date.HasValue && !CheckConfigurationDateIsValid(date.Value,
-                    semester.StartDate,
-                    semester.EndDate,
+                    timeConfig.Semester.StartDate,
+                    timeConfig.Semester.EndDate,
                     configType))
             {
                 if (configType == "DefendCapstoneProject")
                 {
                     return OperationResult.Failure(new Error("TimeConfiguration.Error",
-                        $"{dateName} need to be in the valid duration of Semester {semester.Id}. The valid date to defend capstone project for group is after the end date of semester: {semester.EndDate}"));
+                        $"{dateName} need to be in the valid duration of Semester {timeConfig.Semester.Id}. The valid date to defend capstone project for group is after the end date of semester: {timeConfig.Semester.EndDate}"));
                 }
 
                 if (configType == "RegistTopicForSupervisor")
                 {
                     return OperationResult.Failure(new Error("TimeConfiguration.Error",
-                        $"{dateName} need to be in the valid duration of Semester {semester.Id}. The valid date for supervisor regist the topic is before the start date of semester: {semester.StartDate}"));
+                        $"{dateName} need to be in the valid duration of Semester {timeConfig.Semester.Id}. The valid date for supervisor regist the topic is before the start date of semester: {timeConfig.Semester.StartDate}"));
                 }
 
                 return OperationResult.Failure(new Error("TimeConfiguration.Error",
-                    $"{dateName} need to be in the valid duration of Semester {semester.Id} from {semester.StartDate} to {semester.EndDate}"));
+                    $"{dateName} need to be in the valid duration of Semester {timeConfig.Semester.Id} from {timeConfig.Semester.StartDate} to {timeConfig.Semester.EndDate}"));
             }
         }
 
@@ -152,9 +145,11 @@ public class TimeConfigurationService(
     public async Task<OperationResult> CreateTimeConfiguration(CreateTimeConfigurationRequest request,
         CancellationToken cancellationToken)
     {
-        var nextSemester = await semesterService.GetNextSemesterAsync(true);
+        var nextSemester = (await semesterRepository.FindAsync(
+            t => DateTime.Now < t.StartDate,
+            cancellationToken)).MinBy(x => x.StartDate);
 
-        if (nextSemester.IsFailure)
+        if (nextSemester == null)
             return OperationResult.Failure(new Error("CreateFailed",
                 "Does not have any next semester or the next semester dose not exist "));
 
@@ -176,24 +171,24 @@ public class TimeConfigurationService(
         foreach (var (date, dateName, configType) in invalidDates)
         {
             if (!CheckConfigurationDateIsValid(date,
-                    nextSemester.Value.StartDate,
-                    nextSemester.Value.EndDate,
+                    nextSemester.StartDate,
+                    nextSemester.EndDate,
                     configType))
             {
                 if (configType == "DefendCapstoneProject")
                 {
                     return OperationResult.Failure(new Error("TimeConfiguration.Error",
-                        $"{dateName} need to be in the valid duration of Semester {nextSemester.Value.Id}. The valid date to defend capstone project for group is after the end date of semester: {nextSemester.Value.EndDate}"));
+                        $"{dateName} need to be in the valid duration of Semester {nextSemester.Id}. The valid date to defend capstone project for group is after the end date of semester: {nextSemester.EndDate}"));
                 }
 
                 if (configType == "RegistTopicForSupervisor")
                 {
                     return OperationResult.Failure(new Error("TimeConfiguration.Error",
-                        $"{dateName} need to be in the valid duration of Semester {nextSemester.Value.Id}. The valid date for supervisor regist the topic is before the start date of semester: {nextSemester.Value.StartDate}"));
+                        $"{dateName} need to be in the valid duration of Semester {nextSemester.Id}. The valid date for supervisor regist the topic is before the start date of semester: {nextSemester.StartDate}"));
                 }
 
                 return OperationResult.Failure(new Error("TimeConfiguration.Error",
-                    $"{dateName} need to be in the valid duration of Semester {nextSemester.Value.Id} from {nextSemester.Value.StartDate} to {nextSemester.Value.EndDate}"));
+                    $"{dateName} need to be in the valid duration of Semester {nextSemester.Id} from {nextSemester.StartDate} to {nextSemester.EndDate}"));
             }
         }
 
@@ -205,6 +200,7 @@ public class TimeConfigurationService(
         var timeConfig = new TimeConfiguration
         {
             Id = Guid.NewGuid(),
+            SemesterId = nextSemester.Id,
             RegistTopicForSupervisorDate = request.RegistTopicForSupervisorDate,
             RegistTopicForSupervisorExpiredDate = request.RegistTopicForSupervisorExpiredDate,
             RegistTopicForGroupDate = request.RegistTopicForGroupDate,
@@ -222,7 +218,6 @@ public class TimeConfigurationService(
         repository.Insert(timeConfig);
         await unitOfWork.SaveChangesAsync(cancellationToken);
 
-        nextSemester.Value.TimeConfigurationId = timeConfig.Id;
         integrationEventLogService.SendEvent(new TimeConfigurationCreatedEvent()
         {
             RequestId = timeConfig.Id,
