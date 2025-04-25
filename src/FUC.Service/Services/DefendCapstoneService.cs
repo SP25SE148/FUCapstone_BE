@@ -64,9 +64,9 @@ public class DefendCapstoneService(
                 await ParseDefendCapstoneCalendarsFromFile(file, timeConfiguration.Value.SemesterId, cancellationToken);
 
             defendCapstoneCalendarRepository.InsertRange(defendCalendars);
-
-
+            
             // send review calendar created event
+            
             var calendarCreatedDetails = new List<CalendarCreatedDetail>();
 
             foreach (var defendCalendar in defendCalendars)
