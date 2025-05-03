@@ -69,8 +69,8 @@ public class GroupService(
 
         if (timeConfiguration != null &&
             timeConfiguration.IsActived &&
-            timeConfiguration.TeamUpDate > DateTime.Now ||
-            timeConfiguration.TeamUpExpirationDate < DateTime.Now)
+            (timeConfiguration.TeamUpDate > DateTime.Now ||
+             timeConfiguration.TeamUpExpirationDate < DateTime.Now))
             return OperationResult.Failure<Guid>(new Error("CreateFailed",
                 "Must team up on available time. The time that you can team up is from " +
                 timeConfiguration.TeamUpDate + " to " +
@@ -330,18 +330,19 @@ public class GroupService(
         if (!group.Status.Equals(GroupStatus.Pending))
             return OperationResult.Failure(new Error("Error.UpdateFailed",
                 $"Can not update group status with group id {group.Id} from {group.Status.ToString()}"));
-
+        if (group.GroupMembers.Where(gm => gm.Status.Equals(GroupMemberStatus.Accepted)).ToList().Count <
+            capstone.Value.MinMember ||
+            group.GroupMembers.Where(gm => gm.Status.Equals(GroupMemberStatus.Accepted)).ToList().Count >
+            capstone.Value.MaxMember)
+            return OperationResult.Failure(new Error("Error.InvalidTeamSize",
+                $"Group {group.Id} have invalid team size !"));
         try
         {
             await uow.BeginTransactionAsync();
-            if (group.GroupMembers.Where(gm => gm.Status.Equals(GroupMemberStatus.Accepted)).ToList().Count <
-                capstone.Value.MinMember ||
-                group.GroupMembers.Where(gm => gm.Status.Equals(GroupMemberStatus.Accepted)).ToList().Count >
-                capstone.Value.MaxMember)
-                return OperationResult.Failure(new Error("Error.InvalidTeamSize",
-                    $"Group {group.Id} have invalid team size !"));
+
 
             group.Status = GroupStatus.InProgress;
+
             var groupMembersPending = await groupMemberRepository.FindAsync(
                 gm => gm.GroupId == groupId && gm.Status == GroupMemberStatus.UnderReview,
                 null, true);

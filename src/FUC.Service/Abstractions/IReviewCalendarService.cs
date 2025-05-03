@@ -25,5 +25,6 @@ public interface IReviewCalendarService
     Task<OperationResult<IEnumerable<ReviewCalendarResultResponse>>>
         GetReviewCalendarResultByManagerId(); // use for manager
 
+    Task<OperationResult> UpdateReviewCalendarStatus(UpdateReviewCalendarStatusRequest request);
     Task<OperationResult<IEnumerable<ReviewCriteriaResponse>>> GetReviewCriteriaByAttemptAsync(int attempt);
 }

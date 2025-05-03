@@ -64,9 +64,9 @@ public class DefendCapstoneService(
                 await ParseDefendCapstoneCalendarsFromFile(file, timeConfiguration.Value.SemesterId, cancellationToken);
 
             defendCapstoneCalendarRepository.InsertRange(defendCalendars);
-            
+
             // send review calendar created event
-            
+
             var calendarCreatedDetails = new List<CalendarCreatedDetail>();
 
             foreach (var defendCalendar in defendCalendars)
@@ -74,6 +74,7 @@ public class DefendCapstoneService(
                 calendarCreatedDetails.Add(new CalendarCreatedDetail()
                 {
                     CalendarId = defendCalendar.Id,
+                    Users = defendCalendar.DefendCapstoneProjectMemberCouncils.Select(x => x.SupervisorId).ToList(),
                     StartDate = defendCalendar.DefenseDate,
                     Type = nameof(DefendCapstoneProjectInformationCalendar)
                 });
@@ -238,6 +239,17 @@ public class DefendCapstoneService(
             $"{calendar.CampusId}/{calendar.SemesterId}/{calendar.Topic.CapstoneId}/{calendar.TopicCode}/{calendar.DefendAttempt}/{calendar.Topic.Group.GroupCode}";
 
         return await documentsService.PresentThesisCouncilMeetingMinutesForTopicPresignedUrl(key);
+    }
+
+    public async Task<OperationResult> UpdateDefendCalendarStatus(UpdateDefendCalendarStatusRequest request)
+    {
+        var calendar = await defendCapstoneCalendarRepository.GetAsync(x => x.Id == request.Id,
+            true);
+        if (calendar is null)
+            return OperationResult.Failure(Error.NullValue);
+
+        calendar.Status = request.Status;
+        return OperationResult.Success();
     }
 
     public async Task<OperationResult> UpdateStatusOfGroupAfterDefend(

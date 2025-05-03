@@ -20,6 +20,8 @@ public interface IDefendCapstoneService
     Task<OperationResult<string>>
         PresentThesisForTopicResignedUrl(Guid calendarId, CancellationToken cancellationToken);
 
+    Task<OperationResult> UpdateDefendCalendarStatus(UpdateDefendCalendarStatusRequest request);
+
     Task<OperationResult> UpdateStatusOfGroupAfterDefend(UpdateGroupDecisionStatusByPresidentRequest request,
         CancellationToken cancellationToken);
 

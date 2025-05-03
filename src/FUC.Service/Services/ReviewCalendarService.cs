@@ -69,12 +69,13 @@ public sealed class ReviewCalendarService(
             // send review calendar created event
             var calendarCreatedDetails = new List<CalendarCreatedDetail>();
 
-            foreach (var defendCalendar in reviewCalendars)
+            foreach (var reviewCalendar in reviewCalendars)
             {
                 calendarCreatedDetails.Add(new CalendarCreatedDetail()
                 {
-                    CalendarId = defendCalendar.Id,
-                    StartDate = defendCalendar.Date,
+                    CalendarId = reviewCalendar.Id,
+                    StartDate = reviewCalendar.Date,
+                    Users = reviewCalendar.Reviewers.Select(x => x.SupervisorId).ToList(),
                     Type = nameof(ReviewCalendar)
                 });
             }
@@ -215,6 +216,18 @@ public sealed class ReviewCalendarService(
             orderBy: rc => rc.OrderBy(rc => rc.Attempt));
         var reviewCalendarResultResponse = MapReviewCalendarsToResponses(reviewCalendar);
         return reviewCalendarResultResponse.ToList();
+    }
+
+    public async Task<OperationResult> UpdateReviewCalendarStatus(UpdateReviewCalendarStatusRequest request)
+    {
+        var reviewCalendar = await reviewCalendarRepository.GetAsync(
+            x => x.Id == request.Id,
+            true);
+        if (reviewCalendar is null)
+            return OperationResult.Failure(Error.NullValue);
+
+        reviewCalendar.Status = request.Status;
+        return OperationResult.Success();
     }
 
     public async Task<OperationResult<IEnumerable<ReviewCriteriaResponse>>> GetReviewCriteriaByAttemptAsync(int attempt)
