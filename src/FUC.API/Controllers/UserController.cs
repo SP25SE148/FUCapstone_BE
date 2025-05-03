@@ -355,4 +355,22 @@ public sealed class UserController(
             ? Ok(result)
             : HandleFailure(result);
     }
+
+    [HttpPut("review-calendar/status")]
+    public async Task<IActionResult> UpdateReviewCalendarStatus([FromBody] UpdateReviewCalendarStatusRequest request)
+    {
+        var result = await reviewCalendarService.UpdateReviewCalendarStatus(request);
+        return result.IsSuccess
+            ? Ok(result)
+            : HandleFailure(result);
+    }
+
+    [HttpPut("defend-calendar/status")]
+    public async Task<IActionResult> UpdateDefendCalendarStatus([FromBody] UpdateDefendCalendarStatusRequest request)
+    {
+        var result = await defendCapstoneService.UpdateDefendCalendarStatus(request);
+        return result.IsSuccess
+            ? Ok(result)
+            : HandleFailure(result);
+    }
 }

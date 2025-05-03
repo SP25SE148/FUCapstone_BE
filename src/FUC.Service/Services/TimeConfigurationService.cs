@@ -112,21 +112,8 @@ public class TimeConfigurationService(
         {
             if (date.HasValue && !CheckConfigurationDateIsValid(date.Value,
                     timeConfig.Semester.StartDate,
-                    timeConfig.Semester.EndDate,
-                    configType))
+                    timeConfig.Semester.EndDate))
             {
-                if (configType == "DefendCapstoneProject")
-                {
-                    return OperationResult.Failure(new Error("TimeConfiguration.Error",
-                        $"{dateName} need to be in the valid duration of Semester {timeConfig.Semester.Id}. The valid date to defend capstone project for group is after the end date of semester: {timeConfig.Semester.EndDate}"));
-                }
-
-                if (configType == "RegistTopicForSupervisor")
-                {
-                    return OperationResult.Failure(new Error("TimeConfiguration.Error",
-                        $"{dateName} need to be in the valid duration of Semester {timeConfig.Semester.Id}. The valid date for supervisor regist the topic is before the start date of semester: {timeConfig.Semester.StartDate}"));
-                }
-
                 return OperationResult.Failure(new Error("TimeConfiguration.Error",
                     $"{dateName} need to be in the valid duration of Semester {timeConfig.Semester.Id} from {timeConfig.Semester.StartDate} to {timeConfig.Semester.EndDate}"));
             }
@@ -172,21 +159,19 @@ public class TimeConfigurationService(
         {
             if (!CheckConfigurationDateIsValid(date,
                     nextSemester.StartDate,
-                    nextSemester.EndDate,
-                    configType))
+                    nextSemester.EndDate))
             {
-                if (configType == "DefendCapstoneProject")
-                {
-                    return OperationResult.Failure(new Error("TimeConfiguration.Error",
-                        $"{dateName} need to be in the valid duration of Semester {nextSemester.Id}. The valid date to defend capstone project for group is after the end date of semester: {nextSemester.EndDate}"));
-                }
-
-                if (configType == "RegistTopicForSupervisor")
-                {
-                    return OperationResult.Failure(new Error("TimeConfiguration.Error",
-                        $"{dateName} need to be in the valid duration of Semester {nextSemester.Id}. The valid date for supervisor regist the topic is before the start date of semester: {nextSemester.StartDate}"));
-                }
-
+                // if (configType == "DefendCapstoneProject")
+                // {
+                //     return OperationResult.Failure(new Error("TimeConfiguration.Error",
+                //         $"{dateName} need to be in the valid duration of Semester {nextSemester.Id}. The valid date to defend capstone project for group is after the end date of semester: {nextSemester.EndDate}"));
+                // }
+                //
+                // if (configType == "RegistTopicForSupervisor")
+                // {
+                //     return OperationResult.Failure(new Error("TimeConfiguration.Error",
+                //         $"{dateName} need to be in the valid duration of Semester {nextSemester.Id}. The valid date for supervisor regist the topic is before the start date of semester: {nextSemester.StartDate}"));
+                // }
                 return OperationResult.Failure(new Error("TimeConfiguration.Error",
                     $"{dateName} need to be in the valid duration of Semester {nextSemester.Id} from {nextSemester.StartDate} to {nextSemester.EndDate}"));
             }
@@ -264,15 +249,17 @@ public class TimeConfigurationService(
     }
 
     private static bool CheckConfigurationDateIsValid(DateTime configDate,
-        DateTime startDateOfSemester,
-        DateTime endDateOfSemester,
-        string configType)
+            DateTime startDateOfSemester,
+            DateTime endDateOfSemester)
+        // ,
+        // string configType)
     {
-        return configType switch
-        {
-            "RegistTopicForSupervisor" => configDate <= startDateOfSemester,
-            "DefendCapstoneProject" => configDate >= endDateOfSemester,
-            _ => configDate >= startDateOfSemester && configDate <= endDateOfSemester,
-        };
+        return configDate >= startDateOfSemester && configDate <= endDateOfSemester;
+        // return configType switch
+        // {
+        //     "RegistTopicForSupervisor" => configDate <= startDateOfSemester,
+        //     "DefendCapstoneProject" => configDate >= endDateOfSemester,
+        //     _ => configDate >= startDateOfSemester && configDate <= endDateOfSemester,
+        // };
     }
 }

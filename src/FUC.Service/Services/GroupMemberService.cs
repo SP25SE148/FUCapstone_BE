@@ -117,14 +117,13 @@ public class GroupMemberService(
             // create group member for member
             var newGroupMember = new GroupMember
             {
+                Id = Guid.NewGuid(),
                 GroupId = groupId,
                 StudentId = member.Id,
                 IsLeader = false
             };
 
             groupMemberRepository.Insert(newGroupMember);
-
-            await uow.SaveChangesAsync();
 
             integrationEventLogService.SendEvent(new GroupMemberCreatedEvent
             {
