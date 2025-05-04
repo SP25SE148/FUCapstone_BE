@@ -1966,7 +1966,9 @@ public class GroupService(
                 systemConfigService.GetSystemConfiguration().MinimumPercentageOfStudentsDefend)
             {
                 throw new ArgumentException(
-                    $"Can not update group decision status while more than 40% of student are disagree to defense !!");
+                    $"Can not update group decision status while more than " +
+                    $"{systemConfigService.GetSystemConfiguration().MinimumPercentageOfStudentsDefend * 100}% " +
+                    $"of student are disagree to defense !!");
             }
 
             var defendCapstoneProjectDecision = new DefendCapstoneProjectDecision
