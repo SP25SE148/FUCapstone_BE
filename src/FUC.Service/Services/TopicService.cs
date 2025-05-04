@@ -797,8 +797,8 @@ public class TopicService(
 
         foreach (var item in topicAnalysises)
         {
+            int over60ratio = 0;
             int over80ratio = 0;
-            int over90ratio = 0;
 
             var analysis = JsonSerializer.Deserialize<Dictionary<string, MatchingTopic>>(item.AnalysisResult);
 
@@ -807,8 +807,8 @@ public class TopicService(
                 result.Add(new TopicStatisticResponse
                 {
                     Analysises = default,
+                    Over60Ratio = over60ratio,
                     Over80Ratio = over80ratio,
-                    Over90Ratio = over90ratio,
                     CreatedDate = item.CreatedDate,
                     ProcessedBy = item.ProcessedBy,
                     StatusSemantic = "clean"
@@ -820,14 +820,14 @@ public class TopicService(
 
             foreach (var a in analysis)
             {
-                if (a.Value.Similarity > 80)
+                if (a.Value.Similarity >= 60)
                 {
-                    over80ratio++;
+                    over60ratio++;
                 }
 
-                if (a.Value.Similarity > 90)
+                if (a.Value.Similarity >= 80)
                 {
-                    over90ratio++;
+                    over80ratio++;
                 }
 
                 analysisResponse.Add(new TopicAnalysisResponse
@@ -841,8 +841,8 @@ public class TopicService(
             result.Add(new TopicStatisticResponse
             {
                 Analysises = analysisResponse,
+                Over60Ratio = analysisResponse.Count != 0 ? (double)over60ratio / analysisResponse.Count : 0,
                 Over80Ratio = analysisResponse.Count != 0 ? (double)over80ratio / analysisResponse.Count : 0,
-                Over90Ratio = analysisResponse.Count != 0 ? (double)over90ratio / analysisResponse.Count : 0,
                 CreatedDate = item.CreatedDate,
                 ProcessedBy = item.ProcessedBy,
                 StatusSemantic = "un_clean"

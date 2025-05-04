@@ -3,8 +3,8 @@
 public class TopicStatisticResponse
 {
     public IReadOnlyCollection<TopicAnalysisResponse>? Analysises { get; set; }
+    public double Over60Ratio { get; set; }
     public double Over80Ratio { get; set; }
-    public double Over90Ratio { get; set; }
     public DateTime CreatedDate { get; set; }
     public required string ProcessedBy { get; set; }
     public string StatusSemantic { get; set; }
