@@ -77,6 +77,11 @@ public class SystemConfigurationService : ISystemConfigurationService
         _config.ProjectProgressRemindInDaysBeforeDueDate = value;
     }
 
+    public void UpdateMinimumPercentageOfStudentsDefend(double value)
+    {
+        _config.MinimumPercentageOfStudentsDefend = value;
+    }
+
     public async Task<OperationResult> UpdateMininumTopicsPerCapstoneInEachCampus()
     {
         try

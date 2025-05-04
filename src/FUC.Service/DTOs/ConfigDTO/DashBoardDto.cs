@@ -43,7 +43,7 @@ public class SupervisorDashBoardDto
     public GroupTaskMetrics? GroupWithHighestCompletion { get; set; }
     public GroupTaskMetrics? GroupWithLowestOverdue { get; set; }
     public Dictionary<string, double> AverageTaskDurations { get; set; }
-    public Dictionary<string, Dictionary<Priority, int>> TaskPriorityDistributions { get; set; }
+    public Dictionary<string, Dictionary<Priority, int>?> TaskPriorityDistributions { get; set; }
     public Dictionary<string, double> StudentContributions { get; set; }
     public Dictionary<string, double> MaxTopicsOfCapstoneEachMajor { get; set; }
 }

@@ -1962,7 +1962,8 @@ public class GroupService(
                 group.Status = GroupStatus.InCompleted;
                 groupRepository.Update(group);
             }
-            else if ((float)numOfInEligibleStudent / group.GroupMembers.Count > 0.5)
+            else if ((float)numOfInEligibleStudent / group.GroupMembers.Count > 
+                systemConfigService.GetSystemConfiguration().MinimumPercentageOfStudentsDefend)
             {
                 throw new ArgumentException(
                     $"Can not update group decision status while more than 40% of student are disagree to defense !!");

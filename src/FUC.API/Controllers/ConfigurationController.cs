@@ -102,6 +102,14 @@ public sealed class ConfigurationController : ApiController
         return Ok(OperationResult.Success());
     }
 
+    [HttpPatch("system/MinimumPercentageOfStudentsDefend")]
+    [Authorize(Roles = UserRoles.SuperAdmin)]
+    public IActionResult UpdateMinimumPercentageOfStudentsDefend([FromBody] double value)
+    {
+        _systemConfigService.UpdateMinimumPercentageOfStudentsDefend(value);
+        return Ok(OperationResult.Success());
+    }
+
     [HttpPost("estimate/minimum-topics")]
     [Authorize(Roles = UserRoles.Admin)]
     public async Task<IActionResult> EstimateMinimumTopics()

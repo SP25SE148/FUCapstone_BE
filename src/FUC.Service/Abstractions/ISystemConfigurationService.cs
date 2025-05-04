@@ -15,6 +15,7 @@ public interface ISystemConfigurationService
     void UpdateSemanticTopicThroughSemesters(int value);
     void UpdateTimeConfigurationRemindInDaysBeforeDueDate(int value);
     void UpdateProjectProgressRemindInDaysBeforeDueDate(int value);
+    void UpdateMinimumPercentageOfStudentsDefend(double value);
     Task<OperationResult> UpdateMininumTopicsPerCapstoneInEachCampus();
     Task<Dictionary<string, double>> GetMinimumTopicsByMajorId();
     double GetMinimumTopicsByMajorId(string majorId);

@@ -14,5 +14,6 @@ public class SystemConfiguration
     public int SemanticTopicThroughSemesters { get; set; } = 3;
     public int TimeConfigurationRemindInDaysBeforeDueDate { get; set; } = 3;
     public int ProjectProgressRemindInDaysBeforeDueDate { get; set; } = 1;
+    public double MinimumPercentageOfStudentsDefend { get; set; } = 0.5;
     public ConcurrentDictionary<string, Dictionary<string, double>> MininumTopicsPerCapstoneInEachCampus { get; set; } = new(); // base on students
 }
