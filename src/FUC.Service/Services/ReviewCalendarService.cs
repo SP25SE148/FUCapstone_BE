@@ -227,6 +227,7 @@ public sealed class ReviewCalendarService(
             return OperationResult.Failure(Error.NullValue);
 
         reviewCalendar.Status = request.Status;
+        await uow.SaveChangesAsync();
         return OperationResult.Success();
     }
 

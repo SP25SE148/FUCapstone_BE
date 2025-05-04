@@ -249,6 +249,7 @@ public class DefendCapstoneService(
             return OperationResult.Failure(Error.NullValue);
 
         calendar.Status = request.Status;
+        await unitOfWork.SaveChangesAsync();
         return OperationResult.Success();
     }
 
