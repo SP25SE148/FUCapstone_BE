@@ -5,6 +5,7 @@
     "Description": "Services related to learning, training, and academic institutions."
   },
   {
+    "Id": "7a8503ae-e41b-4718-9532-c4ebc5e5081d",
     "Name": "Finance",
     "Description": "Lĩnh vực kinh doanh liên quan đến quản lý tài chính và đầu tư."
   },
@@ -21,7 +22,6 @@
     "Description": "Food and beverage industry, including restaurants, cafes, and catering."
   },
   {
-    "Id": "7a8503ae-e41b-4718-9532-c4ebc5e5081d",
     "Name": "Booking",
     "Description": "Online and offline booking services for travel, accommodations, and events."
   },
