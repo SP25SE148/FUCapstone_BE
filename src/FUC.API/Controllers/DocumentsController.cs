@@ -116,7 +116,7 @@ public class DocumentsController(
     }
 
     [HttpGet("thesis-minutes")]
-    [Authorize(Roles = $"{UserRoles.SuperAdmin},{UserRoles.Admin},{UserRoles.Manager}")]
+    [Authorize(Roles = $"{UserRoles.SuperAdmin},{UserRoles.Admin},{UserRoles.Manager},{UserRoles.Supervisor}")]
     public async Task<IActionResult> PresentThesisCouncilMeetingMinutesTemplatePresignedUrl()
     {
         var result = await documentsService.PresentThesisCouncilMeetingMinutesTemplatePresignedUrl();
