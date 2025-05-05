@@ -373,4 +373,15 @@ public sealed class UserController(
             ? Ok(result)
             : HandleFailure(result);
     }
+
+
+    [HttpDelete("group/delete/{groupId}")]
+    [Authorize(Roles = UserRoles.Manager)]
+    public async Task<IActionResult> DeleteGroupAsync(Guid groupId)
+    {
+        var result = await groupService.DeleteGroupAsync(groupId);
+        return result.IsSuccess
+            ? Ok(result)
+            : HandleFailure(result);
+    }
 }

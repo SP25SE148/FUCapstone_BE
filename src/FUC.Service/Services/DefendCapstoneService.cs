@@ -243,12 +243,29 @@ public class DefendCapstoneService(
 
     public async Task<OperationResult> UpdateDefendCalendarStatus(UpdateDefendCalendarStatusRequest request)
     {
-        var calendar = await defendCapstoneCalendarRepository.GetAsync(x => x.Id == request.Id,
-            true);
+        var calendar = await defendCapstoneCalendarRepository
+            .GetAsync(x => x.Id == request.Id,
+                true);
+
         if (calendar is null)
             return OperationResult.Failure(Error.NullValue);
+        var group = await groupRepository.GetAsync(
+            x => x.TopicId == calendar.TopicId,
+            true,
+            include: x => x.Include(x => x.DefendCapstoneProjectDecision));
 
         calendar.Status = request.Status;
+        group!.IsReDefendCapstoneProject = request.IsReDefend;
+
+        if (request.IsReDefend)
+        {
+            group.DefendCapstoneProjectDecision.Decision = DecisionStatus.Revised_for_the_second_defense;
+        }
+        else
+        {
+            group.Status = GroupStatus.Completed;
+        }
+
         await unitOfWork.SaveChangesAsync();
         return OperationResult.Success();
     }

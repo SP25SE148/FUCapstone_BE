@@ -2,4 +2,7 @@
 
 namespace FUC.Service.DTOs.DefendCapstone;
 
-public record UpdateDefendCalendarStatusRequest(Guid Id, DefendCapstoneProjectCalendarStatus Status);
+public record UpdateDefendCalendarStatusRequest(
+    Guid Id,
+    DefendCapstoneProjectCalendarStatus Status,
+    bool IsReDefend);
