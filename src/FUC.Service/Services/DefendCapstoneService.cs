@@ -255,15 +255,18 @@ public class DefendCapstoneService(
             include: x => x.Include(x => x.DefendCapstoneProjectDecision));
 
         calendar.Status = request.Status;
-        group!.IsReDefendCapstoneProject = request.IsReDefend;
+        if (request.Status == DefendCapstoneProjectCalendarStatus.Done)
+        {
+            group!.IsReDefendCapstoneProject = request.IsReDefend;
 
-        if (request.IsReDefend)
-        {
-            group.DefendCapstoneProjectDecision.Decision = DecisionStatus.Revised_for_the_second_defense;
-        }
-        else
-        {
-            group.Status = GroupStatus.Completed;
+            if (request.IsReDefend)
+            {
+                group.DefendCapstoneProjectDecision.Decision = DecisionStatus.Revised_for_the_second_defense;
+            }
+            else
+            {
+                group.Status = GroupStatus.Completed;
+            }
         }
 
         await unitOfWork.SaveChangesAsync();
