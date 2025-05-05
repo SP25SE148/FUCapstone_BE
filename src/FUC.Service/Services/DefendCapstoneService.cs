@@ -255,6 +255,7 @@ public class DefendCapstoneService(
             include: x => x.Include(x => x.DefendCapstoneProjectDecision));
 
         calendar.Status = request.Status;
+
         if (request.Status == DefendCapstoneProjectCalendarStatus.Done)
         {
             group!.IsReDefendCapstoneProject = request.IsReDefend;
