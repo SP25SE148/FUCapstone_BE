@@ -1,4 +1,5 @@
 ﻿using System.Linq.Expressions;
+using System.Reflection;
 using Amazon.S3;
 using Amazon.S3.Model;
 using AutoMapper;
@@ -1413,6 +1414,46 @@ public class GroupService(
         };
     }
 
+    public async Task<OperationResult> DeleteGroupAsync(Guid groupId)
+    {
+        var currentSemester = await semesterService.GetCurrentSemesterAsync();
+        if (currentSemester.IsFailure)
+            return OperationResult.Failure<Guid>(new Error("Error.SemesterIsNotGoingOn",
+                "The current semester is not going on"));
+        var timeConfiguration = currentSemester.Value.TimeConfigurations?
+            .FirstOrDefault(
+                s => s.SemesterId == currentSemester.Value.Id &&
+                     s.CampusId == currentUser.CampusId);
+
+        if (timeConfiguration != null &&
+            timeConfiguration.IsActived &&
+            (timeConfiguration.TeamUpDate > DateTime.Now ||
+             timeConfiguration.TeamUpExpirationDate < DateTime.Now))
+            return OperationResult.Failure<Guid>(new Error("DeleteFailed",
+                "You can not delete group while the team up is on. The time that you delete group which is not eligible is after the team up time: " +
+                timeConfiguration.TeamUpExpirationDate));
+
+        var group = await groupRepository.GetAsync(x => x.Id == groupId,
+            true,
+            include: x => x.Include(
+                    x => x.Capstone)
+                .Include(x => x.GroupMembers));
+        if (group is null)
+        {
+            return OperationResult.Failure(Error.NullValue);
+        }
+
+        if (group.GroupMembers.Count(x => x.Status == GroupMemberStatus.Accepted) >= group.Capstone.MinMember)
+        {
+            return OperationResult.Failure(
+                new Error("DeleteFailed", "Can not delete group which is have enough member"));
+        }
+
+        groupRepository.Delete(group);
+        await uow.SaveChangesAsync();
+        return OperationResult.Success();
+    }
+
     public async Task<OperationResult<SupervisorDashBoardDto>> GetSupervisorDashboardMetrics(
         CancellationToken cancellationToken)
     {
@@ -1962,8 +2003,8 @@ public class GroupService(
                 group.Status = GroupStatus.InCompleted;
                 groupRepository.Update(group);
             }
-            else if ((float)numOfInEligibleStudent / group.GroupMembers.Count > 
-                systemConfigService.GetSystemConfiguration().MinimumPercentageOfStudentsDefend)
+            else if ((float)numOfInEligibleStudent / group.GroupMembers.Count >
+                     systemConfigService.GetSystemConfiguration().MinimumPercentageOfStudentsDefend)
             {
                 throw new ArgumentException(
                     $"Can not update group decision status while more than " +

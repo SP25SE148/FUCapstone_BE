@@ -99,5 +99,6 @@ public interface IGroupService
     Task<OperationResult> AssignPendingTopicForGroup(AssignPendingTopicForGroupRequest request,
         CancellationToken cancellationToken);
 
+    Task<OperationResult> DeleteGroupAsync(Guid groupId);
     Task<OperationResult<SupervisorDashBoardDto>> GetSupervisorDashboardMetrics(CancellationToken cancellationToken);
 }
