@@ -1,6 +1,6 @@
 [
   {
-    "MainSupervisorId": "supervisor1",
+    "MainSupervisorId": "supervisorhcm1",
     "CapstoneId": "SEP490",
     "CampusId": "HCM",
     "SemesterId": "SP24",
@@ -14,11 +14,11 @@
     "Description": "Multiple-Choice Learning and Practice System is an interactive platform designed to help users learn and practice multiple-choice exercises across various subjects. It provides a structured and engaging way to test knowledge, improve understanding, and track progress over time. For learners, the system offers a vast collection of multiple-choice questions categorized by subject, topic, and difficulty level. Users can take practice tests, receive instant feedback on their answers, and review explanations to enhance their learning experience. For educators, the platform provides tools to create, manage, and analyze multiple-choice quizzes. It enables tracking student performance, identifying areas for improvement, and customizing question sets to match specific learning objectives. With Multiple-Choice Learning and Practice System, studying becomes more interactive, effective, and accessible, making it easier for learners to master new concepts and improve their test-taking skills.",
     "Status": "Approved",
     "DifficultyLevel": "2",
-    "CreatedBy": "supervisor1",
+    "CreatedBy": "supervisorhcm1",
     "CreatedDate": "2024-02-12T00:00:00"
   },
   {
-    "MainSupervisorId": "supervisor1",
+    "MainSupervisorId": "supervisorhcm1",
     "CapstoneId": "SEP490",
     "CampusId": "HCM",
     "SemesterId": "SP24",
@@ -32,11 +32,11 @@
     "Description": "Handmade Marketplace is an online commercial platform designed to connect artisans and buyers, facilitating the buying and selling of unique, handcrafted products. It provides a space where creators can showcase their handmade works, and customers can discover one-of-a-kind items that are crafted with care and skill. For sellers, the platform offers an easy-to-use interface to list products, manage inventory, set pricing, and communicate with buyers. It also includes promotional tools and analytics to help artisans grow their businesses. For buyers, the marketplace provides a seamless shopping experience with diverse categories of handmade goods, secure payment options, and customer reviews to ensure product quality and authenticity. With Handmade Marketplace, artisans can turn their passion into profit, while buyers can access exclusive, high-quality handmade creations from around the world.",
     "Status": "Pending",
     "DifficultyLevel": "0",
-    "CreatedBy": "supervisor1",
+    "CreatedBy": "supervisorhcm1",
     "CreatedDate": "2024-02-12T00:00:00"
   },
   {
-    "MainSupervisorId": "supervisor1",
+    "MainSupervisorId": "supervisorhcm1",
     "CapstoneId": "SEP490",
     "CampusId": "HCM",
     "SemesterId": "SU24",
@@ -50,11 +50,11 @@
     "Description": "Class Scheduling System for High Schools is an advanced online platform designed to streamline the scheduling process for high schools. It provides an efficient way to manage class timetables, allocate teachers, and optimize classroom usage while ensuring minimal conflicts. For administrators, the system automates the scheduling process by considering factors such as subject requirements, teacher availability, and classroom capacity. It helps reduce manual workload and prevents scheduling conflicts, making timetable management more effective and error-free. For teachers, the platform provides an organized view of their assigned classes, enabling them to track their schedules and receive notifications about any changes or updates. For students, the system offers easy access to class schedules, helping them stay updated on their daily lessons, classroom locations, and any modifications made to the timetable. With Class Scheduling System for High Schools, schools can efficiently manage academic schedules, improve coordination, and ensure a smooth learning experience for both students and teachers.",
     "Status": "Approved",
     "DifficultyLevel": "2",
-    "CreatedBy": "supervisor1",
+    "CreatedBy": "supervisorhcm1",
     "CreatedDate": "2024-05-12T00:00:00"
   },
   {
-    "MainSupervisorId": "supervisor1",
+    "MainSupervisorId": "supervisorhcm1",
     "CapstoneId": "SEP490",
     "CampusId": "HCM",
     "SemesterId": "SU24",
@@ -68,11 +68,11 @@
     "Description": "Sales Management System for Baby Goods Store Chain is a comprehensive platform designed to help baby product retailers efficiently manage sales, inventory, and customer interactions across multiple store locations. It streamlines operations, enhances productivity, and provides valuable insights to optimize business performance. For store managers, the system offers real-time tracking of sales, stock levels, and order processing. It helps automate inventory management, preventing stock shortages or overstocking, while also enabling easy product categorization and pricing adjustments. For sales staff, the platform simplifies order processing, provides quick access to product information, and facilitates seamless billing with integrated payment options. It also supports customer loyalty programs and personalized promotions to enhance customer retention. For business owners, the system generates detailed sales reports and analytics, allowing them to monitor performance across different stores, identify trends, and make data-driven decisions to improve profitability. With Sales Management System for Baby Goods Store Chain, managing a retail business becomes more efficient, organized, and customer-friendly, ensuring a smooth shopping experience for parents and caregivers.",
     "Status": "Approved",
     "DifficultyLevel": "1",
-    "CreatedBy": "supervisor1",
+    "CreatedBy": "supervisorhcm1",
     "CreatedDate": "2024-05-12T00:00:00"
   },
   {
-    "MainSupervisorId": "supervisor1",
+    "MainSupervisorId": "supervisorhcm1",
     "CapstoneId": "SEP490",
     "CampusId": "HCM",
     "SemesterId": "FA24",
@@ -86,11 +86,11 @@
     "Description": "Trip Ticket Booking Application is a user-friendly platform designed to simplify the process of booking tickets for various types of trips, including flights, buses, trains, and cruises. It provides a seamless experience for travelers by offering an intuitive interface, secure payments, and real-time availability updates. For travelers, the application allows easy browsing of available trips, filtering options based on destination, departure time, price, and travel class. Users can compare ticket prices, view seat availability, and make instant bookings with multiple payment options. For travel operators, the system enables efficient management of ticket sales, seat allocations, and real-time updates on booking status. It also provides tools for handling cancellations, refunds, and promotional offers to attract more customers. With Trip Ticket Booking Application, planning and booking trips becomes faster, more convenient, and stress-free, ensuring a smooth travel experience from start to finish.",
     "Status": "Approved",
     "DifficultyLevel": "2",
-    "CreatedBy": "supervisor1",
+    "CreatedBy": "supervisorhcm1",
     "CreatedDate": "2024-09-12T00:00:00"
   },
   {
-    "MainSupervisorId": "supervisor1",
+    "MainSupervisorId": "supervisorhcm1",
     "CapstoneId": "SEP490",
     "CampusId": "HCM",
     "SemesterId": "FA24",
@@ -104,11 +104,11 @@
     "Description": "With the increasing volume of real-time online transactions, detecting and responding to fraudulent activity has become more urgent. RTS is a system that continuously monitors digital payments and financial activity, using AI models to detect suspicious behavior patterns. Unlike legacy solutions that act post-transaction, RTS enables proactive prevention by blocking high-risk operations as they happen. This approach helps financial platforms reduce fraud losses, improve compliance, and build customer trust through enhanced transaction integrity..",
     "Status": "Approved",
     "DifficultyLevel": "2",
-    "CreatedBy": "supervisor1",
+    "CreatedBy": "supervisorhcm1",
     "CreatedDate": "2024-09-12T00:00:00"
   },
   {
-    "MainSupervisorId": "supervisor1",
+    "MainSupervisorId": "supervisorhcm1",
     "CapstoneId": "SEP490",
     "CampusId": "HCM",
     "SemesterId": "SP25",
@@ -122,11 +122,11 @@
     "Description": "As digital banking adoption grows, ensuring robust security across online platforms is a top priority. DBS focuses on enhancing the overall cybersecurity posture of digital banking systems by integrating multi-factor authentication, behavioral biometrics, and anomaly detection. While not solely dedicated to fraud detection, DBS supports secure banking environments by preventing unauthorized access and data breaches. The platform helps institutions safeguard customer information and maintain operational resilience against cyber threats.",
     "Status": "Pending",
     "DifficultyLevel": "1",
-    "CreatedBy": "supervisor1",
+    "CreatedBy": "supervisorhcm1",
     "CreatedDate": "2025-02-12T00:00:00"
   },
   {
-    "MainSupervisorId": "supervisor1",
+    "MainSupervisorId": "supervisorhcm1",
     "CapstoneId": "SEP490",
     "CampusId": "HCM",
     "SemesterId": "SP25",
@@ -140,7 +140,7 @@
     "Description": "Smart Home Automation is an intelligent home control system allowing users to manage lighting, temperature, security, and more from a single interface.",
     "Status": "Pending",
     "DifficultyLevel": "2",
-    "CreatedBy": "supervisor1",
+    "CreatedBy": "supervisorhcm1",
     "CreatedDate": "2025-02-12T00:00:00"
   }
 ]
