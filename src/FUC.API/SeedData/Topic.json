@@ -30,7 +30,7 @@
     "VietnameseName": "Trang thương mại mua bán các tác phẩm thủ công.",
     "Abbreviation": "BSPT",
     "Description": "Handmade Marketplace is an online commercial platform designed to connect artisans and buyers, facilitating the buying and selling of unique, handcrafted products. It provides a space where creators can showcase their handmade works, and customers can discover one-of-a-kind items that are crafted with care and skill. For sellers, the platform offers an easy-to-use interface to list products, manage inventory, set pricing, and communicate with buyers. It also includes promotional tools and analytics to help artisans grow their businesses. For buyers, the marketplace provides a seamless shopping experience with diverse categories of handmade goods, secure payment options, and customer reviews to ensure product quality and authenticity. With Handmade Marketplace, artisans can turn their passion into profit, while buyers can access exclusive, high-quality handmade creations from around the world.",
-    "Status": "Pending",
+    "Status": "Approved",
     "DifficultyLevel": "0",
     "CreatedBy": "supervisorhcm1",
     "CreatedDate": "2024-02-12T00:00:00"
@@ -124,23 +124,23 @@
     "DifficultyLevel": "1",
     "CreatedBy": "supervisorhcm1",
     "CreatedDate": "2025-02-12T00:00:00"
-  },
-  {
-    "MainSupervisorId": "supervisorhcm1",
-    "CapstoneId": "SEP490",
-    "CampusId": "HCM",
-    "SemesterId": "SP25",
-    "BusinessAreaId": "a46b82bb-803e-4e19-a6e0-5cc3c656fe30",
-    "Code": "",
-    "FileName": "topic10",
-    "FileUrl": "topic/topic10",
-    "EnglishName": "Smart Home Automation",
-    "VietnameseName": "Hệ thống nhà thông minh.",
-    "Abbreviation": "SHA",
-    "Description": "Smart Home Automation is an intelligent home control system allowing users to manage lighting, temperature, security, and more from a single interface.",
-    "Status": "Pending",
-    "DifficultyLevel": "2",
-    "CreatedBy": "supervisorhcm1",
-    "CreatedDate": "2025-02-12T00:00:00"
   }
+  //{
+  //  "MainSupervisorId": "supervisorhcm1",
+  //  "CapstoneId": "SEP490",
+  //  "CampusId": "HCM",
+  //  "SemesterId": "SP25",
+  //  "BusinessAreaId": "a46b82bb-803e-4e19-a6e0-5cc3c656fe30",
+  //  "Code": "",
+  //  "FileName": "topic10",
+  //  "FileUrl": "topic/topic10",
+  //  "EnglishName": "Smart Home Automation",
+  //  "VietnameseName": "Hệ thống nhà thông minh.",
+  //  "Abbreviation": "SHA",
+  //  "Description": "Smart Home Automation is an intelligent home control system allowing users to manage lighting, temperature, security, and more from a single interface.",
+  //  "Status": "Pending",
+  //  "DifficultyLevel": "2",
+  //  "CreatedBy": "supervisorhcm1",
+  //  "CreatedDate": "2025-02-12T00:00:00"
+  //}
 ]
