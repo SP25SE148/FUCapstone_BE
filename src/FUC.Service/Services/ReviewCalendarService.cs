@@ -71,13 +71,16 @@ public sealed class ReviewCalendarService(
 
             foreach (var reviewCalendar in reviewCalendars)
             {
-                calendarCreatedDetails.Add(new CalendarCreatedDetail()
+                var calendarCreatedDetail = new CalendarCreatedDetail()
                 {
                     CalendarId = reviewCalendar.Id,
                     StartDate = reviewCalendar.Date,
                     Users = reviewCalendar.Reviewers.Select(x => x.SupervisorId).ToList(),
                     Type = nameof(ReviewCalendar)
-                });
+                };
+                var groupMembers = await groupService.GetGroupByIdAsync(reviewCalendar.GroupId);
+                calendarCreatedDetail.Users.AddRange(groupMembers.Value.GroupMemberList.Select(x => x.StudentId));
+                calendarCreatedDetails.Add(calendarCreatedDetail);
             }
 
             integrationEventLogService.SendEvent(new CalendarCreatedEvent

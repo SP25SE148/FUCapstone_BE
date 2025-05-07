@@ -21,6 +21,7 @@ public interface IGroupService
         CancellationToken cancellationToken);
 
     Task<OperationResult<GroupResponse>> GetGroupByIdAsync(Guid id, bool IsCheckAccess = false);
+    Task<OperationResult<GroupResponse>> GetGroupByTopicIdAsync(Guid topicId);
     Task<OperationResult<GroupResponse>> GetGroupByGroupCodeAsync(string groupCode);
 
     Task<OperationResult> UpdateGroupStatusAsync();
@@ -55,7 +56,7 @@ public interface IGroupService
     Task<OperationResult> SummaryProjectProgressWeek(SummaryProjectProgressWeekRequest request,
         CancellationToken cancellationToken);
 
-    Task<OperationResult<ProjectProgressDto>> GetProjectProgressByGroup(Guid groupId,
+    Task<OperationResult<ProjectProgressDto?>> GetProjectProgressByGroup(Guid groupId,
         CancellationToken cancellationToken);
 
     Task<OperationResult<List<EvaluationProjectProgressResponse>>> GetProgressEvaluationOfGroup(Guid groupId,

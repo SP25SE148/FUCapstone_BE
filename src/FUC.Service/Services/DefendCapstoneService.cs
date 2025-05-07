@@ -71,13 +71,17 @@ public class DefendCapstoneService(
 
             foreach (var defendCalendar in defendCalendars)
             {
-                calendarCreatedDetails.Add(new CalendarCreatedDetail()
+                var calendarCreatedDetail = new CalendarCreatedDetail()
                 {
                     CalendarId = defendCalendar.Id,
                     Users = defendCalendar.DefendCapstoneProjectMemberCouncils.Select(x => x.SupervisorId).ToList(),
                     StartDate = defendCalendar.DefenseDate,
                     Type = nameof(DefendCapstoneProjectInformationCalendar)
-                });
+                };
+                var group = await groupService.GetGroupByTopicIdAsync(defendCalendar.TopicId);
+
+                calendarCreatedDetail.Users.AddRange(group.Value.GroupMemberList.Select(x => x.StudentId));
+                calendarCreatedDetails.Add(calendarCreatedDetail);
             }
 
             integrationEventLogService.SendEvent(new CalendarCreatedEvent

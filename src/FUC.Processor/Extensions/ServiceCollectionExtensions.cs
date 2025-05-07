@@ -21,7 +21,8 @@ namespace FUC.Processor.Extensions;
 
 public static class ServiceCollectionExtensions
 {
-    public static IServiceCollection AddApplicationServices(this IServiceCollection services, IConfiguration configuration)
+    public static IServiceCollection AddApplicationServices(this IServiceCollection services,
+        IConfiguration configuration)
     {
         services.AddDbContext<ProcessorDbContext>((provider, options) =>
         {
@@ -47,7 +48,8 @@ public static class ServiceCollectionExtensions
 
             x.UsingRabbitMq((context, cfg) =>
             {
-                cfg.Host(configuration["RabbitMq:Host"], "/", host => {
+                cfg.Host(configuration["RabbitMq:Host"], "/", host =>
+                {
                     host.Username(configuration.GetValue("RabbitMq:Username", "guest"));
                     host.Password(configuration.GetValue("RabbitMq:Password", "guest"));
                 });
@@ -73,50 +75,51 @@ public static class ServiceCollectionExtensions
         return services;
     }
 
-    public static IServiceCollection AddJwtAuthentication(this IServiceCollection services, IConfiguration configuration)
+    public static IServiceCollection AddJwtAuthentication(this IServiceCollection services,
+        IConfiguration configuration)
     {
         services.AddAuthentication(options =>
-        {
-            options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
-            options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
-            options.DefaultScheme = JwtBearerDefaults.AuthenticationScheme;
-        })
-        .AddJwtBearer(o =>
-        {
-            var jwtOption = new JwtOption();
-            configuration.GetSection(nameof(JwtOption)).Bind(jwtOption);
-
-            o.SaveToken = true; // Save token into AuthenticationProperties
-
-            var Key = Encoding.UTF8.GetBytes(jwtOption.SecretKey);
-            o.TokenValidationParameters = new TokenValidationParameters
             {
-                ValidateIssuer = false, // on production make it true
-                ValidateAudience = false, // on production make it true
-                ValidateLifetime = true,
-                ValidateIssuerSigningKey = true,
-                //ValidIssuer = jwtOption.Issuer,
-                //ValidAudience = jwtOption.Audience,
-                IssuerSigningKey = new SymmetricSecurityKey(Key),
-                ClockSkew = TimeSpan.Zero
-            };
-
-            o.Events = new JwtBearerEvents
+                options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+                options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+                options.DefaultScheme = JwtBearerDefaults.AuthenticationScheme;
+            })
+            .AddJwtBearer(o =>
             {
-                OnMessageReceived = context =>
+                var jwtOption = new JwtOption();
+                configuration.GetSection(nameof(JwtOption)).Bind(jwtOption);
+
+                o.SaveToken = true; // Save token into AuthenticationProperties
+
+                var Key = Encoding.UTF8.GetBytes(jwtOption.SecretKey);
+                o.TokenValidationParameters = new TokenValidationParameters
                 {
-                    var accessToken = context.Request.Query["access_token"];
+                    ValidateIssuer = false, // on production make it true
+                    ValidateAudience = false, // on production make it true
+                    ValidateLifetime = true,
+                    ValidateIssuerSigningKey = true,
+                    //ValidIssuer = jwtOption.Issuer,
+                    //ValidAudience = jwtOption.Audience,
+                    IssuerSigningKey = new SymmetricSecurityKey(Key),
+                    ClockSkew = TimeSpan.Zero
+                };
 
-                    var path = context.HttpContext.Request.Path;
-                    if (!string.IsNullOrEmpty(accessToken) && path.StartsWithSegments("/notifications"))
+                o.Events = new JwtBearerEvents
+                {
+                    OnMessageReceived = context =>
                     {
-                        context.Token = accessToken;
-                    }
+                        var accessToken = context.Request.Query["access_token"];
 
-                    return Task.CompletedTask;
-                }
-            };
-        });
+                        var path = context.HttpContext.Request.Path;
+                        if (!string.IsNullOrEmpty(accessToken) && path.StartsWithSegments("/notifications"))
+                        {
+                            context.Token = accessToken;
+                        }
+
+                        return Task.CompletedTask;
+                    }
+                };
+            });
 
         services.AddAuthorization();
 
@@ -127,10 +130,10 @@ public static class ServiceCollectionExtensions
     {
         var integrationDbContextTypes = Assembly.GetExecutingAssembly()
             .GetTypes()
-            .Where(t => t.IsClass && 
-                !t.IsAbstract && 
-                typeof(DbContext).IsAssignableFrom(t) && 
-                typeof(IIntegrationDbContext).IsAssignableFrom(t))
+            .Where(t => t.IsClass &&
+                        !t.IsAbstract &&
+                        typeof(DbContext).IsAssignableFrom(t) &&
+                        typeof(IIntegrationDbContext).IsAssignableFrom(t))
             .ToList();
 
         services.AddQuartz(configure =>
@@ -150,7 +153,7 @@ public static class ServiceCollectionExtensions
                         trigger.ForJob(jobKey)
                             .WithSimpleSchedule(schedule =>
                                 schedule.WithInterval(TimeSpan.FromSeconds(10)) // Run every 10 sec
-                                        .RepeatForever()));
+                                    .RepeatForever()));
             }
 
             // Add ReminderJobs
@@ -161,8 +164,8 @@ public static class ServiceCollectionExtensions
                 .AddTrigger(trigger =>
                     trigger.ForJob(reminderJobKey)
                         .WithSimpleSchedule(schedule =>
-                                schedule.WithInterval(TimeSpan.FromMinutes(1))
-                                        .RepeatForever()));
+                            schedule.WithInterval(TimeSpan.FromSeconds(30)) // Run every 10 sec
+                                .RepeatForever()));
         });
 
         // Register Quartz Hosted Service

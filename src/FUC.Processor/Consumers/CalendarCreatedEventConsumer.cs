@@ -63,7 +63,7 @@ public class CalendarCreatedEventConsumer : BaseEventConsumer<CalendarCreatedEve
                         await _usersTracker.GetConnectionForUser(user));
 
                     var supervisorEmails = await _processorDbContext.Users
-                        .Where(x => calendarCreatedDetail.Users.Contains(x.UserCode) && x.Role == UserRoles.Supervisor)
+                        .Where(x => calendarCreatedDetail.Users.Contains(x.UserCode))
                         .Select(x => x.Email)
                         .ToArrayAsync();
 
