@@ -278,6 +278,25 @@ public class GroupService(
         return group;
     }
 
+    public async Task<OperationResult<GroupResponse>> GetGroupByTopicIdAsync(Guid topicId)
+    {
+        var group = await groupRepository.GetAsync(
+            g => g.TopicId == topicId,
+            CreateSelectorForGroupResponse(),
+            g => g.AsSplitQuery()
+                .Include(g => g.GroupMembers.Where(gm => gm.Status == GroupMemberStatus.Accepted))
+                .ThenInclude(gm => gm.Student)
+                .Include(g => g.Supervisor)
+                .Include(x => x.Topic)
+                .ThenInclude(t => t.CoSupervisors)
+                .Include(g => g.Capstone));
+
+        if (group is null)
+            return OperationResult.Failure<GroupResponse>(Error.NullValue);
+        group.TopicResponse = await topicService.GetTopicByTopicCode(group.TopicCode);
+        return group;
+    }
+
     public async Task<OperationResult<GroupResponse>> GetGroupByGroupCodeAsync(string groupCode)
     {
         var groupResponse = await groupRepository.GetAsync(
@@ -1564,11 +1583,11 @@ public class GroupService(
         };
     }
 
-    public async Task<OperationResult<ProjectProgressDto>> GetProjectProgressByGroup(Guid groupId,
+    public async Task<OperationResult<ProjectProgressDto?>> GetProjectProgressByGroup(Guid groupId,
         CancellationToken cancellationToken)
     {
         if (!await CheckTheUserIsValid(groupId, cancellationToken))
-            return OperationResult.Failure<ProjectProgressDto>(new Error("ProjectProgress.Error",
+            return OperationResult.Failure<ProjectProgressDto?>(new Error("ProjectProgress.Error",
                 "You can not go other group."));
 
         var projectProgress = await projectProgressRepository.GetAsync(
@@ -1579,9 +1598,8 @@ public class GroupService(
         );
 
         return projectProgress == null
-            ? OperationResult.Failure<ProjectProgressDto>(new Error("ProjectProgress.Error",
-                "Project Progress does not exist."))
-            : (OperationResult<ProjectProgressDto>)new ProjectProgressDto
+            ? OperationResult.Success<ProjectProgressDto?>(default)
+            : new ProjectProgressDto
             {
                 Id = projectProgress.Id,
                 MeetingDate = projectProgress.MeetingDate,
