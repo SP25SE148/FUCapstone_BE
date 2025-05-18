@@ -18,5 +18,5 @@ public interface ISystemConfigurationService
     void UpdateMinimumPercentageOfStudentsDefend(double value);
     Task<OperationResult> UpdateMininumTopicsPerCapstoneInEachCampus();
     Task<Dictionary<string, double>> GetMinimumTopicsByMajorId();
-    double GetMinimumTopicsByMajorId(string majorId);
+    double GetGetMaxTopicsOfCapstone(string capstoneId);
 }

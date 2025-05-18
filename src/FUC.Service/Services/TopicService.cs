@@ -505,16 +505,16 @@ public class TopicService(
                     "Topic is in semantic progressing. Try it later!"));
             }
 
-            var currentSemester = await semesterService.GetCurrentSemesterAsync();
-
-            if (currentSemester.IsFailure)
-            {
-                return OperationResult.Failure(currentSemester.Error);
-            }
+            // var currentSemester = await semesterService.GetCurrentSemesterAsync();
+            //
+            // if (currentSemester.IsFailure)
+            // {
+            //     return OperationResult.Failure(currentSemester.Error);
+            // }
 
             var semesterIds = withCurrentSemester
-                ? new List<string> { currentSemester.Value.Id }
-                : await semesterService.GetPreviouseSemesterIds(currentSemester.Value.StartDate,
+                ? new List<string> { topic.SemesterId }
+                : await semesterService.GetPreviouseSemesterIds(null,
                     systemConfigService.GetSystemConfiguration().SemanticTopicThroughSemesters);
 
             integrationEventLogService.SendEvent(new SemanticTopicEvent
