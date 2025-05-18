@@ -678,12 +678,12 @@ public class DefendCapstoneService(
         }
 
         // Validate review date
-        if (DateTime.TryParse(reviewDate, out var date) && date <= DateTime.Now)
-        {
-            throw new Exception("Defend date must be in the future and in correct format");
-        }
+        // if (DateTime.TryParse(reviewDate, out var date) && date <= DateTime.Now)
+        // {
+        //     throw new Exception("Defend date must be in the future and in correct format");
+        // }
 
-        return (date, time, room);
+        return (DateTime.Parse(reviewDate), time, room);
     }
 
     private static bool IsMemberInformationValid(List<string> memberInfoList, string presidentId, string secretaryId)

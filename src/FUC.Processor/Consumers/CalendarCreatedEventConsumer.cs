@@ -47,7 +47,7 @@ public class CalendarCreatedEventConsumer : BaseEventConsumer<CalendarCreatedEve
             {
                 foreach (string user in calendarCreatedDetail.Users)
                 {
-                    var supervisorsConnections = new List<string>();
+                    var usersConnections = new List<string>();
 
 
                     _processorDbContext.Notifications.Add(new Notification
@@ -59,22 +59,22 @@ public class CalendarCreatedEventConsumer : BaseEventConsumer<CalendarCreatedEve
                         CreatedDate = DateTime.Now,
                     });
 
-                    supervisorsConnections.AddRange(
+                    usersConnections.AddRange(
                         await _usersTracker.GetConnectionForUser(user));
 
-                    var supervisorEmails = await _processorDbContext.Users
-                        .Where(x => calendarCreatedDetail.Users.Contains(x.UserCode))
+                    var userEmails = await _processorDbContext.Users
+                        .Where(x => x.UserCode == user)
                         .Select(x => x.Email)
                         .ToArrayAsync();
 
-                    ArgumentNullException.ThrowIfNull(supervisorEmails);
+                    ArgumentNullException.ThrowIfNull(userEmails);
 
                     if (!await _emailService.SendMailAsync($"[FUC_{calendarCreatedDetail.Type}]",
                             $"You have new {calendarCreatedDetail.Type} created, please log in to FUC to check detail.",
-                            supervisorEmails))
+                            userEmails))
                         throw new InvalidOperationException("Fail to send email.");
 
-                    await _hub.Clients.Clients(supervisorsConnections)
+                    await _hub.Clients.Clients(usersConnections)
                         .ReceiveNewNotification($"You have new {calendarCreatedDetail.Type} created by manager.");
 
                     _processorDbContext.Reminders.Add(new Reminder

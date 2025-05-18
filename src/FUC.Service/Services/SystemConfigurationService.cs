@@ -115,15 +115,15 @@ public class SystemConfigurationService : ISystemConfigurationService
         }
     }
 
-    public async Task<Dictionary<string, double>> GetMinimumTopicsByMajorId() 
+    public async Task<Dictionary<string, double>> GetMinimumTopicsByMajorId()
     {
         var capstonesByMajor = await _capstoneRepository
-        .FindAsync(
-            x => _currentUser.MajorId == "all" || x.MajorId == _currentUser.MajorId,
-            include: null,
-            orderBy: null,
-            selector: x => x.Id
-        );
+            .FindAsync(
+                x => _currentUser.MajorId == "all" || x.MajorId == _currentUser.MajorId,
+                include: null,
+                orderBy: null,
+                selector: x => x.Id
+            );
 
         if (capstonesByMajor.Count == 0)
             throw new InvalidOperationException("No capstones found for the given major.");
@@ -141,14 +141,14 @@ public class SystemConfigurationService : ISystemConfigurationService
         return result;
     }
 
-    public double GetMinimumTopicsByMajorId(string majorId)
+    public double GetGetMaxTopicsOfCapstone(string majorId)
     {
-        if (!_config.MininumTopicsPerCapstoneInEachCampus.TryGetValue(_currentUser.CampusId, out Dictionary<string, double>? value))
+        if (!_config.MininumTopicsPerCapstoneInEachCampus.TryGetValue(_currentUser.CampusId,
+                out Dictionary<string, double>? value))
             return 0;
 
         var result = value.TryGetValue(majorId, out double maxTopics);
 
-        return result ? maxTopics : 0;  
+        return result ? maxTopics : 0;
     }
 }
-

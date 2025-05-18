@@ -341,7 +341,7 @@ public class ArchiveDataApplicationService : IArchiveDataApplicationService
             BestPerformingGroup = bestPerformingGroup,
             WorstPerformingGroup = worstPerformingGroup,
             TopicsPerSupervisor = topicsPerSupervisor,
-            MaxTopicsOfCapstone = _systemConfigurationService.GetMinimumTopicsByMajorId(_currentUser.MajorId),
+            MaxTopicsOfCapstone = _systemConfigurationService.GetGetMaxTopicsOfCapstone(_currentUser.CapstoneId),
         };
     }
 }

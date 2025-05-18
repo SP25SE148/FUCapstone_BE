@@ -2072,6 +2072,7 @@ public class GroupService(
                     g.Include(g => g.Supervisor)
                         .Include(g => g.Capstone)
                         .Include(g => g.DefendCapstoneProjectDecision)
+                        .Include(g => g.GroupMembers).ThenInclude(gm => gm.Student)
                         .Include(g => g.ReviewCalendars.Where(rc => rc.Status == ReviewCalendarStatus.Done)));
             var president = await defendCapstoneProjectCouncilMemberRepository.GetAsync(
                 cm => cm.SupervisorId == currentUser.UserCode && cm.IsPresident &&
@@ -2083,9 +2084,9 @@ public class GroupService(
             if (president == null)
                 return OperationResult.Failure(new Error("Error.UpdateFailed", "Invalid president"));
 
-            if (president.DefendCapstoneProjectInformationCalendar.DefenseDate.Date != DateTime.Now.Date)
-                return OperationResult.Failure(new Error("Error.Updated",
-                    "Can not update group decision on invalid date time"));
+            // if (president.DefendCapstoneProjectInformationCalendar.DefenseDate.Date != DateTime.Now.Date)
+            //     return OperationResult.Failure(new Error("Error.Updated",
+            //         "Can not update group decision on invalid date time"));
 
             if (!IsGroupValidForUpdateDecisionStatus(group))
                 return OperationResult.Failure(new Error("Error.UpdateFailed",
@@ -2106,6 +2107,14 @@ public class GroupService(
                     }
 
                     group.Status = GroupStatus.Completed;
+                    group.GroupMembers
+                        .Where(gm => gm.Status == GroupMemberStatus.Accepted)
+                        .Select(x => x.Student.Status)
+                        .ToList()
+                        .ForEach(x =>
+                        {
+                            x = StudentStatus.Completed;
+                        });
                     break;
                 case true when group.DefendCapstoneProjectDecision.Decision == DecisionStatus.Agree_to_defense:
                     group.DefendCapstoneProjectDecision.Decision = DecisionStatus.Revised_for_the_second_defense;
