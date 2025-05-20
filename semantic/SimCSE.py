@@ -114,13 +114,21 @@ def get_test():
 @app.post("/previous/semantic")
 def get_past_semesters_match(request: SemanticRequest):
     """Find matching topics for a topic across multiple past semesters."""
-    return find_best_match(request.topic_id, request.semester_ids, request.capstone_id, request.campus_id, is_current_semester=False)
-
+    try:
+        return find_best_match(request.topic_id, request.semester_ids, request.capstone_id, request.campus_id,
+                               is_current_semester=False)
+    except Exception as e:
+        print(f"Error in /semantic/: {e}")
+    raise HTTPException(status_code=500, detail=str(e))
 
 @app.get("/semantic/{campus_id}/{capstone_id}/{semester_id}/{topic_id}")
 def get_current_semester_match(campus_id: str, capstone_id: str, semester_id: str, topic_id: str):
     """Find matching topics from the current semester (excluding 'Fail' topics and itself)."""
-    return find_best_match(topic_id, [semester_id], capstone_id, campus_id, is_current_semester=True)
+    try:
+        return find_best_match(topic_id, [semester_id], capstone_id, campus_id, is_current_semester=True)
+    except Exception as e:
+        print(f"Error in /semantic/: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
 
 if __name__ == "__main__":
     import uvicorn
