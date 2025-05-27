@@ -24,4 +24,17 @@ WORKDIR /app
 COPY --from=publish /app/publish .
 EXPOSE 8080
 EXPOSE 8081
+ENV TOPIC_BUCKET_NAME="fuc-topic-1" \
+    TEMPLATE_BUCKET_NAME="fuc-template-1" \
+    GROUP_DOCUMENT_BUCKET_NAME="fuc-group-document-1" \
+    THESIS_BUCKET_NAME="fuc-thesis-1" \
+    EVALUATION_PROJECT_PROGRESS_KEY="Import/ProjectProgress" \
+    REVIEWS_CALENDARS_KEY="Import/ReviewsCalendars" \
+    DEFENSE_CALENDAR_KEY="Import/DefenseCalendar" \
+    EVALUATION_WEEKLY_KEY="Export/EvaluationWeekly" \
+    STUDENTS_TEMPLATE_KEY="Import/Students" \
+    SUPERVISORS_TEMPLATE_KEY="Import/Supervisors" \
+    THESIS_COUNCIL_MEETING_MINUTES_TEMPLATE_KEY="Import/ThesisCouncilMeetingMinutes" \
+    TOPIC_REGISTRATION_TEMPLATE_KEY="Import/TopicRegistration" \
+    ENABLE_PROFILE="true"
 ENTRYPOINT ["dotnet", "FUC.API.dll"]
