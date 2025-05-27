@@ -73,35 +73,16 @@ public static class ServiceCollectionExtensions
         services.AddIntegrationEventLogService<FucDbContext>();
 
         // DI RabbitMQ
-        // services.AddMassTransit(x =>
-        // {
-        //     x.AddConsumers(Assembly.GetExecutingAssembly());
-        //
-        //     x.SetEndpointNameFormatter(new KebabCaseEndpointNameFormatter("fuc", false));
-        //     //x.SetKebabCaseEndpointNameFormatter();
-        //
-        //     x.UsingRabbitMq((context, cfg) =>
-        //     {
-        //         cfg.Host(configuration["RabbitMq:Host"], "/", host =>
-        //         {
-        //             host.Username(configuration.GetValue("RabbitMq:Username", "guest"));
-        //             host.Password(configuration.GetValue("RabbitMq:Password", "guest"));
-        //         });
-        //
-        //         cfg.ConfigureEndpoints(context);
-        //     });
-        // });
-
-
         services.AddMassTransit(x =>
         {
             x.AddConsumers(Assembly.GetExecutingAssembly());
 
             x.SetEndpointNameFormatter(new KebabCaseEndpointNameFormatter("fuc", false));
+            //x.SetKebabCaseEndpointNameFormatter();
 
             x.UsingRabbitMq((context, cfg) =>
             {
-                cfg.Host(configuration["RabbitMq:Host"], 5672, configuration["RabbitMq:VHost"], host =>
+                cfg.Host(configuration["RabbitMq:Host"], "/", host =>
                 {
                     host.Username(configuration.GetValue("RabbitMq:Username", "guest"));
                     host.Password(configuration.GetValue("RabbitMq:Password", "guest"));

@@ -40,38 +40,19 @@ public static class ServiceCollectionExtensions
             options.UseNpgsql(configuration.GetConnectionString("IdentityConnection"));
         });
 
-        // services.AddMassTransit(x =>
-        // {
-        //     x.AddConsumers(Assembly.GetExecutingAssembly());
-        //
-        //     x.SetEndpointNameFormatter(new KebabCaseEndpointNameFormatter("processor", false));
-        //     x.SetKebabCaseEndpointNameFormatter();
-        //
-        //     x.UsingRabbitMq((context, cfg) =>
-        //     {
-        //         cfg.Host(configuration["RabbitMq:Host"], "/", host =>
-        //         {
-        //             host.Username(configuration.GetValue("RabbitMq:Username", "guest"));
-        //             host.Password(configuration.GetValue("RabbitMq:Password", "guest"));
-        //         });
-        //
-        //         cfg.ConfigureEndpoints(context);
-        //     });
-        // });
-
-
         services.AddMassTransit(x =>
         {
             x.AddConsumers(Assembly.GetExecutingAssembly());
 
             x.SetEndpointNameFormatter(new KebabCaseEndpointNameFormatter("processor", false));
+            x.SetKebabCaseEndpointNameFormatter();
 
             x.UsingRabbitMq((context, cfg) =>
             {
-                cfg.Host(configuration["RabbitMq:Host"], 5672, configuration["RabbitMq:VHost"], host =>
+                cfg.Host(configuration["RabbitMq:Host"], "/", host =>
                 {
-                    host.Username(configuration["RabbitMq:Username"]);
-                    host.Password(configuration["RabbitMq:Password"]);
+                    host.Username(configuration.GetValue("RabbitMq:Username", "guest"));
+                    host.Password(configuration.GetValue("RabbitMq:Password", "guest"));
                 });
 
                 cfg.ConfigureEndpoints(context);

@@ -32,32 +32,13 @@ public static class ApplicationServiceExtensions
 
         services.AddAutoMapper(typeof(ServiceProfiles));
 
-        // services.AddMassTransit(x => {
-        //
-        //     x.SetKebabCaseEndpointNameFormatter();
-        //
-        //     x.UsingRabbitMq((context, cfg) =>
-        //     {
-        //         cfg.Host(configuration["RabbitMq:Host"], "/", host => {
-        //             host.Username(configuration.GetValue("RabbitMq:Username", "guest"));
-        //             host.Password(configuration.GetValue("RabbitMq:Password", "guest"));
-        //         });
-        //
-        //         cfg.ConfigureEndpoints(context);
-        //     });
-        // });
-
         services.AddMassTransit(x =>
         {
             x.SetKebabCaseEndpointNameFormatter();
 
             x.UsingRabbitMq((context, cfg) =>
             {
-                // Lấy VHost từ config, không mặc định "/"
-                var rabbitHost = configuration["RabbitMq:Host"];
-                var rabbitVHost = configuration.GetValue<string>("RabbitMq:VHost", "/");
-
-                cfg.Host(rabbitHost, 5672, rabbitVHost, host =>
+                cfg.Host(configuration["RabbitMq:Host"], "/", host =>
                 {
                     host.Username(configuration.GetValue("RabbitMq:Username", "guest"));
                     host.Password(configuration.GetValue("RabbitMq:Password", "guest"));
@@ -66,6 +47,7 @@ public static class ApplicationServiceExtensions
                 cfg.ConfigureEndpoints(context);
             });
         });
+
 
         services.AddCors();
 
