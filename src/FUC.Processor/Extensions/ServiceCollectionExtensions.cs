@@ -49,13 +49,24 @@ public static class ServiceCollectionExtensions
 
             x.UsingRabbitMq((context, cfg) =>
             {
-                cfg.Host(configuration["RabbitMq:Host"], 15672, "/", host =>
-                {
-                    host.Username(configuration.GetValue("RabbitMq:Username", "guest"));
-                    host.Password(configuration.GetValue("RabbitMq:Password", "guest"));
-                });
+                // cfg.Host(configuration["RabbitMq:Host"], 15672, "/", host =>
+                // {
+                //     host.Username(configuration.GetValue("RabbitMq:Username", "guest"));
+                //     host.Password(configuration.GetValue("RabbitMq:Password", "guest"));
+                // });
 
                 cfg.ConfigureEndpoints(context);
+
+                cfg.Host("kebnekaise.lmq.cloudamqp.com", 5671, "jxkfadoo", h =>
+                {
+                    h.Username("jxkfadoo");
+                    h.Password("fnmvqw95gss64f0tFUVWYdGovpobPJ96"); // <-- thay đúng vào đây
+                    h.UseSsl(s =>
+                    {
+                        s.Protocol = SslProtocols.Tls12;
+                        s.ServerName = "kebnekaise.lmq.cloudamqp.com";
+                    });
+                });
             });
         });
 

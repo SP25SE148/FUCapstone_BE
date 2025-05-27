@@ -1,4 +1,5 @@
-﻿using System.Reflection;
+﻿using System.Net.Security;
+using System.Reflection;
 using System.Security.Authentication;
 using Amazon;
 using Amazon.Runtime;
@@ -82,15 +83,28 @@ public static class ServiceCollectionExtensions
 
             x.UsingRabbitMq((context, cfg) =>
             {
-                cfg.Host(configuration["RabbitMq:Host"], 15672, "/", host =>
+                // cfg.Host(configuration["RabbitMq:Host"], 15672, "/", host =>
+                // {
+                //     host.Username(configuration.GetValue("RabbitMq:Username", "guest"));
+                //     host.Password(configuration.GetValue("RabbitMq:Password", "guest"));
+                // });
+
+
+                cfg.Host("kebnekaise.lmq.cloudamqp.com", 5671, "jxkfadoo", h =>
                 {
-                    host.Username(configuration.GetValue("RabbitMq:Username", "guest"));
-                    host.Password(configuration.GetValue("RabbitMq:Password", "guest"));
+                    h.Username("jxkfadoo");
+                    h.Password("fnmvqw95gss64f0tFUVWYdGovpobPJ96"); // <-- thay đúng vào đây
+                    h.UseSsl(s =>
+                    {
+                        s.Protocol = SslProtocols.Tls12;
+                        s.ServerName = "kebnekaise.lmq.cloudamqp.com";
+                    });
                 });
 
                 cfg.ConfigureEndpoints(context);
             });
         });
+
 
         return services;
     }
