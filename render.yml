@@ -1,0 +1,51 @@
+services:
+  - type: web
+    name: fuc
+    env: docker
+    branch: main
+    dockerfilePath: src/FUC.API/Dockerfile
+    plan: Free  # hoặc có thể dùng plan khác như standard, pro nếu bạn trả phí
+    envVars:
+      - key: TOPIC_BUCKET_NAME
+        value: "fuc-topic-1"
+      - key: TEMPLATE_BUCKET_NAME
+        value: "fuc-template-1"
+      - key: GROUP_DOCUMENT_BUCKET_NAME
+        value: "fuc-group-document-1"
+      - key: THESIS_BUCKET_NAME
+        value: "fuc-thesis-1"
+      - key: EVALUATION_PROJECT_PROGRESS_KEY
+        value: "Import/ProjectProgress"
+      - key: REVIEWS_CALENDARS_KEY
+        value: "Import/ReviewsCalendars"
+      - key: DEFENSE_CALENDAR_KEY
+        value: "Import/DefenseCalendar"
+      - key: EVALUATION_WEEKLY_KEY
+        value: "Export/EvaluationWeekly"
+      - key: STUDENTS_TEMPLATE_KEY
+        value: "Import/Students"
+      - key: SUPERVISORS_TEMPLATE_KEY
+        value: "Import/Supervisors"
+      - key: THESIS_COUNCIL_MEETING_MINUTES_TEMPLATE_KEY
+        value: "Import/ThesisCouncilMeetingMinutes"
+      - key: TOPIC_REGISTRATION_TEMPLATE_KEY
+        value: "Import/TopicRegistration"
+      - key: ENABLE_PROFILE
+        value: "true"
+    autoDeploy: true
+
+  - type: web
+    name: fuc_identity
+    env: docker
+    branch: main
+    dockerfilePath: src/Identity.API/Dockerfile
+    plan: Free
+    autoDeploy: true
+
+  - type: web
+    name: fuc_processor
+    env: docker
+    branch: main
+    dockerfilePath: src/FUC.Processor/Dockerfile
+    plan: Free
+    autoDeploy: true

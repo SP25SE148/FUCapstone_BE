@@ -1,4 +1,5 @@
 ﻿using System.Reflection;
+using System.Security.Authentication;
 using Amazon;
 using Amazon.Runtime;
 using Amazon.S3;
@@ -102,8 +103,13 @@ public static class ServiceCollectionExtensions
             {
                 cfg.Host(configuration["RabbitMq:Host"], configuration["RabbitMq:VHost"], host =>
                 {
-                    host.Username(configuration["RabbitMq:Username"]);
-                    host.Password(configuration["RabbitMq:Password"]);
+                    host.Username(configuration.GetValue("RabbitMq:Username", "guest"));
+                    host.Password(configuration.GetValue("RabbitMq:Password", "guest"));
+                    host.UseSsl(s =>
+                    {
+                        s.Protocol = SslProtocols.Tls12;
+                        s.ServerName = configuration["RabbitMq:Host"]; // bắt buộc phải khớp với tên server
+                    });
                 });
 
                 cfg.ConfigureEndpoints(context);

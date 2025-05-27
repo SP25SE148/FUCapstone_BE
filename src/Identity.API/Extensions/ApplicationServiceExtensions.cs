@@ -1,4 +1,5 @@
-﻿using System.Text;
+﻿using System.Security.Authentication;
+using System.Text;
 using FUC.Common.Abstractions;
 using FUC.Common.IntegrationEventLog;
 using Identity.API.Data;
@@ -60,6 +61,11 @@ public static class ApplicationServiceExtensions
                 {
                     host.Username(configuration.GetValue("RabbitMq:Username", "guest"));
                     host.Password(configuration.GetValue("RabbitMq:Password", "guest"));
+                    host.UseSsl(s =>
+                    {
+                        s.Protocol = SslProtocols.Tls12;
+                        s.ServerName = rabbitHost; // bắt buộc phải khớp với tên server
+                    });
                 });
 
                 cfg.ConfigureEndpoints(context);

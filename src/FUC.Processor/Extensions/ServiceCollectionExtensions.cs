@@ -15,6 +15,7 @@ using Microsoft.IdentityModel.Tokens;
 using Quartz;
 using Refit;
 using System.Reflection;
+using System.Security.Authentication;
 using System.Text;
 
 namespace FUC.Processor.Extensions;
@@ -71,6 +72,11 @@ public static class ServiceCollectionExtensions
                 {
                     host.Username(configuration["RabbitMq:Username"]);
                     host.Password(configuration["RabbitMq:Password"]);
+                    host.UseSsl(s =>
+                    {
+                        s.Protocol = SslProtocols.Tls12;
+                        s.ServerName = configuration["RabbitMq:Host"]; // bắt buộc phải khớp với tên server
+                    });
                 });
 
                 cfg.ConfigureEndpoints(context);
