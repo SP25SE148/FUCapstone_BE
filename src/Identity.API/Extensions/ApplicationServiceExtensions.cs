@@ -57,15 +57,10 @@ public static class ApplicationServiceExtensions
                 var rabbitHost = configuration["RabbitMq:Host"];
                 var rabbitVHost = configuration.GetValue<string>("RabbitMq:VHost", "/");
 
-                cfg.Host(rabbitHost, rabbitVHost, host =>
+                cfg.Host(rabbitHost, 5672, rabbitVHost, host =>
                 {
                     host.Username(configuration.GetValue("RabbitMq:Username", "guest"));
                     host.Password(configuration.GetValue("RabbitMq:Password", "guest"));
-                    host.UseSsl(s =>
-                    {
-                        s.Protocol = SslProtocols.Tls12;
-                        s.ServerName = rabbitHost; // bắt buộc phải khớp với tên server
-                    });
                 });
 
                 cfg.ConfigureEndpoints(context);

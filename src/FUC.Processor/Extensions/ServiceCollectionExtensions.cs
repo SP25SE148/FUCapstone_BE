@@ -68,15 +68,10 @@ public static class ServiceCollectionExtensions
 
             x.UsingRabbitMq((context, cfg) =>
             {
-                cfg.Host(configuration["RabbitMq:Host"], configuration["RabbitMq:VHost"], host =>
+                cfg.Host(configuration["RabbitMq:Host"], 5672, configuration["RabbitMq:VHost"], host =>
                 {
                     host.Username(configuration["RabbitMq:Username"]);
                     host.Password(configuration["RabbitMq:Password"]);
-                    host.UseSsl(s =>
-                    {
-                        s.Protocol = SslProtocols.Tls12;
-                        s.ServerName = configuration["RabbitMq:Host"]; // bắt buộc phải khớp với tên server
-                    });
                 });
 
                 cfg.ConfigureEndpoints(context);
