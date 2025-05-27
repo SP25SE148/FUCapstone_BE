@@ -61,6 +61,7 @@ public static class ServiceCollectionExtensions
         services.Configure<MailSettings>(configuration.GetSection("MailSettings"));
         services.AddScoped<IEmailService, EmailSerivce>();
 
+
         services.AddRefitClient<ISemanticApi>()
             .ConfigureHttpClient(c => c.BaseAddress = new Uri("http://localhost:9000"));
 

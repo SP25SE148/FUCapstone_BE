@@ -10,7 +10,8 @@ from typing import List
 
 app = FastAPI()
 
-DATABASE_URL = os.getenv("DATABASE_URL", "postgresql://postgres:postgrespw@postgres:5432/fuc")
+DATABASE_URL = os.getenv("DATABASE_URL",
+                         "postgresql://fuc_user:DlTsF62MKiIjXQ0IGStodubjDTqQ1hRV@dpg-d0qkfe3e5dus739l19dg-a.oregon-postgres.render.com/fuc")
 
 model = SentenceTransformer("sentence-transformers/stsb-roberta-large")
 executor = ThreadPoolExecutor(max_workers=4)  # Singleton Executor
