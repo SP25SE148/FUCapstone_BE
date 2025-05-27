@@ -41,7 +41,7 @@ public class FucDbContext : DbContext
     {
         //optionsBuilder.LogTo(Console.WriteLine).EnableSensitiveDataLogging();
         optionsBuilder.UseNpgsql(
-            "Host=dpg-d0qkfe3e5dus739l19dg-a.oregon-postgres.render.com;Port=5432; User Id=fuc_user;Password=DlTsF62MKiIjXQ0IGStodubjDTqQ1hRV;Database=fuc;Trust Server Certificate=true");
+            "Host=dpg-d0qssrumcj7s73ecd7bg-a.oregon-postgres.render.com;Port=5432; User Id=fuc_p015_user;Password=7yl8i8jMUbts1EEizrMrcg5e3N9rQxMg;Database=fuc_p015;Trust Server Certificate=true");
     }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
