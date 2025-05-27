@@ -19,7 +19,7 @@ namespace Identity.API.Extensions;
 public static class ApplicationServiceExtensions
 {
     public static IServiceCollection AddApplicationServices(this IServiceCollection services,
-    IConfiguration configuration)
+        IConfiguration configuration)
     {
         services.AddDbContext<ApplicationDbContext>((provider, options) =>
         {
@@ -31,13 +31,33 @@ public static class ApplicationServiceExtensions
 
         services.AddAutoMapper(typeof(ServiceProfiles));
 
-        services.AddMassTransit(x => {
+        // services.AddMassTransit(x => {
+        //
+        //     x.SetKebabCaseEndpointNameFormatter();
+        //
+        //     x.UsingRabbitMq((context, cfg) =>
+        //     {
+        //         cfg.Host(configuration["RabbitMq:Host"], "/", host => {
+        //             host.Username(configuration.GetValue("RabbitMq:Username", "guest"));
+        //             host.Password(configuration.GetValue("RabbitMq:Password", "guest"));
+        //         });
+        //
+        //         cfg.ConfigureEndpoints(context);
+        //     });
+        // });
 
+        services.AddMassTransit(x =>
+        {
             x.SetKebabCaseEndpointNameFormatter();
 
             x.UsingRabbitMq((context, cfg) =>
             {
-                cfg.Host(configuration["RabbitMq:Host"], "/", host => {
+                // Lấy VHost từ config, không mặc định "/"
+                var rabbitHost = configuration["RabbitMq:Host"];
+                var rabbitVHost = configuration.GetValue<string>("RabbitMq:VHost", "/");
+
+                cfg.Host(rabbitHost, rabbitVHost, host =>
+                {
                     host.Username(configuration.GetValue("RabbitMq:Username", "guest"));
                     host.Password(configuration.GetValue("RabbitMq:Password", "guest"));
                 });
@@ -103,6 +123,7 @@ public static class ApplicationServiceExtensions
                     {
                         context.Response.Headers.Add("IS-TOKEN-EXPIRED", "true");
                     }
+
                     return Task.CompletedTask;
                 }
             };
