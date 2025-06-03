@@ -9,10 +9,9 @@ from concurrent.futures import ThreadPoolExecutor
 from typing import List
 
 app = FastAPI()
-
-DATABASE_URL = os.getenv("DATABASE_URL",
-                         "postgresql://fuc_user:DlTsF62MKiIjXQ0IGStodubjDTqQ1hRV@dpg-d0qkfe3e5dus739l19dg-a.oregon-postgres.render.com/fuc")
-
+# DATABASE_URL = os.getenv("DATABASE_URL",
+#                          "postgresql://fuc_p015_user:7yl8i8jMUbts1EEizrMrcg5e3N9rQxMg@dpg-d0qssrumcj7s73ecd7bg-a.oregon-postgres.render.com:5432/fuc_p015")
+DATABASE_URL = "postgresql://fuc_p015_user:7yl8i8jMUbts1EEizrMrcg5e3N9rQxMg@dpg-d0qssrumcj7s73ecd7bg-a.oregon-postgres.render.com:5432/fuc_p015"
 model = SentenceTransformer("sentence-transformers/stsb-roberta-large")
 executor = ThreadPoolExecutor(max_workers=4)  # Singleton Executor
 
