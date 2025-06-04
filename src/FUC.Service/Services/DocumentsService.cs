@@ -380,7 +380,8 @@ public class DocumentsService(
         return $"{newFileUrl} ({nextIndex})";
     }
 
-    public async Task<OperationResult> CreateGroupDocument(IFormFile file, string key, CancellationToken cancellationToken)
+    public async Task<OperationResult> CreateGroupDocument(IFormFile file, string key,
+        CancellationToken cancellationToken)
     {
         if (!IsValidFile(file))
             return OperationResult.Failure(new Error("Document.Error", "File is null."));
@@ -393,17 +394,22 @@ public class DocumentsService(
 
         var result = await SaveDocumentToS3(file, s3BucketConfiguration.FUCGroupDocumentBucket, key, cancellationToken);
 
-        return result ? OperationResult.Success() : OperationResult.Failure(new Error("Document.Error", "Fail to upload documents."));
+        return result
+            ? OperationResult.Success()
+            : OperationResult.Failure(new Error("Document.Error", "Fail to upload documents."));
     }
 
-    public async Task<OperationResult> CreateThesisDocument(IFormFile file, string key, CancellationToken cancellationToken)
+    public async Task<OperationResult> CreateThesisDocument(IFormFile file, string key,
+        CancellationToken cancellationToken)
     {
         if (!IsValidFile(file))
             return OperationResult.Failure(new Error("Document.Error", "File is null."));
 
         var result = await SaveDocumentToS3(file, s3BucketConfiguration.FUCThesisBucket, key, cancellationToken);
 
-        return result ? OperationResult.Success() : OperationResult.Failure(new Error("Document.Error", "Fail to upload thesis."));
+        return result
+            ? OperationResult.Success()
+            : OperationResult.Failure(new Error("Document.Error", "Fail to upload thesis."));
     }
 
     public async Task<OperationResult<string>> PresentGroupDocumentFilePresignedUrl(string groupKey)
@@ -437,17 +443,17 @@ public class DocumentsService(
 
     public async Task<OperationResult<string>> PresentReviewsCalendarsTemplatePresignedUrl()
     {
-        var result = await PresentFilePresignedUrl(s3BucketConfiguration.FUCTemplateBucket, 
+        var result = await PresentFilePresignedUrl(s3BucketConfiguration.FUCTemplateBucket,
             s3BucketConfiguration.ReviewsCalendarsKey);
 
         return result.IsFailure
             ? OperationResult.Failure<string>(new Error("Document.Error", "Can not export ReviewsCalendars template."))
             : result.Value;
     }
-    
+
     public async Task<OperationResult<string>> PresentDefenseCalendarTemplatePresignedUrl()
     {
-        var result = await PresentFilePresignedUrl(s3BucketConfiguration.FUCTemplateBucket, 
+        var result = await PresentFilePresignedUrl(s3BucketConfiguration.FUCTemplateBucket,
             s3BucketConfiguration.DefenseCalendarKey);
 
         return result.IsFailure
@@ -457,7 +463,7 @@ public class DocumentsService(
 
     public async Task<OperationResult<string>> PresentStudentsImportTemplatePresignedUrl()
     {
-        var result = await PresentFilePresignedUrl(s3BucketConfiguration.FUCTemplateBucket, 
+        var result = await PresentFilePresignedUrl(s3BucketConfiguration.FUCTemplateBucket,
             s3BucketConfiguration.StudentsTemplateKey);
 
         return result.IsFailure
@@ -467,29 +473,34 @@ public class DocumentsService(
 
     public async Task<OperationResult<string>> PresentSupervisorsImportTemplatePresignedUrl()
     {
-        var result = await PresentFilePresignedUrl(s3BucketConfiguration.FUCTemplateBucket, 
+        var result = await PresentFilePresignedUrl(s3BucketConfiguration.FUCTemplateBucket,
             s3BucketConfiguration.SupervisorsTemplateKey);
 
         return result.IsFailure
-            ? OperationResult.Failure<string>(new Error("Document.Error", "Can not export Supervisors Import template."))
+            ? OperationResult.Failure<string>(
+                new Error("Document.Error", "Can not export Supervisors Import template."))
             : result.Value;
     }
 
     public async Task<OperationResult<string>> PresentThesisCouncilMeetingMinutesTemplatePresignedUrl()
     {
-        var result = await PresentFilePresignedUrl(s3BucketConfiguration.FUCTemplateBucket, s3BucketConfiguration.ThesisCouncilMeetingMinutesTemplateKey);
+        var result = await PresentFilePresignedUrl(s3BucketConfiguration.FUCTemplateBucket,
+            s3BucketConfiguration.ThesisCouncilMeetingMinutesTemplateKey);
 
         return result.IsFailure
-            ? OperationResult.Failure<string>(new Error("Document.Error", "Can not export Supervisors Import template."))
+            ? OperationResult.Failure<string>(
+                new Error("Document.Error", "Can not export Supervisors Import template."))
             : result.Value;
     }
 
     public async Task<OperationResult<string>> PresentTopicRegistrationTemplatePresignedUrl()
     {
-        var result = await PresentFilePresignedUrl(s3BucketConfiguration.FUCTemplateBucket, s3BucketConfiguration.TopicRegistrationTemplateKey);
+        var result = await PresentFilePresignedUrl(s3BucketConfiguration.FUCTemplateBucket,
+            s3BucketConfiguration.TopicRegistrationTemplateKey);
 
         return result.IsFailure
-            ? OperationResult.Failure<string>(new Error("Document.Error", "Can not export Topic Registration template."))
+            ? OperationResult.Failure<string>(
+                new Error("Document.Error", "Can not export Topic Registration template."))
             : result.Value;
     }
 
@@ -498,7 +509,8 @@ public class DocumentsService(
         var result = await PresentFilePresignedUrl(s3BucketConfiguration.FUCThesisBucket, thesisKey);
 
         return result.IsFailure
-            ? OperationResult.Failure<string>(new Error("Document.Error", "Can not export Supervisors Import template."))
+            ? OperationResult.Failure<string>(
+                new Error("Document.Error", "Can not export Supervisors Import template."))
             : result.Value;
     }
 
@@ -532,8 +544,8 @@ public class DocumentsService(
         // Get all properties of the bucketConfiguration class
         PropertyInfo[] properties = type.GetProperties();
         foreach (var (property, propertyValue) in from property in properties
-                                                  let propertyValue = (string)property.GetValue(bucketConfiguration)
-                                                  select (property, propertyValue))
+                 let propertyValue = (string)property.GetValue(bucketConfiguration)
+                 select (property, propertyValue))
         {
             ArgumentException.ThrowIfNullOrEmpty(propertyValue);
 
@@ -549,23 +561,42 @@ public class DocumentsService(
 
     private async Task<bool> IsZipFileAsync(IFormFile file)
     {
-        // Check MIME type (less reliable but useful as a first check)
-        var allowedMimeTypes = new[] { "application/zip", "application/x-zip-compressed" };
+        var allowedMimeTypes = new[]
+        {
+            "application/zip",
+            "application/x-zip-compressed",
+            "application/x-rar-compressed",
+            "application/x-7z-compressed",
+            "application/gzip",
+            "application/x-gzip",
+            "application/x-tar",
+            "application/x-bzip2"
+        };
+
         if (!allowedMimeTypes.Contains(file.ContentType.ToLower()))
             return false;
 
-        // Read first 4 bytes in a more efficient way
-        byte[] header = new byte[4];
+        // Đọc vài bytes đầu để kiểm tra magic header (signature)
+        byte[] header = new byte[6];
         using var stream = file.OpenReadStream();
 
-        int bytesRead = await stream.ReadAsync(header.AsMemory(0, 4));
+        int bytesRead = await stream.ReadAsync(header.AsMemory(0, header.Length));
         if (bytesRead < 4)
-            return false; // Invalid ZIP file
+            return false;
 
-        // Reset stream position so the same stream can be reused for uploading
         stream.Position = 0;
 
-        return header.SequenceEqual(new byte[] { 0x50, 0x4B, 0x03, 0x04 }); // ZIP signature
-    }
+        // Các magic byte signatures phổ biến
+        var knownSignatures = new List<byte[]>
+        {
+            new byte[] { 0x50, 0x4B, 0x03, 0x04 }, // ZIP
+            new byte[] { 0x52, 0x61, 0x72, 0x21 }, // RAR
+            new byte[] { 0x37, 0x7A, 0xBC, 0xAF, 0x27, 0x1C }, // 7z
+            new byte[] { 0x1F, 0x8B }, // GZ
+            new byte[] { 0x42, 0x5A, 0x68 }, // BZ2
+            new byte[] { 0x75, 0x73, 0x74, 0x61, 0x72 } // TAR (optional heuristic)
+        };
 
+        return knownSignatures.Any(sig => header.Take(sig.Length).SequenceEqual(sig));
+    }
 }

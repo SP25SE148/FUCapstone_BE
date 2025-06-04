@@ -24,7 +24,8 @@ builder.Services.AddCors(options =>
             .AllowAnyHeader()
             .AllowAnyMethod()
             .AllowCredentials()
-            .WithOrigins("https://localhost:3000", "https://fu-capstone-fe.vercel.app");
+            .WithOrigins("https://localhost:3000", "https://fu-capstone-fe.vercel.app",
+                "https://fu-capstone-fe-git-localhost-dtheng03s-projects.vercel.app");
     });
 });
 
@@ -44,7 +45,7 @@ app.MapHub<NotificationHub>("/notifications");
 app.MapGet("/test", async (ProcessorDbContext _processorDbContext) =>
 {
     var currentTime = new DateTime(2025, 4, 19, 8, 0, 0).TimeOfDay;
-   
+
     var buffer = TimeSpan.FromMinutes(1);
 
     var a = await _processorDbContext.RecurrentReminders.ToListAsync();
@@ -55,11 +56,11 @@ app.MapGet("/test", async (ProcessorDbContext _processorDbContext) =>
     var c = a1.RemindTime <= currentTime.Add(buffer);
 
     var recurrentReminders = await _processorDbContext.RecurrentReminders
-                .Where(r => r.RecurringDay == DayOfWeek.Saturday &&
-                            r.RemindTime >= currentTime.Subtract(buffer) &&
-                            r.RemindTime <= currentTime.Add(buffer))
-                .Take(100)
-                .ToListAsync();
+        .Where(r => r.RecurringDay == DayOfWeek.Saturday &&
+                    r.RemindTime >= currentTime.Subtract(buffer) &&
+                    r.RemindTime <= currentTime.Add(buffer))
+        .Take(100)
+        .ToListAsync();
 
     return recurrentReminders;
 });

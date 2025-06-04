@@ -16,8 +16,8 @@ try
     var builder = WebApplication.CreateBuilder(args);
 
     builder.Logging
-    .ClearProviders()
-    .AddSerilog();
+        .ClearProviders()
+        .AddSerilog();
 
     // Add services to the container.
 
@@ -42,15 +42,19 @@ try
             Scheme = "bearer"
         });
         c.AddSecurityRequirement(new OpenApiSecurityRequirement
-    {
-        { new OpenApiSecurityScheme{
-            Reference = new OpenApiReference
+        {
             {
-                Type = ReferenceType.SecurityScheme,
-                Id = "Bearer"
+                new OpenApiSecurityScheme
+                {
+                    Reference = new OpenApiReference
+                    {
+                        Type = ReferenceType.SecurityScheme,
+                        Id = "Bearer"
+                    }
+                },
+                new string[] { }
             }
-        }, new string[] {} }
-    });
+        });
     });
 
     builder.Host.UseSerilog((ctx, lc) => lc
@@ -70,7 +74,8 @@ try
         .AllowAnyHeader()
         .AllowAnyMethod()
         .AllowCredentials() // to support a SignalR
-        .WithOrigins("https://localhost:3000", "https://fu-capstone-fe.vercel.app"));
+        .WithOrigins("https://localhost:3000", "https://fu-capstone-fe.vercel.app",
+            "https://fu-capstone-fe-git-localhost-dtheng03s-projects.vercel.app"));
 
     // Configure the HTTP request pipeline.
     if (app.Environment.IsDevelopment())
@@ -94,12 +99,12 @@ try
     await app.RunAsync();
 }
 catch (Exception ex) when (
-                            // https://github.com/dotnet/runtime/issues/60600
-                            ex.GetType().Name is not "StopTheHostException"
-                            // HostAbortedException was added in .NET 7, but since we target .NET 6 we
-                            // need to do it this way until we target .NET 8
-                            && ex.GetType().Name is not "HostAbortedException"
-                        )
+    // https://github.com/dotnet/runtime/issues/60600
+    ex.GetType().Name is not "StopTheHostException"
+    // HostAbortedException was added in .NET 7, but since we target .NET 6 we
+    // need to do it this way until we target .NET 8
+    && ex.GetType().Name is not "HostAbortedException"
+)
 {
     Log.Fatal(ex, "Unhandled exception");
 }

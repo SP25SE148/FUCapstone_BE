@@ -45,6 +45,7 @@ builder.Services.AddAuthentication(options =>
             {
                 context.Response.Headers.Append("IS-TOKEN-EXPIRED", "true");
             }
+
             return Task.CompletedTask;
         }
     };
@@ -59,9 +60,10 @@ builder.Services.AddCors(options =>
     options.AddPolicy("customPolicy", b =>
     {
         b.AllowAnyHeader()
-         .AllowAnyMethod()
-         .AllowCredentials() 
-         .WithOrigins(builder.Configuration["ClientApp"], "https://fu-capstone-fe.vercel.app");
+            .AllowAnyMethod()
+            .AllowCredentials()
+            .WithOrigins(builder.Configuration["ClientApp"], "https://fu-capstone-fe.vercel.app",
+                "https://fu-capstone-fe-git-localhost-dtheng03s-projects.vercel.app");
     });
 });
 

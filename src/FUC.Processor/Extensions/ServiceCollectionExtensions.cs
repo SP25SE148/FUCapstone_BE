@@ -49,7 +49,7 @@ public static class ServiceCollectionExtensions
 
             x.UsingRabbitMq((context, cfg) =>
             {
-                // cfg.Host(configuration["RabbitMq:Host"], 15672, "/", host =>
+                // cfg.Host(configuration["RabbitMq:Host"], "/", host =>
                 // {
                 //     host.Username(configuration.GetValue("RabbitMq:Username", "guest"));
                 //     host.Password(configuration.GetValue("RabbitMq:Password", "guest"));
@@ -76,7 +76,7 @@ public static class ServiceCollectionExtensions
 
 
         services.AddRefitClient<ISemanticApi>()
-            .ConfigureHttpClient(c => c.BaseAddress = new Uri("http://localhost:9000"));
+            .ConfigureHttpClient(c => c.BaseAddress = new Uri("http://157.66.24.154:9001"));
 
         services.AddSingleton<UsersTracker>();
 
@@ -166,7 +166,7 @@ public static class ServiceCollectionExtensions
                     .AddTrigger(trigger =>
                         trigger.ForJob(jobKey)
                             .WithSimpleSchedule(schedule =>
-                                schedule.WithInterval(TimeSpan.FromSeconds(10)) // Run every 10 sec
+                                schedule.WithInterval(TimeSpan.FromSeconds(20)) // Run every 10 sec
                                     .RepeatForever()));
             }
 
@@ -178,7 +178,7 @@ public static class ServiceCollectionExtensions
                 .AddTrigger(trigger =>
                     trigger.ForJob(reminderJobKey)
                         .WithSimpleSchedule(schedule =>
-                            schedule.WithInterval(TimeSpan.FromSeconds(30)) // Run every 10 sec
+                            schedule.WithInterval(TimeSpan.FromSeconds(60)) // Run every 10 sec
                                 .RepeatForever()));
         });
 

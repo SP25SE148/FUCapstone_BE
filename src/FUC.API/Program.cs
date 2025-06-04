@@ -35,7 +35,8 @@ try
         DefenseCalendarKey = Environment.GetEnvironmentVariable("DEFENSE_CALENDAR_KEY"),
         StudentsTemplateKey = Environment.GetEnvironmentVariable("STUDENTS_TEMPLATE_KEY"),
         SupervisorsTemplateKey = Environment.GetEnvironmentVariable("SUPERVISORS_TEMPLATE_KEY"),
-        ThesisCouncilMeetingMinutesTemplateKey = Environment.GetEnvironmentVariable("THESIS_COUNCIL_MEETING_MINUTES_TEMPLATE_KEY"),
+        ThesisCouncilMeetingMinutesTemplateKey =
+            Environment.GetEnvironmentVariable("THESIS_COUNCIL_MEETING_MINUTES_TEMPLATE_KEY"),
         TopicRegistrationTemplateKey = Environment.GetEnvironmentVariable("TOPIC_REGISTRATION_TEMPLATE_KEY"),
     };
 
@@ -63,7 +64,8 @@ try
         .AllowAnyHeader()
         .AllowAnyMethod()
         .AllowCredentials() // to support a SignalR
-        .WithOrigins("https://localhost:3000", "https://fu-capstone-fe.vercel.app"));
+        .WithOrigins("https://localhost:3000", "https://fu-capstone-fe.vercel.app",
+            "https://fu-capstone-fe-git-localhost-dtheng03s-projects.vercel.app"));
 
     // Configure the HTTP request pipeline.
     if (app.Environment.IsDevelopment())
@@ -81,17 +83,16 @@ try
     app.UseSerilogRequestLogging();
     await AppDbInitializer.SeedData(app);
     await AppDbInitializer.SyncTemplateConfigurationKey(app);
-    
-    await app.RunAsync();
 
+    await app.RunAsync();
 }
 catch (Exception ex) when (
-                            // https://github.com/dotnet/runtime/issues/60600
-                            ex.GetType().Name is not "StopTheHostException"
-                            // HostAbortedException was added in .NET 7, but since we target .NET 6 we
-                            // need to do it this way until we target .NET 8
-                            && ex.GetType().Name is not "HostAbortedException"
-                        )
+    // https://github.com/dotnet/runtime/issues/60600
+    ex.GetType().Name is not "StopTheHostException"
+    // HostAbortedException was added in .NET 7, but since we target .NET 6 we
+    // need to do it this way until we target .NET 8
+    && ex.GetType().Name is not "HostAbortedException"
+)
 {
     Log.Fatal(ex, "Unhandled exception");
 }

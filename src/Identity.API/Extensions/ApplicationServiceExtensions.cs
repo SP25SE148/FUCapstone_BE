@@ -38,7 +38,7 @@ public static class ApplicationServiceExtensions
 
             x.UsingRabbitMq((context, cfg) =>
             {
-                // cfg.Host(configuration["RabbitMq:Host"], 15672, "/", host =>
+                // cfg.Host(configuration["RabbitMq:Host"], "/", host =>
                 // {
                 //     host.Username(configuration.GetValue("RabbitMq:Username", "guest"));
                 //     host.Password(configuration.GetValue("RabbitMq:Password", "guest"));
